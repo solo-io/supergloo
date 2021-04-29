@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1426
+    description: Fix ordering of VirtualService HttpRoutes such that routes *with matchers* precede routes without matchers.
+    resolvesIssue: false

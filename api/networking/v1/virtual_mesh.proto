@@ -155,4 +155,8 @@ message VirtualMeshStatus {
     // The status of the VirtualMesh for each Mesh to which it has been applied.
     // A VirtualMesh may be Accepted for some Meshes and rejected for others.
     map<string, ApprovalStatus> meshes = 4;
+
+    // The status of the VirtualMesh for each Destination to which it has been applied.
+    // A VirtualMesh may be Accepted for some Destinations and rejected for others.
+    map<string, ApprovalStatus> destinations = 5;
 }

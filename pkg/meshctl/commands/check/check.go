@@ -16,28 +16,34 @@ import (
 var (
 	checkMarkChar = "\u2705"
 	redXChar      = "\u274C"
+)
 
-	// TODO implement kube connectivity check
-
-	managementPlane = checks.Category{
+func constructChecks(opts *options) []checks.Category {
+	managementPlane := checks.Category{
 		Name: "Gloo Mesh",
 		Checks: []checks.Check{
 			checks.NewDeploymentsCheck(),
+			checks.NewEnterpriseRegistrationCheck(
+				opts.kubeconfig,
+				opts.kubecontext,
+				opts.localPort,
+				opts.remotePort,
+			),
 		},
 	}
 
-	configuration = checks.Category{
+	configuration := checks.Category{
 		Name: "Management Configuration",
 		Checks: []checks.Check{
 			checks.NewNetworkingCrdCheck(),
 		},
 	}
 
-	categories = []checks.Category{
+	return []checks.Category{
 		managementPlane,
 		configuration,
 	}
-)
+}
 
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
@@ -49,7 +55,8 @@ func Command(ctx context.Context) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return runChecks(ctx, client, opts.namespace)
+			checks := constructChecks(opts)
+			return runChecks(ctx, client, opts.namespace, checks)
 		},
 	}
 	opts.addToFlags(cmd.Flags())
@@ -62,14 +69,18 @@ type options struct {
 	kubeconfig  string
 	kubecontext string
 	namespace   string
+	localPort   uint32
+	remotePort  uint32
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Gloo Mesh is installed in")
+	flags.Uint32Var(&o.localPort, "local-port", defaults.MetricsPort, "local port used to open port-forward to enterprise mgmt pod (enterprise only)")
+	flags.Uint32Var(&o.remotePort, "remote-port", defaults.MetricsPort, "remote port used to open port-forward to enterprise mgmt pod (enterprise only). set to 0 to disable checks on the mgmt server")
 }
 
-func runChecks(ctx context.Context, client client.Client, installNamespace string) error {
+func runChecks(ctx context.Context, client client.Client, installNamespace string, categories []checks.Category) error {
 	for _, category := range categories {
 		fmt.Println(category.Name)
 		fmt.Printf(strings.Repeat("-", len(category.Name)+3) + "\n")

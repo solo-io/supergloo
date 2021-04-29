@@ -18,6 +18,8 @@ type WasmDeploymentSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *wasmDeploymentSet) List(filterResource ...func(*networking_enterprise_m
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	wasmDeploymentList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment, 0, len(objs))
+	for _, obj := range objs {
+		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
+	}
+	return wasmDeploymentList
+}
+
+func (s *wasmDeploymentSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
+		})
+	}
+
 	var wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
 	}
 	return wasmDeploymentList
@@ -207,6 +228,8 @@ type VirtualDestinationSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
 	// Insert a resource into the set.
@@ -275,8 +298,27 @@ func (s *virtualDestinationSet) List(filterResource ...func(*networking_enterpri
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	virtualDestinationList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination, 0, len(objs))
+	for _, obj := range objs {
+		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
+	}
+	return virtualDestinationList
+}
+
+func (s *virtualDestinationSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
+		})
+	}
+
 	var virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
 	}
 	return virtualDestinationList
@@ -396,6 +438,8 @@ type FederatedGatewaySet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
 	// Insert a resource into the set.
@@ -464,8 +508,27 @@ func (s *federatedGatewaySet) List(filterResource ...func(*networking_enterprise
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	federatedGatewayList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway, 0, len(objs))
+	for _, obj := range objs {
+		federatedGatewayList = append(federatedGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+	}
+	return federatedGatewayList
+}
+
+func (s *federatedGatewaySet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+		})
+	}
+
 	var federatedGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		federatedGatewayList = append(federatedGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
 	}
 	return federatedGatewayList
@@ -585,6 +648,8 @@ type RouteTableSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable
 	// Insert a resource into the set.
@@ -653,8 +718,27 @@ func (s *routeTableSet) List(filterResource ...func(*networking_enterprise_mesh_
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	routeTableList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable, 0, len(objs))
+	for _, obj := range objs {
+		routeTableList = append(routeTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable))
+	}
+	return routeTableList
+}
+
+func (s *routeTableSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable))
+		})
+	}
+
 	var routeTableList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		routeTableList = append(routeTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable))
 	}
 	return routeTableList
@@ -774,6 +858,8 @@ type DelegatedRouteTableSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
 	// Insert a resource into the set.
@@ -842,8 +928,27 @@ func (s *delegatedRouteTableSet) List(filterResource ...func(*networking_enterpr
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	delegatedRouteTableList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable, 0, len(objs))
+	for _, obj := range objs {
+		delegatedRouteTableList = append(delegatedRouteTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
+	}
+	return delegatedRouteTableList
+}
+
+func (s *delegatedRouteTableSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
+		})
+	}
+
 	var delegatedRouteTableList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		delegatedRouteTableList = append(delegatedRouteTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
 	}
 	return delegatedRouteTableList

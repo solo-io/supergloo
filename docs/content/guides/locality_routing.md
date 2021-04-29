@@ -4,6 +4,10 @@ menuTitle: Routing Based On Locality
 weight: 50
 ---
 
+{{% notice note %}}
+Gloo Mesh Enterprise is required for this feature.
+{{% /notice %}}
+
 Providing high-availability of applications across clusters, zones, and regions can be a significant challenge. Source traffic should be routed to the closest available destination, or be routed to a failover destination if issues occur. In this guide, you will use a *VirtualDestination* to accomplish locality-based failover.
 
 Gloo Mesh provides the ability to configure a *VirtualDestination*, which is a virtual traffic destination composed of a list of 1-n services selected.  The composing services are configured with outlier detection, the ability of the system to detect unresponsive services, [read more here](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier). Traffic will automatically be sorted into priority levels by proximity to the orginiating service, and failover when priorities become unhealthy.
@@ -22,22 +26,36 @@ To illustrate these concepts, we will assume that:
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
-Ensure you have the correct context names set in your environment:
+Set the following variables in your environment:
 
-```shell
+{{< tabs >}}
+{{< tab name="Definitions" codelang="shell">}}
 MGMT_CONTEXT=your_management_plane_context
 REMOTE_CONTEXT=your_remote_context
-```
+MGMT_CLUSTER_NAME=your_management_cluster_name
+REMOTE_CLUSTER_NAME=your_remote_cluster_name
+MGMT_CLUSTER_NODE_NAME=your_management_cluster_node_name
+REMOTE_CLUSTER_NODE_NAME=your_remote_cluster_node_name
+{{< /tab >}}
+{{< tab name="Kind Demo example" codelang="shell">}}
+MGMT_CONTEXT=kind-mgmt-cluster
+REMOTE_CONTEXT=kind-remote-cluster
+MGMT_CLUSTER_NAME=mgmt-cluster
+REMOTE_CLUSTER_NAME=remote-cluster
+MGMT_CLUSTER_NODE_NAME=mgmt-cluster-control-plane
+REMOTE_CLUSTER_NODE_NAME=remote-cluster-control-plane
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Configure the Region and Zone for the Nodes
 
 Gloo Mesh uses the configured [region and zone labels](https://v1-18.docs.kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#topologykubernetesioregion) on nodes to indicate locality for services. If you do not already have the region and zone labels set, you will need to do so now. In our example, we will set the `mgmt-cluster` node to use `us-east-1` for the region and `us-east-1a` for the zone. The `remote-cluster` node will be set to `us-east-2` and `us-east-2b` respectively. In a cloud-based deployment, these labels will typically be set by the cloud provider.
 
 ```bash
-kubectl label node $MGMT_CLUSTER-control-plane --context kind-$MGMT_CLUSTER \
+kubectl label node $MGMT_CLUSTER_NODE_NAME --context $MGMT_CONTEXT \
   topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
-kubectl label node $REMOTE_CLUSTER-control-plane --context kind-$REMOTE_CLUSTER \
+kubectl label node $REMOTE_CLUSTER_NODE_NAME --context $REMOTE_CONTEXT \
   topology.kubernetes.io/region=us-east-2 topology.kubernetes.io/zone=us-east-2b
 ```
 

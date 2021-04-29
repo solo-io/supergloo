@@ -11,6 +11,7 @@ import (
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	mock_authorizationpolicy "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/authorizationpolicy/mocks"
 	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule/mocks"
+	mock_federation "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation/mocks"
 	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice/mocks"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -24,6 +25,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		mockDestinationRuleTranslator     *mock_destinationrule.MockTranslator
 		mockVirtualServiceTranslator      *mock_virtualservice.MockTranslator
 		mockAuthorizationPolicyTranslator *mock_authorizationpolicy.MockTranslator
+		mockFederationTranslator          *mock_federation.MockTranslator
 		mockOutputs                       *mock_output.MockBuilder
 		mockReporter                      *mock_reporting.MockReporter
 		istioDestinationTranslator        Translator
@@ -35,6 +37,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		mockDestinationRuleTranslator = mock_destinationrule.NewMockTranslator(ctrl)
 		mockVirtualServiceTranslator = mock_virtualservice.NewMockTranslator(ctrl)
 		mockAuthorizationPolicyTranslator = mock_authorizationpolicy.NewMockTranslator(ctrl)
+		mockFederationTranslator = mock_federation.NewMockTranslator(ctrl)
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		istioDestinationTranslator = &translator{
@@ -42,6 +45,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			destinationRules:      mockDestinationRuleTranslator,
 			virtualServices:       mockVirtualServiceTranslator,
 			authorizationPolicies: mockAuthorizationPolicyTranslator,
+			federation:            mockFederationTranslator,
 		}
 	})
 
@@ -78,6 +82,9 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		vs := &v1alpha3.VirtualService{}
 		dr := &v1alpha3.DestinationRule{}
 		ap := &v1beta1.AuthorizationPolicy{}
+		federatedSe := []*v1alpha3.ServiceEntry{}
+		federatedVs := []*v1alpha3.VirtualService{}
+		federatedDr := []*v1alpha3.DestinationRule{}
 
 		mockDestinationRuleTranslator.
 			EXPECT().
@@ -91,6 +98,10 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			EXPECT().
 			Translate(in, destination, mockReporter).
 			Return(ap)
+		mockFederationTranslator.
+			EXPECT().
+			Translate(in, destination, mockReporter).
+			Return(federatedSe, federatedVs, federatedDr)
 		mockOutputs.
 			EXPECT().
 			AddVirtualServices(vs)
@@ -100,6 +111,15 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		mockOutputs.
 			EXPECT().
 			AddAuthorizationPolicies(ap)
+		mockOutputs.
+			EXPECT().
+			AddServiceEntries(federatedSe)
+		mockOutputs.
+			EXPECT().
+			AddVirtualServices(federatedVs)
+		mockOutputs.
+			EXPECT().
+			AddDestinationRules(federatedDr)
 
 		istioDestinationTranslator.Translate(in, destination, mockOutputs, mockReporter)
 	})

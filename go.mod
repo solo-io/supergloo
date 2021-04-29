@@ -1,6 +1,6 @@
 module github.com/solo-io/gloo-mesh
 
-go 1.14
+go 1.16
 
 replace (
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
@@ -53,6 +53,8 @@ require (
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/common v0.15.0
 	github.com/pseudomuto/protoc-gen-doc v1.4.1
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.4.0
@@ -64,7 +66,7 @@ require (
 	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.13
+	github.com/solo-io/skv2 v0.17.15
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1

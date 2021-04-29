@@ -118,7 +118,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshTranslator(ctxWithValue, nil, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.Destinations()).
+			MakeMeshTranslator(ctxWithValue, in.Secrets(), in.Workloads()).
 			Return(mockMeshTranslator)
 		for _, mesh := range in.Meshes().List() {
 			mockMeshTranslator.

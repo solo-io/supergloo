@@ -583,7 +583,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -596,7 +596,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -608,7 +608,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -620,7 +620,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -633,7 +633,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -645,7 +645,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -657,7 +657,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -670,7 +670,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -682,7 +682,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -694,7 +694,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -706,7 +706,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -718,7 +718,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -731,7 +731,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -744,7 +744,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -757,7 +757,7 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 
 	if opts.Settings {
 		for _, obj := range s.Settings().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -765,21 +765,21 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 
 	if opts.Destination {
 		for _, obj := range s.Destinations().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.Workload {
 		for _, obj := range s.Workloads().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.Mesh {
 		for _, obj := range s.Meshes().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -787,21 +787,21 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 
 	if opts.TrafficPolicy {
 		for _, obj := range s.TrafficPolicies().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.AccessPolicy {
 		for _, obj := range s.AccessPolicies().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.VirtualMesh {
 		for _, obj := range s.VirtualMeshes().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -809,35 +809,35 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 
 	if opts.WasmDeployment {
 		for _, obj := range s.WasmDeployments().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.VirtualDestination {
 		for _, obj := range s.VirtualDestinations().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.FederatedGateway {
 		for _, obj := range s.FederatedGateways().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.RouteTable {
 		for _, obj := range s.RouteTables().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.DelegatedRouteTable {
 		for _, obj := range s.DelegatedRouteTables().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -845,7 +845,7 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -853,7 +853,7 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}

@@ -136,13 +136,15 @@ spec:
                               description: Available in Kubernetes 1.18+, describes the application protocol.
                               type: string
                             name:
+                              description: Name of the port
                               type: string
                             port:
-                              description: External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
+                              description: Port on which the endpoints can be reached
                               maximum: 4294967295
                               minimum: 0
                               type: integer
                             protocol:
+                              description: Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
                               type: string
                           type: object
                         type: array
@@ -156,11 +158,23 @@ spec:
                 ports:
                   description: The ports exposed by the underlying service.
                   items:
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - targetPortName
+                        - required:
+                          - targetPortNumber
+                    - required:
+                      - targetPortName
+                    - required:
+                      - targetPortNumber
                     properties:
                       appProtocol:
                         description: Available in Kubernetes 1.18+, describes the application protocol.
                         type: string
                       name:
+                        description: Name of the port
                         type: string
                       port:
                         description: External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
@@ -168,7 +182,16 @@ spec:
                         minimum: 0
                         type: integer
                       protocol:
+                        description: Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
                         type: string
+                      targetPortName:
+                        description: Name of the target port
+                        type: string
+                      targetPortNumber:
+                        description: Number of the target port
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
                     type: object
                   type: array
                 ref:
@@ -403,10 +426,20 @@ spec:
                   type: array
                 flatNetwork:
                   description: |-
-                    Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
+                    Whether the Destination has been federated to the given meshes using a VirtualMesh where
                     [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
+                virtualMeshRef:
+                  description: Reference to the VirtualMesh object.
+                  properties:
+                    name:
+                      description: name of the resource being referenced
+                      type: string
+                    namespace:
+                      description: namespace of the resource being referenced
+                      type: string
+                  type: object
               type: object
             appliedTrafficPolicies:
               description: The set of TrafficPolicies that have been applied to this Destination.
@@ -1168,12 +1201,23 @@ spec:
                 ingressGateways:
                   description: Describes the ingress gateway.
                   items:
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - dnsName
+                        - required:
+                          - ip
+                    - required:
+                      - dnsName
+                    - required:
+                      - ip
                     properties:
+                      dnsName:
+                        description: Will be populated if the LoadBalancer Address is a DNS name
+                        type: string
                       externalAddress:
-                        description: |-
-                          The externally-reachable address on which the gateway is listening for TLS connections.
-                          This will be the address used for cross-cluster connectivity.
-                          Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
+                        description: 'DEPRECATED: in favor of dns_name or external_ip'
                         type: string
                       externalTlsPort:
                         description: |-
@@ -1184,6 +1228,9 @@ spec:
                         maximum: 4294967295
                         minimum: 0
                         type: integer
+                      ip:
+                        description: Will be populated if the LoadBalancer Address is an IP
+                        type: string
                       namespace:
                         description: the namespace in which the ingress gateway is running.
                         type: string

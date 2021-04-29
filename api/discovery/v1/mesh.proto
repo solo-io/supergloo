@@ -57,16 +57,25 @@ message MeshSpec {
         // Describes the ingress gateway.
         message IngressGatewayInfo {
             // the namespace in which the ingress gateway is running.
-            string namespace = 5;
+            string namespace = 7;
 
             // Labels matching the workload backing the gateway.
             // [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
             map<string, string> workload_labels = 1;
 
+            // DEPRECATED: in favor of dns_name or external_ip
+            string external_address = 2;
+
             // The externally-reachable address on which the gateway is listening for TLS connections.
             // This will be the address used for cross-cluster connectivity.
             // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
-            string external_address = 2;
+            oneof external_address_type {
+                // Will be populated if the LoadBalancer Address is a DNS name
+                string dns_name = 5;
+
+                // Will be populated if the LoadBalancer Address is an IP
+                string ip = 6;
+            }
 
             // The externally-reachable port on which the gateway is listening for TLS connections.
             // This will be the port used for cross-cluster connectivity.

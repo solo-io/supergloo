@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1461
+    description: Add cluster registration check in `meshctl check`. Shows the number of connected Gloo Mesh Agents at any point in time and compares it to the number of registered clusters (`KubernetesCluster` CRs in the Gloo Mesh namespace). Requires Gloo Mesh Enterprise v1.1.0-beta3 or greater.

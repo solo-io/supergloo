@@ -30,11 +30,7 @@ meshctl cluster register enterprise [cluster name] [flags]
 ### Examples
 
 ```
-  # Register the current context
-  meshctl cluster register enterprise mgmt-cluster
-
-  # Register a different context when the current one is the management cluster
-  meshctl cluster register --remote-context=my-context enterprise remote-cluster
+ meshctl cluster register --remote-context=my-context enterprise remote-cluster
 ```
 
 ### Options
@@ -51,8 +47,8 @@ meshctl cluster register enterprise [cluster name] [flags]
       --relay-server-insecure                  Communicate with the relay server over an insecure connection.
       --root-ca-secret-name string             Secret name for the root CA for communication with relay server.
       --root-ca-secret-namespace string        Secret namespace for the root CA for communication with relay server.
-      --token-secret-key string                Secret namespace for the bootstrap token. (default "token")
-      --token-secret-name string               Secret name for the bootstrap token. This token will be used to boostrap a client certificate from relay server. Not needed if already have a client certificate.
+      --token-secret-key string                Secret data entry key for the bootstrap token. (default "token")
+      --token-secret-name string               Secret name for the bootstrap token. This token will be used to bootstrap a client certificate from relay server. Not needed if you already have a client certificate.
       --token-secret-namespace string          Secret namespace for the bootstrap token.
 ```
 

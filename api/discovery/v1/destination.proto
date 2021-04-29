@@ -63,12 +63,22 @@ message DestinationSpec {
             // External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
             uint32 port = 1;
 
+            // Name of the port
             string name = 2;
-
+            
+            // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
             string protocol = 3;
 
             // Available in Kubernetes 1.18+, describes the application protocol.
             string app_protocol = 4;
+
+            // A Kubernetes Service's spec.targetPort can either be a string referring to the port name, or a number referring to the number. See [this reference](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec).
+            oneof target_port {
+                // Name of the target port
+                string target_port_name = 5;
+                // Number of the target port
+                uint32 target_port_number = 6;
+            }
         }
 
         // Subsets for routing, based on labels.
@@ -82,7 +92,7 @@ message DestinationSpec {
 
             repeated Endpoint endpoints = 1;
 
-            repeated KubeServicePort ports = 2;
+            repeated EndpointPort ports = 2;
 
             // An endpoint exposed by this service.
             message Endpoint {
@@ -106,14 +116,30 @@ message DestinationSpec {
                 SubLocality sub_locality = 3;
             }
         }
+
+        // Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for more information.
+        message EndpointPort {
+            
+            // Port on which the endpoints can be reached
+            uint32 port = 1;
+
+            // Name of the port
+            string name = 2;
+
+            // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
+            string protocol = 3;
+
+            // Available in Kubernetes 1.18+, describes the application protocol.
+            string app_protocol = 4;
+        }
     }
 
     // Describes a service external to the mesh
     message ExternalService {
-        
+
         // The name of the service
         string name = 1;
-        
+
         // The list of hosts which will resolve to this Destination for
         // services within the Virtual Mesh.
         repeated string hosts = 2;
@@ -132,7 +158,7 @@ message DestinationSpec {
         // ExternalEndpoint represents the address/port(s) of the external service
         // which will receive requests sent to this Destination.
         message ExternalEndpoint {
-            
+
             // The address of the external service. Can be a domain or an IP.
             string address = 1;
 
@@ -140,13 +166,13 @@ message DestinationSpec {
             map<string, uint32> ports = 2;
 
         }
-        
+
         // ServicePort describes a port accessible on this Destination
         message ServicePort {
-            
+
             // The port number. Must be a valid, non-negative integer port number.
             uint32 number = 1;
-            
+
             // A label for the port, eg "http"
             string name = 2;
 
@@ -221,9 +247,12 @@ message DestinationStatus {
         // The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
         repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
 
-        // Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
+        // Whether the Destination has been federated to the given meshes using a VirtualMesh where
         // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
         // is true.
         bool flat_network = 3;
+
+        // Reference to the VirtualMesh object.
+        .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
     }
 }
