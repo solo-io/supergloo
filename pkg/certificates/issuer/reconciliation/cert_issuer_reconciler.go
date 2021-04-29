@@ -4,19 +4,18 @@ import (
 	"context"
 	"time"
 
-	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-
 	"github.com/rotisserie/eris"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
-	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation/secret"
 	"github.com/solo-io/go-utils/contextutils"
+	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // function which defines how the cert issuer reconciler should be registered with internal components.
@@ -33,7 +32,7 @@ type certIssuerReconciler struct {
 	ctx               context.Context
 	builder           input.Builder
 	syncInputStatuses SyncStatusFunc
-	masterSecrets     corev1.SecretClient
+	translator        translation.Translator
 }
 
 func Start(
@@ -41,13 +40,25 @@ func Start(
 	registerReconciler RegisterReconcilerFunc,
 	builder input.Builder,
 	syncInputStatuses SyncStatusFunc,
-	masterClient client.Client,
+	translatorExtensionFunc translation.TranslationExtensionFunc,
+	masterManager manager.Manager,
 ) error {
+	translators := []translation.Translator{
+		secret.NewSecretTranslator(corev1.NewSecretClient(masterManager.GetClient())),
+	}
+	if translatorExtensionFunc != nil {
+		extensionTranslators, err := translatorExtensionFunc()
+		if err != nil {
+			return err
+		}
+		translators = append(translators, extensionTranslators...)
+	}
+
 	r := &certIssuerReconciler{
 		ctx:               ctx,
 		builder:           builder,
 		syncInputStatuses: syncInputStatuses,
-		masterSecrets:     corev1.NewSecretClient(masterClient),
+		translator:        translation.NewChainTranslator(translators...),
 	}
 
 	return registerReconciler(ctx, r.reconcile, time.Second/2)
@@ -104,29 +115,16 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 		return eris.Wrapf(err, "failed to find issued certificate matching certificate request")
 	}
 
-	signingCertificateSecret, err := r.masterSecrets.GetSecret(r.ctx, ezkube.MakeClientObjectKey(issuedCertificate.Spec.SigningCertificateSecret))
+	output, err := r.translator.Translate(r.ctx, certificateRequest, issuedCertificate)
 	if err != nil {
-		return eris.Wrapf(err, "failed to find issuer's signing certificate matching issued request %v", sets.Key(issuedCertificate))
-	}
-
-	signingCA := secrets.RootCADataFromSecretData(signingCertificateSecret.Data)
-
-	// generate the issued cert PEM encoded bytes
-	signedCert, err := utils.GenCertForCSR(
-		issuedCertificate.Spec.Hosts,
-		certificateRequest.Spec.CertificateSigningRequest,
-		signingCA.RootCert,
-		signingCA.PrivateKey,
-	)
-	if err != nil {
-		return eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))
+		return eris.Wrapf(err, "failed to translate certificate request + issued certificate")
 	}
 
 	certificateRequest.Status = v1.CertificateRequestStatus{
 		ObservedGeneration: certificateRequest.Generation,
 		State:              v1.CertificateRequestStatus_FINISHED,
-		SignedCertificate:  signedCert,
-		SigningRootCa:      signingCA.RootCert,
+		SignedCertificate:  output.SignedCertificate,
+		SigningRootCa:      output.SigningRootCa,
 	}
 
 	return nil

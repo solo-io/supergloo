@@ -37,6 +37,13 @@ spec:
 
                Trust can therefore be established across clusters without requiring
                private keys to ever leave the node.
+          oneOf:
+          - not:
+              anyOf:
+              - required:
+                - signingCertificateSecret
+          - required:
+            - signingCertificateSecret
           properties:
             hosts:
               description: |-

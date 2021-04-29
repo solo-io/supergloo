@@ -40,8 +40,12 @@ message IssuedCertificateSpec {
     // The organization for this certificate.
     string org = 2;
 
-    // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
-    .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
+    oneof signer {
+
+        // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
+        .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
+
+    }
 
     // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;

@@ -10,6 +10,7 @@ import (
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
+	certissuertranslation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
@@ -95,6 +96,9 @@ type CertIssuerReconcilerExtensionOpts struct {
 
 	// Hook to override how the Cert Issuer Reconciler is registered (defaults to the multi cluster manager)
 	RegisterCertIssuerReconciler certissuerreconciliation.RegisterReconcilerFunc
+
+	// Hook to add additional translators to the cert issuer reconciler
+	RegisterCertIssuerTranslators certissuertranslation.TranslationExtensionFunc
 
 	// Hook to override the Cert Issuer Snapshot Builder used by Cert Issuer Reconciler
 	MakeCertIssuerSnapshotBuilder func(params bootstrap.StartParameters) certissuerinput.Builder

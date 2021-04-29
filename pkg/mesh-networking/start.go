@@ -7,6 +7,7 @@ import (
 
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
+	certissuertranslation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -127,6 +128,7 @@ func startCertIssuer(
 	registerReconciler certissuerreconciliation.RegisterReconcilerFunc,
 	builder certissuerinput.Builder,
 	syncInputStatuses certissuerreconciliation.SyncStatusFunc,
+	translatorExtensions certissuertranslation.TranslationExtensionFunc,
 	masterManager manager.Manager,
 ) error {
 	return certissuerreconciliation.Start(
@@ -134,6 +136,7 @@ func startCertIssuer(
 		registerReconciler,
 		builder,
 		syncInputStatuses,
-		masterManager.GetClient(),
+		translatorExtensions,
+		masterManager,
 	)
 }

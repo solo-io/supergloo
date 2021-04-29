@@ -61,16 +61,6 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetSigningCertificateSecret()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSigningCertificateSecret()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSigningCertificateSecret(), target.GetSigningCertificateSecret()) {
-			return false
-		}
-	}
-
 	if h, ok := interface{}(m.GetIssuedCertificateSecret()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetIssuedCertificateSecret()) {
 			return false
@@ -87,6 +77,30 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	} else {
 		if !proto.Equal(m.GetPodBounceDirective(), target.GetPodBounceDirective()) {
+			return false
+		}
+	}
+
+	switch m.Signer.(type) {
+
+	case *IssuedCertificateSpec_SigningCertificateSecret:
+		if _, ok := target.Signer.(*IssuedCertificateSpec_SigningCertificateSecret); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetSigningCertificateSecret()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSigningCertificateSecret()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetSigningCertificateSecret(), target.GetSigningCertificateSecret()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Signer != target.Signer {
 			return false
 		}
 	}
