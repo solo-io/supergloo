@@ -307,11 +307,13 @@ func (t *translator) constructIssuedCertificate(
 	return &certificatesv1.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
-			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
-			Org:                      defaultIstioOrg,
-			SigningCertificateSecret: rootCaSecret,
-			IssuedCertificateSecret:  istioCaCerts,
-			PodBounceDirective:       podBounceRef,
+			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
+			Org:   defaultIstioOrg,
+			Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
+				SigningCertificateSecret: rootCaSecret,
+			},
+			IssuedCertificateSecret: istioCaCerts,
+			PodBounceDirective:      podBounceRef,
 		},
 	}, podBounceDirective
 }

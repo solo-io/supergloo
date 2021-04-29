@@ -77,6 +77,7 @@ func (s networkingStarter) startReconciler(ctx context.Context, parameters boots
 		extensionOpts.CertIssuerReconciler.RegisterCertIssuerReconciler,
 		extensionOpts.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
 		extensionOpts.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
+		extensionOpts.CertIssuerReconciler.RegisterCertIssuerTranslators,
 		parameters.MasterManager,
 	); err != nil {
 		return err
