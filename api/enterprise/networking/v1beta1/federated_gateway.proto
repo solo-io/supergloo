@@ -320,7 +320,9 @@ message FederatedGatewayStatus{
 
     repeated selectedRouteTable selected_route_tables = 5;
 
-    repeated selectedDelegatedRouteTable selected_delegated_route_tables = 6;
+
+    // List of Delegated Route tables that this Route table delegates to
+    repeated .core.skv2.solo.io.ObjectRef selected_delegated_route_tables = 6;
 
     // Relationships between objects
     // on Gw -> RTs selected
@@ -351,12 +353,6 @@ message selectedRouteTable {
     string cluster = 3;
 
     // Maybe add path here?
-}
-
-message selectedDelegatedRouteTable {
-    string name = 1;
-    string namespace = 2;
-    string cluster = 3;
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.

@@ -40,7 +40,6 @@ title: "federated_gateway.proto"
   - [SDSConfig](#networking.enterprise.mesh.gloo.solo.io.SDSConfig)
   - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
   - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
-  - [selectedDelegatedRouteTable](#networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable)
   - [selectedGateway](#networking.enterprise.mesh.gloo.solo.io.selectedGateway)
   - [selectedRouteTable](#networking.enterprise.mesh.gloo.solo.io.selectedRouteTable)
 
@@ -362,7 +361,7 @@ TODO: Fill in more options<br>route-level options (inherited by route)
   | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
   | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.selectedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedGateway" >}}) | repeated |  |
   | selectedRouteTables | [][networking.enterprise.mesh.gloo.solo.io.selectedRouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedRouteTable" >}}) | repeated |  |
-  | selectedDelegatedRouteTables | [][networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable" >}}) | repeated |  |
+  | selectedDelegatedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
   
 
 
@@ -413,23 +412,6 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 | ----- | ---- | ----- | ----------- |
 | tokenFileName | string |  | File containing auth token. |
   | header | string |  | Header to carry the token. |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable"></a>
-
-### selectedDelegatedRouteTable
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  |  |
-  | namespace | string |  |  |
-  | cluster | string |  |  |
   
 
 

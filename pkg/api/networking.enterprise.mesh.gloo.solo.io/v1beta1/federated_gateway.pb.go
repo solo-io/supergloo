@@ -15,9 +15,9 @@ import (
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
-	v11 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	v12 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
-	v12 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	v11 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
@@ -206,10 +206,11 @@ type FederatedGatewayStatus struct {
 	// Any errors found while processing this generation of the resource.
 	Errors []string `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
 	// Any warnings found while processing this generation of the resource.
-	Warnings                     []string                       `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
-	SelectedGateways             []*SelectedGateway             `protobuf:"bytes,4,rep,name=selected_gateways,json=selectedGateways,proto3" json:"selected_gateways,omitempty"`
-	SelectedRouteTables          []*SelectedRouteTable          `protobuf:"bytes,5,rep,name=selected_route_tables,json=selectedRouteTables,proto3" json:"selected_route_tables,omitempty"`
-	SelectedDelegatedRouteTables []*SelectedDelegatedRouteTable `protobuf:"bytes,6,rep,name=selected_delegated_route_tables,json=selectedDelegatedRouteTables,proto3" json:"selected_delegated_route_tables,omitempty"`
+	Warnings            []string              `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	SelectedGateways    []*SelectedGateway    `protobuf:"bytes,4,rep,name=selected_gateways,json=selectedGateways,proto3" json:"selected_gateways,omitempty"`
+	SelectedRouteTables []*SelectedRouteTable `protobuf:"bytes,5,rep,name=selected_route_tables,json=selectedRouteTables,proto3" json:"selected_route_tables,omitempty"`
+	// List of Delegated Route tables that this Route table delegates to
+	SelectedDelegatedRouteTables []*v11.ObjectRef `protobuf:"bytes,6,rep,name=selected_delegated_route_tables,json=selectedDelegatedRouteTables,proto3" json:"selected_delegated_route_tables,omitempty"`
 }
 
 func (x *FederatedGatewayStatus) Reset() {
@@ -279,7 +280,7 @@ func (x *FederatedGatewayStatus) GetSelectedRouteTables() []*SelectedRouteTable 
 	return nil
 }
 
-func (x *FederatedGatewayStatus) GetSelectedDelegatedRouteTables() []*SelectedDelegatedRouteTable {
+func (x *FederatedGatewayStatus) GetSelectedDelegatedRouteTables() []*v11.ObjectRef {
 	if x != nil {
 		return x.SelectedDelegatedRouteTables
 	}
@@ -420,69 +421,6 @@ func (x *SelectedRouteTable) GetCluster() string {
 	return ""
 }
 
-type SelectedDelegatedRouteTable struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name      string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Cluster   string `protobuf:"bytes,3,opt,name=cluster,proto3" json:"cluster,omitempty"`
-}
-
-func (x *SelectedDelegatedRouteTable) Reset() {
-	*x = SelectedDelegatedRouteTable{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SelectedDelegatedRouteTable) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SelectedDelegatedRouteTable) ProtoMessage() {}
-
-func (x *SelectedDelegatedRouteTable) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SelectedDelegatedRouteTable.ProtoReflect.Descriptor instead.
-func (*SelectedDelegatedRouteTable) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *SelectedDelegatedRouteTable) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *SelectedDelegatedRouteTable) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *SelectedDelegatedRouteTable) GetCluster() string {
-	if x != nil {
-		return x.Cluster
-	}
-	return ""
-}
-
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 type SDSConfig struct {
 	state         protoimpl.MessageState
@@ -504,7 +442,7 @@ type SDSConfig struct {
 func (x *SDSConfig) Reset() {
 	*x = SDSConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -517,7 +455,7 @@ func (x *SDSConfig) String() string {
 func (*SDSConfig) ProtoMessage() {}
 
 func (x *SDSConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -530,7 +468,7 @@ func (x *SDSConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SDSConfig.ProtoReflect.Descriptor instead.
 func (*SDSConfig) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{5}
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *SDSConfig) GetTargetUri() string {
@@ -619,7 +557,7 @@ type FederatedGatewaySpec_ConnectionHandler struct {
 func (x *FederatedGatewaySpec_ConnectionHandler) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -632,7 +570,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler) String() string {
 func (*FederatedGatewaySpec_ConnectionHandler) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -712,7 +650,7 @@ type FederatedGatewaySpec_GatewayOptions struct {
 	// TODO: Discuss with team
 	// Traffic policy can be declared in-line here, or this
 	// gateway can be selected from a TrafficPolicy CRD.
-	TrafficPolicy *v11.TrafficPolicySpec_Policy `protobuf:"bytes,1,opt,name=traffic_policy,json=trafficPolicy,proto3" json:"traffic_policy,omitempty"`
+	TrafficPolicy *v12.TrafficPolicySpec_Policy `protobuf:"bytes,1,opt,name=traffic_policy,json=trafficPolicy,proto3" json:"traffic_policy,omitempty"`
 	// Soft limit on size of the listener's new connection read and write buffers. If unspecified, defaults to 1MiB
 	// For more info, check out the [Envoy docs](https://www.envoyproxy.io/docs/envoy/v1.17.1/api-v3/config/listener/v3/listener.proto)
 	PerConnectionBufferLimitBytes *wrappers.UInt32Value `protobuf:"bytes,2,opt,name=per_connection_buffer_limit_bytes,json=perConnectionBufferLimitBytes,proto3" json:"per_connection_buffer_limit_bytes,omitempty"`
@@ -721,7 +659,7 @@ type FederatedGatewaySpec_GatewayOptions struct {
 func (x *FederatedGatewaySpec_GatewayOptions) Reset() {
 	*x = FederatedGatewaySpec_GatewayOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[7]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -734,7 +672,7 @@ func (x *FederatedGatewaySpec_GatewayOptions) String() string {
 func (*FederatedGatewaySpec_GatewayOptions) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_GatewayOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[7]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -750,7 +688,7 @@ func (*FederatedGatewaySpec_GatewayOptions) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *FederatedGatewaySpec_GatewayOptions) GetTrafficPolicy() *v11.TrafficPolicySpec_Policy {
+func (x *FederatedGatewaySpec_GatewayOptions) GetTrafficPolicy() *v12.TrafficPolicySpec_Policy {
 	if x != nil {
 		return x.TrafficPolicy
 	}
@@ -785,7 +723,7 @@ type FederatedGatewaySpec_ConnectionHandler_ConnectionMatch struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionMatch) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_ConnectionMatch{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[8]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -798,7 +736,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionMatch) String() string
 func (*FederatedGatewaySpec_ConnectionHandler_ConnectionMatch) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionMatch) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[8]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -843,7 +781,7 @@ type FederatedGatewaySpec_ConnectionHandler_ConnectionOptions struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionOptions) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_ConnectionOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[9]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -856,7 +794,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionOptions) String() stri
 func (*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[9]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -899,7 +837,7 @@ type FederatedGatewaySpec_ConnectionHandler_HttpRoutes struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_HttpRoutes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[10]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -912,7 +850,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes) String() string {
 func (*FederatedGatewaySpec_ConnectionHandler_HttpRoutes) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[10]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -956,7 +894,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[11]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -969,7 +907,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes) String() string {
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[11]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1015,7 +953,7 @@ type FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOpti
 func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOptions) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1029,7 +967,7 @@ func (*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOp
 }
 
 func (x *FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1073,7 +1011,7 @@ type FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1086,7 +1024,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier) Strin
 func (*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1152,7 +1090,7 @@ type FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[14]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1165,7 +1103,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) String()
 func (*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[14]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1196,7 +1134,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[15]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1209,7 +1147,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost) String() stri
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[15]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1257,7 +1195,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1270,7 +1208,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions) String() s
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1318,7 +1256,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1331,7 +1269,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) Str
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1354,7 +1292,7 @@ func (m *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) Get
 	return nil
 }
 
-func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) GetSecretRef() *v12.ObjectRef {
+func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig) GetSecretRef() *v11.ObjectRef {
 	if x, ok := x.GetSslSecrets().(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SecretRef); ok {
 		return x.SecretRef
 	}
@@ -1410,7 +1348,7 @@ type isFederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslSec
 type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SecretRef struct {
 	// SecretRef contains the secret ref to a gloo tls secret or a kubernetes tls secret.
 	// gloo tls secret can contain a root ca as well if verification is needed.
-	SecretRef *v12.ObjectRef `protobuf:"bytes,1,opt,name=secret_ref,json=secretRef,proto3,oneof"`
+	SecretRef *v11.ObjectRef `protobuf:"bytes,1,opt,name=secret_ref,json=secretRef,proto3,oneof"`
 }
 
 type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslFiles struct {
@@ -1453,7 +1391,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction struct {
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1466,7 +1404,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) Str
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1489,21 +1427,21 @@ func (m *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) Get
 	return nil
 }
 
-func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) GetStatic() *v12.ObjectRef {
+func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) GetStatic() *v11.ObjectRef {
 	if x, ok := x.GetDestination().(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Static); ok {
 		return x.Static
 	}
 	return nil
 }
 
-func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) GetVirtual() *v12.ObjectRef {
+func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) GetVirtual() *v11.ObjectRef {
 	if x, ok := x.GetDestination().(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Virtual); ok {
 		return x.Virtual
 	}
 	return nil
 }
 
-func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) GetKube() *v12.ClusterObjectRef {
+func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction) GetKube() *v11.ClusterObjectRef {
 	if x, ok := x.GetDestination().(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Kube); ok {
 		return x.Kube
 	}
@@ -1530,18 +1468,18 @@ type isFederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Destin
 
 type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Static struct {
 	// Reference to a gloo mesh Static Destination
-	Static *v12.ObjectRef `protobuf:"bytes,1,opt,name=static,proto3,oneof"`
+	Static *v11.ObjectRef `protobuf:"bytes,1,opt,name=static,proto3,oneof"`
 }
 
 type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Virtual struct {
 	// Reference to a gloo mesh VirtualDestination
-	Virtual *v12.ObjectRef `protobuf:"bytes,2,opt,name=virtual,proto3,oneof"`
+	Virtual *v11.ObjectRef `protobuf:"bytes,2,opt,name=virtual,proto3,oneof"`
 }
 
 type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Kube struct {
 	// Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
 	// each gateway workload which routes to this destination.
-	Kube *v12.ClusterObjectRef `protobuf:"bytes,3,opt,name=kube,proto3,oneof"`
+	Kube *v11.ClusterObjectRef `protobuf:"bytes,3,opt,name=kube,proto3,oneof"`
 }
 
 type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_ForwardSniClusterName struct {
@@ -1577,7 +1515,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[19]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1590,7 +1528,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLF
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[19]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1643,7 +1581,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParam
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[20]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1657,7 +1595,7 @@ func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslPar
 }
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[20]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1719,7 +1657,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySetting
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[21]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1732,7 +1670,7 @@ func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySet
 func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings) ProtoMessage() {}
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[21]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1782,7 +1720,7 @@ type FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySetting
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig) Reset() {
 	*x = FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[22]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1796,7 +1734,7 @@ func (*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySetti
 }
 
 func (x *FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[22]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1831,7 +1769,7 @@ type SDSConfig_CallCredentials struct {
 func (x *SDSConfig_CallCredentials) Reset() {
 	*x = SDSConfig_CallCredentials{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[23]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1844,7 +1782,7 @@ func (x *SDSConfig_CallCredentials) String() string {
 func (*SDSConfig_CallCredentials) ProtoMessage() {}
 
 func (x *SDSConfig_CallCredentials) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[23]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1857,7 +1795,7 @@ func (x *SDSConfig_CallCredentials) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SDSConfig_CallCredentials.ProtoReflect.Descriptor instead.
 func (*SDSConfig_CallCredentials) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{5, 0}
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{4, 0}
 }
 
 func (x *SDSConfig_CallCredentials) GetFileCredentialSource() *SDSConfig_CallCredentials_FileCredentialSource {
@@ -1881,7 +1819,7 @@ type SDSConfig_CallCredentials_FileCredentialSource struct {
 func (x *SDSConfig_CallCredentials_FileCredentialSource) Reset() {
 	*x = SDSConfig_CallCredentials_FileCredentialSource{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[24]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1894,7 +1832,7 @@ func (x *SDSConfig_CallCredentials_FileCredentialSource) String() string {
 func (*SDSConfig_CallCredentials_FileCredentialSource) ProtoMessage() {}
 
 func (x *SDSConfig_CallCredentials_FileCredentialSource) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[24]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1907,7 +1845,7 @@ func (x *SDSConfig_CallCredentials_FileCredentialSource) ProtoReflect() protoref
 
 // Deprecated: Use SDSConfig_CallCredentials_FileCredentialSource.ProtoReflect.Descriptor instead.
 func (*SDSConfig_CallCredentials_FileCredentialSource) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{5, 0, 0}
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{4, 0, 0}
 }
 
 func (x *SDSConfig_CallCredentials_FileCredentialSource) GetTokenFileName() string {
@@ -2265,7 +2203,7 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federate
 	0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
 	0x75, 0x66, 0x2e, 0x55, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x1d,
 	0x70, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x75, 0x66,
-	0x66, 0x65, 0x72, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x42, 0x79, 0x74, 0x65, 0x73, 0x22, 0xe3, 0x03,
+	0x66, 0x65, 0x72, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x42, 0x79, 0x74, 0x65, 0x73, 0x22, 0xba, 0x03,
 	0x0a, 0x16, 0x46, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x65, 0x64, 0x47, 0x61, 0x74, 0x65, 0x77,
 	0x61, 0x79, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x2f, 0x0a, 0x13, 0x6f, 0x62, 0x73, 0x65,
 	0x72, 0x76, 0x65, 0x64, 0x5f, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18,
@@ -2287,79 +2225,70 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federate
 	0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x73, 0x65,
 	0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x54, 0x61, 0x62, 0x6c, 0x65,
 	0x52, 0x13, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x54,
-	0x61, 0x62, 0x6c, 0x65, 0x73, 0x12, 0x8b, 0x01, 0x0a, 0x1f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74,
-	0x65, 0x64, 0x5f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x72, 0x6f, 0x75,
-	0x74, 0x65, 0x5f, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x44, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74,
-	0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f,
-	0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74,
-	0x65, 0x64, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x52, 0x6f, 0x75, 0x74, 0x65,
-	0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x1c, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x44,
-	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x54, 0x61, 0x62,
-	0x6c, 0x65, 0x73, 0x22, 0x80, 0x01, 0x0a, 0x0f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64,
-	0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
-	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6c, 0x75,
-	0x73, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6c, 0x75, 0x73,
-	0x74, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x5f,
-	0x75, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x65, 0x78, 0x74, 0x65, 0x72,
-	0x6e, 0x61, 0x6c, 0x55, 0x72, 0x6c, 0x22, 0x60, 0x0a, 0x12, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74,
-	0x65, 0x64, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04,
-	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x18,
-	0x0a, 0x07, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x07, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x22, 0x69, 0x0a, 0x1b, 0x73, 0x65, 0x6c, 0x65,
-	0x63, 0x74, 0x65, 0x64, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x52, 0x6f, 0x75,
-	0x74, 0x65, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
-	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6c, 0x75,
-	0x73, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6c, 0x75, 0x73,
-	0x74, 0x65, 0x72, 0x22, 0xbd, 0x04, 0x0a, 0x09, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x12, 0x1d, 0x0a, 0x0a, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x75, 0x72, 0x69, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x55, 0x72, 0x69,
-	0x12, 0x6f, 0x0a, 0x10, 0x63, 0x61, 0x6c, 0x6c, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74,
-	0x69, 0x61, 0x6c, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x42, 0x2e, 0x6e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69,
-	0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c,
-	0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43,
-	0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x48, 0x00,
-	0x52, 0x0f, 0x63, 0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c,
-	0x73, 0x12, 0x23, 0x0a, 0x0c, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d,
-	0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0b, 0x63, 0x6c, 0x75, 0x73, 0x74,
-	0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x38, 0x0a, 0x18, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66,
-	0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6e, 0x61,
-	0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x16, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66,
-	0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65,
-	0x12, 0x36, 0x0a, 0x17, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63,
-	0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x15, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e,
-	0x74, 0x65, 0x78, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x1a, 0xf9, 0x01, 0x0a, 0x0f, 0x43, 0x61, 0x6c,
-	0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x8d, 0x01, 0x0a,
-	0x16, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c,
-	0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x57, 0x2e,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72,
-	0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
-	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x2e, 0x43, 0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c,
-	0x73, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c,
-	0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x52, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64,
-	0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x1a, 0x56, 0x0a, 0x14,
-	0x46, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x12, 0x26, 0x0a, 0x0f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f, 0x66, 0x69,
-	0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x74,
-	0x6f, 0x6b, 0x65, 0x6e, 0x46, 0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06,
-	0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x68, 0x65,
-	0x61, 0x64, 0x65, 0x72, 0x42, 0x0d, 0x0a, 0x0b, 0x73, 0x64, 0x73, 0x5f, 0x62, 0x75, 0x69, 0x6c,
-	0x64, 0x65, 0x72, 0x42, 0x5a, 0x5a, 0x54, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d,
-	0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77,
+	0x61, 0x62, 0x6c, 0x65, 0x73, 0x12, 0x63, 0x0a, 0x1f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65,
+	0x64, 0x5f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x72, 0x6f, 0x75, 0x74,
+	0x65, 0x5f, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c,
+	0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
+	0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x1c, 0x73, 0x65,
+	0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x52,
+	0x6f, 0x75, 0x74, 0x65, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x73, 0x22, 0x80, 0x01, 0x0a, 0x0f, 0x73,
+	0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x12, 0x18, 0x0a, 0x07, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x65, 0x78,
+	0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0b, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x55, 0x72, 0x6c, 0x22, 0x60, 0x0a,
+	0x12, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x54, 0x61,
+	0x62, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
+	0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x22,
+	0xbd, 0x04, 0x0a, 0x09, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x1d, 0x0a,
+	0x0a, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x75, 0x72, 0x69, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x09, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x55, 0x72, 0x69, 0x12, 0x6f, 0x0a, 0x10,
+	0x63, 0x61, 0x6c, 0x6c, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x42, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d,
+	0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
+	0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x61, 0x6c, 0x6c, 0x43,
+	0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x48, 0x00, 0x52, 0x0f, 0x63, 0x61,
+	0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x23, 0x0a,
+	0x0c, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0b, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x61,
+	0x6d, 0x65, 0x12, 0x38, 0x0a, 0x18, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
+	0x65, 0x73, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x16, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
+	0x65, 0x73, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x36, 0x0a, 0x17,
+	0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65,
+	0x78, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x15, 0x76,
+	0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74,
+	0x4e, 0x61, 0x6d, 0x65, 0x1a, 0xf9, 0x01, 0x0a, 0x0f, 0x43, 0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65,
+	0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x8d, 0x01, 0x0a, 0x16, 0x66, 0x69, 0x6c,
+	0x65, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x5f, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x57, 0x2e, 0x6e, 0x65, 0x74, 0x77,
 	0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73,
 	0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f,
-	0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x61,
+	0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x2e, 0x46, 0x69,
+	0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x52, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69,
+	0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x1a, 0x56, 0x0a, 0x14, 0x46, 0x69, 0x6c, 0x65,
+	0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x12, 0x26, 0x0a, 0x0f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x74, 0x6f, 0x6b, 0x65, 0x6e,
+	0x46, 0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64,
+	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x42, 0x0d, 0x0a, 0x0b, 0x73, 0x64, 0x73, 0x5f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x65, 0x72, 0x42,
+	0x5a, 0x5a, 0x54, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f,
+	0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f,
+	0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69,
+	0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65,
+	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2375,85 +2304,84 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 }
 
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_goTypes = []interface{}{
 	(FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters_ProtocolVersion)(0), // 0: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
 	(*FederatedGatewaySpec)(nil),                                                                         // 1: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec
 	(*FederatedGatewayStatus)(nil),                                                                       // 2: networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus
 	(*SelectedGateway)(nil),                                                                              // 3: networking.enterprise.mesh.gloo.solo.io.selectedGateway
 	(*SelectedRouteTable)(nil),                                                                           // 4: networking.enterprise.mesh.gloo.solo.io.selectedRouteTable
-	(*SelectedDelegatedRouteTable)(nil),                                                                  // 5: networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable
-	(*SDSConfig)(nil),                                                                                    // 6: networking.enterprise.mesh.gloo.solo.io.SDSConfig
-	(*FederatedGatewaySpec_ConnectionHandler)(nil),                                                       // 7: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler
-	(*FederatedGatewaySpec_GatewayOptions)(nil),                                                          // 8: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions
-	(*FederatedGatewaySpec_ConnectionHandler_ConnectionMatch)(nil),                                       // 9: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch
-	(*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions)(nil),                                     // 10: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions
-	(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes)(nil),                                            // 11: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes)(nil),                                             // 12: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes
-	(*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOptions)(nil),               // 13: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
-	(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier)(nil),                             // 14: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
-	(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions)(nil),                                // 15: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost)(nil),                                     // 16: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions)(nil),                                  // 17: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig)(nil),                           // 18: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction)(nil),                           // 19: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles)(nil),                  // 20: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters)(nil),             // 21: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings)(nil),                 // 22: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
-	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig)(nil), // 23: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
-	(*SDSConfig_CallCredentials)(nil),                                                                    // 24: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
-	(*SDSConfig_CallCredentials_FileCredentialSource)(nil),                                               // 25: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
-	(*v1.WorkloadSelector)(nil),                                                                          // 26: common.mesh.gloo.solo.io.WorkloadSelector
-	(*v11.TrafficPolicySpec_Policy)(nil),                                                                 // 27: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
+	(*SDSConfig)(nil),                                                                                    // 5: networking.enterprise.mesh.gloo.solo.io.SDSConfig
+	(*FederatedGatewaySpec_ConnectionHandler)(nil),                                                       // 6: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler
+	(*FederatedGatewaySpec_GatewayOptions)(nil),                                                          // 7: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions
+	(*FederatedGatewaySpec_ConnectionHandler_ConnectionMatch)(nil),                                       // 8: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch
+	(*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions)(nil),                                     // 9: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions
+	(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes)(nil),                                            // 10: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes)(nil),                                             // 11: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes
+	(*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOptions)(nil),               // 12: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
+	(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier)(nil),                             // 13: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
+	(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions)(nil),                                // 14: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost)(nil),                                     // 15: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions)(nil),                                  // 16: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig)(nil),                           // 17: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction)(nil),                           // 18: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles)(nil),                  // 19: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters)(nil),             // 20: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings)(nil),                 // 21: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
+	(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig)(nil), // 22: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
+	(*SDSConfig_CallCredentials)(nil),                                                                    // 23: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
+	(*SDSConfig_CallCredentials_FileCredentialSource)(nil),                                               // 24: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
+	(*v1.WorkloadSelector)(nil),                                                                          // 25: common.mesh.gloo.solo.io.WorkloadSelector
+	(*v11.ObjectRef)(nil),                                                                                // 26: core.skv2.solo.io.ObjectRef
+	(*v12.TrafficPolicySpec_Policy)(nil),                                                                 // 27: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
 	(*wrappers.UInt32Value)(nil),                                                                         // 28: google.protobuf.UInt32Value
 	(*wrappers.BoolValue)(nil),                                                                           // 29: google.protobuf.BoolValue
 	(*v1.RouteTableSelector)(nil),                                                                        // 30: common.mesh.gloo.solo.io.RouteTableSelector
 	(*RouteTableSpec)(nil),                                                                               // 31: networking.enterprise.mesh.gloo.solo.io.RouteTableSpec
-	(*v12.ObjectRef)(nil),                                                                                // 32: core.skv2.solo.io.ObjectRef
-	(*v12.ClusterObjectRef)(nil),                                                                         // 33: core.skv2.solo.io.ClusterObjectRef
-	(*empty.Empty)(nil),                                                                                  // 34: google.protobuf.Empty
-	(*duration.Duration)(nil),                                                                            // 35: google.protobuf.Duration
+	(*v11.ClusterObjectRef)(nil),                                                                         // 32: core.skv2.solo.io.ClusterObjectRef
+	(*empty.Empty)(nil),                                                                                  // 33: google.protobuf.Empty
+	(*duration.Duration)(nil),                                                                            // 34: google.protobuf.Duration
 }
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_depIdxs = []int32{
-	7,  // 0: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.connection_handlers:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler
-	26, // 1: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.gateway_workloads:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
-	8,  // 2: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.gateway_options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions
+	6,  // 0: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.connection_handlers:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler
+	25, // 1: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.gateway_workloads:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
+	7,  // 2: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.gateway_options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions
 	3,  // 3: networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus.selected_gateways:type_name -> networking.enterprise.mesh.gloo.solo.io.selectedGateway
 	4,  // 4: networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus.selected_route_tables:type_name -> networking.enterprise.mesh.gloo.solo.io.selectedRouteTable
-	5,  // 5: networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus.selected_delegated_route_tables:type_name -> networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable
-	24, // 6: networking.enterprise.mesh.gloo.solo.io.SDSConfig.call_credentials:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
-	9,  // 7: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.connection_match:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch
-	11, // 8: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.http:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes
-	12, // 9: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.tcp:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes
-	10, // 10: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.connection_options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions
+	26, // 5: networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus.selected_delegated_route_tables:type_name -> core.skv2.solo.io.ObjectRef
+	23, // 6: networking.enterprise.mesh.gloo.solo.io.SDSConfig.call_credentials:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
+	8,  // 7: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.connection_match:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch
+	10, // 8: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.http:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes
+	11, // 9: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.tcp:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes
+	9,  // 10: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.connection_options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions
 	27, // 11: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions.traffic_policy:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
 	28, // 12: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions.per_connection_buffer_limit_bytes:type_name -> google.protobuf.UInt32Value
-	13, // 13: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.tls_context:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
-	14, // 14: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.route_config:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
-	15, // 15: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.route_options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
-	16, // 16: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.tcp_hosts:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
-	17, // 17: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
+	12, // 13: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.tls_context:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
+	13, // 14: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.route_config:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
+	14, // 15: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.route_options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
+	15, // 16: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.tcp_hosts:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
+	16, // 17: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.options:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
 	29, // 18: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions.presented:type_name -> google.protobuf.BoolValue
 	29, // 19: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions.validated:type_name -> google.protobuf.BoolValue
 	30, // 20: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier.route_selector:type_name -> common.mesh.gloo.solo.io.RouteTableSelector
 	31, // 21: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier.route_table:type_name -> networking.enterprise.mesh.gloo.solo.io.RouteTableSpec
-	18, // 22: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.ssl_config:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
-	19, // 23: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.destination:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
-	22, // 24: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.tcp_proxy_settings:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
-	32, // 25: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
-	20, // 26: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.ssl_files:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
-	6,  // 27: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.sds:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig
-	21, // 28: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.parameters:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
-	32, // 29: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.static:type_name -> core.skv2.solo.io.ObjectRef
-	32, // 30: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.virtual:type_name -> core.skv2.solo.io.ObjectRef
-	33, // 31: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.kube:type_name -> core.skv2.solo.io.ClusterObjectRef
-	34, // 32: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.forward_sni_cluster_name:type_name -> google.protobuf.Empty
+	17, // 22: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.ssl_config:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
+	18, // 23: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.destination:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
+	21, // 24: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.tcp_proxy_settings:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
+	26, // 25: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	19, // 26: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.ssl_files:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
+	5,  // 27: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.sds:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig
+	20, // 28: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.parameters:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
+	26, // 29: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.static:type_name -> core.skv2.solo.io.ObjectRef
+	26, // 30: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.virtual:type_name -> core.skv2.solo.io.ObjectRef
+	32, // 31: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.kube:type_name -> core.skv2.solo.io.ClusterObjectRef
+	33, // 32: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.forward_sni_cluster_name:type_name -> google.protobuf.Empty
 	0,  // 33: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.minimum_protocol_version:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
 	0,  // 34: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.maximum_protocol_version:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
 	28, // 35: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.max_connect_attempts:type_name -> google.protobuf.UInt32Value
-	35, // 36: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.idle_timeout:type_name -> google.protobuf.Duration
-	23, // 37: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.tunneling_config:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
-	25, // 38: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.file_credential_source:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
+	34, // 36: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.idle_timeout:type_name -> google.protobuf.Duration
+	22, // 37: networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.tunneling_config:type_name -> networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
+	24, // 38: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.file_credential_source:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
 	39, // [39:39] is the sub-list for method output_type
 	39, // [39:39] is the sub-list for method input_type
 	39, // [39:39] is the sub-list for extension type_name
@@ -2519,18 +2447,6 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SelectedDelegatedRouteTable); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SDSConfig); i {
 			case 0:
 				return &v.state
@@ -2542,7 +2458,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler); i {
 			case 0:
 				return &v.state
@@ -2554,7 +2470,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_GatewayOptions); i {
 			case 0:
 				return &v.state
@@ -2566,7 +2482,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_ConnectionMatch); i {
 			case 0:
 				return &v.state
@@ -2578,7 +2494,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions); i {
 			case 0:
 				return &v.state
@@ -2590,7 +2506,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes); i {
 			case 0:
 				return &v.state
@@ -2602,7 +2518,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes); i {
 			case 0:
 				return &v.state
@@ -2614,7 +2530,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_ConnectionOptions_TlsTerminationOptions); i {
 			case 0:
 				return &v.state
@@ -2626,7 +2542,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier); i {
 			case 0:
 				return &v.state
@@ -2638,7 +2554,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions); i {
 			case 0:
 				return &v.state
@@ -2650,7 +2566,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost); i {
 			case 0:
 				return &v.state
@@ -2662,7 +2578,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions); i {
 			case 0:
 				return &v.state
@@ -2674,7 +2590,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig); i {
 			case 0:
 				return &v.state
@@ -2686,7 +2602,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction); i {
 			case 0:
 				return &v.state
@@ -2698,7 +2614,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SSLFiles); i {
 			case 0:
 				return &v.state
@@ -2710,7 +2626,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters); i {
 			case 0:
 				return &v.state
@@ -2722,7 +2638,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings); i {
 			case 0:
 				return &v.state
@@ -2734,7 +2650,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig); i {
 			case 0:
 				return &v.state
@@ -2746,7 +2662,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SDSConfig_CallCredentials); i {
 			case 0:
 				return &v.state
@@ -2758,7 +2674,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SDSConfig_CallCredentials_FileCredentialSource); i {
 			case 0:
 				return &v.state
@@ -2771,24 +2687,24 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 			}
 		}
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[4].OneofWrappers = []interface{}{
 		(*SDSConfig_CallCredentials_)(nil),
 		(*SDSConfig_ClusterName)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[6].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[5].OneofWrappers = []interface{}{
 		(*FederatedGatewaySpec_ConnectionHandler_Http)(nil),
 		(*FederatedGatewaySpec_ConnectionHandler_Tcp)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[13].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[12].OneofWrappers = []interface{}{
 		(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier_RouteSelector)(nil),
 		(*FederatedGatewaySpec_ConnectionHandler_HttpRoutes_RouteSpecifier_RouteTable)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[16].OneofWrappers = []interface{}{
 		(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SecretRef)(nil),
 		(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslFiles)(nil),
 		(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_Sds)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[18].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_msgTypes[17].OneofWrappers = []interface{}{
 		(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Static)(nil),
 		(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Virtual)(nil),
 		(*FederatedGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_TcpAction_Kube)(nil),
@@ -2800,7 +2716,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federat
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   25,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

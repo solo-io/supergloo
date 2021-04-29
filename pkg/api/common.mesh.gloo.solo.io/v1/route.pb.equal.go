@@ -269,6 +269,10 @@ func (m *DelegateAction) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetPassFullPath() != target.GetPassFullPath() {
+		return false
+	}
+
 	switch m.DelegationType.(type) {
 
 	case *DelegateAction_Ref:

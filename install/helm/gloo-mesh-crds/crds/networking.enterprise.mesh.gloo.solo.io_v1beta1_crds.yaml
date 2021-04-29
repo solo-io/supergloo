@@ -858,6 +858,13 @@ spec:
                                       delegateAction:
                                         description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
                                         properties:
+                                          passFullPath:
+                                            description: |-
+                                              If set to true, `passFullPath` will send the full path for the delegated child route
+                                              to match on. When false, the part of the path matched in this resource will be
+                                              removed, and the delegated child resource will only match on the remainder of the
+                                              path. Default value is false.
+                                            type: boolean
                                           ref:
                                             description: Delegate to the Route Table resource with the given `name` and `namespace.
                                             properties:
@@ -1800,13 +1807,14 @@ spec:
               format: int64
               type: integer
             selectedDelegatedRouteTables:
+              description: List of Delegated Route tables that this Route table delegates to
               items:
                 properties:
-                  cluster:
-                    type: string
                   name:
+                    description: name of the resource being referenced
                     type: string
                   namespace:
+                    description: namespace of the resource being referenced
                     type: string
                 type: object
               type: array
@@ -1975,6 +1983,13 @@ spec:
                   delegateAction:
                     description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
                     properties:
+                      passFullPath:
+                        description: |-
+                          If set to true, `passFullPath` will send the full path for the delegated child route
+                          to match on. When false, the part of the path matched in this resource will be
+                          removed, and the delegated child resource will only match on the remainder of the
+                          path. Default value is false.
+                        type: boolean
                       ref:
                         description: Delegate to the Route Table resource with the given `name` and `namespace.
                         properties:
@@ -2442,6 +2457,13 @@ spec:
                   delegateAction:
                     description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
                     properties:
+                      passFullPath:
+                        description: |-
+                          If set to true, `passFullPath` will send the full path for the delegated child route
+                          to match on. When false, the part of the path matched in this resource will be
+                          removed, and the delegated child resource will only match on the remainder of the
+                          path. Default value is false.
+                        type: boolean
                       ref:
                         description: Delegate to the Route Table resource with the given `name` and `namespace.
                         properties:

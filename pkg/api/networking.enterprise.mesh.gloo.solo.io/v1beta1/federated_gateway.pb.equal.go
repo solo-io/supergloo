@@ -279,42 +279,6 @@ func (m *SelectedRouteTable) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *SelectedDelegatedRouteTable) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*SelectedDelegatedRouteTable)
-	if !ok {
-		that2, ok := that.(SelectedDelegatedRouteTable)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
 func (m *SDSConfig) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

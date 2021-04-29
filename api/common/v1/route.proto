@@ -192,4 +192,10 @@ message DelegateAction {
         // Delegate to the Delegated Route Tables that match the given selector.
         .common.mesh.gloo.solo.io.RouteTableSelector selector = 2;
     }
+
+    // If set to true, `passFullPath` will send the full path for the delegated child route
+    // to match on. When false, the part of the path matched in this resource will be
+    // removed, and the delegated child resource will only match on the remainder of the
+    // path. Default value is false.
+    bool pass_full_path = 3;
 }
