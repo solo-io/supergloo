@@ -10,7 +10,7 @@ Gloo Mesh Enterprise is required for this feature. Open source users and users w
 provided by Gloo Mesh Istio can use Gloo Mesh with an upstream Istio release and should refer to our guide on [installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}).
 {{% /notice %}}
 
-Gloo Mesh Istio consists of custom builds of both the Istio control plane and Istio data plane. These builds are available to
+Gloo Mesh Istio consists of upstream builds of both the Istio control plane and Istio data plane. These builds are available to
 enterprise users and contain fixes, features, and compliance characteristics not available in the corresponding upstream
 Istio builds.
 
