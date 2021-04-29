@@ -688,37 +688,33 @@ func getFederatedToMeshes(
 ) []*v1.ObjectRef {
 	federatedToMeshes := sets.NewResourceSet()
 
-	switch mode := virtualMesh.Spec.GetFederation().GetMode().(type) {
-	case *networkingv1.VirtualMeshSpec_Federation_Permissive:
-		// permissive federation exposes the Destination to all Meshes in the VirtualMesh
-		for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
-			federatedToMeshes.Insert(groupedMeshRef)
-		}
-	case *networkingv1.VirtualMeshSpec_Federation_Restrictive:
-		// omitted federation selectors have permissive semantics
-		if len(mode.Restrictive.GetFederationSelectors()) < 1 {
+	// respect deprecated `mode` field only if new federation selectors are not specified
+	if len(virtualMesh.Spec.GetFederation().GetSelectors()) < 1 {
+		switch virtualMesh.Spec.GetFederation().GetMode().(type) {
+		case *networkingv1.VirtualMeshSpec_Federation_Permissive:
+			// permissive federation exposes the Destination to all Meshes in the VirtualMesh
 			for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
 				federatedToMeshes.Insert(groupedMeshRef)
 			}
 		}
-		for _, federationSelector := range mode.Restrictive.GetFederationSelectors() {
-			if !selectorutils.SelectorMatchesDestination(federationSelector.GetDestinationSelectors(), destination) {
-				continue
-			}
-			// if mesh refs are omitted, federate to all Meshes in VirtualMesh
-			if len(federationSelector.GetMeshes()) < 1 {
-				for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
-					federatedToMeshes.Insert(groupedMeshRef)
-				}
-			}
-			// federate to specified Meshes
-			for _, meshRef := range federationSelector.GetMeshes() {
-				federatedToMeshes.Insert(meshRef)
-			}
+	}
+
+	for _, federationSelector := range virtualMesh.Spec.GetFederation().GetSelectors() {
+		if !selectorutils.SelectorMatchesDestination(federationSelector.GetDestinationSelectors(), destination) {
+			continue
 		}
-	default:
-		// no federation applied
-		return nil
+		// if mesh refs are omitted, federate to all Meshes in VirtualMesh
+		if len(federationSelector.GetMeshes()) < 1 {
+			for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+				federatedToMeshes.Insert(groupedMeshRef)
+			}
+			// no need to process any other selectors
+			break
+		}
+		// federate to specified Meshes
+		for _, meshRef := range federationSelector.GetMeshes() {
+			federatedToMeshes.Insert(meshRef)
+		}
 	}
 
 	var meshRefs []*v1.ObjectRef

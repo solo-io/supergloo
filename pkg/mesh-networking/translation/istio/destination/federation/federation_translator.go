@@ -117,7 +117,6 @@ func (t *translator) Translate(
 
 		serviceEntry, virtualService, destinationRule := t.translateForRemoteMesh(
 			destination,
-			destinationMesh,
 			destinationVirtualMesh,
 			in,
 			remoteMesh,
@@ -207,7 +206,6 @@ func (t *translator) translateServiceEntryTemplate(
 
 func (t *translator) translateForRemoteMesh(
 	destination *discoveryv1.Destination,
-	destinationMesh *discoveryv1.Mesh,
 	destinationVirtualMesh *networkingv1.VirtualMesh,
 	in input.LocalSnapshot,
 	remoteMesh *discoveryv1.Mesh,

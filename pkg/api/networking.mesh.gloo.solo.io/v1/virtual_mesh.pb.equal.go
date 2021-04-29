@@ -318,6 +318,23 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetSelectors()) != len(target.GetSelectors()) {
+		return false
+	}
+	for idx, v := range m.GetSelectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSelectors()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSelectors()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	if m.GetFlatNetwork() != target.GetFlatNetwork() {
 		return false
 	}
@@ -339,21 +356,6 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 			}
 		} else {
 			if !proto.Equal(m.GetPermissive(), target.GetPermissive()) {
-				return false
-			}
-		}
-
-	case *VirtualMeshSpec_Federation_Restrictive:
-		if _, ok := target.Mode.(*VirtualMeshSpec_Federation_Restrictive); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetRestrictive()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetRestrictive()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetRestrictive(), target.GetRestrictive()) {
 				return false
 			}
 		}
@@ -463,55 +465,14 @@ func (m *VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert) Equal(that int
 }
 
 // Equal function
-func (m *VirtualMeshSpec_Federation_RestrictiveFederation) Equal(that interface{}) bool {
+func (m *VirtualMeshSpec_Federation_FederationSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*VirtualMeshSpec_Federation_RestrictiveFederation)
+	target, ok := that.(*VirtualMeshSpec_Federation_FederationSelector)
 	if !ok {
-		that2, ok := that.(VirtualMeshSpec_Federation_RestrictiveFederation)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if len(m.GetFederationSelectors()) != len(target.GetFederationSelectors()) {
-		return false
-	}
-	for idx, v := range m.GetFederationSelectors() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetFederationSelectors()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetFederationSelectors()[idx]) {
-				return false
-			}
-		}
-
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector)
+		that2, ok := that.(VirtualMeshSpec_Federation_FederationSelector)
 		if ok {
 			target = &that2
 		} else {

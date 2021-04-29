@@ -46,25 +46,21 @@ func FederationTest() {
 			restrictiveVirtualMesh := VirtualMesh.DeepCopy()
 
 			// federate only the reviews service from each mesh to the other mesh
-			restrictiveVirtualMesh.Spec.Federation.Mode = &networkingv1.VirtualMeshSpec_Federation_Restrictive{
-				Restrictive: &networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation{
-					FederationSelectors: []*networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector{
+			restrictiveVirtualMesh.Spec.Federation.Selectors = []*networkingv1.VirtualMeshSpec_Federation_FederationSelector{
+				{
+					DestinationSelectors: []*commonv1.DestinationSelector{
 						{
-							DestinationSelectors: []*commonv1.DestinationSelector{
-								{
-									KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
-										Services: []*skv2corev1.ClusterObjectRef{
-											{
-												Name:        "reviews",
-												Namespace:   BookinfoNamespace,
-												ClusterName: MgmtClusterName,
-											},
-											{
-												Name:        "reviews",
-												Namespace:   BookinfoNamespace,
-												ClusterName: RemoteClusterName,
-											},
-										},
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: MgmtClusterName,
+									},
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: RemoteClusterName,
 									},
 								},
 							},

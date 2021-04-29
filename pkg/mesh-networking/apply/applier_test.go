@@ -374,7 +374,30 @@ var _ = Describe("Applier", func() {
 			applier = NewApplier(translator)
 		})
 
-		It("applies VirtualMesh with permissive federation", func() {
+		It("applies VirtualMesh with no federation", func() {
+			permissiveVirtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						ezkube.MakeObjectRef(mesh1),
+						ezkube.MakeObjectRef(mesh2),
+						ezkube.MakeObjectRef(mesh3),
+						ezkube.MakeObjectRef(mesh4),
+					},
+				},
+			}
+
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{permissiveVirtualMesh})
+
+			applier.Apply(context.TODO(), snap.Build(), nil)
+
+			Expect(destination.Status.AppliedFederation).To(BeNil())
+		})
+
+		It("applies VirtualMesh with permissive federation using deprecated field", func() {
 			permissiveVirtualMesh := &networkingv1.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "vm1",
@@ -424,7 +447,9 @@ var _ = Describe("Applier", func() {
 						ezkube.MakeObjectRef(mesh4),
 					},
 					Federation: &networkingv1.VirtualMeshSpec_Federation{
-						Mode: &networkingv1.VirtualMeshSpec_Federation_Restrictive{},
+						Selectors: []*networkingv1.VirtualMeshSpec_Federation_FederationSelector{
+							{},
+						},
 					},
 				},
 			}
@@ -482,43 +507,39 @@ var _ = Describe("Applier", func() {
 						ezkube.MakeObjectRef(mesh4),
 					},
 					Federation: &networkingv1.VirtualMeshSpec_Federation{
-						Mode: &networkingv1.VirtualMeshSpec_Federation_Restrictive{
-							Restrictive: &networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation{
-								FederationSelectors: []*networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector{
+						Selectors: []*networkingv1.VirtualMeshSpec_Federation_FederationSelector{
+							{
+								DestinationSelectors: []*commonv1.DestinationSelector{
 									{
-										DestinationSelectors: []*commonv1.DestinationSelector{
-											{
-												KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
-													Services: []*skv2corev1.ClusterObjectRef{
-														{
-															Name:        destination.Spec.GetKubeService().GetRef().GetName(),
-															Namespace:   destination.Spec.GetKubeService().GetRef().GetNamespace(),
-															ClusterName: destination.Spec.GetKubeService().GetRef().GetClusterName(),
-														},
-													},
+										KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+											Services: []*skv2corev1.ClusterObjectRef{
+												{
+													Name:        destination.Spec.GetKubeService().GetRef().GetName(),
+													Namespace:   destination.Spec.GetKubeService().GetRef().GetNamespace(),
+													ClusterName: destination.Spec.GetKubeService().GetRef().GetClusterName(),
 												},
 											},
 										},
-										Meshes: []*skv2corev1.ObjectRef{
-											ezkube.MakeObjectRef(mesh2),
-											ezkube.MakeObjectRef(mesh4),
-										},
 									},
+								},
+								Meshes: []*skv2corev1.ObjectRef{
+									ezkube.MakeObjectRef(mesh2),
+									ezkube.MakeObjectRef(mesh4),
+								},
+							},
+							{
+								DestinationSelectors: []*commonv1.DestinationSelector{
 									{
-										DestinationSelectors: []*commonv1.DestinationSelector{
-											{
-												KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
-													Namespaces: []string{destination.Spec.GetKubeService().GetRef().GetNamespace()},
-													Clusters:   []string{destination.Spec.GetKubeService().GetRef().GetClusterName()},
-												},
-											},
-										},
-										// multiple references to the same mesh across different federation selectors should be deduplicated
-										Meshes: []*skv2corev1.ObjectRef{
-											ezkube.MakeObjectRef(mesh2),
-											ezkube.MakeObjectRef(mesh3),
+										KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
+											Namespaces: []string{destination.Spec.GetKubeService().GetRef().GetNamespace()},
+											Clusters:   []string{destination.Spec.GetKubeService().GetRef().GetClusterName()},
 										},
 									},
+								},
+								// multiple references to the same mesh across different federation selectors should be deduplicated
+								Meshes: []*skv2corev1.ObjectRef{
+									ezkube.MakeObjectRef(mesh2),
+									ezkube.MakeObjectRef(mesh3),
 								},
 							},
 						},

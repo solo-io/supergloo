@@ -105,14 +105,16 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
+        // Selectively federate Destinations to specific external meshes.
+        // If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+        repeated FederationSelector selectors = 4;
+
+        // DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
         // The "mode" in which to federate Destinations within this VirtualMesh.
         oneof mode {
 
             // Expose all Destinations to all Workloads in this VirtualMesh.
             .google.protobuf.Empty permissive = 1;
-
-            // Expose only selected Destinations to all Workloads in this VirtualMesh.
-            RestrictiveFederation restrictive = 4;
         };
 
         // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
@@ -126,24 +128,16 @@ message VirtualMeshSpec {
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
 
-        // Selectively federate Destinations to specific external meshes.
-        message RestrictiveFederation {
+        // Selects a set of Destinations to federate to the referenced Meshes.
+        message FederationSelector {
 
-            // Each element selects a set of Destinations to federate to the referenced Meshes.
-            // If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
-            repeated FederationSelector federation_selectors = 1;
+            // The set of Destinations that will be federated to external Meshes.
+            // If omitted, all Destinations will be selected.
+            repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 1;
 
-            // Selects a set of Destinations to federate to the referenced Meshes.
-            message FederationSelector {
-
-                // The set of Destinations that will be federated to external Meshes.
-                // If omitted, all Destinations will be selected.
-                repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 1;
-
-                // The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
-                // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
-                repeated .core.skv2.solo.io.ObjectRef meshes = 2;
-            }
+            // The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
+            // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
+            repeated .core.skv2.solo.io.ObjectRef meshes = 2;
         }
     }
 
