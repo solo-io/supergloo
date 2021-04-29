@@ -55,12 +55,16 @@ An appropriate response should look like this:
 /usr/local/bin/envoy  version: fa9fd362c488508a661d2ffa66e66976bb9104c3/1.15.1/Clean/RELEASE/BoringSSL-FIPS
 ```
 
-To verify the control plane components, we will copy the pilot-discovery binary out of the istiod container and run [goversion](https://github.com/rsc/goversion) against it.
+To verify the control plane components, we will copy the pilot-discovery binary out of the istiod container and run [goversion](https://github.com/rsc/goversion) against it. You can install `goversion` with this simple command:
+
+```shell
+go get github.com/rsc/goversion
+```
 
 First, copy the binary out to local disk:
 
 ```shell
-kubectl cp istio-system/istiod-85ff76b4b5-47pqg:/usr/local/bin/pilot-discovery /tmp/pilot-discovery && chmod +x /tmp/pilot-discovery
+kubectl cp istio-system/<pod-name>:/usr/local/bin/pilot-discovery /tmp/pilot-discovery && chmod +x /tmp/pilot-discovery
 ```
 
 Then run the following:
