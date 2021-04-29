@@ -110,7 +110,7 @@ Then you are NOT running a FIPS build of Istio.
 
 ### Distroless builds of FIPS
 
-Typically a container should just contain the application and its required dependencies but in reality it contains a lot of other things (shell, package manager, build tools, OS utilities, etc). All of these additional capabilities in the container image increase your exposure to CVS/vulnerabilities. Google opensourced an approach to stripping out any additional cruft from your images except for the necessary application and immediate dependencies called [distroless](https://istio.io/latest/docs/ops/configuration/security/harden-docker-images/).
+Typically a container should just contain the application and its required dependencies but in reality it contains a lot of other things (shell, package manager, build tools, OS utilities, etc). All of these additional capabilities in the container image increase your exposure to CVEs/vulnerabilities. Google opensourced an approach to stripping out any additional cruft from your images except for the necessary application and immediate dependencies called [distroless](https://istio.io/latest/docs/ops/configuration/security/harden-docker-images/).
 
 For example, to install the distroless version of FIPS Istio:
 
