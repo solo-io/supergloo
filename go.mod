@@ -1,6 +1,6 @@
 module github.com/solo-io/gloo-mesh
 
-go 1.14
+go 1.16
 
 replace (
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
