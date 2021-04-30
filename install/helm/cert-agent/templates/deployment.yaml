@@ -11,8 +11,6 @@ kind: Deployment
 metadata:
   labels:
     app: cert-agent
-  annotations:
-    sidecar.istio.io/inject: "false"
   name: cert-agent
   namespace: {{ .Release.Namespace }}
 spec:
@@ -24,6 +22,7 @@ spec:
       labels:
         app: cert-agent
       annotations:
+        sidecar.istio.io/inject: "false"
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
