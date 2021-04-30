@@ -2,3 +2,6 @@ changelog:
   - type: FIX
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1428
     description: Add Enterprise disclaimer for Locality Routing.
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1492
+    description: Remove requirement of regenerating Changelog and Helm values docs when testing docs locally with `make serve-site`.
