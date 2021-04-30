@@ -82,7 +82,8 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, namespace strin
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			fmt.Printf("No Gloo Mesh dashboard found as part of the installation in namespace %s. "+
-				"The full dashboard is part of Gloo Mesh enterprise by default. ", namespace)
+				"The full dashboard is part of Gloo Mesh enterprise by default. "+
+				"Check that your kubeconfig is pointing at the Gloo Mesh management cluster. ", namespace)
 		}
 
 		return "", err
