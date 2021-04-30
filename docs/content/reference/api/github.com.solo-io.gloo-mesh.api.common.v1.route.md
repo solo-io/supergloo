@@ -43,7 +43,7 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Delegate to the Route Table resource with the given `name` and `namespace. |
-  | selector | [common.mesh.gloo.solo.io.RouteTableSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.RouteTableSelector" >}}) |  | Delegate to the Delegated Route Tables that match the given selector. |
+  | selector | [common.mesh.gloo.solo.io.VirtualHostSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.VirtualHostSelector" >}}) |  | Delegate to the Delegated Route Tables that match the given selector. |
   | passFullPath | bool |  | If set to true, `passFullPath` will send the full path for the delegated child route to match on. When false, the part of the path matched in this resource will be removed, and the delegated child resource will only match on the remainder of the path. Default value is false. |
   
 
@@ -90,7 +90,7 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 <a name="common.mesh.gloo.solo.io.Route"></a>
 
 ### Route
-A route specifies how to match a request and what action to take when the request is matched.<br>When a request matches on a route, the route can perform one of the following actions: - *Route* the request to a destination - Reply with a *Direct Response* - Send a *Redirect* response to the client - *Delegate* the action for the request to one or more top-level [`RouteTable`]({{< ref "/reference/api/github.com/solo-io/gloo/projects/gateway/api/v1/route_table.proto.sk.md" >}}) resources DelegateActions can be used to delegate the behavior for a set out routes with a given *prefix* to top-level `RouteTable` resources.
+A route specifies how to match a request and what action to take when the request is matched.<br>When a request matches on a route, the route can perform one of the following actions: - *Route* the request to a destination - Reply with a *Direct Response* - Send a *Redirect* response to the client - *Delegate* the action for the request to one or more top-level [`VirtualHost`]({{< ref "/reference/api/github.com/solo-io/gloo/projects/gateway/api/v1/virtual_host.proto.sk.md" >}}) resources DelegateActions can be used to delegate the behavior for a set out routes with a given *prefix* to top-level `VirtualHost` resources.
 
 
 | Field | Type | Label | Description |
@@ -100,7 +100,7 @@ A route specifies how to match a request and what action to take when the reques
   | routeAction | [common.mesh.gloo.solo.io.Route.RouteAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.Route.RouteAction" >}}) |  | This action is the primary action to be selected for most routes. The RouteAction tells the proxy to route requests to an upstream. |
   | redirectAction | [common.mesh.gloo.solo.io.RedirectAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.RedirectAction" >}}) |  | Redirect actions tell the proxy to return a redirect response to the downstream client. |
   | directResponseAction | [common.mesh.gloo.solo.io.DirectResponseAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.DirectResponseAction" >}}) |  | Return an arbitrary HTTP response directly, without proxying. |
-  | delegateAction | [common.mesh.gloo.solo.io.DelegateAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.DelegateAction" >}}) |  | Delegate routing actions for the given matcher to one or more DelegatedRouteTables. |
+  | delegateAction | [common.mesh.gloo.solo.io.DelegateAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.DelegateAction" >}}) |  | Delegate routing actions for the given matcher to one or more RouteTables. |
   | options | [common.mesh.gloo.solo.io.Route.RouteOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.Route.RouteOptions" >}}) |  | Route Options extend the behavior of routes. Route options include configuration such as retries, rate limiting, and request/response transformation. RouteOption behavior will be inherited by delegated routes which do not specify their own `options` |
   
 

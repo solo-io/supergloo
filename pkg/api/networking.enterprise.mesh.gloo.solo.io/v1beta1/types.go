@@ -83,34 +83,69 @@ type VirtualDestinationList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// GroupVersionKind for FederatedGateway
-var FederatedGatewayGVK = schema.GroupVersionKind{
+// GroupVersionKind for VirtualGateway
+var VirtualGatewayGVK = schema.GroupVersionKind{
 	Group:   "networking.enterprise.mesh.gloo.solo.io",
 	Version: "v1beta1",
-	Kind:    "FederatedGateway",
+	Kind:    "VirtualGateway",
 }
 
-// FederatedGateway is the Schema for the federatedGateway API
-type FederatedGateway struct {
+// VirtualGateway is the Schema for the virtualGateway API
+type VirtualGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FederatedGatewaySpec   `json:"spec,omitempty"`
-	Status FederatedGatewayStatus `json:"status,omitempty"`
+	Spec   VirtualGatewaySpec   `json:"spec,omitempty"`
+	Status VirtualGatewayStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (FederatedGateway) GVK() schema.GroupVersionKind {
-	return FederatedGatewayGVK
+func (VirtualGateway) GVK() schema.GroupVersionKind {
+	return VirtualGatewayGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// FederatedGatewayList contains a list of FederatedGateway
-type FederatedGatewayList struct {
+// VirtualGatewayList contains a list of VirtualGateway
+type VirtualGatewayList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []FederatedGateway `json:"items"`
+	Items           []VirtualGateway `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for VirtualHost
+var VirtualHostGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "VirtualHost",
+}
+
+// VirtualHost is the Schema for the virtualHost API
+type VirtualHost struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   VirtualHostSpec   `json:"spec,omitempty"`
+	Status VirtualHostStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (VirtualHost) GVK() schema.GroupVersionKind {
+	return VirtualHostGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VirtualHostList contains a list of VirtualHost
+type VirtualHostList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualHost `json:"items"`
 }
 
 // +genclient
@@ -148,45 +183,10 @@ type RouteTableList struct {
 	Items           []RouteTable `json:"items"`
 }
 
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
-
-// GroupVersionKind for DelegatedRouteTable
-var DelegatedRouteTableGVK = schema.GroupVersionKind{
-	Group:   "networking.enterprise.mesh.gloo.solo.io",
-	Version: "v1beta1",
-	Kind:    "DelegatedRouteTable",
-}
-
-// DelegatedRouteTable is the Schema for the delegatedRouteTable API
-type DelegatedRouteTable struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   DelegatedRouteTableSpec   `json:"spec,omitempty"`
-	Status DelegatedRouteTableStatus `json:"status,omitempty"`
-}
-
-// GVK returns the GroupVersionKind associated with the resource type.
-func (DelegatedRouteTable) GVK() schema.GroupVersionKind {
-	return DelegatedRouteTableGVK
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// DelegatedRouteTableList contains a list of DelegatedRouteTable
-type DelegatedRouteTableList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []DelegatedRouteTable `json:"items"`
-}
-
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
-	SchemeBuilder.Register(&FederatedGateway{}, &FederatedGatewayList{})
+	SchemeBuilder.Register(&VirtualGateway{}, &VirtualGatewayList{})
+	SchemeBuilder.Register(&VirtualHost{}, &VirtualHostList{})
 	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
-	SchemeBuilder.Register(&DelegatedRouteTable{}, &DelegatedRouteTableList{})
 }

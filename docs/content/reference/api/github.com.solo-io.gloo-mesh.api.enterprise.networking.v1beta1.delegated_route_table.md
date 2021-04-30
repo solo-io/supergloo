@@ -1,7 +1,7 @@
 
 ---
 
-title: "delegated_route_table.proto"
+title: "route_table.proto"
 
 ---
 
@@ -11,15 +11,15 @@ title: "delegated_route_table.proto"
 
 <a name="top"></a>
 
-<a name="API Reference for delegated_route_table.proto"></a>
+<a name="API Reference for route_table.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## delegated_route_table.proto
+## route_table.proto
 
 
 ## Table of Contents
-  - [DelegatedRouteTableSpec](#networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableSpec)
-  - [DelegatedRouteTableStatus](#networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableStatus)
+  - [RouteTableSpec](#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec)
+  - [RouteTableStatus](#networking.enterprise.mesh.gloo.solo.io.RouteTableStatus)
   - [selectedBy](#networking.enterprise.mesh.gloo.solo.io.selectedBy)
 
 
@@ -28,10 +28,10 @@ title: "delegated_route_table.proto"
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableSpec"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.RouteTableSpec"></a>
 
-### DelegatedRouteTableSpec
-DelegatedRouteTable is a resource which can be referenced either from the top level RouteTable resource, or from other DelegatedRouteTables. It's primary use is to organizationally and logically separate the configuration of routes, so that the responsbilities of route configuration and maintenance can be divided between teams where appropriate.
+### RouteTableSpec
+RouteTable is a resource which can be referenced either from the top level VirtualHost resource, or from other RouteTables. It's primary use is to organizationally and logically separate the configuration of routes, so that the responsbilities of route configuration and maintenance can be divided between teams where appropriate.
 
 
 | Field | Type | Label | Description |
@@ -43,19 +43,19 @@ DelegatedRouteTable is a resource which can be referenced either from the top le
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableStatus"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.RouteTableStatus"></a>
 
-### DelegatedRouteTableStatus
+### RouteTableStatus
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  | The most recent generation observed in the the DelegatedRouteTable metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+| observedGeneration | int64 |  | The most recent generation observed in the the RouteTable metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
-  | selectedBy | [][networking.enterprise.mesh.gloo.solo.io.selectedBy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.delegated_route_table#networking.enterprise.mesh.gloo.solo.io.selectedBy" >}}) | repeated | List of resources which have selected this DelegatedRouteTable. Can be RouteTables or other DelegatedRouteTables |
-  | selectedDelegatedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of DelegatedRouteTables that this DelegatedRouteTable delegates to |
+  | selectedBy | [][networking.enterprise.mesh.gloo.solo.io.selectedBy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.selectedBy" >}}) | repeated | List of resources which have selected this RouteTable. Can be VirtualHosts or other RouteTables |
+  | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of RouteTables that this RouteTable delegates to |
   
 
 
@@ -70,9 +70,9 @@ DelegatedRouteTable is a resource which can be referenced either from the top le
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | Name of resource selecting this DelegatedRouteTable |
-  | namespace | string |  | Namespace of resource selecting this DelegatedRouteTable |
-  | type | string |  | Type of resource selecting this DelegatedRoute Table. Can be FederatedGateway, RouteTable, or DelegatedRouteTable. |
+| name | string |  | Name of resource selecting this RouteTable |
+  | namespace | string |  | Namespace of resource selecting this RouteTable |
+  | type | string |  | Type of resource selecting this DelegatedRoute Table. Can be VirtualGateway, VirtualHost, or RouteTable. |
   
 
 

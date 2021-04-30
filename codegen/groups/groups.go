@@ -37,9 +37,9 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
 	{Kind: "VirtualDestination"},
-	{Kind: "FederatedGateway"},
+	{Kind: "VirtualGateway"},
+	{Kind: "VirtualHost"},
 	{Kind: "RouteTable"},
-	{Kind: "DelegatedRouteTable"},
 })
 
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1", []ResourceToGenerate{

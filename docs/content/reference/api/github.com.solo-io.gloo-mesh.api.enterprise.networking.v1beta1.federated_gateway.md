@@ -1,7 +1,7 @@
 
 ---
 
-title: "federated_gateway.proto"
+title: "virtual_gateway.proto"
 
 ---
 
@@ -11,85 +11,85 @@ title: "federated_gateway.proto"
 
 <a name="top"></a>
 
-<a name="API Reference for federated_gateway.proto"></a>
+<a name="API Reference for virtual_gateway.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## federated_gateway.proto
+## virtual_gateway.proto
 
 
 ## Table of Contents
-  - [FederatedGatewaySpec](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec)
-  - [FederatedGatewaySpec.ConnectionHandler](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler)
-  - [FederatedGatewaySpec.ConnectionHandler.ConnectionMatch](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch)
-  - [FederatedGatewaySpec.ConnectionHandler.ConnectionOptions](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions)
-  - [FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions)
-  - [FederatedGatewaySpec.ConnectionHandler.HttpRoutes](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes)
-  - [FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions)
-  - [FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings)
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig)
-  - [FederatedGatewaySpec.GatewayOptions](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions)
-  - [FederatedGatewayStatus](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus)
+  - [VirtualGatewaySpec](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec)
+  - [VirtualGatewaySpec.ConnectionHandler](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler)
+  - [VirtualGatewaySpec.ConnectionHandler.ConnectionMatch](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch)
+  - [VirtualGatewaySpec.ConnectionHandler.ConnectionOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions)
+  - [VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions)
+  - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes)
+  - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions)
+  - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings)
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig)
+  - [VirtualGatewaySpec.GatewayOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions)
+  - [VirtualGatewayStatus](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus)
   - [SDSConfig](#networking.enterprise.mesh.gloo.solo.io.SDSConfig)
   - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
   - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
   - [selectedGateway](#networking.enterprise.mesh.gloo.solo.io.selectedGateway)
-  - [selectedRouteTable](#networking.enterprise.mesh.gloo.solo.io.selectedRouteTable)
+  - [selectedVirtualHost](#networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost)
 
-  - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion)
-
-
+  - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion)
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec"></a>
 
-### FederatedGatewaySpec
-FederatedGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh. A single FederatedGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh. FederatedGateways can route traffic to destination services which live in a specific cluster or mesh. This allows FederatedGateways to route traffic from an ingress in one mesh to a service in another. In order to  perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
+
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec"></a>
+
+### VirtualGatewaySpec
+VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh. A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh. VirtualGateways can route traffic to destination services which live in a specific cluster or mesh. This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to  perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | bindAddress | string |  | The bind address the gateway should serve traffic on This maps to the Envoy Listener address. Defaults to "::" or "0.0.0.0". |
   | bindPort | uint32 |  | The bind port where the gateway workload will listen for connections. This maps to the Envoy Listener port. |
-  | connectionHandlers | [][networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler" >}}) | repeated | Each Gateway must implement one or more ConnectionHandlers. A ConnectionHandler instructs the gateway how to handle clients  which have connected to the specified bind address. Typically `connectionHandlers` will consist of a single `http` handler which serves HTTP Routes defined in a set of RouteTables. Multiple `connectionHandlers` can be specified to provide different behavior on the same Gateway, e.g. one for TCP and one for HTTP traffic. |
+  | connectionHandlers | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler" >}}) | repeated | Each Gateway must implement one or more ConnectionHandlers. A ConnectionHandler instructs the gateway how to handle clients  which have connected to the specified bind address. Typically `connectionHandlers` will consist of a single `http` handler which serves HTTP Routes defined in a set of VirtualHosts. Multiple `connectionHandlers` can be specified to provide different behavior on the same Gateway, e.g. one for TCP and one for HTTP traffic. |
   | gatewayWorkloads | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to. Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services being routed to. |
-  | gatewayOptions | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions" >}}) |  | Options applied to all clients who connect to this gateway |
+  | gatewayOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions" >}}) |  | Options applied to all clients who connect to this gateway |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler"></a>
 
-### FederatedGatewaySpec.ConnectionHandler
+### VirtualGatewaySpec.ConnectionHandler
 Each ConnnectionHandler specifies a `connectionMatch` (required if using multiple ConnectionHandlers) and  a set of (HTTP or TCP) routes to serve matched connections.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| connectionMatch | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch" >}}) |  | Additional options for matching a connection to a specific gateway. This is required when more than one `connectionHandler` is specified for a single gateway. Typically this is used to serve different |
-  | http | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes" >}}) |  |  |
-  | tcp | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes" >}}) |  |  |
-  | connectionOptions | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions" >}}) |  | Top level optional configuration for all routes on the ConnectionHandler. |
+| connectionMatch | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch" >}}) |  | Additional options for matching a connection to a specific gateway. This is required when more than one `connectionHandler` is specified for a single gateway. Typically this is used to serve different |
+  | http | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes" >}}) |  |  |
+  | tcp | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes" >}}) |  |  |
+  | connectionOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions" >}}) |  | Top level optional configuration for all routes on the ConnectionHandler. |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionMatch"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.ConnectionMatch
+### VirtualGatewaySpec.ConnectionHandler.ConnectionMatch
 Look at what Envoy exposes, put them all(maybe?) here Should expose everything we can do with Envoy, ideally.
 
 
@@ -103,15 +103,15 @@ Look at what Envoy exposes, put them all(maybe?) here Should expose everything w
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.ConnectionOptions
+### VirtualGatewaySpec.ConnectionHandler.ConnectionOptions
 TODO: Fill ConnectionOptions
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| tlsContext | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions" >}}) |  | TODO |
+| tlsContext | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions" >}}) |  | TODO |
   | enableProxyProtocol | bool |  | enable PROXY protocol for this connection handler. |
   
 
@@ -119,9 +119,9 @@ TODO: Fill ConnectionOptions
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
+### VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
 
 
 
@@ -135,25 +135,25 @@ TODO: Fill ConnectionOptions
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.HttpRoutes
+### VirtualGatewaySpec.ConnectionHandler.HttpRoutes
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| routeConfig | [][networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier" >}}) | repeated |  |
-  | routeOptions | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions" >}}) |  | HTTP Listener Options // Root level DelegatedRouteTable + RouteTable + routes level |
+| routeConfig | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier" >}}) | repeated |  |
+  | routeOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions" >}}) |  | HTTP Listener Options // Root level RouteTable + VirtualHost + routes level |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
+### VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
 TODO: Fill with HttpListenerOptions from gloo options.proto Team discussion topic
 
 
@@ -161,69 +161,69 @@ TODO: Fill with HttpListenerOptions from gloo options.proto Team discussion topi
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
+### VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| routeSelector | [common.mesh.gloo.solo.io.RouteTableSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.RouteTableSelector" >}}) |  | RouteSelector is used to specify which RouteTables should be attached to this gateway. |
-  | routeTable | [networking.enterprise.mesh.gloo.solo.io.RouteTableSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec" >}}) |  | RouteTable allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs. |
+| routeSelector | [common.mesh.gloo.solo.io.VirtualHostSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.VirtualHostSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
+  | virtualHost | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec" >}}) |  | VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs. |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| tcpHosts | [][networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost" >}}) | repeated | TCP hosts that the gateway can route to |
-  | options | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions" >}}) |  | TCP Gateway configuration |
+| tcpHosts | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost" >}}) | repeated | TCP hosts that the gateway can route to |
+  | options | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions" >}}) |  | TCP Gateway configuration |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | the logical name of the tcp host. names must be unique for each tcp host within a listener |
-  | sslConfig | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig" >}}) |  | If provided, the Gateway will serve TLS/SSL traffic for this set of routes |
-  | destination | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction" >}}) |  |  |
+  | sslConfig | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig" >}}) |  | If provided, the Gateway will serve TLS/SSL traffic for this set of routes |
+  | destination | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction" >}}) |  |  |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
 SslConfig contains the options necessary to configure a virtual host or listener to use TLS
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | secretRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | SecretRef contains the secret ref to a gloo tls secret or a kubernetes tls secret. gloo tls secret can contain a root ca as well if verification is needed. |
-  | sslFiles | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles" >}}) |  | SSLFiles reference paths to certificates which are local to the proxy |
-  | sds | [networking.enterprise.mesh.gloo.solo.io.SDSConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig" >}}) |  | Use secret discovery service. |
+  | sslFiles | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles" >}}) |  | SSLFiles reference paths to certificates which are local to the proxy |
+  | sds | [networking.enterprise.mesh.gloo.solo.io.SDSConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig" >}}) |  | Use secret discovery service. |
   | sniDomains | []string | repeated | optional. the SNI domains that should be considered for TLS connections |
   | verifySubjectAltName | []string | repeated | Verify that the Subject Alternative Name in the peer certificate is one of the specified values. note that a root_ca must be provided if this option is used. |
-  | parameters | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters" >}}) |  |  |
+  | parameters | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters" >}}) |  |  |
   | alpnProtocols | []string | repeated | Set Application Level Protocol Negotiation If empty, defaults to ["h2", "http/1.1"]. |
   
 
@@ -231,9 +231,9 @@ SslConfig contains the options necessary to configure a virtual host or listener
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
 
 
 
@@ -248,16 +248,16 @@ SslConfig contains the options necessary to configure a virtual host or listener
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
 General TLS parameters. See the [envoy docs](https://www.envoyproxy.io/docs/envoy/latest/api-v2/api/v2/auth/cert.proto#envoy-api-enum-auth-tlsparameters-tlsprotocol) for more information on the meaning of these values.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| minimumProtocolVersion | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion" >}}) |  |  |
-  | maximumProtocolVersion | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion" >}}) |  |  |
+| minimumProtocolVersion | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion" >}}) |  |  |
+  | maximumProtocolVersion | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion" >}}) |  |  |
   | cipherSuites | []string | repeated |  |
   | ecdhCurves | []string | repeated |  |
   
@@ -266,9 +266,9 @@ General TLS parameters. See the [envoy docs](https://www.envoyproxy.io/docs/envo
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
 Name of the destinations the gateway can route to. Note: the destination spec and subsets are not supported in this context and will be ignored.
 
 
@@ -285,24 +285,24 @@ Name of the destinations the gateway can route to. Note: the destination spec an
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| tcpProxySettings | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings" >}}) |  |  |
+| tcpProxySettings | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings" >}}) |  |  |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
 
 
 
@@ -310,16 +310,16 @@ Name of the destinations the gateway can route to. Note: the destination spec an
 | ----- | ---- | ----- | ----------- |
 | maxConnectAttempts | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Contains various settings for Envoy's tcp proxy filter. See here for more information: https://www.envoyproxy.io/docs/envoy/v1.10.0/api-v2/config/filter/network/tcp_proxy/v2/tcp_proxy.proto#envoy-api-msg-config-filter-network-tcp-proxy-v2-tcpproxy |
   | idleTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  |  |
-  | tunnelingConfig | [networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig" >}}) |  | If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP payloads over a shared HTTP tunnel. If this message is absent, the payload will be proxied upstream as per usual. |
+  | tunnelingConfig | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig" >}}) |  | If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP payloads over a shared HTTP tunnel. If this message is absent, the payload will be proxied upstream as per usual. |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
 Configuration for tunneling TCP over other transports or application layers.
 
 
@@ -332,9 +332,9 @@ Configuration for tunneling TCP over other transports or application layers.
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.GatewayOptions"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions"></a>
 
-### FederatedGatewaySpec.GatewayOptions
+### VirtualGatewaySpec.GatewayOptions
 TODO: Fill in more options<br>route-level options (inherited by route)
 
 
@@ -348,20 +348,20 @@ TODO: Fill in more options<br>route-level options (inherited by route)
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus"></a>
 
-### FederatedGatewayStatus
+### VirtualGatewayStatus
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  | The most recent generation observed in the the FederatedGateway metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+| observedGeneration | int64 |  | The most recent generation observed in the the VirtualGateway metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
-  | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.selectedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedGateway" >}}) | repeated |  |
-  | selectedRouteTables | [][networking.enterprise.mesh.gloo.solo.io.selectedRouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedRouteTable" >}}) | repeated |  |
-  | selectedDelegatedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
+  | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.selectedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.selectedGateway" >}}) | repeated |  |
+  | selectedVirtualHosts | [][networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost" >}}) | repeated |  |
+  | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
   
 
 
@@ -377,7 +377,7 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | targetUri | string |  | Target uri for the sds channel. currently only a unix domain socket is supported. |
-  | callCredentials | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials" >}}) |  | Call credentials. |
+  | callCredentials | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials" >}}) |  | Call credentials. |
   | clusterName | string |  | The name of the sds cluster in envoy |
   | certificatesSecretName | string |  | The name of the secret containing the certificate |
   | validationContextName | string |  | The name of secret containing the validation context (i.e. root ca) |
@@ -395,7 +395,7 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| fileCredentialSource | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource" >}}) |  | Call credentials are coming from a file, |
+| fileCredentialSource | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource" >}}) |  | Call credentials are coming from a file, |
   
 
 
@@ -436,9 +436,9 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.selectedRouteTable"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost"></a>
 
-### selectedRouteTable
+### selectedVirtualHost
 
 
 
@@ -455,9 +455,9 @@ Note: This message needs to be at this level (rather than nested) due to cue res
  <!-- end messages -->
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion"></a>
 
-### FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
+### VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
 
 
 | Name | Number | Description |

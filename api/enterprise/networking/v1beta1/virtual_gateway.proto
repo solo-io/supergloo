@@ -6,7 +6,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
-import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/route_table.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
@@ -16,13 +16,13 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 /*
-    FederatedGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
-    A single FederatedGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
-    FederatedGateways can route traffic to destination services which live in a specific cluster or mesh.
-    This allows FederatedGateways to route traffic from an ingress in one mesh to a service in another. In order to 
+    VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
+    A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
+    VirtualGateways can route traffic to destination services which live in a specific cluster or mesh.
+    This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to
     perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
 */
-message FederatedGatewaySpec {
+message VirtualGatewaySpec {
 
     // The bind address the gateway should serve traffic on
     // This maps to the Envoy Listener address.
@@ -37,7 +37,7 @@ message FederatedGatewaySpec {
     // A ConnectionHandler instructs the gateway how to handle clients 
     // which have connected to the specified bind address.
     // Typically `connectionHandlers` will consist of a single `http` handler
-    // which serves HTTP Routes defined in a set of RouteTables.
+    // which serves HTTP Routes defined in a set of VirtualHosts.
     // Multiple `connectionHandlers` can be specified to provide different behavior
     // on the same Gateway, e.g. one for TCP and one for HTTP traffic.
     repeated ConnectionHandler connection_handlers = 3;
@@ -115,16 +115,16 @@ message FederatedGatewaySpec {
 
             repeated RouteSpecifier route_config = 1;
             
-            // HTTP Listener Options // Root level DelegatedRouteTable + RouteTable + routes level
+            // HTTP Listener Options // Root level RouteTable + VirtualHost + routes level
             HttpOptions route_options = 8;
             
             message RouteSpecifier {
                 oneof route_type{
-                    // RouteSelector is used to specify which RouteTables should be attached to this gateway.
-                    .common.mesh.gloo.solo.io.RouteTableSelector route_selector = 1;
+                    // RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
+                    .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 1;
 
-                    // RouteTable allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
-                    RouteTableSpec route_table = 2;
+                    // VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
+                    VirtualHostSpec virtual_host = 2;
                 }
 
             }
@@ -304,8 +304,8 @@ message FederatedGatewaySpec {
 
 }
 
-message FederatedGatewayStatus{
-    // The most recent generation observed in the the FederatedGateway metadata.
+message VirtualGatewayStatus{
+    // The most recent generation observed in the the VirtualGateway metadata.
     // If the `observedGeneration` does not match `metadata.generation`,
     // Gloo Mesh has not processed the most recent version of this resource.
     int64 observed_generation = 1;
@@ -318,11 +318,11 @@ message FederatedGatewayStatus{
 
     repeated selectedGateway selected_gateways = 4;
 
-    repeated selectedRouteTable selected_route_tables = 5;
+    repeated selectedVirtualHost selected_virtual_hosts = 5;
 
 
     // List of Delegated Route tables that this Route table delegates to
-    repeated .core.skv2.solo.io.ObjectRef selected_delegated_route_tables = 6;
+    repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 6;
 
     // Relationships between objects
     // on Gw -> RTs selected
@@ -347,7 +347,7 @@ message selectedGateway {
     string external_url = 4;
 }
 
-message selectedRouteTable {
+message selectedVirtualHost {
     string name = 1;
     string namespace = 2;
     string cluster = 3;

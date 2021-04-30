@@ -148,14 +148,14 @@ func (m *IdentitySelector) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *RouteTableSelector) Equal(that interface{}) bool {
+func (m *ObjectSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*RouteTableSelector)
+	target, ok := that.(*ObjectSelector)
 	if !ok {
-		that2, ok := that.(RouteTableSelector)
+		that2, ok := that.(ObjectSelector)
 		if ok {
 			target = &that2
 		} else {
@@ -453,14 +453,14 @@ func (m *IdentitySelector_KubeServiceAccountRefs) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *RouteTableSelector_Expression) Equal(that interface{}) bool {
+func (m *ObjectSelector_Expression) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*RouteTableSelector_Expression)
+	target, ok := that.(*ObjectSelector_Expression)
 	if !ok {
-		that2, ok := that.(RouteTableSelector_Expression)
+		that2, ok := that.(ObjectSelector_Expression)
 		if ok {
 			target = &that2
 		} else {

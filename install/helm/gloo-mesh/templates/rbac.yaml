@@ -119,9 +119,9 @@ rules:
   resources:
   - wasmdeployments
   - virtualdestinations
-  - federatedgateways
+  - virtualgateways
+  - virtualhosts
   - routetables
-  - delegatedroutetables
   verbs:
   - get
   - list
@@ -180,9 +180,9 @@ rules:
   resources:
   - wasmdeployments/status
   - virtualdestinations/status
-  - federatedgateways/status
+  - virtualgateways/status
+  - virtualhosts/status
   - routetables/status
-  - delegatedroutetables/status
   verbs:
   - get
   - update

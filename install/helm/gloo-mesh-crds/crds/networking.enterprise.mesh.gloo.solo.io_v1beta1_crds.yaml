@@ -609,14 +609,14 @@ metadata:
   labels:
     app: gloo-mesh
     app.kubernetes.io/name: gloo-mesh
-  name: federatedgateways.networking.enterprise.mesh.gloo.solo.io
+  name: virtualgateways.networking.enterprise.mesh.gloo.solo.io
 spec:
   group: networking.enterprise.mesh.gloo.solo.io
   names:
-    kind: FederatedGateway
-    listKind: FederatedGatewayList
-    plural: federatedgateways
-    singular: federatedgateway
+    kind: VirtualGateway
+    listKind: VirtualGatewayList
+    plural: virtualgateways
+    singular: virtualgateway
   preserveUnknownFields: false
   scope: Namespaced
   subresources:
@@ -626,10 +626,10 @@ spec:
       properties:
         spec:
           description: |-
-            FederatedGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
-               A single FederatedGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
-               FederatedGateways can route traffic to destination services which live in a specific cluster or mesh.
-               This allows FederatedGateways to route traffic from an ingress in one mesh to a service in another. In order to
+            VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
+               A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
+               VirtualGateways can route traffic to destination services which live in a specific cluster or mesh.
+               This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to
                perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
           properties:
             bindAddress:
@@ -651,7 +651,7 @@ spec:
                 A ConnectionHandler instructs the gateway how to handle clients
                 which have connected to the specified bind address.
                 Typically `connectionHandlers` will consist of a single `http` handler
-                which serves HTTP Routes defined in a set of RouteTables.
+                which serves HTTP Routes defined in a set of VirtualHosts.
                 Multiple `connectionHandlers` can be specified to provide different behavior
                 on the same Gateway, e.g. one for TCP and one for HTTP traffic.
               items:
@@ -721,63 +721,16 @@ spec:
                           - not:
                               anyOf:
                               - required:
-                                - routeSelector
+                                - virtualHostSelector
                               - required:
-                                - routeTable
+                                - virtualHost
                           - required:
-                            - routeSelector
+                            - virtualHostSelector
                           - required:
-                            - routeTable
+                            - virtualHost
                           properties:
-                            routeSelector:
-                              description: RouteSelector is used to specify which RouteTables should be attached to this gateway.
-                              properties:
-                                expressions:
-                                  description: |-
-                                    Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
-                                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
-                                  items:
-                                    properties:
-                                      key:
-                                        description: |-
-                                          Kubernetes label key, must conform to Kubernetes syntax requirements
-                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
-                                        type: string
-                                      operator:
-                                        description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
-                                        enum:
-                                        - Equals
-                                        - DoubleEquals
-                                        - NotEquals
-                                        - In
-                                        - NotIn
-                                        - Exists
-                                        - DoesNotExist
-                                        - GreaterThan
-                                        - LessThan
-                                        type: string
-                                      values:
-                                        items:
-                                          type: string
-                                        type: array
-                                    type: object
-                                  type: array
-                                labels:
-                                  additionalProperties:
-                                    type: string
-                                  description: Delegate to Route Tables whose labels match the ones specified here.
-                                  type: object
-                                namespaces:
-                                  description: |-
-                                    Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
-                                    as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
-                                    The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
-                                  items:
-                                    type: string
-                                  type: array
-                              type: object
-                            routeTable:
-                              description: RouteTable allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
+                            virtualHost:
+                              description: VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
                               properties:
                                 domains:
                                   description: |-
@@ -790,14 +743,6 @@ spec:
                                   items:
                                     type: string
                                   type: array
-                                routeTableOptions:
-                                  description: |-
-                                    Route table options contain additional configuration to be applied to all traffic served by the route table.
-                                    Some configuration here can be overridden by Route Options.
-                                  properties:
-                                    todoAddOptions:
-                                      type: string
-                                  type: object
                                 routes:
                                   description: |-
                                     The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
@@ -877,7 +822,7 @@ spec:
                                       - delegateAction
                                     properties:
                                       delegateAction:
-                                        description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
+                                        description: Delegate routing actions for the given matcher to one or more RouteTables.
                                         properties:
                                           passFullPath:
                                             description: |-
@@ -897,11 +842,11 @@ spec:
                                                 type: string
                                             type: object
                                           selector:
-                                            description: Delegate to the Delegated Route Tables that match the given selector.
+                                            description: Delegate to the Route Tables that match the given selector.
                                             properties:
                                               expressions:
                                                 description: |-
-                                                  Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                                                  Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both.
                                                   https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
                                                 items:
                                                   properties:
@@ -932,13 +877,13 @@ spec:
                                               labels:
                                                 additionalProperties:
                                                   type: string
-                                                description: Delegate to Route Tables whose labels match the ones specified here.
+                                                description: Select objects whose labels match the ones specified here.
                                                 type: object
                                               namespaces:
                                                 description: |-
-                                                  Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
-                                                  as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
-                                                  The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                                                  Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace
+                                                  as the parent resource (e.g. VirtualGateway) that owns this selector.
+                                                  The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh.
                                                 items:
                                                   type: string
                                                 type: array
@@ -1193,11 +1138,66 @@ spec:
                                         type: object
                                     type: object
                                   type: array
+                                virtualHostOptions:
+                                  description: |-
+                                    Route table options contain additional configuration to be applied to all traffic served by the route table.
+                                    Some configuration here can be overridden by Route Options.
+                                  properties:
+                                    todoAddOptions:
+                                      type: string
+                                  type: object
+                              type: object
+                            virtualHostSelector:
+                              description: RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
+                              properties:
+                                expressions:
+                                  description: |-
+                                    Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+                                  items:
+                                    properties:
+                                      key:
+                                        description: |-
+                                          Kubernetes label key, must conform to Kubernetes syntax requirements
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+                                        type: string
+                                      operator:
+                                        description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                        enum:
+                                        - Equals
+                                        - DoubleEquals
+                                        - NotEquals
+                                        - In
+                                        - NotIn
+                                        - Exists
+                                        - DoesNotExist
+                                        - GreaterThan
+                                        - LessThan
+                                        type: string
+                                      values:
+                                        items:
+                                          type: string
+                                        type: array
+                                    type: object
+                                  type: array
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: Select objects whose labels match the ones specified here.
+                                  type: object
+                                namespaces:
+                                  description: |-
+                                    Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace
+                                    as the parent resource (e.g. VirtualGateway) that owns this selector.
+                                    The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh.
+                                  items:
+                                    type: string
+                                  type: array
                               type: object
                           type: object
                         type: array
                       routeOptions:
-                        description: HTTP Listener Options // Root level DelegatedRouteTable + RouteTable + routes level
+                        description: HTTP Listener Options // Root level RouteTable + VirtualHost + routes level
                         type: object
                     type: object
                   tcp:
@@ -1822,23 +1822,11 @@ spec:
               type: array
             observedGeneration:
               description: |-
-                The most recent generation observed in the the FederatedGateway metadata.
+                The most recent generation observed in the the VirtualGateway metadata.
                 If the `observedGeneration` does not match `metadata.generation`,
                 Gloo Mesh has not processed the most recent version of this resource.
               format: int64
               type: integer
-            selectedDelegatedRouteTables:
-              description: List of Delegated Route tables that this Route table delegates to
-              items:
-                properties:
-                  name:
-                    description: name of the resource being referenced
-                    type: string
-                  namespace:
-                    description: namespace of the resource being referenced
-                    type: string
-                type: object
-              type: array
             selectedGateways:
               items:
                 properties:
@@ -1853,6 +1841,18 @@ spec:
                 type: object
               type: array
             selectedRouteTables:
+              description: List of Delegated Route tables that this Route table delegates to
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
+            selectedVirtualHosts:
               items:
                 properties:
                   cluster:
@@ -1882,14 +1882,14 @@ metadata:
   labels:
     app: gloo-mesh
     app.kubernetes.io/name: gloo-mesh
-  name: routetables.networking.enterprise.mesh.gloo.solo.io
+  name: virtualhosts.networking.enterprise.mesh.gloo.solo.io
 spec:
   group: networking.enterprise.mesh.gloo.solo.io
   names:
-    kind: RouteTable
-    listKind: RouteTableList
-    plural: routetables
-    singular: routetable
+    kind: VirtualHost
+    listKind: VirtualHostList
+    plural: virtualhosts
+    singular: virtualhost
   preserveUnknownFields: false
   scope: Namespaced
   subresources:
@@ -1899,10 +1899,10 @@ spec:
       properties:
         spec:
           description: |-
-            A `RouteTable` is used to configure routes. It is selected by a `FederatedGateway`, and may be attached
-               to more than one gateway. The `RouteTable` contains the top-level configuration and route options, such
+            A `VirtualHost` is used to configure routes. It is selected by a `VirtualGateway`, and may be attached
+               to more than one gateway. The `VirtualHost` contains the top-level configuration and route options, such
                as domains to match against, and any options to be shared by its routes. Routes can send traffic directly
-               to a service, or can delegate to a `DelegatedRouteTable` to perform further routing decisions.
+               to a service, or can delegate to a `RouteTable` to perform further routing decisions.
           properties:
             domains:
               description: |-
@@ -1915,14 +1915,6 @@ spec:
               items:
                 type: string
               type: array
-            routeTableOptions:
-              description: |-
-                Route table options contain additional configuration to be applied to all traffic served by the route table.
-                Some configuration here can be overridden by Route Options.
-              properties:
-                todoAddOptions:
-                  type: string
-              type: object
             routes:
               description: |-
                 The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
@@ -2002,7 +1994,7 @@ spec:
                   - delegateAction
                 properties:
                   delegateAction:
-                    description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
+                    description: Delegate routing actions for the given matcher to one or more RouteTables.
                     properties:
                       passFullPath:
                         description: |-
@@ -2022,11 +2014,11 @@ spec:
                             type: string
                         type: object
                       selector:
-                        description: Delegate to the Delegated Route Tables that match the given selector.
+                        description: Delegate to the Route Tables that match the given selector.
                         properties:
                           expressions:
                             description: |-
-                              Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                              Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both.
                               https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
                             items:
                               properties:
@@ -2057,13 +2049,13 @@ spec:
                           labels:
                             additionalProperties:
                               type: string
-                            description: Delegate to Route Tables whose labels match the ones specified here.
+                            description: Select objects whose labels match the ones specified here.
                             type: object
                           namespaces:
                             description: |-
-                              Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
-                              as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
-                              The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                              Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace
+                              as the parent resource (e.g. VirtualGateway) that owns this selector.
+                              The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh.
                             items:
                               type: string
                             type: array
@@ -2318,11 +2310,19 @@ spec:
                     type: object
                 type: object
               type: array
+            virtualHostOptions:
+              description: |-
+                Route table options contain additional configuration to be applied to all traffic served by the route table.
+                Some configuration here can be overridden by Route Options.
+              properties:
+                todoAddOptions:
+                  type: string
+              type: object
           type: object
         status:
           properties:
-            attachedFederatedGateways:
-              description: List of each FederatedGateway which has selected this RouteTable
+            attachedVirtualGateways:
+              description: List of each VirtualGateway which has selected this VirtualHost
               items:
                 properties:
                   name:
@@ -2340,13 +2340,13 @@ spec:
               type: array
             observedGeneration:
               description: |-
-                The most recent generation observed in the the RouteTable metadata.
+                The most recent generation observed in the the VirtualHost metadata.
                 If the `observedGeneration` does not match `metadata.generation`,
                 Gloo Mesh has not processed the most recent version of this resource.
               format: int64
               type: integer
-            selectedDelegatedRouteTables:
-              description: List of Delegated Route tables that this Route table delegates to
+            selectedRouteTables:
+              description: List of RouteTables that this Route table delegates to
               items:
                 properties:
                   name:
@@ -2376,14 +2376,14 @@ metadata:
   labels:
     app: gloo-mesh
     app.kubernetes.io/name: gloo-mesh
-  name: delegatedroutetables.networking.enterprise.mesh.gloo.solo.io
+  name: routetables.networking.enterprise.mesh.gloo.solo.io
 spec:
   group: networking.enterprise.mesh.gloo.solo.io
   names:
-    kind: DelegatedRouteTable
-    listKind: DelegatedRouteTableList
-    plural: delegatedroutetables
-    singular: delegatedroutetable
+    kind: RouteTable
+    listKind: RouteTableList
+    plural: routetables
+    singular: routetable
   preserveUnknownFields: false
   scope: Namespaced
   subresources:
@@ -2393,8 +2393,8 @@ spec:
       properties:
         spec:
           description: |-
-            DelegatedRouteTable is a resource which can be referenced either from the top level RouteTable resource, or from
-               other DelegatedRouteTables. It's primary use is to organizationally and logically separate the configuration of routes,
+            RouteTable is a resource which can be referenced either from the top level VirtualHost resource, or from
+               other RouteTables. It's primary use is to organizationally and logically separate the configuration of routes,
                so that the responsbilities of route configuration and maintenance can be divided between teams where appropriate.
           properties:
             routes:
@@ -2476,7 +2476,7 @@ spec:
                   - delegateAction
                 properties:
                   delegateAction:
-                    description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
+                    description: Delegate routing actions for the given matcher to one or more RouteTables.
                     properties:
                       passFullPath:
                         description: |-
@@ -2496,11 +2496,11 @@ spec:
                             type: string
                         type: object
                       selector:
-                        description: Delegate to the Delegated Route Tables that match the given selector.
+                        description: Delegate to the Route Tables that match the given selector.
                         properties:
                           expressions:
                             description: |-
-                              Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                              Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both.
                               https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
                             items:
                               properties:
@@ -2531,13 +2531,13 @@ spec:
                           labels:
                             additionalProperties:
                               type: string
-                            description: Delegate to Route Tables whose labels match the ones specified here.
+                            description: Select objects whose labels match the ones specified here.
                             type: object
                           namespaces:
                             description: |-
-                              Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
-                              as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
-                              The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                              Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace
+                              as the parent resource (e.g. VirtualGateway) that owns this selector.
+                              The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh.
                             items:
                               type: string
                             type: array
@@ -2802,30 +2802,30 @@ spec:
               type: array
             observedGeneration:
               description: |-
-                The most recent generation observed in the the DelegatedRouteTable metadata.
+                The most recent generation observed in the the RouteTable metadata.
                 If the `observedGeneration` does not match `metadata.generation`,
                 Gloo Mesh has not processed the most recent version of this resource.
               format: int64
               type: integer
             selectedBy:
-              description: List of resources which have selected this DelegatedRouteTable. Can be RouteTables or other DelegatedRouteTables
+              description: List of resources which have selected this RouteTable. Can be VirtualHosts or other RouteTables
               items:
                 properties:
                   name:
-                    description: Name of resource selecting this DelegatedRouteTable
+                    description: Name of resource selecting this RouteTable
                     type: string
                   namespace:
-                    description: Namespace of resource selecting this DelegatedRouteTable
+                    description: Namespace of resource selecting this RouteTable
                     type: string
                   type:
                     description: |-
-                      Type of resource selecting this DelegatedRoute Table. Can be
-                      FederatedGateway, RouteTable, or DelegatedRouteTable.
+                      Type of resource selecting this RouteTable. Can be
+                      VirtualGateway, VirtualHost, or RouteTable.
                     type: string
                 type: object
               type: array
-            selectedDelegatedRouteTables:
-              description: List of DelegatedRouteTables that this DelegatedRouteTable delegates to
+            selectedRouteTables:
+              description: List of child RouteTables that this RouteTable delegates to
               items:
                 properties:
                   name:

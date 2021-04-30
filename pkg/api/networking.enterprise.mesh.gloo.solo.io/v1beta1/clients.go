@@ -44,11 +44,11 @@ type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualDestinations() VirtualDestinationClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
-	FederatedGateways() FederatedGatewayClient
+	VirtualGateways() VirtualGatewayClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	VirtualHosts() VirtualHostClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	RouteTables() RouteTableClient
-	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
-	DelegatedRouteTables() DelegatedRouteTableClient
 }
 
 type clientSet struct {
@@ -84,18 +84,18 @@ func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
-func (c *clientSet) FederatedGateways() FederatedGatewayClient {
-	return NewFederatedGatewayClient(c.client)
+func (c *clientSet) VirtualGateways() VirtualGatewayClient {
+	return NewVirtualGatewayClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) VirtualHosts() VirtualHostClient {
+	return NewVirtualHostClient(c.client)
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) RouteTables() RouteTableClient {
 	return NewRouteTableClient(c.client)
-}
-
-// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
-func (c *clientSet) DelegatedRouteTables() DelegatedRouteTableClient {
-	return NewDelegatedRouteTableClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
@@ -382,109 +382,109 @@ func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualD
 	return NewVirtualDestinationClient(client), nil
 }
 
-// Reader knows how to read and list FederatedGateways.
-type FederatedGatewayReader interface {
-	// Get retrieves a FederatedGateway for the given object key
-	GetFederatedGateway(ctx context.Context, key client.ObjectKey) (*FederatedGateway, error)
+// Reader knows how to read and list VirtualGateways.
+type VirtualGatewayReader interface {
+	// Get retrieves a VirtualGateway for the given object key
+	GetVirtualGateway(ctx context.Context, key client.ObjectKey) (*VirtualGateway, error)
 
-	// List retrieves list of FederatedGateways for a given namespace and list options.
-	ListFederatedGateway(ctx context.Context, opts ...client.ListOption) (*FederatedGatewayList, error)
+	// List retrieves list of VirtualGateways for a given namespace and list options.
+	ListVirtualGateway(ctx context.Context, opts ...client.ListOption) (*VirtualGatewayList, error)
 }
 
-// FederatedGatewayTransitionFunction instructs the FederatedGatewayWriter how to transition between an existing
-// FederatedGateway object and a desired on an Upsert
-type FederatedGatewayTransitionFunction func(existing, desired *FederatedGateway) error
+// VirtualGatewayTransitionFunction instructs the VirtualGatewayWriter how to transition between an existing
+// VirtualGateway object and a desired on an Upsert
+type VirtualGatewayTransitionFunction func(existing, desired *VirtualGateway) error
 
-// Writer knows how to create, delete, and update FederatedGateways.
-type FederatedGatewayWriter interface {
-	// Create saves the FederatedGateway object.
-	CreateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update VirtualGateways.
+type VirtualGatewayWriter interface {
+	// Create saves the VirtualGateway object.
+	CreateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.CreateOption) error
 
-	// Delete deletes the FederatedGateway object.
-	DeleteFederatedGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the VirtualGateway object.
+	DeleteVirtualGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given FederatedGateway object.
-	UpdateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error
+	// Update updates the given VirtualGateway object.
+	UpdateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error
 
-	// Patch patches the given FederatedGateway object.
-	PatchFederatedGateway(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given VirtualGateway object.
+	PatchVirtualGateway(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all FederatedGateway objects matching the given options.
-	DeleteAllOfFederatedGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all VirtualGateway objects matching the given options.
+	DeleteAllOfVirtualGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the FederatedGateway object.
-	UpsertFederatedGateway(ctx context.Context, obj *FederatedGateway, transitionFuncs ...FederatedGatewayTransitionFunction) error
+	// Create or Update the VirtualGateway object.
+	UpsertVirtualGateway(ctx context.Context, obj *VirtualGateway, transitionFuncs ...VirtualGatewayTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a FederatedGateway object.
-type FederatedGatewayStatusWriter interface {
+// StatusWriter knows how to update status subresource of a VirtualGateway object.
+type VirtualGatewayStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given FederatedGateway object.
-	UpdateFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error
+	// given VirtualGateway object.
+	UpdateVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error
 
-	// Patch patches the given FederatedGateway object's subresource.
-	PatchFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given VirtualGateway object's subresource.
+	PatchVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on FederatedGateways.
-type FederatedGatewayClient interface {
-	FederatedGatewayReader
-	FederatedGatewayWriter
-	FederatedGatewayStatusWriter
+// Client knows how to perform CRUD operations on VirtualGateways.
+type VirtualGatewayClient interface {
+	VirtualGatewayReader
+	VirtualGatewayWriter
+	VirtualGatewayStatusWriter
 }
 
-type federatedGatewayClient struct {
+type virtualGatewayClient struct {
 	client client.Client
 }
 
-func NewFederatedGatewayClient(client client.Client) *federatedGatewayClient {
-	return &federatedGatewayClient{client: client}
+func NewVirtualGatewayClient(client client.Client) *virtualGatewayClient {
+	return &virtualGatewayClient{client: client}
 }
 
-func (c *federatedGatewayClient) GetFederatedGateway(ctx context.Context, key client.ObjectKey) (*FederatedGateway, error) {
-	obj := &FederatedGateway{}
+func (c *virtualGatewayClient) GetVirtualGateway(ctx context.Context, key client.ObjectKey) (*VirtualGateway, error) {
+	obj := &VirtualGateway{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *federatedGatewayClient) ListFederatedGateway(ctx context.Context, opts ...client.ListOption) (*FederatedGatewayList, error) {
-	list := &FederatedGatewayList{}
+func (c *virtualGatewayClient) ListVirtualGateway(ctx context.Context, opts ...client.ListOption) (*VirtualGatewayList, error) {
+	list := &VirtualGatewayList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *federatedGatewayClient) CreateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.CreateOption) error {
+func (c *virtualGatewayClient) CreateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *federatedGatewayClient) DeleteFederatedGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &FederatedGateway{}
+func (c *virtualGatewayClient) DeleteVirtualGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &VirtualGateway{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *federatedGatewayClient) UpdateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error {
+func (c *virtualGatewayClient) UpdateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *federatedGatewayClient) PatchFederatedGateway(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error {
+func (c *virtualGatewayClient) PatchVirtualGateway(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *federatedGatewayClient) DeleteAllOfFederatedGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &FederatedGateway{}
+func (c *virtualGatewayClient) DeleteAllOfVirtualGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &VirtualGateway{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *federatedGatewayClient) UpsertFederatedGateway(ctx context.Context, obj *FederatedGateway, transitionFuncs ...FederatedGatewayTransitionFunction) error {
+func (c *virtualGatewayClient) UpsertVirtualGateway(ctx context.Context, obj *VirtualGateway, transitionFuncs ...VirtualGatewayTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*FederatedGateway), desired.(*FederatedGateway)); err != nil {
+			if err := txFunc(existing.(*VirtualGateway), desired.(*VirtualGateway)); err != nil {
 				return err
 			}
 		}
@@ -494,34 +494,176 @@ func (c *federatedGatewayClient) UpsertFederatedGateway(ctx context.Context, obj
 	return err
 }
 
-func (c *federatedGatewayClient) UpdateFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error {
+func (c *virtualGatewayClient) UpdateVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *federatedGatewayClient) PatchFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error {
+func (c *virtualGatewayClient) PatchVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides FederatedGatewayClients for multiple clusters.
-type MulticlusterFederatedGatewayClient interface {
-	// Cluster returns a FederatedGatewayClient for the given cluster
-	Cluster(cluster string) (FederatedGatewayClient, error)
+// Provides VirtualGatewayClients for multiple clusters.
+type MulticlusterVirtualGatewayClient interface {
+	// Cluster returns a VirtualGatewayClient for the given cluster
+	Cluster(cluster string) (VirtualGatewayClient, error)
 }
 
-type multiclusterFederatedGatewayClient struct {
+type multiclusterVirtualGatewayClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterFederatedGatewayClient(client multicluster.Client) MulticlusterFederatedGatewayClient {
-	return &multiclusterFederatedGatewayClient{client: client}
+func NewMulticlusterVirtualGatewayClient(client multicluster.Client) MulticlusterVirtualGatewayClient {
+	return &multiclusterVirtualGatewayClient{client: client}
 }
 
-func (m *multiclusterFederatedGatewayClient) Cluster(cluster string) (FederatedGatewayClient, error) {
+func (m *multiclusterVirtualGatewayClient) Cluster(cluster string) (VirtualGatewayClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewFederatedGatewayClient(client), nil
+	return NewVirtualGatewayClient(client), nil
+}
+
+// Reader knows how to read and list VirtualHosts.
+type VirtualHostReader interface {
+	// Get retrieves a VirtualHost for the given object key
+	GetVirtualHost(ctx context.Context, key client.ObjectKey) (*VirtualHost, error)
+
+	// List retrieves list of VirtualHosts for a given namespace and list options.
+	ListVirtualHost(ctx context.Context, opts ...client.ListOption) (*VirtualHostList, error)
+}
+
+// VirtualHostTransitionFunction instructs the VirtualHostWriter how to transition between an existing
+// VirtualHost object and a desired on an Upsert
+type VirtualHostTransitionFunction func(existing, desired *VirtualHost) error
+
+// Writer knows how to create, delete, and update VirtualHosts.
+type VirtualHostWriter interface {
+	// Create saves the VirtualHost object.
+	CreateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.CreateOption) error
+
+	// Delete deletes the VirtualHost object.
+	DeleteVirtualHost(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given VirtualHost object.
+	UpdateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualHost object.
+	PatchVirtualHost(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all VirtualHost objects matching the given options.
+	DeleteAllOfVirtualHost(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the VirtualHost object.
+	UpsertVirtualHost(ctx context.Context, obj *VirtualHost, transitionFuncs ...VirtualHostTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a VirtualHost object.
+type VirtualHostStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given VirtualHost object.
+	UpdateVirtualHostStatus(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualHost object's subresource.
+	PatchVirtualHostStatus(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on VirtualHosts.
+type VirtualHostClient interface {
+	VirtualHostReader
+	VirtualHostWriter
+	VirtualHostStatusWriter
+}
+
+type virtualHostClient struct {
+	client client.Client
+}
+
+func NewVirtualHostClient(client client.Client) *virtualHostClient {
+	return &virtualHostClient{client: client}
+}
+
+func (c *virtualHostClient) GetVirtualHost(ctx context.Context, key client.ObjectKey) (*VirtualHost, error) {
+	obj := &VirtualHost{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *virtualHostClient) ListVirtualHost(ctx context.Context, opts ...client.ListOption) (*VirtualHostList, error) {
+	list := &VirtualHostList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *virtualHostClient) CreateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) DeleteVirtualHost(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &VirtualHost{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) UpdateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) PatchVirtualHost(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *virtualHostClient) DeleteAllOfVirtualHost(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &VirtualHost{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) UpsertVirtualHost(ctx context.Context, obj *VirtualHost, transitionFuncs ...VirtualHostTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*VirtualHost), desired.(*VirtualHost)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *virtualHostClient) UpdateVirtualHostStatus(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) PatchVirtualHostStatus(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides VirtualHostClients for multiple clusters.
+type MulticlusterVirtualHostClient interface {
+	// Cluster returns a VirtualHostClient for the given cluster
+	Cluster(cluster string) (VirtualHostClient, error)
+}
+
+type multiclusterVirtualHostClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterVirtualHostClient(client multicluster.Client) MulticlusterVirtualHostClient {
+	return &multiclusterVirtualHostClient{client: client}
+}
+
+func (m *multiclusterVirtualHostClient) Cluster(cluster string) (VirtualHostClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualHostClient(client), nil
 }
 
 // Reader knows how to read and list RouteTables.
@@ -664,146 +806,4 @@ func (m *multiclusterRouteTableClient) Cluster(cluster string) (RouteTableClient
 		return nil, err
 	}
 	return NewRouteTableClient(client), nil
-}
-
-// Reader knows how to read and list DelegatedRouteTables.
-type DelegatedRouteTableReader interface {
-	// Get retrieves a DelegatedRouteTable for the given object key
-	GetDelegatedRouteTable(ctx context.Context, key client.ObjectKey) (*DelegatedRouteTable, error)
-
-	// List retrieves list of DelegatedRouteTables for a given namespace and list options.
-	ListDelegatedRouteTable(ctx context.Context, opts ...client.ListOption) (*DelegatedRouteTableList, error)
-}
-
-// DelegatedRouteTableTransitionFunction instructs the DelegatedRouteTableWriter how to transition between an existing
-// DelegatedRouteTable object and a desired on an Upsert
-type DelegatedRouteTableTransitionFunction func(existing, desired *DelegatedRouteTable) error
-
-// Writer knows how to create, delete, and update DelegatedRouteTables.
-type DelegatedRouteTableWriter interface {
-	// Create saves the DelegatedRouteTable object.
-	CreateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.CreateOption) error
-
-	// Delete deletes the DelegatedRouteTable object.
-	DeleteDelegatedRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
-
-	// Update updates the given DelegatedRouteTable object.
-	UpdateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error
-
-	// Patch patches the given DelegatedRouteTable object.
-	PatchDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error
-
-	// DeleteAllOf deletes all DelegatedRouteTable objects matching the given options.
-	DeleteAllOfDelegatedRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error
-
-	// Create or Update the DelegatedRouteTable object.
-	UpsertDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, transitionFuncs ...DelegatedRouteTableTransitionFunction) error
-}
-
-// StatusWriter knows how to update status subresource of a DelegatedRouteTable object.
-type DelegatedRouteTableStatusWriter interface {
-	// Update updates the fields corresponding to the status subresource for the
-	// given DelegatedRouteTable object.
-	UpdateDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error
-
-	// Patch patches the given DelegatedRouteTable object's subresource.
-	PatchDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error
-}
-
-// Client knows how to perform CRUD operations on DelegatedRouteTables.
-type DelegatedRouteTableClient interface {
-	DelegatedRouteTableReader
-	DelegatedRouteTableWriter
-	DelegatedRouteTableStatusWriter
-}
-
-type delegatedRouteTableClient struct {
-	client client.Client
-}
-
-func NewDelegatedRouteTableClient(client client.Client) *delegatedRouteTableClient {
-	return &delegatedRouteTableClient{client: client}
-}
-
-func (c *delegatedRouteTableClient) GetDelegatedRouteTable(ctx context.Context, key client.ObjectKey) (*DelegatedRouteTable, error) {
-	obj := &DelegatedRouteTable{}
-	if err := c.client.Get(ctx, key, obj); err != nil {
-		return nil, err
-	}
-	return obj, nil
-}
-
-func (c *delegatedRouteTableClient) ListDelegatedRouteTable(ctx context.Context, opts ...client.ListOption) (*DelegatedRouteTableList, error) {
-	list := &DelegatedRouteTableList{}
-	if err := c.client.List(ctx, list, opts...); err != nil {
-		return nil, err
-	}
-	return list, nil
-}
-
-func (c *delegatedRouteTableClient) CreateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.CreateOption) error {
-	return c.client.Create(ctx, obj, opts...)
-}
-
-func (c *delegatedRouteTableClient) DeleteDelegatedRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &DelegatedRouteTable{}
-	obj.SetName(key.Name)
-	obj.SetNamespace(key.Namespace)
-	return c.client.Delete(ctx, obj, opts...)
-}
-
-func (c *delegatedRouteTableClient) UpdateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error {
-	return c.client.Update(ctx, obj, opts...)
-}
-
-func (c *delegatedRouteTableClient) PatchDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error {
-	return c.client.Patch(ctx, obj, patch, opts...)
-}
-
-func (c *delegatedRouteTableClient) DeleteAllOfDelegatedRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &DelegatedRouteTable{}
-	return c.client.DeleteAllOf(ctx, obj, opts...)
-}
-
-func (c *delegatedRouteTableClient) UpsertDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, transitionFuncs ...DelegatedRouteTableTransitionFunction) error {
-	genericTxFunc := func(existing, desired runtime.Object) error {
-		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*DelegatedRouteTable), desired.(*DelegatedRouteTable)); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
-	return err
-}
-
-func (c *delegatedRouteTableClient) UpdateDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error {
-	return c.client.Status().Update(ctx, obj, opts...)
-}
-
-func (c *delegatedRouteTableClient) PatchDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error {
-	return c.client.Status().Patch(ctx, obj, patch, opts...)
-}
-
-// Provides DelegatedRouteTableClients for multiple clusters.
-type MulticlusterDelegatedRouteTableClient interface {
-	// Cluster returns a DelegatedRouteTableClient for the given cluster
-	Cluster(cluster string) (DelegatedRouteTableClient, error)
-}
-
-type multiclusterDelegatedRouteTableClient struct {
-	client multicluster.Client
-}
-
-func NewMulticlusterDelegatedRouteTableClient(client multicluster.Client) MulticlusterDelegatedRouteTableClient {
-	return &multiclusterDelegatedRouteTableClient{client: client}
-}
-
-func (m *multiclusterDelegatedRouteTableClient) Cluster(cluster string) (DelegatedRouteTableClient, error) {
-	client, err := m.client.Cluster(cluster)
-	if err != nil {
-		return nil, err
-	}
-	return NewDelegatedRouteTableClient(client), nil
 }

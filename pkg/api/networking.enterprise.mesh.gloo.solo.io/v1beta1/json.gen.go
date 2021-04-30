@@ -68,25 +68,47 @@ func (this *VirtualDestinationStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for FederatedGatewaySpec
-func (this *FederatedGatewaySpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualGatewaySpec
+func (this *VirtualGatewaySpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for FederatedGatewaySpec
-func (this *FederatedGatewaySpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualGatewaySpec
+func (this *VirtualGatewaySpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for FederatedGatewayStatus
-func (this *FederatedGatewayStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualGatewayStatus
+func (this *VirtualGatewayStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for FederatedGatewayStatus
-func (this *FederatedGatewayStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualGatewayStatus
+func (this *VirtualGatewayStatus) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for VirtualHostSpec
+func (this *VirtualHostSpec) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for VirtualHostSpec
+func (this *VirtualHostSpec) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for VirtualHostStatus
+func (this *VirtualHostStatus) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for VirtualHostStatus
+func (this *VirtualHostStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -109,27 +131,5 @@ func (this *RouteTableStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for RouteTableStatus
 func (this *RouteTableStatus) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for DelegatedRouteTableSpec
-func (this *DelegatedRouteTableSpec) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for DelegatedRouteTableSpec
-func (this *DelegatedRouteTableSpec) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for DelegatedRouteTableStatus
-func (this *DelegatedRouteTableStatus) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for DelegatedRouteTableStatus
-func (this *DelegatedRouteTableStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }

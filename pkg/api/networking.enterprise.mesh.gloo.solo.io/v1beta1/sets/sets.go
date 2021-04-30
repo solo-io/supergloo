@@ -433,208 +433,418 @@ func (s *virtualDestinationSet) Delta(newSet VirtualDestinationSet) sksets.Resou
 	return s.Generic().Delta(newSet.Generic())
 }
 
-type FederatedGatewaySet interface {
+type VirtualGatewaySet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway
 	// Return the Set as a map of key to resource.
-	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway
 	// Insert a resource into the set.
-	Insert(federatedGateway ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	Insert(virtualGateway ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(federatedGatewaySet FederatedGatewaySet) bool
+	Equal(virtualGatewaySet VirtualGatewaySet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(federatedGateway ezkube.ResourceId) bool
+	Has(virtualGateway ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(federatedGateway ezkube.ResourceId)
+	Delete(virtualGateway ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set FederatedGatewaySet) FederatedGatewaySet
+	Union(set VirtualGatewaySet) VirtualGatewaySet
 	// Return the difference with the provided set
-	Difference(set FederatedGatewaySet) FederatedGatewaySet
+	Difference(set VirtualGatewaySet) VirtualGatewaySet
 	// Return the intersection with the provided set
-	Intersection(set FederatedGatewaySet) FederatedGatewaySet
+	Intersection(set VirtualGatewaySet) VirtualGatewaySet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway, error)
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
 	Generic() sksets.ResourceSet
-	// returns the delta between this and and another FederatedGatewaySet
-	Delta(newSet FederatedGatewaySet) sksets.ResourceDelta
+	// returns the delta between this and and another VirtualGatewaySet
+	Delta(newSet VirtualGatewaySet) sksets.ResourceDelta
 }
 
-func makeGenericFederatedGatewaySet(federatedGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) sksets.ResourceSet {
+func makeGenericVirtualGatewaySet(virtualGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range federatedGatewayList {
+	for _, obj := range virtualGatewayList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type federatedGatewaySet struct {
+type virtualGatewaySet struct {
 	set sksets.ResourceSet
 }
 
-func NewFederatedGatewaySet(federatedGatewayList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) FederatedGatewaySet {
-	return &federatedGatewaySet{set: makeGenericFederatedGatewaySet(federatedGatewayList)}
+func NewVirtualGatewaySet(virtualGatewayList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) VirtualGatewaySet {
+	return &virtualGatewaySet{set: makeGenericVirtualGatewaySet(virtualGatewayList)}
 }
 
-func NewFederatedGatewaySetFromList(federatedGatewayList *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayList) FederatedGatewaySet {
-	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway, 0, len(federatedGatewayList.Items))
-	for idx := range federatedGatewayList.Items {
-		list = append(list, &federatedGatewayList.Items[idx])
+func NewVirtualGatewaySetFromList(virtualGatewayList *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayList) VirtualGatewaySet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway, 0, len(virtualGatewayList.Items))
+	for idx := range virtualGatewayList.Items {
+		list = append(list, &virtualGatewayList.Items[idx])
 	}
-	return &federatedGatewaySet{set: makeGenericFederatedGatewaySet(list)}
+	return &virtualGatewaySet{set: makeGenericVirtualGatewaySet(list)}
 }
 
-func (s *federatedGatewaySet) Keys() sets.String {
+func (s *virtualGatewaySet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.Generic().Keys()
 }
 
-func (s *federatedGatewaySet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway {
+func (s *virtualGatewaySet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway))
 		})
 	}
 
 	objs := s.Generic().List(genericFilters...)
-	federatedGatewayList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway, 0, len(objs))
+	virtualGatewayList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway, 0, len(objs))
 	for _, obj := range objs {
-		federatedGatewayList = append(federatedGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+		virtualGatewayList = append(virtualGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway))
 	}
-	return federatedGatewayList
+	return virtualGatewayList
 }
 
-func (s *federatedGatewaySet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway {
+func (s *virtualGatewaySet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway))
 		})
 	}
 
-	var federatedGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
+	var virtualGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway
 	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		federatedGatewayList = append(federatedGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+		virtualGatewayList = append(virtualGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway))
 	}
-	return federatedGatewayList
+	return virtualGatewayList
 }
 
-func (s *federatedGatewaySet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway {
+func (s *virtualGatewaySet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway{}
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway{}
 	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
 	}
 	return newMap
 }
 
-func (s *federatedGatewaySet) Insert(
-	federatedGatewayList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway,
+func (s *virtualGatewaySet) Insert(
+	virtualGatewayList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range federatedGatewayList {
+	for _, obj := range virtualGatewayList {
 		s.Generic().Insert(obj)
 	}
 }
 
-func (s *federatedGatewaySet) Has(federatedGateway ezkube.ResourceId) bool {
+func (s *virtualGatewaySet) Has(virtualGateway ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.Generic().Has(federatedGateway)
+	return s.Generic().Has(virtualGateway)
 }
 
-func (s *federatedGatewaySet) Equal(
-	federatedGatewaySet FederatedGatewaySet,
+func (s *virtualGatewaySet) Equal(
+	virtualGatewaySet VirtualGatewaySet,
 ) bool {
 	if s == nil {
-		return federatedGatewaySet == nil
+		return virtualGatewaySet == nil
 	}
-	return s.Generic().Equal(federatedGatewaySet.Generic())
+	return s.Generic().Equal(virtualGatewaySet.Generic())
 }
 
-func (s *federatedGatewaySet) Delete(FederatedGateway ezkube.ResourceId) {
+func (s *virtualGatewaySet) Delete(VirtualGateway ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.Generic().Delete(FederatedGateway)
+	s.Generic().Delete(VirtualGateway)
 }
 
-func (s *federatedGatewaySet) Union(set FederatedGatewaySet) FederatedGatewaySet {
+func (s *virtualGatewaySet) Union(set VirtualGatewaySet) VirtualGatewaySet {
 	if s == nil {
 		return set
 	}
-	return NewFederatedGatewaySet(append(s.List(), set.List()...)...)
+	return NewVirtualGatewaySet(append(s.List(), set.List()...)...)
 }
 
-func (s *federatedGatewaySet) Difference(set FederatedGatewaySet) FederatedGatewaySet {
+func (s *virtualGatewaySet) Difference(set VirtualGatewaySet) VirtualGatewaySet {
 	if s == nil {
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &federatedGatewaySet{set: newSet}
+	return &virtualGatewaySet{set: newSet}
 }
 
-func (s *federatedGatewaySet) Intersection(set FederatedGatewaySet) FederatedGatewaySet {
+func (s *virtualGatewaySet) Intersection(set VirtualGatewaySet) VirtualGatewaySet {
 	if s == nil {
 		return nil
 	}
 	newSet := s.Generic().Intersection(set.Generic())
-	var federatedGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway
+	var virtualGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway
 	for _, obj := range newSet.List() {
-		federatedGatewayList = append(federatedGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway))
+		virtualGatewayList = append(virtualGatewayList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway))
 	}
-	return NewFederatedGatewaySet(federatedGatewayList...)
+	return NewVirtualGatewaySet(virtualGatewayList...)
 }
 
-func (s *federatedGatewaySet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway, error) {
+func (s *virtualGatewaySet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find FederatedGateway %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find VirtualGateway %v", sksets.Key(id))
 	}
-	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway{}, id)
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway), nil
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway), nil
 }
 
-func (s *federatedGatewaySet) Length() int {
+func (s *virtualGatewaySet) Length() int {
 	if s == nil {
 		return 0
 	}
 	return s.Generic().Length()
 }
 
-func (s *federatedGatewaySet) Generic() sksets.ResourceSet {
+func (s *virtualGatewaySet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
 	return s.set
 }
 
-func (s *federatedGatewaySet) Delta(newSet FederatedGatewaySet) sksets.ResourceDelta {
+func (s *virtualGatewaySet) Delta(newSet VirtualGatewaySet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
+}
+
+type VirtualHostSet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost
+	// Return the Set as a map of key to resource.
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost
+	// Insert a resource into the set.
+	Insert(virtualHost ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(virtualHostSet VirtualHostSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(virtualHost ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(virtualHost ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set VirtualHostSet) VirtualHostSet
+	// Return the difference with the provided set
+	Difference(set VirtualHostSet) VirtualHostSet
+	// Return the intersection with the provided set
+	Intersection(set VirtualHostSet) VirtualHostSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another VirtualHostSet
+	Delta(newSet VirtualHostSet) sksets.ResourceDelta
+}
+
+func makeGenericVirtualHostSet(virtualHostList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range virtualHostList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type virtualHostSet struct {
+	set sksets.ResourceSet
+}
+
+func NewVirtualHostSet(virtualHostList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) VirtualHostSet {
+	return &virtualHostSet{set: makeGenericVirtualHostSet(virtualHostList)}
+}
+
+func NewVirtualHostSetFromList(virtualHostList *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostList) VirtualHostSet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost, 0, len(virtualHostList.Items))
+	for idx := range virtualHostList.Items {
+		list = append(list, &virtualHostList.Items[idx])
+	}
+	return &virtualHostSet{set: makeGenericVirtualHostSet(list)}
+}
+
+func (s *virtualHostSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	return s.Generic().Keys()
+}
+
+func (s *virtualHostSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost))
+		})
+	}
+
+	objs := s.Generic().List(genericFilters...)
+	virtualHostList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost, 0, len(objs))
+	for _, obj := range objs {
+		virtualHostList = append(virtualHostList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost))
+	}
+	return virtualHostList
+}
+
+func (s *virtualHostSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost))
+		})
+	}
+
+	var virtualHostList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		virtualHostList = append(virtualHostList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost))
+	}
+	return virtualHostList
+}
+
+func (s *virtualHostSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	}
+	return newMap
+}
+
+func (s *virtualHostSet) Insert(
+	virtualHostList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost,
+) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
+	for _, obj := range virtualHostList {
+		s.Generic().Insert(obj)
+	}
+}
+
+func (s *virtualHostSet) Has(virtualHost ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(virtualHost)
+}
+
+func (s *virtualHostSet) Equal(
+	virtualHostSet VirtualHostSet,
+) bool {
+	if s == nil {
+		return virtualHostSet == nil
+	}
+	return s.Generic().Equal(virtualHostSet.Generic())
+}
+
+func (s *virtualHostSet) Delete(VirtualHost ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(VirtualHost)
+}
+
+func (s *virtualHostSet) Union(set VirtualHostSet) VirtualHostSet {
+	if s == nil {
+		return set
+	}
+	return NewVirtualHostSet(append(s.List(), set.List()...)...)
+}
+
+func (s *virtualHostSet) Difference(set VirtualHostSet) VirtualHostSet {
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &virtualHostSet{set: newSet}
+}
+
+func (s *virtualHostSet) Intersection(set VirtualHostSet) VirtualHostSet {
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var virtualHostList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost
+	for _, obj := range newSet.List() {
+		virtualHostList = append(virtualHostList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost))
+	}
+	return NewVirtualHostSet(virtualHostList...)
+}
+
+func (s *virtualHostSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find VirtualHost %v", sksets.Key(id))
+	}
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost), nil
+}
+
+func (s *virtualHostSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
+}
+
+func (s *virtualHostSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *virtualHostSet) Delta(newSet VirtualHostSet) sksets.ResourceDelta {
 	if s == nil {
 		return sksets.ResourceDelta{
 			Inserted: newSet.Generic(),
@@ -845,216 +1055,6 @@ func (s *routeTableSet) Generic() sksets.ResourceSet {
 }
 
 func (s *routeTableSet) Delta(newSet RouteTableSet) sksets.ResourceDelta {
-	if s == nil {
-		return sksets.ResourceDelta{
-			Inserted: newSet.Generic(),
-		}
-	}
-	return s.Generic().Delta(newSet.Generic())
-}
-
-type DelegatedRouteTableSet interface {
-	// Get the set stored keys
-	Keys() sets.String
-	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
-	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
-	// Return the Set as a map of key to resource.
-	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
-	// Insert a resource into the set.
-	Insert(delegatedRouteTable ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
-	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(delegatedRouteTableSet DelegatedRouteTableSet) bool
-	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(delegatedRouteTable ezkube.ResourceId) bool
-	// Delete the key matching the resource
-	Delete(delegatedRouteTable ezkube.ResourceId)
-	// Return the union with the provided set
-	Union(set DelegatedRouteTableSet) DelegatedRouteTableSet
-	// Return the difference with the provided set
-	Difference(set DelegatedRouteTableSet) DelegatedRouteTableSet
-	// Return the intersection with the provided set
-	Intersection(set DelegatedRouteTableSet) DelegatedRouteTableSet
-	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable, error)
-	// Get the length of the set
-	Length() int
-	// returns the generic implementation of the set
-	Generic() sksets.ResourceSet
-	// returns the delta between this and and another DelegatedRouteTableSet
-	Delta(newSet DelegatedRouteTableSet) sksets.ResourceDelta
-}
-
-func makeGenericDelegatedRouteTableSet(delegatedRouteTableList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) sksets.ResourceSet {
-	var genericResources []ezkube.ResourceId
-	for _, obj := range delegatedRouteTableList {
-		genericResources = append(genericResources, obj)
-	}
-	return sksets.NewResourceSet(genericResources...)
-}
-
-type delegatedRouteTableSet struct {
-	set sksets.ResourceSet
-}
-
-func NewDelegatedRouteTableSet(delegatedRouteTableList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) DelegatedRouteTableSet {
-	return &delegatedRouteTableSet{set: makeGenericDelegatedRouteTableSet(delegatedRouteTableList)}
-}
-
-func NewDelegatedRouteTableSetFromList(delegatedRouteTableList *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableList) DelegatedRouteTableSet {
-	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable, 0, len(delegatedRouteTableList.Items))
-	for idx := range delegatedRouteTableList.Items {
-		list = append(list, &delegatedRouteTableList.Items[idx])
-	}
-	return &delegatedRouteTableSet{set: makeGenericDelegatedRouteTableSet(list)}
-}
-
-func (s *delegatedRouteTableSet) Keys() sets.String {
-	if s == nil {
-		return sets.String{}
-	}
-	return s.Generic().Keys()
-}
-
-func (s *delegatedRouteTableSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
-		})
-	}
-
-	objs := s.Generic().List(genericFilters...)
-	delegatedRouteTableList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable, 0, len(objs))
-	for _, obj := range objs {
-		delegatedRouteTableList = append(delegatedRouteTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
-	}
-	return delegatedRouteTableList
-}
-
-func (s *delegatedRouteTableSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable {
-	if s == nil {
-		return nil
-	}
-	var genericFilters []func(ezkube.ResourceId) bool
-	for _, filter := range filterResource {
-		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
-		})
-	}
-
-	var delegatedRouteTableList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
-	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		delegatedRouteTableList = append(delegatedRouteTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
-	}
-	return delegatedRouteTableList
-}
-
-func (s *delegatedRouteTableSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable {
-	if s == nil {
-		return nil
-	}
-
-	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable{}
-	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
-	}
-	return newMap
-}
-
-func (s *delegatedRouteTableSet) Insert(
-	delegatedRouteTableList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable,
-) {
-	if s == nil {
-		panic("cannot insert into nil set")
-	}
-
-	for _, obj := range delegatedRouteTableList {
-		s.Generic().Insert(obj)
-	}
-}
-
-func (s *delegatedRouteTableSet) Has(delegatedRouteTable ezkube.ResourceId) bool {
-	if s == nil {
-		return false
-	}
-	return s.Generic().Has(delegatedRouteTable)
-}
-
-func (s *delegatedRouteTableSet) Equal(
-	delegatedRouteTableSet DelegatedRouteTableSet,
-) bool {
-	if s == nil {
-		return delegatedRouteTableSet == nil
-	}
-	return s.Generic().Equal(delegatedRouteTableSet.Generic())
-}
-
-func (s *delegatedRouteTableSet) Delete(DelegatedRouteTable ezkube.ResourceId) {
-	if s == nil {
-		return
-	}
-	s.Generic().Delete(DelegatedRouteTable)
-}
-
-func (s *delegatedRouteTableSet) Union(set DelegatedRouteTableSet) DelegatedRouteTableSet {
-	if s == nil {
-		return set
-	}
-	return NewDelegatedRouteTableSet(append(s.List(), set.List()...)...)
-}
-
-func (s *delegatedRouteTableSet) Difference(set DelegatedRouteTableSet) DelegatedRouteTableSet {
-	if s == nil {
-		return set
-	}
-	newSet := s.Generic().Difference(set.Generic())
-	return &delegatedRouteTableSet{set: newSet}
-}
-
-func (s *delegatedRouteTableSet) Intersection(set DelegatedRouteTableSet) DelegatedRouteTableSet {
-	if s == nil {
-		return nil
-	}
-	newSet := s.Generic().Intersection(set.Generic())
-	var delegatedRouteTableList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable
-	for _, obj := range newSet.List() {
-		delegatedRouteTableList = append(delegatedRouteTableList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable))
-	}
-	return NewDelegatedRouteTableSet(delegatedRouteTableList...)
-}
-
-func (s *delegatedRouteTableSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable, error) {
-	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find DelegatedRouteTable %v", sksets.Key(id))
-	}
-	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable{}, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable), nil
-}
-
-func (s *delegatedRouteTableSet) Length() int {
-	if s == nil {
-		return 0
-	}
-	return s.Generic().Length()
-}
-
-func (s *delegatedRouteTableSet) Generic() sksets.ResourceSet {
-	if s == nil {
-		return nil
-	}
-	return s.set
-}
-
-func (s *delegatedRouteTableSet) Delta(newSet DelegatedRouteTableSet) sksets.ResourceDelta {
 	if s == nil {
 		return sksets.ResourceDelta{
 			Inserted: newSet.Generic(),

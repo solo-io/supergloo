@@ -73,31 +73,59 @@ func VirtualDestinationClientFromConfigFactoryProvider() VirtualDestinationClien
 	}
 }
 
-// Provider for FederatedGatewayClient from Clientset
-func FederatedGatewayClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient {
-	return clients.FederatedGateways()
+// Provider for VirtualGatewayClient from Clientset
+func VirtualGatewayClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient {
+	return clients.VirtualGateways()
 }
 
-// Provider for FederatedGateway Client from Client
-func FederatedGatewayClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient {
-	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewFederatedGatewayClient(client)
+// Provider for VirtualGateway Client from Client
+func VirtualGatewayClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewVirtualGatewayClient(client)
 }
 
-type FederatedGatewayClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient
+type VirtualGatewayClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient
 
-func FederatedGatewayClientFactoryProvider() FederatedGatewayClientFactory {
-	return FederatedGatewayClientProvider
+func VirtualGatewayClientFactoryProvider() VirtualGatewayClientFactory {
+	return VirtualGatewayClientProvider
 }
 
-type FederatedGatewayClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient, error)
+type VirtualGatewayClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient, error)
 
-func FederatedGatewayClientFromConfigFactoryProvider() FederatedGatewayClientFromConfigFactory {
-	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient, error) {
+func VirtualGatewayClientFromConfigFactoryProvider() VirtualGatewayClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient, error) {
 		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.FederatedGateways(), nil
+		return clients.VirtualGateways(), nil
+	}
+}
+
+// Provider for VirtualHostClient from Clientset
+func VirtualHostClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient {
+	return clients.VirtualHosts()
+}
+
+// Provider for VirtualHost Client from Client
+func VirtualHostClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewVirtualHostClient(client)
+}
+
+type VirtualHostClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient
+
+func VirtualHostClientFactoryProvider() VirtualHostClientFactory {
+	return VirtualHostClientProvider
+}
+
+type VirtualHostClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient, error)
+
+func VirtualHostClientFromConfigFactoryProvider() VirtualHostClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.VirtualHosts(), nil
 	}
 }
 
@@ -126,33 +154,5 @@ func RouteTableClientFromConfigFactoryProvider() RouteTableClientFromConfigFacto
 			return nil, err
 		}
 		return clients.RouteTables(), nil
-	}
-}
-
-// Provider for DelegatedRouteTableClient from Clientset
-func DelegatedRouteTableClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient {
-	return clients.DelegatedRouteTables()
-}
-
-// Provider for DelegatedRouteTable Client from Client
-func DelegatedRouteTableClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient {
-	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewDelegatedRouteTableClient(client)
-}
-
-type DelegatedRouteTableClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient
-
-func DelegatedRouteTableClientFactoryProvider() DelegatedRouteTableClientFactory {
-	return DelegatedRouteTableClientProvider
-}
-
-type DelegatedRouteTableClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient, error)
-
-func DelegatedRouteTableClientFromConfigFactoryProvider() DelegatedRouteTableClientFromConfigFactory {
-	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient, error) {
-		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.DelegatedRouteTables(), nil
 	}
 }

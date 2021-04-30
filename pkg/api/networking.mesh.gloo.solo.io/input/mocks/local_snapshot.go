@@ -170,18 +170,32 @@ func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
 }
 
-// FederatedGateways mocks base method
-func (m *MockLocalSnapshot) FederatedGateways() v1beta1sets.FederatedGatewaySet {
+// VirtualGateways mocks base method
+func (m *MockLocalSnapshot) VirtualGateways() v1beta1sets.VirtualGatewaySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FederatedGateways")
-	ret0, _ := ret[0].(v1beta1sets.FederatedGatewaySet)
+	ret := m.ctrl.Call(m, "VirtualGateways")
+	ret0, _ := ret[0].(v1beta1sets.VirtualGatewaySet)
 	return ret0
 }
 
-// FederatedGateways indicates an expected call of FederatedGateways
-func (mr *MockLocalSnapshotMockRecorder) FederatedGateways() *gomock.Call {
+// VirtualGateways indicates an expected call of VirtualGateways
+func (mr *MockLocalSnapshotMockRecorder) VirtualGateways() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FederatedGateways", reflect.TypeOf((*MockLocalSnapshot)(nil).FederatedGateways))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualGateways", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualGateways))
+}
+
+// VirtualHosts mocks base method
+func (m *MockLocalSnapshot) VirtualHosts() v1beta1sets.VirtualHostSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualHosts")
+	ret0, _ := ret[0].(v1beta1sets.VirtualHostSet)
+	return ret0
+}
+
+// VirtualHosts indicates an expected call of VirtualHosts
+func (mr *MockLocalSnapshotMockRecorder) VirtualHosts() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualHosts", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualHosts))
 }
 
 // RouteTables mocks base method
@@ -196,20 +210,6 @@ func (m *MockLocalSnapshot) RouteTables() v1beta1sets.RouteTableSet {
 func (mr *MockLocalSnapshotMockRecorder) RouteTables() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).RouteTables))
-}
-
-// DelegatedRouteTables mocks base method
-func (m *MockLocalSnapshot) DelegatedRouteTables() v1beta1sets.DelegatedRouteTableSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DelegatedRouteTables")
-	ret0, _ := ret[0].(v1beta1sets.DelegatedRouteTableSet)
-	return ret0
-}
-
-// DelegatedRouteTables indicates an expected call of DelegatedRouteTables
-func (mr *MockLocalSnapshotMockRecorder) DelegatedRouteTables() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelegatedRouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).DelegatedRouteTables))
 }
 
 // AccessLogRecords mocks base method
