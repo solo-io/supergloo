@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.s
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/certificates.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -83,6 +84,8 @@ message VirtualMeshSpec {
             // Reference to a Kubernetes Secret containing the root certificate authority.
             // Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
             .core.skv2.solo.io.ObjectRef secret = 2;
+
+            .common.mesh.gloo.solo.io.VaultCA vault = 3;
         }
 
         // Configuration for generating a self-signed root certificate.
@@ -98,6 +101,7 @@ message VirtualMeshSpec {
             // Root cert organization name. Defaults to "gloo-mesh".
             string org_name = 3;
         }
+        
     }
 
     // "Federation" refers to the ability to expose Destinations across service mesh boundaries, i.e. to traffic

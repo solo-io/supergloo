@@ -120,9 +120,11 @@ var _ = Describe("MtlsTranslator", func() {
 					Spec: certificatesv1.IssuedCertificateSpec{
 						Hosts: []string{"spiffe://cluster.not-local/ns/istio-system-2/sa/istiod-not-standard"},
 						Org:   "Istio",
-						SigningCertificateSecret: &skv2corev1.ObjectRef{
-							Name:      vm.GetRef().GetName() + "." + vm.GetRef().GetNamespace(),
-							Namespace: "gloo-mesh",
+						Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
+							SigningCertificateSecret: &skv2corev1.ObjectRef{
+								Name:      vm.GetRef().GetName() + "." + vm.GetRef().GetNamespace(),
+								Namespace: "gloo-mesh",
+							},
 						},
 						IssuedCertificateSecret: &skv2corev1.ObjectRef{
 							Name:      "cacerts",
@@ -181,9 +183,11 @@ var _ = Describe("MtlsTranslator", func() {
 					Spec: certificatesv1.IssuedCertificateSpec{
 						Hosts: []string{"spiffe://cluster.not-local/ns/istio-system-2/sa/istiod-not-standard"},
 						Org:   "Istio",
-						SigningCertificateSecret: &skv2corev1.ObjectRef{
-							Name:      generatedSecret.GetName(),
-							Namespace: generatedSecret.GetNamespace(),
+						Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
+							SigningCertificateSecret: &skv2corev1.ObjectRef{
+								Name:      generatedSecret.GetName(),
+								Namespace: generatedSecret.GetNamespace(),
+							},
 						},
 						IssuedCertificateSecret: &skv2corev1.ObjectRef{
 							Name:      "cacerts",

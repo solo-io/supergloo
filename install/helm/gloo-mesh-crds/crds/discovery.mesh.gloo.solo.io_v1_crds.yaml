@@ -1481,10 +1481,48 @@ spec:
                                     - generated
                                   - required:
                                     - secret
+                                  - properties:
+                                      vault:
+                                        oneOf:
+                                        - not:
+                                            anyOf:
+                                            - required:
+                                              - tokenSecretRef
+                                            - required:
+                                              - appRole
+                                            - required:
+                                              - kubernetesAuth
+                                        - required:
+                                          - tokenSecretRef
+                                        - required:
+                                          - appRole
+                                        - required:
+                                          - kubernetesAuth
+                                    required:
+                                    - vault
                               - required:
                                 - generated
                               - required:
                                 - secret
+                              - properties:
+                                  vault:
+                                    oneOf:
+                                    - not:
+                                        anyOf:
+                                        - required:
+                                          - tokenSecretRef
+                                        - required:
+                                          - appRole
+                                        - required:
+                                          - kubernetesAuth
+                                    - required:
+                                      - tokenSecretRef
+                                    - required:
+                                      - appRole
+                                    - required:
+                                      - kubernetesAuth
+                                required:
+                                - vault
                               properties:
                                 generated:
                                   description: Generate a self-signed root certificate with the given options.
@@ -1514,6 +1552,59 @@ spec:
                                     namespace:
                                       description: namespace of the resource being referenced
                                       type: string
+                                  type: object
+                                vault:
+                                  properties:
+                                    CaBundle:
+                                      format: binary
+                                      type: string
+                                    appRole:
+                                      properties:
+                                        path:
+                                          type: string
+                                        roleId:
+                                          type: string
+                                        secretRef:
+                                          properties:
+                                            name:
+                                              description: name of the resource being referenced
+                                              type: string
+                                            namespace:
+                                              description: namespace of the resource being referenced
+                                              type: string
+                                          type: object
+                                      type: object
+                                    caPath:
+                                      type: string
+                                    csrPath:
+                                      type: string
+                                    kubernetesAuth:
+                                      properties:
+                                        path:
+                                          type: string
+                                        role:
+                                          type: string
+                                        secretRef:
+                                          properties:
+                                            name:
+                                              description: name of the resource being referenced
+                                              type: string
+                                            namespace:
+                                              description: namespace of the resource being referenced
+                                              type: string
+                                          type: object
+                                      type: object
+                                    server:
+                                      type: string
+                                    tokenSecretRef:
+                                      properties:
+                                        name:
+                                          description: name of the resource being referenced
+                                          type: string
+                                        namespace:
+                                          description: namespace of the resource being referenced
+                                          type: string
+                                      type: object
                                   type: object
                               type: object
                           type: object

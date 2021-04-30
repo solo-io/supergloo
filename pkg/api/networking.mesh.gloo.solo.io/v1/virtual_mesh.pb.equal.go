@@ -287,6 +287,21 @@ func (m *VirtualMeshSpec_RootCertificateAuthority) Equal(that interface{}) bool 
 			}
 		}
 
+	case *VirtualMeshSpec_RootCertificateAuthority_Vault:
+		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Vault); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetVault()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVault()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetVault(), target.GetVault()) {
+				return false
+			}
+		}
+
 	default:
 		// m is nil but target is not nil
 		if m.CaSource != target.CaSource {

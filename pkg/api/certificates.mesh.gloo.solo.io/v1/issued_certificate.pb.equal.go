@@ -98,6 +98,21 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 			}
 		}
 
+	case *IssuedCertificateSpec_VaultCa:
+		if _, ok := target.Signer.(*IssuedCertificateSpec_VaultCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetVaultCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVaultCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetVaultCa(), target.GetVaultCa()) {
+				return false
+			}
+		}
+
 	default:
 		// m is nil but target is not nil
 		if m.Signer != target.Signer {

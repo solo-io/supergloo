@@ -2,6 +2,7 @@ syntax = "proto3";
 package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
 
+import "github.com/solo-io/gloo-mesh/api/common/v1/certificates.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -44,6 +45,8 @@ message IssuedCertificateSpec {
 
         // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
         .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
+
+        .common.mesh.gloo.solo.io.VaultCA vault_ca = 6;
 
     }
 

@@ -1,0 +1,49 @@
+syntax = "proto3";
+package common.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+message VaultCA {
+
+  string ca_path = 1;
+
+  string csr_path = 2;
+
+  string server = 3;
+
+  bytes CaBundle = 4;
+
+  message AppRole {
+
+    string path = 1;
+
+    string role_id = 2;
+
+    .core.skv2.solo.io.ObjectRef secret_ref = 3;
+  }
+
+  message Kubernetes {
+
+    string path = 1;
+
+    .core.skv2.solo.io.ObjectRef secret_ref = 2;
+
+    string role = 3;
+
+  }
+
+  oneof auth_type {
+
+    .core.skv2.solo.io.ObjectRef token_secret_ref = 5;
+
+    AppRole app_role = 6;
+
+    Kubernetes kubernetes_auth = 7;
+
+  }
+
+}
