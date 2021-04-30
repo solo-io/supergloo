@@ -4,9 +4,8 @@
 package v1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -15,22 +14,22 @@ import (
 
 // GroupVersionKind for TrafficPolicy
 var TrafficPolicyGVK = schema.GroupVersionKind{
-	Group:   "networking.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "TrafficPolicy",
+    Group: "networking.mesh.gloo.solo.io",
+    Version: "v1",
+    Kind: "TrafficPolicy",
 }
 
 // TrafficPolicy is the Schema for the trafficPolicy API
 type TrafficPolicy struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TrafficPolicySpec   `json:"spec,omitempty"`
-	Status TrafficPolicyStatus `json:"status,omitempty"`
+    Spec TrafficPolicySpec `json:"spec,omitempty"`
+    Status TrafficPolicyStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (TrafficPolicy) GVK() schema.GroupVersionKind {
+func (TrafficPolicy)  GVK() schema.GroupVersionKind {
 	return TrafficPolicyGVK
 }
 
@@ -38,9 +37,9 @@ func (TrafficPolicy) GVK() schema.GroupVersionKind {
 
 // TrafficPolicyList contains a list of TrafficPolicy
 type TrafficPolicyList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []TrafficPolicy `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []TrafficPolicy `json:"items"`
 }
 
 // +genclient
@@ -50,22 +49,22 @@ type TrafficPolicyList struct {
 
 // GroupVersionKind for AccessPolicy
 var AccessPolicyGVK = schema.GroupVersionKind{
-	Group:   "networking.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "AccessPolicy",
+    Group: "networking.mesh.gloo.solo.io",
+    Version: "v1",
+    Kind: "AccessPolicy",
 }
 
 // AccessPolicy is the Schema for the accessPolicy API
 type AccessPolicy struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   AccessPolicySpec   `json:"spec,omitempty"`
-	Status AccessPolicyStatus `json:"status,omitempty"`
+    Spec AccessPolicySpec `json:"spec,omitempty"`
+    Status AccessPolicyStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (AccessPolicy) GVK() schema.GroupVersionKind {
+func (AccessPolicy)  GVK() schema.GroupVersionKind {
 	return AccessPolicyGVK
 }
 
@@ -73,9 +72,9 @@ func (AccessPolicy) GVK() schema.GroupVersionKind {
 
 // AccessPolicyList contains a list of AccessPolicy
 type AccessPolicyList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []AccessPolicy `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []AccessPolicy `json:"items"`
 }
 
 // +genclient
@@ -85,22 +84,22 @@ type AccessPolicyList struct {
 
 // GroupVersionKind for VirtualMesh
 var VirtualMeshGVK = schema.GroupVersionKind{
-	Group:   "networking.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "VirtualMesh",
+    Group: "networking.mesh.gloo.solo.io",
+    Version: "v1",
+    Kind: "VirtualMesh",
 }
 
 // VirtualMesh is the Schema for the virtualMesh API
 type VirtualMesh struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VirtualMeshSpec   `json:"spec,omitempty"`
-	Status VirtualMeshStatus `json:"status,omitempty"`
+    Spec VirtualMeshSpec `json:"spec,omitempty"`
+    Status VirtualMeshStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (VirtualMesh) GVK() schema.GroupVersionKind {
+func (VirtualMesh)  GVK() schema.GroupVersionKind {
 	return VirtualMeshGVK
 }
 
@@ -108,13 +107,13 @@ func (VirtualMesh) GVK() schema.GroupVersionKind {
 
 // VirtualMeshList contains a list of VirtualMesh
 type VirtualMeshList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []VirtualMesh `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []VirtualMesh `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&TrafficPolicy{}, &TrafficPolicyList{})
-	SchemeBuilder.Register(&AccessPolicy{}, &AccessPolicyList{})
-	SchemeBuilder.Register(&VirtualMesh{}, &VirtualMeshList{})
+    SchemeBuilder.Register(&TrafficPolicy{}, &TrafficPolicyList{})
+    SchemeBuilder.Register(&AccessPolicy{}, &AccessPolicyList{})
+    SchemeBuilder.Register(&VirtualMesh{}, &VirtualMeshList{})
 }

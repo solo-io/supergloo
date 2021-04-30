@@ -48,7 +48,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.2
 	github.com/onsi/ginkgo v1.14.1
-	github.com/onsi/gomega v1.10.4
+	github.com/onsi/gomega v1.10.5
 	github.com/openservicemesh/osm v0.3.0
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
@@ -63,21 +63,21 @@ require (
 	github.com/solo-io/anyvendor v0.0.3
 	github.com/solo-io/external-apis v0.1.4
 	github.com/solo-io/go-list-licenses v0.1.3
-	github.com/solo-io/go-utils v0.20.4
+	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.16-0.20210430171146-d93a255b191c
+	github.com/solo-io/skv2 v0.17.16-0.20210430174420-1f61650644b8
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
-	github.com/spf13/cobra v1.1.1
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	github.com/stoewer/go-strcase v1.2.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.16.0
-	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
-	google.golang.org/grpc v1.33.2
+	golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
+	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.4.2
 	istio.io/api v0.0.0-20210121191246-a7d07ed40d49
 	istio.io/client-go v0.0.0-20200908160912-f99162621a1a

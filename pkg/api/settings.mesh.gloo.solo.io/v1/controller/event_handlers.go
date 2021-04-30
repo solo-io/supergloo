@@ -8,118 +8,118 @@ package controller
 import (
 	"context"
 
-	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+    settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/events"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/events"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Handle events for the Settings Resource
 // DEPRECATED: Prefer reconciler pattern.
 type SettingsEventHandler interface {
-	CreateSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error
-	UpdateSettings(old, new *settings_mesh_gloo_solo_io_v1.Settings) error
-	DeleteSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error
-	GenericSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error
+    CreateSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error
+    UpdateSettings(old, new *settings_mesh_gloo_solo_io_v1.Settings) error
+    DeleteSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error
+    GenericSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error
 }
 
 type SettingsEventHandlerFuncs struct {
-	OnCreate  func(obj *settings_mesh_gloo_solo_io_v1.Settings) error
-	OnUpdate  func(old, new *settings_mesh_gloo_solo_io_v1.Settings) error
-	OnDelete  func(obj *settings_mesh_gloo_solo_io_v1.Settings) error
-	OnGeneric func(obj *settings_mesh_gloo_solo_io_v1.Settings) error
+    OnCreate  func(obj *settings_mesh_gloo_solo_io_v1.Settings) error
+    OnUpdate  func(old, new *settings_mesh_gloo_solo_io_v1.Settings) error
+    OnDelete  func(obj *settings_mesh_gloo_solo_io_v1.Settings) error
+    OnGeneric func(obj *settings_mesh_gloo_solo_io_v1.Settings) error
 }
 
 func (f *SettingsEventHandlerFuncs) CreateSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error {
-	if f.OnCreate == nil {
-		return nil
-	}
-	return f.OnCreate(obj)
+    if f.OnCreate == nil {
+        return nil
+    }
+    return f.OnCreate(obj)
 }
 
 func (f *SettingsEventHandlerFuncs) DeleteSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error {
-	if f.OnDelete == nil {
-		return nil
-	}
-	return f.OnDelete(obj)
+    if f.OnDelete == nil {
+        return nil
+    }
+    return f.OnDelete(obj)
 }
 
 func (f *SettingsEventHandlerFuncs) UpdateSettings(objOld, objNew *settings_mesh_gloo_solo_io_v1.Settings) error {
-	if f.OnUpdate == nil {
-		return nil
-	}
-	return f.OnUpdate(objOld, objNew)
+    if f.OnUpdate == nil {
+        return nil
+    }
+    return f.OnUpdate(objOld, objNew)
 }
 
 func (f *SettingsEventHandlerFuncs) GenericSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) error {
-	if f.OnGeneric == nil {
-		return nil
-	}
-	return f.OnGeneric(obj)
+    if f.OnGeneric == nil {
+        return nil
+    }
+    return f.OnGeneric(obj)
 }
 
 type SettingsEventWatcher interface {
-	AddEventHandler(ctx context.Context, h SettingsEventHandler, predicates ...predicate.Predicate) error
+    AddEventHandler(ctx context.Context, h SettingsEventHandler, predicates ...predicate.Predicate) error
 }
 
 type settingsEventWatcher struct {
-	watcher events.EventWatcher
+    watcher events.EventWatcher
 }
 
 func NewSettingsEventWatcher(name string, mgr manager.Manager) SettingsEventWatcher {
-	return &settingsEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &settings_mesh_gloo_solo_io_v1.Settings{}),
-	}
+    return &settingsEventWatcher{
+        watcher: events.NewWatcher(name, mgr, &settings_mesh_gloo_solo_io_v1.Settings{}),
+    }
 }
 
 func (c *settingsEventWatcher) AddEventHandler(ctx context.Context, h SettingsEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericSettingsHandler{handler: h}
-	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
-		return err
-	}
-	return nil
+    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
+        return err
+    }
+    return nil
 }
 
 // genericSettingsHandler implements a generic events.EventHandler
 type genericSettingsHandler struct {
-	handler SettingsEventHandler
+    handler SettingsEventHandler
 }
 
 func (h genericSettingsHandler) Create(object client.Object) error {
-	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Settings)
-	if !ok {
-		return errors.Errorf("internal error: Settings handler received event for %T", object)
-	}
-	return h.handler.CreateSettings(obj)
+    obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Settings)
+    if !ok {
+        return errors.Errorf("internal error: Settings handler received event for %T", object)
+    }
+    return h.handler.CreateSettings(obj)
 }
 
 func (h genericSettingsHandler) Delete(object client.Object) error {
-	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Settings)
-	if !ok {
-		return errors.Errorf("internal error: Settings handler received event for %T", object)
-	}
-	return h.handler.DeleteSettings(obj)
+    obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Settings)
+    if !ok {
+        return errors.Errorf("internal error: Settings handler received event for %T", object)
+    }
+    return h.handler.DeleteSettings(obj)
 }
 
 func (h genericSettingsHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*settings_mesh_gloo_solo_io_v1.Settings)
-	if !ok {
-		return errors.Errorf("internal error: Settings handler received event for %T", old)
-	}
-	objNew, ok := new.(*settings_mesh_gloo_solo_io_v1.Settings)
-	if !ok {
-		return errors.Errorf("internal error: Settings handler received event for %T", new)
-	}
-	return h.handler.UpdateSettings(objOld, objNew)
+    objOld, ok := old.(*settings_mesh_gloo_solo_io_v1.Settings)
+    if !ok {
+        return errors.Errorf("internal error: Settings handler received event for %T", old)
+    }
+    objNew, ok := new.(*settings_mesh_gloo_solo_io_v1.Settings)
+    if !ok {
+        return errors.Errorf("internal error: Settings handler received event for %T", new)
+    }
+    return h.handler.UpdateSettings(objOld, objNew)
 }
 
 func (h genericSettingsHandler) Generic(object client.Object) error {
-	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Settings)
-	if !ok {
-		return errors.Errorf("internal error: Settings handler received event for %T", object)
-	}
-	return h.handler.GenericSettings(obj)
+    obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Settings)
+    if !ok {
+        return errors.Errorf("internal error: Settings handler received event for %T", object)
+    }
+    return h.handler.GenericSettings(obj)
 }

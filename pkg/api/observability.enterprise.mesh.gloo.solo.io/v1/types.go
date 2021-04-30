@@ -4,9 +4,8 @@
 package v1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -15,22 +14,22 @@ import (
 
 // GroupVersionKind for AccessLogRecord
 var AccessLogRecordGVK = schema.GroupVersionKind{
-	Group:   "observability.enterprise.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "AccessLogRecord",
+    Group: "observability.enterprise.mesh.gloo.solo.io",
+    Version: "v1",
+    Kind: "AccessLogRecord",
 }
 
 // AccessLogRecord is the Schema for the accessLogRecord API
 type AccessLogRecord struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   AccessLogRecordSpec   `json:"spec,omitempty"`
-	Status AccessLogRecordStatus `json:"status,omitempty"`
+    Spec AccessLogRecordSpec `json:"spec,omitempty"`
+    Status AccessLogRecordStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (AccessLogRecord) GVK() schema.GroupVersionKind {
+func (AccessLogRecord)  GVK() schema.GroupVersionKind {
 	return AccessLogRecordGVK
 }
 
@@ -38,11 +37,11 @@ func (AccessLogRecord) GVK() schema.GroupVersionKind {
 
 // AccessLogRecordList contains a list of AccessLogRecord
 type AccessLogRecordList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []AccessLogRecord `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []AccessLogRecord `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&AccessLogRecord{}, &AccessLogRecordList{})
+    SchemeBuilder.Register(&AccessLogRecord{}, &AccessLogRecordList{})
 }
