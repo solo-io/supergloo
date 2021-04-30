@@ -115,6 +115,7 @@ func discoveryOperator() model.Operator {
 		Name: "discovery",
 		Deployment: model.Deployment{
 			Image: glooMeshImage(),
+			PodAnnotations: []string{"sidecar.istio.io/inject: false"},
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -167,6 +168,7 @@ func NetworkingOperator(name string) model.Operator {
 		Name: name,
 		Deployment: model.Deployment{
 			Image: glooMeshImage(),
+			PodAnnotations: []string{"sidecar.istio.io/inject: false"},
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -212,6 +214,7 @@ func certAgentOperator() model.Operator {
 		Name: "cert-agent",
 		Deployment: model.Deployment{
 			Image: certAgentImage(),
+			PodAnnotations: []string{"sidecar.istio.io/inject: false"},
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("50m"),
