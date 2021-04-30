@@ -148,9 +148,9 @@ func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ClientCertSecretName, "client-cert-secret-name", "", "Secret name for the client cert for communication with relay server. Note that if a bootstrap token is provided, then a client certificate will be created automatically.")
 	flags.StringVar(&o.ClientCertSecretNamespace, "client-cert-secret-namespace", "", "Secret namespace for the client cert for communication with relay server.")
 
-	flags.StringVar(&o.TokenSecretName, "token-secret-name", "", "Secret name for the bootstrap token. This token will be used to boostrap a client certificate from relay server. Not needed if already have a client certificate.")
+	flags.StringVar(&o.TokenSecretName, "token-secret-name", "", "Secret name for the bootstrap token. This token will be used to bootstrap a client certificate from relay server. Not needed if you already have a client certificate.")
 	flags.StringVar(&o.TokenSecretNamespace, "token-secret-namespace", "", "Secret namespace for the bootstrap token.")
-	flags.StringVar(&o.TokenSecretKey, "token-secret-key", "token", "Secret namespace for the bootstrap token.")
+	flags.StringVar(&o.TokenSecretKey, "token-secret-key", "token", "Secret data entry key for the bootstrap token.")
 
 	flags.StringVar(&o.AgentChartPathOverride, "enterprise-agent-chart-file", "",
 		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
