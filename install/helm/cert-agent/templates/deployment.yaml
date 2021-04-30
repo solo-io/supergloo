@@ -11,6 +11,8 @@ kind: Deployment
 metadata:
   labels:
     app: cert-agent
+  annotations:
+    sidecar.istio.io/inject: "false"
   name: cert-agent
   namespace: {{ .Release.Namespace }}
 spec:

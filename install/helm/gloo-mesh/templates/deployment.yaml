@@ -11,6 +11,8 @@ kind: Deployment
 metadata:
   labels:
     app: discovery
+  annotations:
+    sidecar.istio.io/inject: "false"
   name: discovery
   namespace: {{ .Release.Namespace }}
 spec:
@@ -106,6 +108,8 @@ kind: Deployment
 metadata:
   labels:
     app: networking
+  annotations:
+    sidecar.istio.io/inject: "false"
   name: networking
   namespace: {{ .Release.Namespace }}
 spec:
