@@ -145,6 +145,7 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 		destination.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, destination)
 		destination.Status.AppliedAccessPolicies = validateAndReturnApprovedAccessPolicies(ctx, input, reporter, destination)
 		destination.Status.AppliedFederation = validateAndReturnApprovedFederation(ctx, input, reporter, destination)
+		destination.Status.RequiredSubsets = validateAndReturnRequiredSubsets(ctx, input, destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -350,6 +351,32 @@ func validateAndReturnApprovedFederation(
 		virtualMesh.Status.State = commonv1.ApprovalState_INVALID
 		return nil
 	}
+}
+
+func validateAndReturnRequiredSubsets(
+	ctx context.Context,
+	input input.LocalSnapshot,
+	destination *discoveryv1.Destination,
+) []*discoveryv1.DestinationStatus_RequiredSubsets {
+	var requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets
+
+	for _, requiredSubset := range destination.Status.RequiredSubsets {
+
+		trafficPolicy, err := input.TrafficPolicies().Find(requiredSubset.Ref)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).DPanicf("could not find TrafficPolicy referenced in required subset: %s", sets.Key(requiredSubset.Ref))
+			continue
+		}
+
+		// don't require subsets from invalid TrafficPolicies
+		if trafficPolicy.Status.State != commonv1.ApprovalState_ACCEPTED {
+			continue
+		}
+
+		requiredSubsets = append(requiredSubsets, requiredSubset)
+	}
+
+	return requiredSubsets
 }
 
 func validateAndReturnVirtualMesh(
@@ -667,9 +694,6 @@ func getRequiredSubsets(
 ) []*discoveryv1.DestinationStatus_RequiredSubsets {
 	var matchingTrafficPolicies networkingv1.TrafficPolicySlice
 	for _, policy := range trafficPolicies {
-		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
-			continue
-		}
 		if referencedByTrafficShiftSubset(destination, policy) {
 			matchingTrafficPolicies = append(matchingTrafficPolicies, policy)
 		}

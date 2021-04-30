@@ -704,10 +704,50 @@ var _ = Describe("Applier", func() {
 					},
 				},
 			}
+			// should not be in required subsets
+			invalidTrafficPolicy := &networkingv1.TrafficPolicy{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tp3",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.TrafficPolicySpec{
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
+										Name:        "nonexistent",
+										Namespace:   "namespace",
+										ClusterName: "cluster",
+									},
+								},
+							},
+						},
+					},
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        destination.Spec.GetKubeService().Ref.Name,
+											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
+											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
+											Subset: map[string]string{
+												"version": "v3",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
 
 			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddDestinations(discoveryv1.DestinationSlice{destination}).
-				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy1, trafficPolicy2, invalidTrafficPolicy}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload}).
 				AddMeshes(discoveryv1.MeshSlice{mesh}).
 				Build()
