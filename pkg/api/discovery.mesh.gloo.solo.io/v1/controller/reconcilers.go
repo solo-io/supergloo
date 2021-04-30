@@ -5,24 +5,22 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
-
-
 import (
 	"context"
 
-    discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 
-    "github.com/pkg/errors"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    "github.com/solo-io/skv2/pkg/reconcile"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/predicate"
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Reconcile Upsert events for the Destination Resource.
 // implemented by the user
 type DestinationReconciler interface {
-    ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error)
+	ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the Destination Resource.
@@ -30,117 +28,116 @@ type DestinationReconciler interface {
 // before being deleted.
 // implemented by the user
 type DestinationDeletionReconciler interface {
-    ReconcileDestinationDeletion(req reconcile.Request) error
+	ReconcileDestinationDeletion(req reconcile.Request) error
 }
 
 type DestinationReconcilerFuncs struct {
-    OnReconcileDestination func(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error)
-    OnReconcileDestinationDeletion func(req reconcile.Request) error
+	OnReconcileDestination         func(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error)
+	OnReconcileDestinationDeletion func(req reconcile.Request) error
 }
 
 func (f *DestinationReconcilerFuncs) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error) {
-    if f.OnReconcileDestination == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileDestination(obj)
+	if f.OnReconcileDestination == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDestination(obj)
 }
 
 func (f *DestinationReconcilerFuncs) ReconcileDestinationDeletion(req reconcile.Request) error {
-    if f.OnReconcileDestinationDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileDestinationDeletion(req)
+	if f.OnReconcileDestinationDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileDestinationDeletion(req)
 }
 
 // Reconcile and finalize the Destination Resource
 // implemented by the user
 type DestinationFinalizer interface {
-    DestinationReconciler
+	DestinationReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    DestinationFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	DestinationFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
 }
 
 type DestinationReconcileLoop interface {
-    RunDestinationReconciler(ctx context.Context, rec DestinationReconciler, predicates ...predicate.Predicate) error
+	RunDestinationReconciler(ctx context.Context, rec DestinationReconciler, predicates ...predicate.Predicate) error
 }
 
 type destinationReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewDestinationReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) DestinationReconcileLoop {
-    return &destinationReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &discovery_mesh_gloo_solo_io_v1.Destination{}, options),
-    }
+	return &destinationReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &discovery_mesh_gloo_solo_io_v1.Destination{}, options),
+	}
 }
 
 func (c *destinationReconcileLoop) RunDestinationReconciler(ctx context.Context, reconciler DestinationReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericDestinationReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericDestinationReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(DestinationFinalizer); ok {
-        reconcilerWrapper = genericDestinationFinalizer{
-            genericDestinationReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericDestinationFinalizer{
+			genericDestinationReconciler: genericReconciler,
+			finalizingReconciler:         finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericDestinationHandler implements a generic reconcile.Reconciler
 type genericDestinationReconciler struct {
-    reconciler DestinationReconciler
+	reconciler DestinationReconciler
 }
 
 func (r genericDestinationReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: Destination handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileDestination(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Destination handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileDestination(obj)
 }
 
 func (r genericDestinationReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(DestinationDeletionReconciler); ok {
-        return deletionReconciler.ReconcileDestinationDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(DestinationDeletionReconciler); ok {
+		return deletionReconciler.ReconcileDestinationDeletion(request)
+	}
+	return nil
 }
 
 // genericDestinationFinalizer implements a generic reconcile.FinalizingReconciler
 type genericDestinationFinalizer struct {
-    genericDestinationReconciler
-    finalizingReconciler DestinationFinalizer
+	genericDestinationReconciler
+	finalizingReconciler DestinationFinalizer
 }
 
-
 func (r genericDestinationFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.DestinationFinalizerName()
+	return r.finalizingReconciler.DestinationFinalizerName()
 }
 
 func (r genericDestinationFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return errors.Errorf("internal error: Destination handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeDestination(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeDestination(obj)
 }
 
 // Reconcile Upsert events for the Workload Resource.
 // implemented by the user
 type WorkloadReconciler interface {
-    ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error)
+	ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the Workload Resource.
@@ -148,117 +145,116 @@ type WorkloadReconciler interface {
 // before being deleted.
 // implemented by the user
 type WorkloadDeletionReconciler interface {
-    ReconcileWorkloadDeletion(req reconcile.Request) error
+	ReconcileWorkloadDeletion(req reconcile.Request) error
 }
 
 type WorkloadReconcilerFuncs struct {
-    OnReconcileWorkload func(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error)
-    OnReconcileWorkloadDeletion func(req reconcile.Request) error
+	OnReconcileWorkload         func(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error)
+	OnReconcileWorkloadDeletion func(req reconcile.Request) error
 }
 
 func (f *WorkloadReconcilerFuncs) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error) {
-    if f.OnReconcileWorkload == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileWorkload(obj)
+	if f.OnReconcileWorkload == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileWorkload(obj)
 }
 
 func (f *WorkloadReconcilerFuncs) ReconcileWorkloadDeletion(req reconcile.Request) error {
-    if f.OnReconcileWorkloadDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileWorkloadDeletion(req)
+	if f.OnReconcileWorkloadDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileWorkloadDeletion(req)
 }
 
 // Reconcile and finalize the Workload Resource
 // implemented by the user
 type WorkloadFinalizer interface {
-    WorkloadReconciler
+	WorkloadReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    WorkloadFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	WorkloadFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
 }
 
 type WorkloadReconcileLoop interface {
-    RunWorkloadReconciler(ctx context.Context, rec WorkloadReconciler, predicates ...predicate.Predicate) error
+	RunWorkloadReconciler(ctx context.Context, rec WorkloadReconciler, predicates ...predicate.Predicate) error
 }
 
 type workloadReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewWorkloadReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) WorkloadReconcileLoop {
-    return &workloadReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &discovery_mesh_gloo_solo_io_v1.Workload{}, options),
-    }
+	return &workloadReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &discovery_mesh_gloo_solo_io_v1.Workload{}, options),
+	}
 }
 
 func (c *workloadReconcileLoop) RunWorkloadReconciler(ctx context.Context, reconciler WorkloadReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericWorkloadReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericWorkloadReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(WorkloadFinalizer); ok {
-        reconcilerWrapper = genericWorkloadFinalizer{
-            genericWorkloadReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericWorkloadFinalizer{
+			genericWorkloadReconciler: genericReconciler,
+			finalizingReconciler:      finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericWorkloadHandler implements a generic reconcile.Reconciler
 type genericWorkloadReconciler struct {
-    reconciler WorkloadReconciler
+	reconciler WorkloadReconciler
 }
 
 func (r genericWorkloadReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: Workload handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileWorkload(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Workload handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileWorkload(obj)
 }
 
 func (r genericWorkloadReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(WorkloadDeletionReconciler); ok {
-        return deletionReconciler.ReconcileWorkloadDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(WorkloadDeletionReconciler); ok {
+		return deletionReconciler.ReconcileWorkloadDeletion(request)
+	}
+	return nil
 }
 
 // genericWorkloadFinalizer implements a generic reconcile.FinalizingReconciler
 type genericWorkloadFinalizer struct {
-    genericWorkloadReconciler
-    finalizingReconciler WorkloadFinalizer
+	genericWorkloadReconciler
+	finalizingReconciler WorkloadFinalizer
 }
 
-
 func (r genericWorkloadFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.WorkloadFinalizerName()
+	return r.finalizingReconciler.WorkloadFinalizerName()
 }
 
 func (r genericWorkloadFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return errors.Errorf("internal error: Workload handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeWorkload(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeWorkload(obj)
 }
 
 // Reconcile Upsert events for the Mesh Resource.
 // implemented by the user
 type MeshReconciler interface {
-    ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error)
+	ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the Mesh Resource.
@@ -266,109 +262,108 @@ type MeshReconciler interface {
 // before being deleted.
 // implemented by the user
 type MeshDeletionReconciler interface {
-    ReconcileMeshDeletion(req reconcile.Request) error
+	ReconcileMeshDeletion(req reconcile.Request) error
 }
 
 type MeshReconcilerFuncs struct {
-    OnReconcileMesh func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error)
-    OnReconcileMeshDeletion func(req reconcile.Request) error
+	OnReconcileMesh         func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error)
+	OnReconcileMeshDeletion func(req reconcile.Request) error
 }
 
 func (f *MeshReconcilerFuncs) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error) {
-    if f.OnReconcileMesh == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileMesh(obj)
+	if f.OnReconcileMesh == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileMesh(obj)
 }
 
 func (f *MeshReconcilerFuncs) ReconcileMeshDeletion(req reconcile.Request) error {
-    if f.OnReconcileMeshDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileMeshDeletion(req)
+	if f.OnReconcileMeshDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileMeshDeletion(req)
 }
 
 // Reconcile and finalize the Mesh Resource
 // implemented by the user
 type MeshFinalizer interface {
-    MeshReconciler
+	MeshReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    MeshFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	MeshFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
 }
 
 type MeshReconcileLoop interface {
-    RunMeshReconciler(ctx context.Context, rec MeshReconciler, predicates ...predicate.Predicate) error
+	RunMeshReconciler(ctx context.Context, rec MeshReconciler, predicates ...predicate.Predicate) error
 }
 
 type meshReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewMeshReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) MeshReconcileLoop {
-    return &meshReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &discovery_mesh_gloo_solo_io_v1.Mesh{}, options),
-    }
+	return &meshReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &discovery_mesh_gloo_solo_io_v1.Mesh{}, options),
+	}
 }
 
 func (c *meshReconcileLoop) RunMeshReconciler(ctx context.Context, reconciler MeshReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericMeshReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericMeshReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(MeshFinalizer); ok {
-        reconcilerWrapper = genericMeshFinalizer{
-            genericMeshReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericMeshFinalizer{
+			genericMeshReconciler: genericReconciler,
+			finalizingReconciler:  finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericMeshHandler implements a generic reconcile.Reconciler
 type genericMeshReconciler struct {
-    reconciler MeshReconciler
+	reconciler MeshReconciler
 }
 
 func (r genericMeshReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: Mesh handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileMesh(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Mesh handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileMesh(obj)
 }
 
 func (r genericMeshReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(MeshDeletionReconciler); ok {
-        return deletionReconciler.ReconcileMeshDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(MeshDeletionReconciler); ok {
+		return deletionReconciler.ReconcileMeshDeletion(request)
+	}
+	return nil
 }
 
 // genericMeshFinalizer implements a generic reconcile.FinalizingReconciler
 type genericMeshFinalizer struct {
-    genericMeshReconciler
-    finalizingReconciler MeshFinalizer
+	genericMeshReconciler
+	finalizingReconciler MeshFinalizer
 }
 
-
 func (r genericMeshFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.MeshFinalizerName()
+	return r.finalizingReconciler.MeshFinalizerName()
 }
 
 func (r genericMeshFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return errors.Errorf("internal error: Mesh handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeMesh(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return errors.Errorf("internal error: Mesh handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeMesh(obj)
 }
