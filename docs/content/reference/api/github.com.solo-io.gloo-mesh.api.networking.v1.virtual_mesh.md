@@ -20,6 +20,7 @@ title: "virtual_mesh.proto"
 ## Table of Contents
   - [VirtualMeshSpec](#networking.mesh.gloo.solo.io.VirtualMeshSpec)
   - [VirtualMeshSpec.Federation](#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation)
+  - [VirtualMeshSpec.Federation.FederationSelector](#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector)
   - [VirtualMeshSpec.MTLSConfig](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig)
   - [VirtualMeshSpec.MTLSConfig.LimitedTrust](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust)
   - [VirtualMeshSpec.MTLSConfig.SharedTrust](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust)
@@ -62,9 +63,26 @@ Represents a logical grouping of Meshes for shared configuration and cross-mesh 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Expose all Destinations to all Workloads in this VirtualMesh. |
+| selectors | [][networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector" >}}) | repeated | Selectively federate Destinations to specific external meshes. If omitted, all Destinations will be federated to all Meshes in the VirtualMesh. |
+  | permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics. Expose all Destinations to all Workloads in this VirtualMesh. |
   | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations, rather than through an ingress gateway. This mode requires a flat network environment. This feature is exclusive to Gloo Mesh Enterprise. |
   | hostnameSuffix | string |  | Configure the suffix for hostnames of Destinations federated within this VirtualMesh. Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/), otherwise setting this field results in an error. If omitted, the hostname suffix defaults to "global". |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector"></a>
+
+### VirtualMeshSpec.Federation.FederationSelector
+Selects a set of Destinations to federate to the referenced Meshes.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be federated to external Meshes. If omitted, all Destinations will be selected. |
+  | meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh. If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh. |
   
 
 
