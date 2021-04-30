@@ -65,7 +65,7 @@ message DestinationSpec {
 
             // Name of the port
             string name = 2;
-            
+
             // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
             string protocol = 3;
 
@@ -119,7 +119,7 @@ message DestinationSpec {
 
         // Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for more information.
         message EndpointPort {
-            
+
             // Port on which the endpoints can be reached
             uint32 port = 1;
 
@@ -204,6 +204,9 @@ message DestinationStatus {
     // Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
     AppliedFederation applied_federation = 6;
 
+    // The set of TrafficPolicy traffic shifts that reference subsets on this Destination.
+    repeated RequiredSubsets required_subsets = 7;
+
     // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination.
     // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
     message AppliedTrafficPolicy {
@@ -254,5 +257,19 @@ message DestinationStatus {
 
         // Reference to the VirtualMesh object.
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
+    }
+
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
+    // that references subsets on this Destination in a traffic shift.
+    // Note: this is an Istio-specific feature.
+    message RequiredSubsets {
+        // Reference to the TrafficPolicy object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // The observed generation of the TrafficPolicy.
+        int64 observedGeneration = 2;
+
+        // The applied traffic shift.
+        .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination traffic_shift = 3;
     }
 }
