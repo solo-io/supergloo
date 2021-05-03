@@ -114,7 +114,8 @@ func discoveryOperator() model.Operator {
 	return model.Operator{
 		Name: "discovery",
 		Deployment: model.Deployment{
-			Image: glooMeshImage(),
+			Image:               glooMeshImage(),
+			ExtraPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -166,7 +167,8 @@ func NetworkingOperator(name string) model.Operator {
 	return model.Operator{
 		Name: name,
 		Deployment: model.Deployment{
-			Image: glooMeshImage(),
+			Image:               glooMeshImage(),
+			ExtraPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
