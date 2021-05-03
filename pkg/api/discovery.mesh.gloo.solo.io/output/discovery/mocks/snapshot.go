@@ -6,6 +6,8 @@ package mock_discovery
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	discovery "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -13,7 +15,6 @@ import (
 	output "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	resource "github.com/solo-io/skv2/pkg/resource"
-	reflect "reflect"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 

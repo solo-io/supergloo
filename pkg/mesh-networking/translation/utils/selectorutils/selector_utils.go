@@ -67,13 +67,13 @@ func IdentityMatchesWorkload(selectors []*commonv1.IdentitySelector, workload *d
 	return false
 }
 
-func SelectorMatchesService(selectors []*commonv1.DestinationSelector, service *discoveryv1.Destination) bool {
+func SelectorMatchesDestination(selectors []*commonv1.DestinationSelector, destination *discoveryv1.Destination) bool {
 	if len(selectors) == 0 {
 		return true
 	}
 
 	for _, selector := range selectors {
-		kubeService := service.Spec.GetKubeService()
+		kubeService := destination.Spec.GetKubeService()
 		if kubeService != nil {
 			if kubeServiceMatcher := selector.KubeServiceMatcher; kubeServiceMatcher != nil {
 				if kubeServiceMatches(

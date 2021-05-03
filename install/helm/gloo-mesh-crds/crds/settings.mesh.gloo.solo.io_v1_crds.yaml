@@ -22,7 +22,8 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
+          description: Configure system-wide settings and defaults. Settings specified
+            in networking policies take precedence over those specified here.
           properties:
             discovery:
               description: Settings for Gloo Mesh discovery.
@@ -82,12 +83,14 @@ spec:
                     description: If true communicate over HTTP rather than HTTPS.
                     type: boolean
                   reconnectOnNetworkFailures:
-                    description: If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures.
+                    description: If true Gloo Mesh will automatically attempt to reconnect
+                      to the server after encountering network failures.
                     type: boolean
                 type: object
               type: array
             relay:
-              description: Enable and configure use of Relay mode to communicate with remote clusters. This is an enterprise-only feature.
+              description: Enable and configure use of Relay mode to communicate with
+                remote clusters. This is an enterprise-only feature.
               properties:
                 enabled:
                   description: |-
@@ -108,7 +111,8 @@ spec:
                       description: If true communicate over HTTP rather than HTTPS.
                       type: boolean
                     reconnectOnNetworkFailures:
-                      description: If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures.
+                      description: If true Gloo Mesh will automatically attempt to
+                        reconnect to the server after encountering network failures.
                       type: boolean
                   type: object
               type: object

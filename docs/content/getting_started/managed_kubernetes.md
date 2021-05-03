@@ -79,6 +79,11 @@ spec:
             - port: 15443
               targetPort: 15443
               name: tls
+  values:
+    global:
+      # needed for annotating istio metrics with cluster name
+      multiCluster:
+        clusterName: cluster1
 EOF
 ```
 
@@ -124,6 +129,11 @@ spec:
             - port: 15443
               targetPort: 15443
               name: tls
+  values:
+    global:
+      # needed for annotating istio metrics with cluster name
+      multiCluster:
+        clusterName: cluster2
 EOF
 ```
 
@@ -201,15 +211,20 @@ is of type LoadBalancer by default, your cloud provider will expose the service 
 ENTERPRISE_NETWORKING_DOMAIN=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 ENTERPRISE_NETWORKING_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 ENTERPRISE_NETWORKING_ADDRESS=${ENTERPRISE_NETWORKING_DOMAIN}:${ENTERPRISE_NETWORKING_PORT}
+echo $ENTERPRISE_NETWORKING_ADDRESS
 {{< /tab >}}
 {{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
 ENTERPRISE_NETWORKING_DOMAIN=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 ENTERPRISE_NETWORKING_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 ENTERPRISE_NETWORKING_ADDRESS=${ENTERPRISE_NETWORKING_DOMAIN}:${ENTERPRISE_NETWORKING_PORT}
+echo $ENTERPRISE_NETWORKING_ADDRESS
 {{< /tab >}}
 {{< /tabs >}}
 
 This address will be accessed via secure connection by the `enterprise-agent` component deployed to each registered cluster.
+Note that it may take a minute for your cloud provider to add an external address for the `enterprise-networking`
+service. Ensure that the `ENTERPRISE_NETWORKING_ADDRESS` output above is fully qualified before proceeding to register
+your clusters.
 
 To register cluster 1, run:
 
@@ -272,6 +287,10 @@ it can be performed via Helm rather than meshctl, review the [enterprise cluster
 
 ## Create a Virtual Mesh
 
+At this point, you have a fully-functioning Gloo Mesh Enterprise environment complete with a demo application. Feel free
+to browse the complete set of Gloo Mesh [guides]({{% versioned_link_path fromRoot="/guides" %}}), or follow along here
+as we configure Gloo Mesh for a common multicluster use case.
+
 Next, let's bootstrap connectivity between the two distinct Istio service meshes by creating a Virtual Mesh.
 
 ```shell
@@ -287,7 +306,10 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
   # Disable global access policy enforcement for demonstration purposes.
   globalAccessPolicy: DISABLED
   meshes:

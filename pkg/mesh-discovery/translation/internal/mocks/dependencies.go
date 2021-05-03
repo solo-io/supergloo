@@ -6,12 +6,13 @@ package mock_translation
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	destination "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/destination"
 	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh"
 	workload "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload"
-	reflect "reflect"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface

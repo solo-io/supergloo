@@ -244,7 +244,7 @@ message DestinationStatus {
         */
         string federated_hostname = 1;
 
-        // The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
+        // The list of Meshes which are able to resolve this Destination's `federated_hostname`.
         repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
 
         // Whether the Destination has been federated to the given meshes using a VirtualMesh where

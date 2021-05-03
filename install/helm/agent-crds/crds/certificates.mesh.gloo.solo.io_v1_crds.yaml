@@ -96,7 +96,8 @@ spec:
                 type: string
               type: array
             issuedCertificateSecret:
-              description: The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
+              description: The secret containing the SSL certificate to be generated
+                for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
               properties:
                 name:
                   description: name of the resource being referenced
@@ -127,7 +128,8 @@ spec:
                   type: string
               type: object
             signingCertificateSecret:
-              description: The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
+              description: The secret containing the root SSL certificate used to
+                sign this IssuedCertificate (located in the certificate issuer's cluster).
               properties:
                 name:
                   description: name of the resource being referenced
@@ -137,7 +139,8 @@ spec:
                   type: string
               type: object
             vaultCa:
-              description: The vault_ca config which will be used to sign this intermediate cert
+              description: The vault_ca config which will be used to sign this intermediate
+                cert
               properties:
                 CaBundle:
                   format: binary
@@ -192,7 +195,8 @@ spec:
               type: object
           type: object
         status:
-          description: The IssuedCertificate status is written by the CertificateRequesting agent.
+          description: The IssuedCertificate status is written by the CertificateRequesting
+            agent.
           properties:
             error:
               description: |-
@@ -207,7 +211,8 @@ spec:
               format: int64
               type: integer
             state:
-              description: The current state of the IssuedCertificate workflow, reported by the agent.
+              description: The current state of the IssuedCertificate workflow, reported
+                by the agent.
               enum:
               - PENDING
               - REQUESTED
@@ -288,7 +293,8 @@ spec:
               format: binary
               type: string
             state:
-              description: The current state of the CertificateRequest workflow reported by the issuer.
+              description: The current state of the CertificateRequest workflow reported
+                by the issuer.
               enum:
               - PENDING
               - FINISHED
@@ -387,7 +393,8 @@ spec:
               type: array
           type: object
         status:
-          description: PodBounceDirectiveStatus reports the status for stateful Pod bounces (when bouncing pods requires waiting for readiness).
+          description: PodBounceDirectiveStatus reports the status for stateful Pod
+            bounces (when bouncing pods requires waiting for readiness).
           properties:
             podsBounced:
               description: |-
@@ -398,7 +405,8 @@ spec:
               items:
                 properties:
                   bouncedPods:
-                    description: The names of the pods that were bounced for the corresponding selector specified in `PodBounceDirectiveSpec.PodSelector.labels`.
+                    description: The names of the pods that were bounced for the corresponding
+                      selector specified in `PodBounceDirectiveSpec.PodSelector.labels`.
                     items:
                       type: string
                     type: array

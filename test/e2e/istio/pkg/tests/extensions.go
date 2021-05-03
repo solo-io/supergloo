@@ -40,7 +40,7 @@ func NetworkingExtensionsTest() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("enables communication across clusters using global dns names", func() {
+	It("enables networking extensions", func() {
 		manifest, err = utils.NewManifest("extension-settings.yaml")
 		Expect(err).NotTo(HaveOccurred())
 

@@ -18,11 +18,29 @@ title: "certificates.proto"
 
 
 ## Table of Contents
+  - [CommonCertOptions](#common.mesh.gloo.solo.io.CommonCertOptions)
   - [VaultCA](#common.mesh.gloo.solo.io.VaultCA)
   - [VaultCA.AppRole](#common.mesh.gloo.solo.io.VaultCA.AppRole)
   - [VaultCA.Kubernetes](#common.mesh.gloo.solo.io.VaultCA.Kubernetes)
 
 
+
+
+
+
+
+<a name="common.mesh.gloo.solo.io.CommonCertOptions"></a>
+
+### CommonCertOptions
+Configuration for generating a self-signed root certificate. Uses the X.509 format, RFC5280.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ttlDays | uint32 |  | Number of days before root cert expires. Defaults to 365. |
+  | rsaKeySizeBytes | uint32 |  | Size in bytes of the root cert's private key. Defaults to 4096. |
+  | orgName | string |  | Root cert organization name. Defaults to "gloo-mesh". |
+  
 
 
 
