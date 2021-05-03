@@ -14,10 +14,19 @@ go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
 ## todo
 * use gm to setup routing between the two clusters and use echo calls to test it works
 
+## Build packr
+```shell
+cd pkg/test/packr
+packr2
+cd ../apps
+packr2
+cd ../../../../
+```
 
 ## cluster setup script using k3d
 ```sh
 #!/bin/bash
+
 
 network=demo-1
 
