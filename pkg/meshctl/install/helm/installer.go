@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
@@ -86,7 +88,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		valueOpts.ValueFiles = []string{valuesFile}
 	}
 	for key, value := range i.Values {
-		valueOpts.Values = append(valueOpts.Values, key+"="+value)
+		valueOpts.Values = append(valueOpts.Values, lowerFirst(key)+"="+value)
 	}
 	parsedValues, err := valueOpts.MergeValues(getter.All(settings))
 	if err != nil {
@@ -136,6 +138,14 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	output(release, dryRun, isUpgrade)
 
 	return nil
+}
+// lowers first letter in the string
+func lowerFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	r, n := utf8.DecodeRuneInString(s)
+	return string(unicode.ToLower(r)) + s[n:]
 }
 
 func output(release *release.Release, dryRun bool, isUpgrade bool) {

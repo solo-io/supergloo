@@ -49,6 +49,8 @@ type options registration.Options
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfigPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
+	flags.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "",
+		"path to the kubeconfig for the managemtn plane if differente from which the registered cluster")
 	flags.StringVar(&o.MgmtContext, "mgmt-context", "", "name of the kubeconfig context to use for the management cluster")
 	flags.StringVar(&o.RemoteContext, "remote-context", "", "name of the kubeconfig context to use for the remote cluster")
 	flags.StringVar(&o.MgmtNamespace, "mgmt-namespace", defaults.DefaultPodNamespace, "namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created")
@@ -57,7 +59,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := communityOptions{Options: (*registration.Options)(regOpts)}
+	opts := CommunityOptions{Options: (*registration.Options)(regOpts)}
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
 		Short: "Register a cluster for Gloo Mesh community edition",
@@ -69,6 +71,7 @@ installed on the remote cluster.`,
 			regOpts.AgentChartPathOverride = opts.AgentChartPathOverride
 			regOpts.AgentChartValuesPath = opts.AgentChartValuesPath
 			regOpts.ClusterName = args[0]
+			regOpts.MgmtKubeConfigPath = opts.MgmtKubeConfigPath
 			registrant, err := registration.NewRegistrant(registration.Options(*regOpts))
 			if err != nil {
 				return err
@@ -84,14 +87,14 @@ installed on the remote cluster.`,
 	return cmd
 }
 
-type communityOptions struct {
+type CommunityOptions struct {
 	*registration.Options
 
 	AgentChartPathOverride string
 	AgentChartValuesPath   string
 }
 
-func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
+func (o *CommunityOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag.\nSet this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.")
 	flags.StringVar(&o.AgentCrdsChartPath, "agent-crds-chart-file", "", "Path to a local Helm chart for installing CRDs needed by remote agents.\nIf unset, this command will install the agent CRDs from the publicly released Helm chart.")
 	flags.StringVar(&o.AgentChartPathOverride, "cert-agent-chart-file", "",
@@ -105,7 +108,7 @@ func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
 }
 
 func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := enterpriseOptions{}
+	opts := EnterpriseOptions{}
 	cmd := &cobra.Command{
 		Use:   "enterprise [cluster name]",
 		Short: "Register a cluster for Gloo Mesh enterprise edition",
@@ -139,9 +142,9 @@ bootstrap token from the gloo-mesh cluster, if these are not explicitly provided
 	return cmd
 }
 
-type enterpriseOptions enterprise.RegistrationOptions
+type EnterpriseOptions enterprise.RegistrationOptions
 
-func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
+func (o *EnterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
 	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", false, "Communicate with the relay server over an insecure connection.")
 
