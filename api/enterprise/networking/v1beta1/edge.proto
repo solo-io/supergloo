@@ -1,0 +1,41 @@
+syntax = "proto3";
+package networking.enterprise.mesh.gloo.solo.io;
+
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+/*
+    TODO(harveyxia): Explain and motivate.
+*/
+message ServiceDependencySpec {
+
+    // Select the traffic sources (i.e. Workloads) for this network ServiceDependency.
+    repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selectors = 1;
+
+    // Select the traffic destinations (i.e. Destination) for this network ServiceDependency.
+    repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
+}
+
+message ServiceDependencyStatus {
+
+    // The most recent generation observed in the the ServiceDependency metadata.
+    // If the observedGeneration does not match `metadata.generation`, Gloo Mesh has not processed the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
+    // The state of the overall resource, will only show accepted if it has been successfully
+    // applied to all exported to Meshes.
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
+
+    // The Workloads that this ServiceDependency applies to.
+    repeated .core.skv2.solo.io.ClusterObjectRef workloads = 3;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 4;
+}
