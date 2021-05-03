@@ -1,25 +1,24 @@
-package packr
+package manifests
 
 import (
+	"embed"
 	"fmt"
-	"github.com/gobuffalo/packr/v2"
 	"strings"
 	"text/template"
 )
 
-const (
-	examplesPath = "../manifests"
+var (
+	//go:embed operator/* traffic/*
+	manifestFiles embed.FS
 )
-
-var box = packr.New("files", examplesPath)
 
 func RenderOperator(operatorFile string, data interface{}) (string, error) {
 	filePath := "operator/" + operatorFile
-	file, err := box.FindString(filePath)
+	file, err := manifestFiles.ReadFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed finding file %s template: %w", filePath, err)
 	}
-	fileTemplate, err := template.New(operatorFile).Parse(file)
+	fileTemplate, err := template.New(operatorFile).Parse(string(file))
 	if err != nil {
 		return "", fmt.Errorf("failed preparing %q template: %w", operatorFile, err)
 	}
@@ -33,11 +32,11 @@ func RenderOperator(operatorFile string, data interface{}) (string, error) {
 
 func RenderTestFile(operatorFile string, data interface{}) (string, error) {
 	filePath := "traffic/" + operatorFile
-	file, err := box.FindString(filePath)
+	file, err := manifestFiles.ReadFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed finding file %s template: %w", filePath, err)
 	}
-	fileTemplate, err := template.New(operatorFile).Parse(file)
+	fileTemplate, err := template.New(operatorFile).Parse(string(file))
 	if err != nil {
 		return "", fmt.Errorf("failed preparing %q template: %w", operatorFile, err)
 	}

@@ -5,29 +5,17 @@
 
 example run
 ```shell
-go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
+GLOO_MESH_LICENSE_KEY=$GLOO_MESH_LICENSE_KEY go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
   -args --istio.test.kube.config=/users/nick/.kube/mp,/users/nick/.kube/cp-us-east \
   --istio.test.nocleanup=true
 ```
 
-
 ## todo
 * use gm to setup routing between the two clusters and use echo calls to test it works
-
-## Build packr
-```shell
-cd pkg/test/packr
-packr2
-cd ../apps
-packr2
-cd ../../../../
-```
 
 ## cluster setup script using k3d
 ```sh
 #!/bin/bash
-
-
 network=demo-1
 
 # create docker network if it does not exist
@@ -55,12 +43,12 @@ kubectl label node $kube_ctx-server-0 topology.kubernetes.io/zone=us-east-1a --c
 ```shell
 #!/bin/bash
 network=demo-1
-
-docker network rm $network
-
 k3d cluster delete mp
 rm  ~/.kube/mp
   
 k3d cluster delete cp-us-east
 rm  ~/.kube/cp-us-east
+
+docker network rm $network
+
 ```

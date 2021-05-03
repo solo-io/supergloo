@@ -1,7 +1,7 @@
 package echo
 
 import (
-	"github.com/gobuffalo/packr/v2"
+	"embed"
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	"github.com/solo-io/gloo-mesh/pkg/test/tlssecret"
 	"istio.io/istio/pkg/config/protocol"
@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	echoCertsBox = packr.New("certs", "./certs")
+	//go:embed certs
+	certFiles embed.FS
 )
 
 func DeployEchos(deploymentCtx *context.DeploymentContext) resource.SetupFn {
@@ -102,15 +103,15 @@ func createNamespaces(ctx resource.Context, echoCtx *context.EchoDeploymentConte
 }
 
 func generateTLSCertificates(ctx resource.Context, secretName string, ns namespace.Instance) error {
-	echoCrt, err := echoCertsBox.Find("echo.crt")
+	echoCrt, err := certFiles.ReadFile("certs/echo.crt")
 	if err != nil {
 		scopes.Framework.Error(err)
 	}
-	echoKey, err := echoCertsBox.Find("echo.key")
+	echoKey, err := certFiles.ReadFile("certs/echo.key")
 	if err != nil {
 		scopes.Framework.Error(err)
 	}
-	echoCA, err := echoCertsBox.Find("echo-ca.crt")
+	echoCA, err := certFiles.ReadFile("certs/echo-ca.crt")
 	if err != nil {
 		scopes.Framework.Error(err)
 	}
@@ -131,15 +132,15 @@ func generateTLSCertificates(ctx resource.Context, secretName string, ns namespa
 }
 
 func newEchoConfig(service string, ns namespace.Instance, cluster cluster.Cluster, hasSidecar bool, useSubsets bool) echo.Config {
-	echoCrt, err := echoCertsBox.Find("echo.crt")
+	echoCrt, err := certFiles.ReadFile("certs/echo.crt")
 	if err != nil {
 		scopes.Framework.Error(err)
 	}
-	echoKey, err := echoCertsBox.Find("echo.key")
+	echoKey, err := certFiles.ReadFile("certs/echo.key")
 	if err != nil {
 		scopes.Framework.Error(err)
 	}
-	echoCA, err := echoCertsBox.Find("echo-ca.crt")
+	echoCA, err := certFiles.ReadFile("certs/echo-ca.crt")
 	if err != nil {
 		scopes.Framework.Error(err)
 	}

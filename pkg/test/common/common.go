@@ -3,7 +3,7 @@ package common
 import (
 	"fmt"
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
-	"github.com/solo-io/gloo-mesh/pkg/test/packr"
+	"github.com/solo-io/gloo-mesh/pkg/test/manifests"
 	"istio.io/istio/pkg/test/framework/components/istio"
 	"istio.io/istio/pkg/test/framework/resource"
 	"istio.io/istio/pkg/test/scopes"
@@ -15,7 +15,7 @@ import (
 func IstioSetupFunc(operatorFile string) func(ctx resource.Context, cfg *istio.Config) {
 	return func(ctx resource.Context, cfg *istio.Config) {
 		// load custom Istio control plane value
-		istioGatewayConfig, err := packr.RenderOperator(operatorFile, nil)
+		istioGatewayConfig, err := manifests.RenderOperator(operatorFile, nil)
 		if err != nil {
 			scopes.Framework.Errorf("error rendering istio operator configuration file %s %w", operatorFile, err)
 		}
@@ -65,7 +65,7 @@ func (g TestGroup) Run(ctx resource.Context, t *testing.T, deploymentContext *co
 				t.Skipf("skipping due to previous errors: %v", skipNextTests)
 			}
 
-			configYAMLStr, err := packr.RenderTestFile(test.FileName, deploymentContext)
+			configYAMLStr, err := manifests.RenderTestFile(test.FileName, deploymentContext)
 			if err != nil {
 				t.Fatalf("failed to render tests file: %v", err)
 			}

@@ -52,6 +52,7 @@ require (
 	github.com/iancoleman/strcase v0.1.3
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/logrusorgru/aurora/v3 v3.0.0
+	github.com/mfuentesg/ksd v1.0.6 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect

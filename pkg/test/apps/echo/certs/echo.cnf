@@ -6,7 +6,7 @@ req_extensions     = san_reqext
 
 [ req_distinguished_name ]
 countryName         = US
-stateOrProvinceName = CA
+stateOrProvinceName = MA
 organizationName    = Solo.io
 
 [ san_reqext ]
