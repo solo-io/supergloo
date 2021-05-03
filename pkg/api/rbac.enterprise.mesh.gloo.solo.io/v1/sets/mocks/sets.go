@@ -70,6 +70,24 @@ func (mr *MockRoleSetMockRecorder) List(filterResource ...interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockRoleSet) UnsortedList(filterResource ...func(*v1.Role) bool) []*v1.Role {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Role)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockRoleSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRoleSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockRoleSet) Map() map[string]*v1.Role {
 	m.ctrl.T.Helper()
@@ -292,6 +310,24 @@ func (m *MockRoleBindingSet) List(filterResource ...func(*v1.RoleBinding) bool) 
 func (mr *MockRoleBindingSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleBindingSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockRoleBindingSet) UnsortedList(filterResource ...func(*v1.RoleBinding) bool) []*v1.RoleBinding {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.RoleBinding)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockRoleBindingSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRoleBindingSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method

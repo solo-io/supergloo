@@ -22,7 +22,8 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: Deploys one or more WASM Envoy Filters to selected Sidecars and Gateways in a Mesh.
+          description: Deploys one or more WASM Envoy Filters to selected Sidecars
+            and Gateways in a Mesh.
           properties:
             filters:
               description: Specify WASM filter parameters.
@@ -87,7 +88,8 @@ spec:
                       TODO(ilackarms): we may need to provide options for customizing the Cluster given to envoy along with the HTTP Fetch URI. currently Gloo Mesh will create a simple plaintext HTTP cluster from the Host/Port specified in the URI.
                     properties:
                       sha:
-                        description: Required. The Sha256 Checksum of the filter binary (will be verified by the proxy).
+                        description: Required. The Sha256 Checksum of the filter binary
+                          (will be verified by the proxy).
                         type: string
                       uri:
                         description: The HTTP URI from which to fetch the filter.
@@ -135,7 +137,8 @@ spec:
                       Images can be built and pushed to registries using `meshctl` and `wasme`.
                     properties:
                       wasmImageTag:
-                        description: The full tag of the wasm image. It must include the registry address at the beginning, e.g. "webassemblyhub.io/ilackarms/helloworld:v0.1".
+                        description: The full tag of the wasm image. It must include
+                          the registry address at the beginning, e.g. "webassemblyhub.io/ilackarms/helloworld:v0.1".
                         type: string
                     type: object
                 type: object
@@ -159,7 +162,8 @@ spec:
               items:
                 properties:
                   kubeWorkloadMatcher:
-                    description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes workloads by their labels, namespaces,
+                      and/or clusters.
                     properties:
                       clusters:
                         description: |-
@@ -211,7 +215,8 @@ spec:
                 - FILTERS_DEPLOYED
                 - DEPLOYMENT_FAILED
                 type: string
-              description: The state of the WasmDeployment as it has been applied to each individual Workload.
+              description: The state of the WasmDeployment as it has been applied
+                to each individual Workload.
               type: object
           type: object
       type: object
@@ -276,10 +281,12 @@ spec:
                Currently this feature only supports Destinations backed by Istio.
           properties:
             hostname:
-              description: The DNS name of the VirtualDestination. Must be unique within the service mesh instance.
+              description: The DNS name of the VirtualDestination. Must be unique
+                within the service mesh instance.
               type: string
             localized:
-              description: Failover priority is determined by the localities of the traffic source and destination.
+              description: Failover priority is determined by the localities of the
+                traffic source and destination.
               properties:
                 destinationSelectors:
                   description: |-
@@ -290,7 +297,8 @@ spec:
                   items:
                     properties:
                       kubeServiceMatcher:
-                        description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                        description: Match Kubernetes Services by their labels, namespaces,
+                          and/or clusters.
                         properties:
                           clusters:
                             description: |-
@@ -328,7 +336,8 @@ spec:
                             items:
                               properties:
                                 clusterName:
-                                  description: name of the cluster in which the resource exists
+                                  description: name of the cluster in which the resource
+                                    exists
                                   type: string
                                 name:
                                   description: name of the resource being referenced
@@ -352,24 +361,30 @@ spec:
                             description: The locality's region.
                             type: string
                           subZone:
-                            description: The locality's sub-zone. Currently this value is not used.
+                            description: The locality's sub-zone. Currently this value
+                              is not used.
                             type: string
                           zone:
-                            description: The locality's zone. Currently this value is not used.
+                            description: The locality's zone. Currently this value
+                              is not used.
                             type: string
                         type: object
                       to:
-                        description: The list of Destination localities that can be routed to if the instance local to the client workload is not available.
+                        description: The list of Destination localities that can be
+                          routed to if the instance local to the client workload is
+                          not available.
                         items:
                           properties:
                             region:
                               description: The locality's region.
                               type: string
                             subZone:
-                              description: The locality's sub-zone. Currently this value is not used.
+                              description: The locality's sub-zone. Currently this
+                                value is not used.
                               type: string
                             zone:
-                              description: The locality's zone. Currently this value is not used.
+                              description: The locality's zone. Currently this value
+                                is not used.
                               type: string
                           type: object
                         type: array
@@ -385,15 +400,19 @@ spec:
                     baseEjectionTime: 120s
                   properties:
                     baseEjectionTime:
-                      description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                      description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
+                        Must be >= `1ms`. A default will be used if not set.'
                       type: string
                     consecutiveErrors:
-                      description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                      description: The number of errors before a host is ejected from
+                        the connection pool. A default will be used if not set.
                       maximum: 4294967295
                       minimum: 0
                       type: integer
                     interval:
-                      description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                      description: 'The time interval between ejection sweep analysis.
+                        Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default
+                        will be used if not set.'
                       type: string
                     maxEjectionPercent:
                       description: |-
@@ -430,11 +449,14 @@ spec:
                   minimum: 0
                   type: integer
                 protocol:
-                  description: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
+                  description: Protocol of the requests sent to the VirtualDestination.
+                    Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`,
+                    `TLS`.
                   type: string
               type: object
             static:
-              description: Failover priority is determined by an explicitly provided static ordering of Destinations.
+              description: Failover priority is determined by an explicitly provided
+                static ordering of Destinations.
               properties:
                 destinations:
                   description: |-
@@ -454,7 +476,8 @@ spec:
                         description: Reference to a Kubernetes Service.
                         properties:
                           clusterName:
-                            description: name of the cluster in which the resource exists
+                            description: name of the cluster in which the resource
+                              exists
                             type: string
                           name:
                             description: name of the resource being referenced
@@ -467,7 +490,8 @@ spec:
                   type: array
               type: object
             virtualMesh:
-              description: The VirtualMesh that this VirtualDestination will be visible to.
+              description: The VirtualMesh that this VirtualDestination will be visible
+                to.
               properties:
                 name:
                   description: name of the resource being referenced
@@ -480,7 +504,8 @@ spec:
         status:
           properties:
             errors:
-              description: Any errors found while processing this generation of the resource.
+              description: Any errors found while processing this generation of the
+                resource.
               items:
                 type: string
               type: array
@@ -499,12 +524,14 @@ spec:
                     minimum: 0
                     type: integer
                   errors:
-                    description: Any errors observed which prevented the resource from being Accepted.
+                    description: Any errors observed which prevented the resource
+                      from being Accepted.
                     items:
                       type: string
                     type: array
                   state:
-                    description: The result of attempting to apply the policy to the discovery resource.
+                    description: The result of attempting to apply the policy to the
+                      discovery resource.
                     enum:
                     - PENDING
                     - ACCEPTED
@@ -512,7 +539,8 @@ spec:
                     - FAILED
                     type: string
                 type: object
-              description: The status of the VirtualDestination for each Mesh to which it has been exported to.
+              description: The status of the VirtualDestination for each Mesh to which
+                it has been exported to.
               type: object
             observedGeneration:
               description: |-
@@ -526,7 +554,8 @@ spec:
               items:
                 properties:
                   destination:
-                    description: The platform-specific destination that the Destination object represents.
+                    description: The platform-specific destination that the Destination
+                      object represents.
                     oneOf:
                     - not:
                         anyOf:
@@ -539,7 +568,8 @@ spec:
                         description: Reference to a Kubernetes Service.
                         properties:
                           clusterName:
-                            description: name of the cluster in which the resource exists
+                            description: name of the cluster in which the resource
+                              exists
                             type: string
                           name:
                             description: name of the resource being referenced
