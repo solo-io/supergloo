@@ -138,6 +138,12 @@ spec:
                   method:
                     description: Specify an HTTP method to match against.
                     type: string
+                  name:
+                    description: |-
+                      The name assigned to a match. The match's name will be
+                      concatenated with the parent route's name and will be logged in
+                      the access logs for requests matching this route.
+                    type: string
                   prefix:
                     description: If specified, the targeted path must begin with the prefix.
                     type: string

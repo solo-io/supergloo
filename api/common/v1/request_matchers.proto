@@ -1,3 +1,4 @@
+// TODO(ilackarms): migrate this file to networking v1
 syntax = "proto3";
 package common.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1";
@@ -49,6 +50,11 @@ message StatusCodeMatcher {
 
 // Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
 message HttpMatcher {
+
+    // The name assigned to a match. The match's name will be
+    // concatenated with the parent route's name and will be logged in
+    // the access logs for requests matching this route.
+    string name = 8;
 
     // Specify match criteria against the targeted path.
     oneof path_specifier {
