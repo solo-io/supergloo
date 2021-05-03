@@ -46,6 +46,7 @@ message IssuedCertificateSpec {
         // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
         .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
 
+        // The vault_ca config which will be used to sign this intermediate cert
         .common.mesh.gloo.solo.io.VaultCA vault_ca = 6;
 
     }
