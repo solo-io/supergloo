@@ -7,8 +7,8 @@ import (
 	v1beta1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -96,7 +96,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 
 	var shiftedDestinations []*networkingv1alpha3spec.HTTPRouteDestination
 	for _, weightedDest := range trafficShift.Destinations {
-		istioDestination, err := destinationutils.TranslateWeightedDestination(
+		istioDestination, err := routeutils.TranslateWeightedDestination(
 			weightedDest,
 			sourceClusterName,
 			d.destinations,

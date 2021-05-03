@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
@@ -212,7 +212,7 @@ func (t *translator) initializeDestinationRule(
 		Spec: networkingv1alpha3spec.DestinationRule{
 			Host:          hostname,
 			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
-			Subsets: destinationutils.MakeDestinationRuleSubsetsForDestination(
+			Subsets: routeutils.MakeDestinationRuleSubsetsForDestination(
 				destination,
 				t.destinations,
 				sourceMeshInstallation.GetCluster(),

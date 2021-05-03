@@ -1,9 +1,11 @@
-package destinationutils
+package routeutils
 
 import (
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -92,7 +94,7 @@ func resolveHostPortSubsetKubeService(
 	}
 
 	// validate destination service is a known destination
-	targetedDestination, err := FindDestinationForKubeService(destinations.List(), svcRef)
+	targetedDestination, err := destinationutils.FindDestinationForKubeService(destinations.List(), svcRef)
 	if err != nil {
 		return "", nil, "", eris.Wrapf(err, "invalid traffic shift destination %s", sets.Key(svcRef))
 	}
@@ -156,7 +158,7 @@ func MakeDestinationRuleSubsetsForDestination(
 		func(weightedDestination *networkingv1.WeightedDestination) bool {
 			switch destType := weightedDestination.DestinationType.(type) {
 			case *networkingv1.WeightedDestination_KubeService:
-				return IsDestinationForKubeService(destination, destType.KubeService)
+				return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
 			}
 			return false
 		},

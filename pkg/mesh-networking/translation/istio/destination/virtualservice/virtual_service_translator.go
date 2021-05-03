@@ -2,6 +2,7 @@ package virtualservice
 
 import (
 	"context"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	"reflect"
 	"sort"
 
@@ -393,126 +394,10 @@ func splitRouteByMatchers(baseRoute *networkingv1alpha3spec.HTTPRoute) []*networ
 func translateRequestMatchers(
 	trafficPolicy *v1.TrafficPolicySpec,
 ) []*networkingv1alpha3spec.HTTPMatchRequest {
-	// Generate HttpMatchRequests for SourceSelector, one per namespace.
-	var sourceMatchers []*networkingv1alpha3spec.HTTPMatchRequest
-	// Set SourceNamespace and SourceLabels.
-	for _, sourceSelector := range trafficPolicy.GetSourceSelector() {
-
-		sourceWorkloadMatcher := sourceSelector.GetKubeWorkloadMatcher()
-		if len(sourceWorkloadMatcher.GetLabels()) > 0 ||
-			len(sourceWorkloadMatcher.GetNamespaces()) > 0 {
-			if len(sourceWorkloadMatcher.GetNamespaces()) > 0 {
-				for _, namespace := range sourceWorkloadMatcher.GetNamespaces() {
-					matchRequest := &networkingv1alpha3spec.HTTPMatchRequest{
-						SourceNamespace: namespace,
-						SourceLabels:    sourceWorkloadMatcher.GetLabels(),
-					}
-					sourceMatchers = append(sourceMatchers, matchRequest)
-				}
-			} else {
-				sourceMatchers = append(sourceMatchers, &networkingv1alpha3spec.HTTPMatchRequest{
-					SourceLabels: sourceWorkloadMatcher.GetLabels(),
-				})
-			}
-		}
-	}
-	if trafficPolicy.GetHttpRequestMatchers() == nil {
-		return sourceMatchers
-	}
-	// If HttpRequestMatchers exist, generate cartesian product of sourceMatchers and httpRequestMatchers.
-	var translatedRequestMatchers []*networkingv1alpha3spec.HTTPMatchRequest
-	// If SourceSelector is nil, generate an HttpMatchRequest without SourceSelector match criteria
-	if len(sourceMatchers) == 0 {
-		sourceMatchers = append(sourceMatchers, &networkingv1alpha3spec.HTTPMatchRequest{})
-	}
-	// Set QueryParams, Headers, WithoutHeaders, Uri, and Method.
-	for _, sourceMatcher := range sourceMatchers {
-		for _, matcher := range trafficPolicy.GetHttpRequestMatchers() {
-			httpMatcher := &networkingv1alpha3spec.HTTPMatchRequest{
-				SourceNamespace: sourceMatcher.GetSourceNamespace(),
-				SourceLabels:    sourceMatcher.GetSourceLabels(),
-			}
-			headerMatchers, inverseHeaderMatchers := translateRequestMatcherHeaders(matcher.GetHeaders())
-			uriMatcher := translateRequestMatcherPathSpecifier(matcher)
-			var method *networkingv1alpha3spec.StringMatch
-			if matcher.GetMethod() != "" {
-				method = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: matcher.GetMethod()}}
-			}
-			httpMatcher.QueryParams = translateRequestMatcherQueryParams(matcher.GetQueryParameters())
-			httpMatcher.Headers = headerMatchers
-			httpMatcher.WithoutHeaders = inverseHeaderMatchers
-			httpMatcher.Uri = uriMatcher
-			httpMatcher.Method = method
-			translatedRequestMatchers = append(translatedRequestMatchers, httpMatcher)
-		}
-	}
-	return translatedRequestMatchers
-}
-
-func translateRequestMatcherHeaders(matchers []*commonv1.HeaderMatcher) (
-	map[string]*networkingv1alpha3spec.StringMatch, map[string]*networkingv1alpha3spec.StringMatch,
-) {
-	headerMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
-	inverseHeaderMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
-	var matcherMap map[string]*networkingv1alpha3spec.StringMatch
-	if matchers != nil {
-		for _, matcher := range matchers {
-			matcherMap = headerMatchers
-			if matcher.GetInvertMatch() {
-				matcherMap = inverseHeaderMatchers
-			}
-			if matcher.GetRegex() {
-				matcherMap[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
-					MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: matcher.GetValue()},
-				}
-			} else {
-				matcherMap[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
-					MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: matcher.GetValue()},
-				}
-			}
-		}
-	}
-	// ensure field is set to nil if empty
-	if len(headerMatchers) == 0 {
-		headerMatchers = nil
-	}
-	if len(inverseHeaderMatchers) == 0 {
-		inverseHeaderMatchers = nil
-	}
-	return headerMatchers, inverseHeaderMatchers
-}
-
-func translateRequestMatcherQueryParams(matchers []*commonv1.HttpMatcher_QueryParameterMatcher) map[string]*networkingv1alpha3spec.StringMatch {
-	var translatedQueryParamMatcher map[string]*networkingv1alpha3spec.StringMatch
-	if matchers != nil {
-		translatedQueryParamMatcher = map[string]*networkingv1alpha3spec.StringMatch{}
-		for _, matcher := range matchers {
-			if matcher.GetRegex() {
-				translatedQueryParamMatcher[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
-					MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: matcher.GetValue()},
-				}
-			} else {
-				translatedQueryParamMatcher[matcher.GetName()] = &networkingv1alpha3spec.StringMatch{
-					MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: matcher.GetValue()},
-				}
-			}
-		}
-	}
-	return translatedQueryParamMatcher
-}
-
-func translateRequestMatcherPathSpecifier(matcher *commonv1.HttpMatcher) *networkingv1alpha3spec.StringMatch {
-	if matcher != nil && matcher.GetPathSpecifier() != nil {
-		switch pathSpecifierType := matcher.GetPathSpecifier().(type) {
-		case *commonv1.HttpMatcher_Exact:
-			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
-		case *commonv1.HttpMatcher_Prefix:
-			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
-		case *commonv1.HttpMatcher_Regex:
-			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
-		}
-	}
-	return nil
+	return routeutils.TranslateRequestMatchers(
+		trafficPolicy.HttpRequestMatchers,
+		trafficPolicy.SourceSelector,
+	)
 }
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
