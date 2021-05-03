@@ -1470,6 +1470,23 @@ spec:
                         shared:
                           description: Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes).
                           properties:
+                            intermediateCertOptions:
+                              description: Configuration options for generated intermediate certs
+                              properties:
+                                orgName:
+                                  description: Root cert organization name. Defaults to "gloo-mesh".
+                                  type: string
+                                rsaKeySizeBytes:
+                                  description: Size in bytes of the root cert's private key. Defaults to 4096.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                ttlDays:
+                                  description: Number of days before root cert expires. Defaults to 365.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                              type: object
                             rootCertificateAuthority:
                               description: |-
                                 Configure a Root Certificate Authority which will be shared by all Meshes associated with this VirtualMesh.

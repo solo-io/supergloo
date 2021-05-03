@@ -236,6 +236,7 @@ type IssuedCertificateSpec_SigningCertificateSecret struct {
 }
 
 type IssuedCertificateSpec_VaultCa struct {
+	// The vault_ca config which will be used to sign this intermediate cert
 	VaultCa *v11.VaultCA `protobuf:"bytes,6,opt,name=vault_ca,json=vaultCa,proto3,oneof"`
 }
 

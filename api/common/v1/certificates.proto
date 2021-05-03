@@ -17,6 +17,8 @@ message VaultCA {
 
   bytes CaBundle = 4;
 
+  // CommonCertOptions cert_options = 5;
+
   message AppRole {
 
     string path = 1;
@@ -46,4 +48,19 @@ message VaultCA {
 
   }
 
+}
+
+
+// Configuration for generating a self-signed root certificate.
+// Uses the X.509 format, RFC5280.
+message CommonCertOptions {
+
+  // Number of days before root cert expires. Defaults to 365.
+  uint32 ttl_days = 1;
+
+  // Size in bytes of the root cert's private key. Defaults to 4096.
+  uint32 rsa_key_size_bytes = 2;
+
+  // Root cert organization name. Defaults to "gloo-mesh".
+  string org_name = 3;
 }

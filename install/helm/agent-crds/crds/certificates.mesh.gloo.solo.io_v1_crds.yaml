@@ -137,6 +137,7 @@ spec:
                   type: string
               type: object
             vaultCa:
+              description: The vault_ca config which will be used to sign this intermediate cert
               properties:
                 CaBundle:
                   format: binary

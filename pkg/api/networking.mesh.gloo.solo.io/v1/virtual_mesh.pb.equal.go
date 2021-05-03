@@ -399,6 +399,16 @@ func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetIntermediateCertOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetIntermediateCertOptions()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetIntermediateCertOptions(), target.GetIntermediateCertOptions()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -420,42 +430,6 @@ func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) Equal(that interface{}) bool {
 	if target == nil {
 		return m == nil
 	} else if m == nil {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if m.GetTtlDays() != target.GetTtlDays() {
-		return false
-	}
-
-	if m.GetRsaKeySizeBytes() != target.GetRsaKeySizeBytes() {
-		return false
-	}
-
-	if strings.Compare(m.GetOrgName(), target.GetOrgName()) != 0 {
 		return false
 	}
 

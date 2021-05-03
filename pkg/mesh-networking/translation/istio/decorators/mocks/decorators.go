@@ -5,12 +5,11 @@
 package mock_decorators
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	decorators "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
+	reflect "reflect"
 )
 
 // MockFactory is a mock of Factory interface

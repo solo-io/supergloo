@@ -154,6 +154,74 @@ func (*VaultCA_AppRole_) isVaultCA_AuthType() {}
 
 func (*VaultCA_KubernetesAuth) isVaultCA_AuthType() {}
 
+// Configuration for generating a self-signed root certificate.
+// Uses the X.509 format, RFC5280.
+type CommonCertOptions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Number of days before root cert expires. Defaults to 365.
+	TtlDays uint32 `protobuf:"varint,1,opt,name=ttl_days,json=ttlDays,proto3" json:"ttl_days,omitempty"`
+	// Size in bytes of the root cert's private key. Defaults to 4096.
+	RsaKeySizeBytes uint32 `protobuf:"varint,2,opt,name=rsa_key_size_bytes,json=rsaKeySizeBytes,proto3" json:"rsa_key_size_bytes,omitempty"`
+	// Root cert organization name. Defaults to "gloo-mesh".
+	OrgName string `protobuf:"bytes,3,opt,name=org_name,json=orgName,proto3" json:"org_name,omitempty"`
+}
+
+func (x *CommonCertOptions) Reset() {
+	*x = CommonCertOptions{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommonCertOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommonCertOptions) ProtoMessage() {}
+
+func (x *CommonCertOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommonCertOptions.ProtoReflect.Descriptor instead.
+func (*CommonCertOptions) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CommonCertOptions) GetTtlDays() uint32 {
+	if x != nil {
+		return x.TtlDays
+	}
+	return 0
+}
+
+func (x *CommonCertOptions) GetRsaKeySizeBytes() uint32 {
+	if x != nil {
+		return x.RsaKeySizeBytes
+	}
+	return 0
+}
+
+func (x *CommonCertOptions) GetOrgName() string {
+	if x != nil {
+		return x.OrgName
+	}
+	return ""
+}
+
 type VaultCA_AppRole struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -167,7 +235,7 @@ type VaultCA_AppRole struct {
 func (x *VaultCA_AppRole) Reset() {
 	*x = VaultCA_AppRole{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[1]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -180,7 +248,7 @@ func (x *VaultCA_AppRole) String() string {
 func (*VaultCA_AppRole) ProtoMessage() {}
 
 func (x *VaultCA_AppRole) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[1]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -230,7 +298,7 @@ type VaultCA_Kubernetes struct {
 func (x *VaultCA_Kubernetes) Reset() {
 	*x = VaultCA_Kubernetes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -243,7 +311,7 @@ func (x *VaultCA_Kubernetes) String() string {
 func (*VaultCA_Kubernetes) ProtoMessage() {}
 
 func (x *VaultCA_Kubernetes) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -330,12 +398,19 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDesc =
 	0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x09, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x52, 0x65, 0x66,
 	0x12, 0x12, 0x0a, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
 	0x72, 0x6f, 0x6c, 0x65, 0x42, 0x0b, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x74, 0x79, 0x70,
-	0x65, 0x42, 0x46, 0x5a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73,
-	0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
-	0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
-	0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x65, 0x22, 0x76, 0x0a, 0x11, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x43, 0x65, 0x72, 0x74, 0x4f,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x74, 0x6c, 0x5f, 0x64, 0x61,
+	0x79, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x74, 0x74, 0x6c, 0x44, 0x61, 0x79,
+	0x73, 0x12, 0x2b, 0x0a, 0x12, 0x72, 0x73, 0x61, 0x5f, 0x6b, 0x65, 0x79, 0x5f, 0x73, 0x69, 0x7a,
+	0x65, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0f, 0x72,
+	0x73, 0x61, 0x4b, 0x65, 0x79, 0x53, 0x69, 0x7a, 0x65, 0x42, 0x79, 0x74, 0x65, 0x73, 0x12, 0x19,
+	0x0a, 0x08, 0x6f, 0x72, 0x67, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x6f, 0x72, 0x67, 0x4e, 0x61, 0x6d, 0x65, 0x42, 0x46, 0x5a, 0x40, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f,
+	0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
+	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5, 0x04,
+	0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -350,19 +425,20 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescG
 	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_goTypes = []interface{}{
 	(*VaultCA)(nil),            // 0: common.mesh.gloo.solo.io.VaultCA
-	(*VaultCA_AppRole)(nil),    // 1: common.mesh.gloo.solo.io.VaultCA.AppRole
-	(*VaultCA_Kubernetes)(nil), // 2: common.mesh.gloo.solo.io.VaultCA.Kubernetes
-	(*v1.ObjectRef)(nil),       // 3: core.skv2.solo.io.ObjectRef
+	(*CommonCertOptions)(nil),  // 1: common.mesh.gloo.solo.io.CommonCertOptions
+	(*VaultCA_AppRole)(nil),    // 2: common.mesh.gloo.solo.io.VaultCA.AppRole
+	(*VaultCA_Kubernetes)(nil), // 3: common.mesh.gloo.solo.io.VaultCA.Kubernetes
+	(*v1.ObjectRef)(nil),       // 4: core.skv2.solo.io.ObjectRef
 }
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_depIdxs = []int32{
-	3, // 0: common.mesh.gloo.solo.io.VaultCA.token_secret_ref:type_name -> core.skv2.solo.io.ObjectRef
-	1, // 1: common.mesh.gloo.solo.io.VaultCA.app_role:type_name -> common.mesh.gloo.solo.io.VaultCA.AppRole
-	2, // 2: common.mesh.gloo.solo.io.VaultCA.kubernetes_auth:type_name -> common.mesh.gloo.solo.io.VaultCA.Kubernetes
-	3, // 3: common.mesh.gloo.solo.io.VaultCA.AppRole.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
-	3, // 4: common.mesh.gloo.solo.io.VaultCA.Kubernetes.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	4, // 0: common.mesh.gloo.solo.io.VaultCA.token_secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	2, // 1: common.mesh.gloo.solo.io.VaultCA.app_role:type_name -> common.mesh.gloo.solo.io.VaultCA.AppRole
+	3, // 2: common.mesh.gloo.solo.io.VaultCA.kubernetes_auth:type_name -> common.mesh.gloo.solo.io.VaultCA.Kubernetes
+	4, // 3: common.mesh.gloo.solo.io.VaultCA.AppRole.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	4, // 4: common.mesh.gloo.solo.io.VaultCA.Kubernetes.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
@@ -389,7 +465,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() {
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VaultCA_AppRole); i {
+			switch v := v.(*CommonCertOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -401,6 +477,18 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() {
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*VaultCA_AppRole); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VaultCA_Kubernetes); i {
 			case 0:
 				return &v.state
@@ -424,7 +512,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

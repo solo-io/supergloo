@@ -92,6 +92,8 @@ func (c *certAgentTranslator) IssuedCertiticateRequested(
 	outputs certagent.Builder,
 ) error {
 
+	// if issuedCertificate.Spec.GetSe
+
 	// retrieve private key
 	privateKeySecret, err := inputs.Secrets().Find(issuedCertificate)
 	if err != nil {

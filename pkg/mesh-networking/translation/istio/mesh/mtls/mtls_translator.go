@@ -374,6 +374,7 @@ func getPodsToBounce(mesh *discoveryv1.Mesh, allWorkloads discoveryv1sets.Worklo
 
 	// bounce the control plane pod first
 	// order matters
+	// TODO: Make this configurable, don't wanna do this when we have a sidecar
 	podsToBounce := []*certificatesv1.PodBounceDirectiveSpec_PodSelector{
 		{
 			Namespace: istioInstall.Namespace,

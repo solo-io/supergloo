@@ -10,14 +10,13 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/pod-bouncer"
+	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/internal/pod-bouncer"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -36,9 +35,6 @@ var (
 		}
 		return labels
 	}
-
-	privateKeySecretType        = corev1.SecretType(fmt.Sprintf("%s/generated_private_key", v1.SchemeGroupVersion.Group))
-	issuedCertificateSecretType = corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1.SchemeGroupVersion.Group))
 )
 
 type certAgentReconciler struct {
