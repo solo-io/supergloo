@@ -10,6 +10,7 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/common.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 
 import "extproto/ext.proto";
@@ -83,55 +84,6 @@ message TrafficPolicySpec {
             // Specify weighted traffic shift destinations.
             repeated WeightedDestination destinations = 1;
 
-            // Specify a traffic shift destination along with a weight.
-            message WeightedDestination {
-
-                // Specify the proportion of traffic to be forwarded to this destination.
-                // Weights across all of the `destinations` must sum to 100.
-                uint32 weight = 1;
-
-                // Platform specific destinations.
-                oneof destination_type {
-
-                    // Specify a Kubernetes Service.
-                    KubeDestination kube_service = 2;
-
-                    // Specify a VirtualDestination.
-                    VirtualDestinationReference virtual_destination = 3;
-                }
-
-                // A Kubernetes destination.
-                message KubeDestination {
-
-                    // The name of the service.
-                    string name = 1;
-
-                    // The namespace of the service.
-                    string namespace = 2;
-
-                    // The Gloo Mesh cluster name (registration name) of the service.
-                    string cluster_name = 3;
-
-                    // Specify, by labels, a subset of service instances to route to.
-                    map<string, string> subset = 4;
-
-                    // Port on the service to receive traffic. Required if the service exposes more than one port.
-                    uint32 port = 5;
-                }
-
-                // Specify a VirtualDestination traffic shift destination.
-                message VirtualDestinationReference {
-
-                    // The name of the VirtualDestination object.
-                    string name = 1;
-
-                    // The namespace of the VirtualDestination object.
-                    string namespace = 2;
-
-                    // Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
-                    map<string, string> subset = 3;
-                }
-            }
         }
 
         // Specify one or more faults to inject for the selected network edge.
@@ -160,22 +112,6 @@ message TrafficPolicySpec {
 
             // Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
             double percentage = 4;
-        }
-
-        // Specify modifications to request and response headers.
-        message HeaderManipulation {
-
-            // HTTP headers to remove before returning a response to the caller.
-            repeated string remove_response_headers = 1;
-
-            // Additional HTTP headers to add before returning a response to the caller.
-            map<string, string> append_response_headers = 2;
-
-            // HTTP headers to remove before forwarding a request to the destination service.
-            repeated string remove_request_headers = 3;
-
-            // Additional HTTP headers to add before forwarding a request to the destination service.
-            map<string, string> append_request_headers = 4;
         }
 
         // Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)

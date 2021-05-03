@@ -4,6 +4,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
@@ -323,6 +324,10 @@ message VirtualGatewayStatus{
 
     // List of Delegated Route tables that this Route table delegates to
     repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 6;
+
+
+    // List of Istio Gateway CRs created by this VirtualGateway in each cluster
+    map<string, .common.mesh.gloo.solo.io.ObjectRefList> created_istio_gateways = 7;
 
     // Relationships between objects
     // on Gw -> RTs selected
