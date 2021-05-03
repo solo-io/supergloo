@@ -153,7 +153,10 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
   meshes:
   - name: istiod-istio-system-mgmt-cluster 
     namespace: gloo-mesh

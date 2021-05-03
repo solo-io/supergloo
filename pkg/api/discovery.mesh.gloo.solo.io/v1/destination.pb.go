@@ -1106,7 +1106,7 @@ type DestinationStatus_AppliedFederation struct {
 	//that Workload will be able to reach this Destination using this DNS name.
 	//For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination.
 	FederatedHostname string `protobuf:"bytes,1,opt,name=federated_hostname,json=federatedHostname,proto3" json:"federated_hostname,omitempty"`
-	// The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
+	// The list of Meshes which are able to resolve this Destination's `federated_hostname`.
 	FederatedToMeshes []*v1.ObjectRef `protobuf:"bytes,2,rep,name=federated_to_meshes,json=federatedToMeshes,proto3" json:"federated_to_meshes,omitempty"`
 	// Whether the Destination has been federated to the given meshes using a VirtualMesh where
 	// [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})

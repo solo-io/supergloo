@@ -318,6 +318,23 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetSelectors()) != len(target.GetSelectors()) {
+		return false
+	}
+	for idx, v := range m.GetSelectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSelectors()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSelectors()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	if m.GetFlatNetwork() != target.GetFlatNetwork() {
 		return false
 	}
@@ -442,6 +459,64 @@ func (m *VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert) Equal(that int
 
 	if strings.Compare(m.GetOrgName(), target.GetOrgName()) != 0 {
 		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualMeshSpec_Federation_FederationSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualMeshSpec_Federation_FederationSelector)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_Federation_FederationSelector)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetDestinationSelectors()) != len(target.GetDestinationSelectors()) {
+		return false
+	}
+	for idx, v := range m.GetDestinationSelectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetDestinationSelectors()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetDestinationSelectors()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetMeshes()) != len(target.GetMeshes()) {
+		return false
+	}
+	for idx, v := range m.GetMeshes() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetMeshes()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetMeshes()[idx]) {
+				return false
+			}
+		}
+
 	}
 
 	return true

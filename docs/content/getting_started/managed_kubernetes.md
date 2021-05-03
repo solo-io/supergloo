@@ -306,7 +306,10 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
   # Disable global access policy enforcement for demonstration purposes.
   globalAccessPolicy: DISABLED
   meshes:

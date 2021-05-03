@@ -57,7 +57,10 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
   globalAccessPolicy: ENABLED
   meshes:
   - name: istiod-istio-system-mgmt-cluster
@@ -78,7 +81,10 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
   globalAccessPolicy: ENABLED
   meshes:
   - name: istiod-istio-system-mgmt-cluster

@@ -413,7 +413,7 @@ spec:
                                For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination.
                   type: string
                 federatedToMeshes:
-                  description: The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
+                  description: The list of Meshes which are able to resolve this Destination's `federated_hostname`.
                   items:
                     properties:
                       name:
@@ -1423,9 +1423,91 @@ spec:
                             If omitted, the hostname suffix defaults to "global".
                           type: string
                         permissive:
-                          description: Expose all Destinations to all Workloads in this VirtualMesh.
+                          description: |-
+                            DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
+                            Expose all Destinations to all Workloads in this VirtualMesh.
                           maxProperties: 0
                           type: object
+                        selectors:
+                          description: |-
+                            Selectively federate Destinations to specific external meshes.
+                            If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+                          items:
+                            properties:
+                              destinationSelectors:
+                                description: |-
+                                  The set of Destinations that will be federated to external Meshes.
+                                  If omitted, all Destinations will be selected.
+                                items:
+                                  properties:
+                                    kubeServiceMatcher:
+                                      description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                                      properties:
+                                        clusters:
+                                          description: |-
+                                            If specified, match Kubernetes Services if they exist in one of the specified clusters.
+                                                       When used in a networking policy, omission matches any cluster.
+                                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                          items:
+                                            type: string
+                                          type: array
+                                        labels:
+                                          additionalProperties:
+                                            type: string
+                                          description: |-
+                                            If specified, a match requires all labels to exist on a Kubernetes Service.
+                                                       When used in a networking policy, omission matches any labels.
+                                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                          type: object
+                                        namespaces:
+                                          description: |-
+                                            If specified, match Kubernetes Services if they exist in one of the specified namespaces.
+                                                       When used in a networking policy, omission matches any namespace.
+                                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                          items:
+                                            type: string
+                                          type: array
+                                      type: object
+                                    kubeServiceRefs:
+                                      description: Match Kubernetes Services by direct reference.
+                                      properties:
+                                        services:
+                                          description: |-
+                                            Match Kubernetes Services by direct reference.
+                                                       When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
+                                          items:
+                                            properties:
+                                              clusterName:
+                                                description: name of the cluster in which the resource exists
+                                                type: string
+                                              name:
+                                                description: name of the resource being referenced
+                                                type: string
+                                              namespace:
+                                                description: namespace of the resource being referenced
+                                                type: string
+                                            type: object
+                                          type: array
+                                      type: object
+                                  type: object
+                                type: array
+                              meshes:
+                                description: |-
+                                  The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
+                                  If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
+                                items:
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being referenced
+                                      type: string
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
                       type: object
                     globalAccessPolicy:
                       description: Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
