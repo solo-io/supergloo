@@ -10,8 +10,8 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/common.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;

@@ -4,7 +4,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/route.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/route.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -20,7 +20,7 @@ message RouteTableSpec {
     // The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
     // this virtual host. If the request matches more than one route in the list, the first route matched will be selected.
     // If the list of routes is empty, the virtual host will be ignored by Gloo.
-    repeated .common.mesh.gloo.solo.io.Route routes = 3;
+    repeated .networking.enterprise.mesh.gloo.solo.io.Route routes = 2;
 }
 
 message RouteTableStatus {
