@@ -14,30 +14,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockSettingsEventHandler is a mock of SettingsEventHandler interface.
+// MockSettingsEventHandler is a mock of SettingsEventHandler interface
 type MockSettingsEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsEventHandlerMockRecorder
 }
 
-// MockSettingsEventHandlerMockRecorder is the mock recorder for MockSettingsEventHandler.
+// MockSettingsEventHandlerMockRecorder is the mock recorder for MockSettingsEventHandler
 type MockSettingsEventHandlerMockRecorder struct {
 	mock *MockSettingsEventHandler
 }
 
-// NewMockSettingsEventHandler creates a new mock instance.
+// NewMockSettingsEventHandler creates a new mock instance
 func NewMockSettingsEventHandler(ctrl *gomock.Controller) *MockSettingsEventHandler {
 	mock := &MockSettingsEventHandler{ctrl: ctrl}
 	mock.recorder = &MockSettingsEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSettingsEventHandler) EXPECT() *MockSettingsEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateSettings mocks base method.
+// CreateSettings mocks base method
 func (m *MockSettingsEventHandler) CreateSettings(obj *v1.Settings) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSettings", obj)
@@ -45,41 +45,13 @@ func (m *MockSettingsEventHandler) CreateSettings(obj *v1.Settings) error {
 	return ret0
 }
 
-// CreateSettings indicates an expected call of CreateSettings.
+// CreateSettings indicates an expected call of CreateSettings
 func (mr *MockSettingsEventHandlerMockRecorder) CreateSettings(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSettings", reflect.TypeOf((*MockSettingsEventHandler)(nil).CreateSettings), obj)
 }
 
-// DeleteSettings mocks base method.
-func (m *MockSettingsEventHandler) DeleteSettings(obj *v1.Settings) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSettings", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteSettings indicates an expected call of DeleteSettings.
-func (mr *MockSettingsEventHandlerMockRecorder) DeleteSettings(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSettings", reflect.TypeOf((*MockSettingsEventHandler)(nil).DeleteSettings), obj)
-}
-
-// GenericSettings mocks base method.
-func (m *MockSettingsEventHandler) GenericSettings(obj *v1.Settings) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenericSettings", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GenericSettings indicates an expected call of GenericSettings.
-func (mr *MockSettingsEventHandlerMockRecorder) GenericSettings(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericSettings", reflect.TypeOf((*MockSettingsEventHandler)(nil).GenericSettings), obj)
-}
-
-// UpdateSettings mocks base method.
+// UpdateSettings mocks base method
 func (m *MockSettingsEventHandler) UpdateSettings(old, new *v1.Settings) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSettings", old, new)
@@ -87,36 +59,64 @@ func (m *MockSettingsEventHandler) UpdateSettings(old, new *v1.Settings) error {
 	return ret0
 }
 
-// UpdateSettings indicates an expected call of UpdateSettings.
+// UpdateSettings indicates an expected call of UpdateSettings
 func (mr *MockSettingsEventHandlerMockRecorder) UpdateSettings(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSettings", reflect.TypeOf((*MockSettingsEventHandler)(nil).UpdateSettings), old, new)
 }
 
-// MockSettingsEventWatcher is a mock of SettingsEventWatcher interface.
+// DeleteSettings mocks base method
+func (m *MockSettingsEventHandler) DeleteSettings(obj *v1.Settings) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSettings", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSettings indicates an expected call of DeleteSettings
+func (mr *MockSettingsEventHandlerMockRecorder) DeleteSettings(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSettings", reflect.TypeOf((*MockSettingsEventHandler)(nil).DeleteSettings), obj)
+}
+
+// GenericSettings mocks base method
+func (m *MockSettingsEventHandler) GenericSettings(obj *v1.Settings) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericSettings", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericSettings indicates an expected call of GenericSettings
+func (mr *MockSettingsEventHandlerMockRecorder) GenericSettings(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericSettings", reflect.TypeOf((*MockSettingsEventHandler)(nil).GenericSettings), obj)
+}
+
+// MockSettingsEventWatcher is a mock of SettingsEventWatcher interface
 type MockSettingsEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsEventWatcherMockRecorder
 }
 
-// MockSettingsEventWatcherMockRecorder is the mock recorder for MockSettingsEventWatcher.
+// MockSettingsEventWatcherMockRecorder is the mock recorder for MockSettingsEventWatcher
 type MockSettingsEventWatcherMockRecorder struct {
 	mock *MockSettingsEventWatcher
 }
 
-// NewMockSettingsEventWatcher creates a new mock instance.
+// NewMockSettingsEventWatcher creates a new mock instance
 func NewMockSettingsEventWatcher(ctrl *gomock.Controller) *MockSettingsEventWatcher {
 	mock := &MockSettingsEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockSettingsEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSettingsEventWatcher) EXPECT() *MockSettingsEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method.
+// AddEventHandler mocks base method
 func (m *MockSettingsEventWatcher) AddEventHandler(ctx context.Context, h controller.SettingsEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -128,7 +128,7 @@ func (m *MockSettingsEventWatcher) AddEventHandler(ctx context.Context, h contro
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler.
+// AddEventHandler indicates an expected call of AddEventHandler
 func (mr *MockSettingsEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)

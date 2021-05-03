@@ -15,30 +15,30 @@ import (
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
-// MockTranslator is a mock of Translator interface.
+// MockTranslator is a mock of Translator interface
 type MockTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTranslatorMockRecorder
 }
 
-// MockTranslatorMockRecorder is the mock recorder for MockTranslator.
+// MockTranslatorMockRecorder is the mock recorder for MockTranslator
 type MockTranslatorMockRecorder struct {
 	mock *MockTranslator
 }
 
-// NewMockTranslator creates a new mock instance.
+// NewMockTranslator creates a new mock instance
 func NewMockTranslator(ctrl *gomock.Controller) *MockTranslator {
 	mock := &MockTranslator{ctrl: ctrl}
 	mock.recorder = &MockTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
-// Translate mocks base method.
+// Translate mocks base method
 func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, destination *v1.Destination, sourceMeshInstallation *v1.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.DestinationRule {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, destination, sourceMeshInstallation, reporter)
@@ -46,7 +46,7 @@ func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, 
 	return ret0
 }
 
-// Translate indicates an expected call of Translate.
+// Translate indicates an expected call of Translate
 func (mr *MockTranslatorMockRecorder) Translate(ctx, in, destination, sourceMeshInstallation, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, destination, sourceMeshInstallation, reporter)

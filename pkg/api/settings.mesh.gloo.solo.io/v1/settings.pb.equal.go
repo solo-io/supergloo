@@ -93,6 +93,16 @@ func (m *SettingsSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetDashboard()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDashboard()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDashboard(), target.GetDashboard()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -248,6 +258,69 @@ func (m *SettingsStatus) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *DashboardSettings) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings)
+	if !ok {
+		that2, ok := that.(DashboardSettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.AuthConfig.(type) {
+
+	case *DashboardSettings_None:
+		if _, ok := target.AuthConfig.(*DashboardSettings_None); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetNone()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetNone()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetNone(), target.GetNone()) {
+				return false
+			}
+		}
+
+	case *DashboardSettings_Oidc:
+		if _, ok := target.AuthConfig.(*DashboardSettings_Oidc); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetOidc()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetOidc()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetOidc(), target.GetOidc()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.AuthConfig != target.AuthConfig {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *DiscoverySettings_Istio) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -322,6 +395,536 @@ func (m *DiscoverySettings_Istio_IngressGatewayDetector) Equal(that interface{})
 
 	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
 		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_SessionConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_SessionConfig)
+	if !ok {
+		that2, ok := that.(DashboardSettings_SessionConfig)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetCookieOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCookieOptions()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetCookieOptions(), target.GetCookieOptions()) {
+			return false
+		}
+	}
+
+	switch m.Backend.(type) {
+
+	case *DashboardSettings_SessionConfig_Cookie:
+		if _, ok := target.Backend.(*DashboardSettings_SessionConfig_Cookie); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetCookie()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetCookie()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetCookie(), target.GetCookie()) {
+				return false
+			}
+		}
+
+	case *DashboardSettings_SessionConfig_Redis:
+		if _, ok := target.Backend.(*DashboardSettings_SessionConfig_Redis); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetRedis()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRedis()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetRedis(), target.GetRedis()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Backend != target.Backend {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_NoAuth) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_NoAuth)
+	if !ok {
+		that2, ok := that.(DashboardSettings_NoAuth)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_OidcConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_OidcConfig)
+	if !ok {
+		that2, ok := that.(DashboardSettings_OidcConfig)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetClientId(), target.GetClientId()) != 0 {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetClientSecret()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetClientSecret()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetClientSecret(), target.GetClientSecret()) {
+			return false
+		}
+	}
+
+	if strings.Compare(m.GetIssuerUrl(), target.GetIssuerUrl()) != 0 {
+		return false
+	}
+
+	if len(m.GetAuthEndpointQueryParams()) != len(target.GetAuthEndpointQueryParams()) {
+		return false
+	}
+	for k, v := range m.GetAuthEndpointQueryParams() {
+
+		if strings.Compare(v, target.GetAuthEndpointQueryParams()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetTokenEndpointQueryParams()) != len(target.GetTokenEndpointQueryParams()) {
+		return false
+	}
+	for k, v := range m.GetTokenEndpointQueryParams() {
+
+		if strings.Compare(v, target.GetTokenEndpointQueryParams()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if strings.Compare(m.GetAppUrl(), target.GetAppUrl()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetCallbackPath(), target.GetCallbackPath()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetLogoutPath(), target.GetLogoutPath()) != 0 {
+		return false
+	}
+
+	if len(m.GetScopes()) != len(target.GetScopes()) {
+		return false
+	}
+	for idx, v := range m.GetScopes() {
+
+		if strings.Compare(v, target.GetScopes()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if h, ok := interface{}(m.GetHeader()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetHeader()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetHeader(), target.GetHeader()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetDiscoveryOverride()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDiscoveryOverride()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDiscoveryOverride(), target.GetDiscoveryOverride()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetDiscoveryPollInterval()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDiscoveryPollInterval()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDiscoveryPollInterval(), target.GetDiscoveryPollInterval()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetJwksCacheRefreshPolicy()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetJwksCacheRefreshPolicy()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetJwksCacheRefreshPolicy(), target.GetJwksCacheRefreshPolicy()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_SessionConfig_CookieSession) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_SessionConfig_CookieSession)
+	if !ok {
+		that2, ok := that.(DashboardSettings_SessionConfig_CookieSession)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_SessionConfig_RedisSession) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_SessionConfig_RedisSession)
+	if !ok {
+		that2, ok := that.(DashboardSettings_SessionConfig_RedisSession)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_SessionConfig_CookieOptions) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_SessionConfig_CookieOptions)
+	if !ok {
+		that2, ok := that.(DashboardSettings_SessionConfig_CookieOptions)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetMaxAge()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetMaxAge()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetMaxAge(), target.GetMaxAge()) {
+			return false
+		}
+	}
+
+	if m.GetNotSecure() != target.GetNotSecure() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetPath()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetPath()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetPath(), target.GetPath()) {
+			return false
+		}
+	}
+
+	if strings.Compare(m.GetDomain(), target.GetDomain()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_OidcConfig_HeaderConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_OidcConfig_HeaderConfig)
+	if !ok {
+		that2, ok := that.(DashboardSettings_OidcConfig_HeaderConfig)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetIdTokenHeader(), target.GetIdTokenHeader()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetAccessTokenHeader(), target.GetAccessTokenHeader()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_OidcConfig_DiscoveryOverride) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_OidcConfig_DiscoveryOverride)
+	if !ok {
+		that2, ok := that.(DashboardSettings_OidcConfig_DiscoveryOverride)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetAuthEndpoint(), target.GetAuthEndpoint()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetTokenEndpoint(), target.GetTokenEndpoint()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetJwksUri(), target.GetJwksUri()) != 0 {
+		return false
+	}
+
+	if len(m.GetScopes()) != len(target.GetScopes()) {
+		return false
+	}
+	for idx, v := range m.GetScopes() {
+
+		if strings.Compare(v, target.GetScopes()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetResponseTypes()) != len(target.GetResponseTypes()) {
+		return false
+	}
+	for idx, v := range m.GetResponseTypes() {
+
+		if strings.Compare(v, target.GetResponseTypes()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetSubjects()) != len(target.GetSubjects()) {
+		return false
+	}
+	for idx, v := range m.GetSubjects() {
+
+		if strings.Compare(v, target.GetSubjects()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetIdTokenAlgs()) != len(target.GetIdTokenAlgs()) {
+		return false
+	}
+	for idx, v := range m.GetIdTokenAlgs() {
+
+		if strings.Compare(v, target.GetIdTokenAlgs()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetAuthMethods()) != len(target.GetAuthMethods()) {
+		return false
+	}
+	for idx, v := range m.GetAuthMethods() {
+
+		if strings.Compare(v, target.GetAuthMethods()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetClaims()) != len(target.GetClaims()) {
+		return false
+	}
+	for idx, v := range m.GetClaims() {
+
+		if strings.Compare(v, target.GetClaims()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy)
+	if !ok {
+		that2, ok := that.(DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.Policy.(type) {
+
+	case *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Never:
+		if _, ok := target.Policy.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Never); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetNever()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetNever()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetNever(), target.GetNever()) {
+				return false
+			}
+		}
+
+	case *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Always:
+		if _, ok := target.Policy.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Always); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetAlways()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAlways()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetAlways(), target.GetAlways()) {
+				return false
+			}
+		}
+
+	case *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_MaxIdpReqPerPollingInterval:
+		if _, ok := target.Policy.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_MaxIdpReqPerPollingInterval); !ok {
+			return false
+		}
+
+		if m.GetMaxIdpReqPerPollingInterval() != target.GetMaxIdpReqPerPollingInterval() {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Policy != target.Policy {
+			return false
+		}
 	}
 
 	return true

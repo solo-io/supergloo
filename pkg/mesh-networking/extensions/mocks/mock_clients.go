@@ -12,30 +12,30 @@ import (
 	extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 )
 
-// MockClientset is a mock of Clientset interface.
+// MockClientset is a mock of Clientset interface
 type MockClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientsetMockRecorder
 }
 
-// MockClientsetMockRecorder is the mock recorder for MockClientset.
+// MockClientsetMockRecorder is the mock recorder for MockClientset
 type MockClientsetMockRecorder struct {
 	mock *MockClientset
 }
 
-// NewMockClientset creates a new mock instance.
+// NewMockClientset creates a new mock instance
 func NewMockClientset(ctrl *gomock.Controller) *MockClientset {
 	mock := &MockClientset{ctrl: ctrl}
 	mock.recorder = &MockClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// ConfigureServers mocks base method.
+// ConfigureServers mocks base method
 func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1.GrpcServer, pushFn extensions.PushFunc) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureServers", extensionsServerOptions, pushFn)
@@ -43,13 +43,13 @@ func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1.GrpcServe
 	return ret0
 }
 
-// ConfigureServers indicates an expected call of ConfigureServers.
+// ConfigureServers indicates an expected call of ConfigureServers
 func (mr *MockClientsetMockRecorder) ConfigureServers(extensionsServerOptions, pushFn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureServers", reflect.TypeOf((*MockClientset)(nil).ConfigureServers), extensionsServerOptions, pushFn)
 }
 
-// GetClients mocks base method.
+// GetClients mocks base method
 func (m *MockClientset) GetClients() extensions.Clients {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClients")
@@ -57,7 +57,7 @@ func (m *MockClientset) GetClients() extensions.Clients {
 	return ret0
 }
 
-// GetClients indicates an expected call of GetClients.
+// GetClients indicates an expected call of GetClients
 func (mr *MockClientsetMockRecorder) GetClients() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClients", reflect.TypeOf((*MockClientset)(nil).GetClients))

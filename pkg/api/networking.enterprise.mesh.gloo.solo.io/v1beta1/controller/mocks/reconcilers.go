@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockWasmDeploymentReconciler is a mock of WasmDeploymentReconciler interface.
+// MockWasmDeploymentReconciler is a mock of WasmDeploymentReconciler interface
 type MockWasmDeploymentReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmDeploymentReconcilerMockRecorder
 }
 
-// MockWasmDeploymentReconcilerMockRecorder is the mock recorder for MockWasmDeploymentReconciler.
+// MockWasmDeploymentReconcilerMockRecorder is the mock recorder for MockWasmDeploymentReconciler
 type MockWasmDeploymentReconcilerMockRecorder struct {
 	mock *MockWasmDeploymentReconciler
 }
 
-// NewMockWasmDeploymentReconciler creates a new mock instance.
+// NewMockWasmDeploymentReconciler creates a new mock instance
 func NewMockWasmDeploymentReconciler(ctrl *gomock.Controller) *MockWasmDeploymentReconciler {
 	mock := &MockWasmDeploymentReconciler{ctrl: ctrl}
 	mock.recorder = &MockWasmDeploymentReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockWasmDeploymentReconciler) EXPECT() *MockWasmDeploymentReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileWasmDeployment mocks base method.
+// ReconcileWasmDeployment mocks base method
 func (m *MockWasmDeploymentReconciler) ReconcileWasmDeployment(obj *v1beta1.WasmDeployment) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileWasmDeployment", obj)
@@ -47,36 +47,36 @@ func (m *MockWasmDeploymentReconciler) ReconcileWasmDeployment(obj *v1beta1.Wasm
 	return ret0, ret1
 }
 
-// ReconcileWasmDeployment indicates an expected call of ReconcileWasmDeployment.
+// ReconcileWasmDeployment indicates an expected call of ReconcileWasmDeployment
 func (mr *MockWasmDeploymentReconcilerMockRecorder) ReconcileWasmDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWasmDeployment", reflect.TypeOf((*MockWasmDeploymentReconciler)(nil).ReconcileWasmDeployment), obj)
 }
 
-// MockWasmDeploymentDeletionReconciler is a mock of WasmDeploymentDeletionReconciler interface.
+// MockWasmDeploymentDeletionReconciler is a mock of WasmDeploymentDeletionReconciler interface
 type MockWasmDeploymentDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmDeploymentDeletionReconcilerMockRecorder
 }
 
-// MockWasmDeploymentDeletionReconcilerMockRecorder is the mock recorder for MockWasmDeploymentDeletionReconciler.
+// MockWasmDeploymentDeletionReconcilerMockRecorder is the mock recorder for MockWasmDeploymentDeletionReconciler
 type MockWasmDeploymentDeletionReconcilerMockRecorder struct {
 	mock *MockWasmDeploymentDeletionReconciler
 }
 
-// NewMockWasmDeploymentDeletionReconciler creates a new mock instance.
+// NewMockWasmDeploymentDeletionReconciler creates a new mock instance
 func NewMockWasmDeploymentDeletionReconciler(ctrl *gomock.Controller) *MockWasmDeploymentDeletionReconciler {
 	mock := &MockWasmDeploymentDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockWasmDeploymentDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockWasmDeploymentDeletionReconciler) EXPECT() *MockWasmDeploymentDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileWasmDeploymentDeletion mocks base method.
+// ReconcileWasmDeploymentDeletion mocks base method
 func (m *MockWasmDeploymentDeletionReconciler) ReconcileWasmDeploymentDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileWasmDeploymentDeletion", req)
@@ -84,50 +84,36 @@ func (m *MockWasmDeploymentDeletionReconciler) ReconcileWasmDeploymentDeletion(r
 	return ret0
 }
 
-// ReconcileWasmDeploymentDeletion indicates an expected call of ReconcileWasmDeploymentDeletion.
+// ReconcileWasmDeploymentDeletion indicates an expected call of ReconcileWasmDeploymentDeletion
 func (mr *MockWasmDeploymentDeletionReconcilerMockRecorder) ReconcileWasmDeploymentDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWasmDeploymentDeletion", reflect.TypeOf((*MockWasmDeploymentDeletionReconciler)(nil).ReconcileWasmDeploymentDeletion), req)
 }
 
-// MockWasmDeploymentFinalizer is a mock of WasmDeploymentFinalizer interface.
+// MockWasmDeploymentFinalizer is a mock of WasmDeploymentFinalizer interface
 type MockWasmDeploymentFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmDeploymentFinalizerMockRecorder
 }
 
-// MockWasmDeploymentFinalizerMockRecorder is the mock recorder for MockWasmDeploymentFinalizer.
+// MockWasmDeploymentFinalizerMockRecorder is the mock recorder for MockWasmDeploymentFinalizer
 type MockWasmDeploymentFinalizerMockRecorder struct {
 	mock *MockWasmDeploymentFinalizer
 }
 
-// NewMockWasmDeploymentFinalizer creates a new mock instance.
+// NewMockWasmDeploymentFinalizer creates a new mock instance
 func NewMockWasmDeploymentFinalizer(ctrl *gomock.Controller) *MockWasmDeploymentFinalizer {
 	mock := &MockWasmDeploymentFinalizer{ctrl: ctrl}
 	mock.recorder = &MockWasmDeploymentFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockWasmDeploymentFinalizer) EXPECT() *MockWasmDeploymentFinalizerMockRecorder {
 	return m.recorder
 }
 
-// FinalizeWasmDeployment mocks base method.
-func (m *MockWasmDeploymentFinalizer) FinalizeWasmDeployment(obj *v1beta1.WasmDeployment) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeWasmDeployment", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FinalizeWasmDeployment indicates an expected call of FinalizeWasmDeployment.
-func (mr *MockWasmDeploymentFinalizerMockRecorder) FinalizeWasmDeployment(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeWasmDeployment", reflect.TypeOf((*MockWasmDeploymentFinalizer)(nil).FinalizeWasmDeployment), obj)
-}
-
-// ReconcileWasmDeployment mocks base method.
+// ReconcileWasmDeployment mocks base method
 func (m *MockWasmDeploymentFinalizer) ReconcileWasmDeployment(obj *v1beta1.WasmDeployment) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileWasmDeployment", obj)
@@ -136,13 +122,13 @@ func (m *MockWasmDeploymentFinalizer) ReconcileWasmDeployment(obj *v1beta1.WasmD
 	return ret0, ret1
 }
 
-// ReconcileWasmDeployment indicates an expected call of ReconcileWasmDeployment.
+// ReconcileWasmDeployment indicates an expected call of ReconcileWasmDeployment
 func (mr *MockWasmDeploymentFinalizerMockRecorder) ReconcileWasmDeployment(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileWasmDeployment", reflect.TypeOf((*MockWasmDeploymentFinalizer)(nil).ReconcileWasmDeployment), obj)
 }
 
-// WasmDeploymentFinalizerName mocks base method.
+// WasmDeploymentFinalizerName mocks base method
 func (m *MockWasmDeploymentFinalizer) WasmDeploymentFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WasmDeploymentFinalizerName")
@@ -150,36 +136,50 @@ func (m *MockWasmDeploymentFinalizer) WasmDeploymentFinalizerName() string {
 	return ret0
 }
 
-// WasmDeploymentFinalizerName indicates an expected call of WasmDeploymentFinalizerName.
+// WasmDeploymentFinalizerName indicates an expected call of WasmDeploymentFinalizerName
 func (mr *MockWasmDeploymentFinalizerMockRecorder) WasmDeploymentFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeploymentFinalizerName", reflect.TypeOf((*MockWasmDeploymentFinalizer)(nil).WasmDeploymentFinalizerName))
 }
 
-// MockWasmDeploymentReconcileLoop is a mock of WasmDeploymentReconcileLoop interface.
+// FinalizeWasmDeployment mocks base method
+func (m *MockWasmDeploymentFinalizer) FinalizeWasmDeployment(obj *v1beta1.WasmDeployment) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeWasmDeployment", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeWasmDeployment indicates an expected call of FinalizeWasmDeployment
+func (mr *MockWasmDeploymentFinalizerMockRecorder) FinalizeWasmDeployment(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeWasmDeployment", reflect.TypeOf((*MockWasmDeploymentFinalizer)(nil).FinalizeWasmDeployment), obj)
+}
+
+// MockWasmDeploymentReconcileLoop is a mock of WasmDeploymentReconcileLoop interface
 type MockWasmDeploymentReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmDeploymentReconcileLoopMockRecorder
 }
 
-// MockWasmDeploymentReconcileLoopMockRecorder is the mock recorder for MockWasmDeploymentReconcileLoop.
+// MockWasmDeploymentReconcileLoopMockRecorder is the mock recorder for MockWasmDeploymentReconcileLoop
 type MockWasmDeploymentReconcileLoopMockRecorder struct {
 	mock *MockWasmDeploymentReconcileLoop
 }
 
-// NewMockWasmDeploymentReconcileLoop creates a new mock instance.
+// NewMockWasmDeploymentReconcileLoop creates a new mock instance
 func NewMockWasmDeploymentReconcileLoop(ctrl *gomock.Controller) *MockWasmDeploymentReconcileLoop {
 	mock := &MockWasmDeploymentReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockWasmDeploymentReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockWasmDeploymentReconcileLoop) EXPECT() *MockWasmDeploymentReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunWasmDeploymentReconciler mocks base method.
+// RunWasmDeploymentReconciler mocks base method
 func (m *MockWasmDeploymentReconcileLoop) RunWasmDeploymentReconciler(ctx context.Context, rec controller.WasmDeploymentReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -191,37 +191,37 @@ func (m *MockWasmDeploymentReconcileLoop) RunWasmDeploymentReconciler(ctx contex
 	return ret0
 }
 
-// RunWasmDeploymentReconciler indicates an expected call of RunWasmDeploymentReconciler.
+// RunWasmDeploymentReconciler indicates an expected call of RunWasmDeploymentReconciler
 func (mr *MockWasmDeploymentReconcileLoopMockRecorder) RunWasmDeploymentReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWasmDeploymentReconciler", reflect.TypeOf((*MockWasmDeploymentReconcileLoop)(nil).RunWasmDeploymentReconciler), varargs...)
 }
 
-// MockVirtualDestinationReconciler is a mock of VirtualDestinationReconciler interface.
+// MockVirtualDestinationReconciler is a mock of VirtualDestinationReconciler interface
 type MockVirtualDestinationReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualDestinationReconcilerMockRecorder
 }
 
-// MockVirtualDestinationReconcilerMockRecorder is the mock recorder for MockVirtualDestinationReconciler.
+// MockVirtualDestinationReconcilerMockRecorder is the mock recorder for MockVirtualDestinationReconciler
 type MockVirtualDestinationReconcilerMockRecorder struct {
 	mock *MockVirtualDestinationReconciler
 }
 
-// NewMockVirtualDestinationReconciler creates a new mock instance.
+// NewMockVirtualDestinationReconciler creates a new mock instance
 func NewMockVirtualDestinationReconciler(ctrl *gomock.Controller) *MockVirtualDestinationReconciler {
 	mock := &MockVirtualDestinationReconciler{ctrl: ctrl}
 	mock.recorder = &MockVirtualDestinationReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockVirtualDestinationReconciler) EXPECT() *MockVirtualDestinationReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileVirtualDestination mocks base method.
+// ReconcileVirtualDestination mocks base method
 func (m *MockVirtualDestinationReconciler) ReconcileVirtualDestination(obj *v1beta1.VirtualDestination) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileVirtualDestination", obj)
@@ -230,36 +230,36 @@ func (m *MockVirtualDestinationReconciler) ReconcileVirtualDestination(obj *v1be
 	return ret0, ret1
 }
 
-// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination.
+// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination
 func (mr *MockVirtualDestinationReconcilerMockRecorder) ReconcileVirtualDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestination", reflect.TypeOf((*MockVirtualDestinationReconciler)(nil).ReconcileVirtualDestination), obj)
 }
 
-// MockVirtualDestinationDeletionReconciler is a mock of VirtualDestinationDeletionReconciler interface.
+// MockVirtualDestinationDeletionReconciler is a mock of VirtualDestinationDeletionReconciler interface
 type MockVirtualDestinationDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualDestinationDeletionReconcilerMockRecorder
 }
 
-// MockVirtualDestinationDeletionReconcilerMockRecorder is the mock recorder for MockVirtualDestinationDeletionReconciler.
+// MockVirtualDestinationDeletionReconcilerMockRecorder is the mock recorder for MockVirtualDestinationDeletionReconciler
 type MockVirtualDestinationDeletionReconcilerMockRecorder struct {
 	mock *MockVirtualDestinationDeletionReconciler
 }
 
-// NewMockVirtualDestinationDeletionReconciler creates a new mock instance.
+// NewMockVirtualDestinationDeletionReconciler creates a new mock instance
 func NewMockVirtualDestinationDeletionReconciler(ctrl *gomock.Controller) *MockVirtualDestinationDeletionReconciler {
 	mock := &MockVirtualDestinationDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockVirtualDestinationDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockVirtualDestinationDeletionReconciler) EXPECT() *MockVirtualDestinationDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileVirtualDestinationDeletion mocks base method.
+// ReconcileVirtualDestinationDeletion mocks base method
 func (m *MockVirtualDestinationDeletionReconciler) ReconcileVirtualDestinationDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileVirtualDestinationDeletion", req)
@@ -267,50 +267,36 @@ func (m *MockVirtualDestinationDeletionReconciler) ReconcileVirtualDestinationDe
 	return ret0
 }
 
-// ReconcileVirtualDestinationDeletion indicates an expected call of ReconcileVirtualDestinationDeletion.
+// ReconcileVirtualDestinationDeletion indicates an expected call of ReconcileVirtualDestinationDeletion
 func (mr *MockVirtualDestinationDeletionReconcilerMockRecorder) ReconcileVirtualDestinationDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestinationDeletion", reflect.TypeOf((*MockVirtualDestinationDeletionReconciler)(nil).ReconcileVirtualDestinationDeletion), req)
 }
 
-// MockVirtualDestinationFinalizer is a mock of VirtualDestinationFinalizer interface.
+// MockVirtualDestinationFinalizer is a mock of VirtualDestinationFinalizer interface
 type MockVirtualDestinationFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualDestinationFinalizerMockRecorder
 }
 
-// MockVirtualDestinationFinalizerMockRecorder is the mock recorder for MockVirtualDestinationFinalizer.
+// MockVirtualDestinationFinalizerMockRecorder is the mock recorder for MockVirtualDestinationFinalizer
 type MockVirtualDestinationFinalizerMockRecorder struct {
 	mock *MockVirtualDestinationFinalizer
 }
 
-// NewMockVirtualDestinationFinalizer creates a new mock instance.
+// NewMockVirtualDestinationFinalizer creates a new mock instance
 func NewMockVirtualDestinationFinalizer(ctrl *gomock.Controller) *MockVirtualDestinationFinalizer {
 	mock := &MockVirtualDestinationFinalizer{ctrl: ctrl}
 	mock.recorder = &MockVirtualDestinationFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockVirtualDestinationFinalizer) EXPECT() *MockVirtualDestinationFinalizerMockRecorder {
 	return m.recorder
 }
 
-// FinalizeVirtualDestination mocks base method.
-func (m *MockVirtualDestinationFinalizer) FinalizeVirtualDestination(obj *v1beta1.VirtualDestination) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeVirtualDestination", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FinalizeVirtualDestination indicates an expected call of FinalizeVirtualDestination.
-func (mr *MockVirtualDestinationFinalizerMockRecorder) FinalizeVirtualDestination(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeVirtualDestination", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).FinalizeVirtualDestination), obj)
-}
-
-// ReconcileVirtualDestination mocks base method.
+// ReconcileVirtualDestination mocks base method
 func (m *MockVirtualDestinationFinalizer) ReconcileVirtualDestination(obj *v1beta1.VirtualDestination) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileVirtualDestination", obj)
@@ -319,13 +305,13 @@ func (m *MockVirtualDestinationFinalizer) ReconcileVirtualDestination(obj *v1bet
 	return ret0, ret1
 }
 
-// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination.
+// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination
 func (mr *MockVirtualDestinationFinalizerMockRecorder) ReconcileVirtualDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestination", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).ReconcileVirtualDestination), obj)
 }
 
-// VirtualDestinationFinalizerName mocks base method.
+// VirtualDestinationFinalizerName mocks base method
 func (m *MockVirtualDestinationFinalizer) VirtualDestinationFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VirtualDestinationFinalizerName")
@@ -333,36 +319,50 @@ func (m *MockVirtualDestinationFinalizer) VirtualDestinationFinalizerName() stri
 	return ret0
 }
 
-// VirtualDestinationFinalizerName indicates an expected call of VirtualDestinationFinalizerName.
+// VirtualDestinationFinalizerName indicates an expected call of VirtualDestinationFinalizerName
 func (mr *MockVirtualDestinationFinalizerMockRecorder) VirtualDestinationFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinationFinalizerName", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).VirtualDestinationFinalizerName))
 }
 
-// MockVirtualDestinationReconcileLoop is a mock of VirtualDestinationReconcileLoop interface.
+// FinalizeVirtualDestination mocks base method
+func (m *MockVirtualDestinationFinalizer) FinalizeVirtualDestination(obj *v1beta1.VirtualDestination) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeVirtualDestination", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeVirtualDestination indicates an expected call of FinalizeVirtualDestination
+func (mr *MockVirtualDestinationFinalizerMockRecorder) FinalizeVirtualDestination(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeVirtualDestination", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).FinalizeVirtualDestination), obj)
+}
+
+// MockVirtualDestinationReconcileLoop is a mock of VirtualDestinationReconcileLoop interface
 type MockVirtualDestinationReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualDestinationReconcileLoopMockRecorder
 }
 
-// MockVirtualDestinationReconcileLoopMockRecorder is the mock recorder for MockVirtualDestinationReconcileLoop.
+// MockVirtualDestinationReconcileLoopMockRecorder is the mock recorder for MockVirtualDestinationReconcileLoop
 type MockVirtualDestinationReconcileLoopMockRecorder struct {
 	mock *MockVirtualDestinationReconcileLoop
 }
 
-// NewMockVirtualDestinationReconcileLoop creates a new mock instance.
+// NewMockVirtualDestinationReconcileLoop creates a new mock instance
 func NewMockVirtualDestinationReconcileLoop(ctrl *gomock.Controller) *MockVirtualDestinationReconcileLoop {
 	mock := &MockVirtualDestinationReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockVirtualDestinationReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockVirtualDestinationReconcileLoop) EXPECT() *MockVirtualDestinationReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunVirtualDestinationReconciler mocks base method.
+// RunVirtualDestinationReconciler mocks base method
 func (m *MockVirtualDestinationReconcileLoop) RunVirtualDestinationReconciler(ctx context.Context, rec controller.VirtualDestinationReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -374,37 +374,37 @@ func (m *MockVirtualDestinationReconcileLoop) RunVirtualDestinationReconciler(ct
 	return ret0
 }
 
-// RunVirtualDestinationReconciler indicates an expected call of RunVirtualDestinationReconciler.
+// RunVirtualDestinationReconciler indicates an expected call of RunVirtualDestinationReconciler
 func (mr *MockVirtualDestinationReconcileLoopMockRecorder) RunVirtualDestinationReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunVirtualDestinationReconciler", reflect.TypeOf((*MockVirtualDestinationReconcileLoop)(nil).RunVirtualDestinationReconciler), varargs...)
 }
 
-// MockServiceDependencyReconciler is a mock of ServiceDependencyReconciler interface.
+// MockServiceDependencyReconciler is a mock of ServiceDependencyReconciler interface
 type MockServiceDependencyReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyReconcilerMockRecorder
 }
 
-// MockServiceDependencyReconcilerMockRecorder is the mock recorder for MockServiceDependencyReconciler.
+// MockServiceDependencyReconcilerMockRecorder is the mock recorder for MockServiceDependencyReconciler
 type MockServiceDependencyReconcilerMockRecorder struct {
 	mock *MockServiceDependencyReconciler
 }
 
-// NewMockServiceDependencyReconciler creates a new mock instance.
+// NewMockServiceDependencyReconciler creates a new mock instance
 func NewMockServiceDependencyReconciler(ctrl *gomock.Controller) *MockServiceDependencyReconciler {
 	mock := &MockServiceDependencyReconciler{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockServiceDependencyReconciler) EXPECT() *MockServiceDependencyReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileServiceDependency mocks base method.
+// ReconcileServiceDependency mocks base method
 func (m *MockServiceDependencyReconciler) ReconcileServiceDependency(obj *v1beta1.ServiceDependency) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileServiceDependency", obj)
@@ -413,36 +413,36 @@ func (m *MockServiceDependencyReconciler) ReconcileServiceDependency(obj *v1beta
 	return ret0, ret1
 }
 
-// ReconcileServiceDependency indicates an expected call of ReconcileServiceDependency.
+// ReconcileServiceDependency indicates an expected call of ReconcileServiceDependency
 func (mr *MockServiceDependencyReconcilerMockRecorder) ReconcileServiceDependency(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceDependency", reflect.TypeOf((*MockServiceDependencyReconciler)(nil).ReconcileServiceDependency), obj)
 }
 
-// MockServiceDependencyDeletionReconciler is a mock of ServiceDependencyDeletionReconciler interface.
+// MockServiceDependencyDeletionReconciler is a mock of ServiceDependencyDeletionReconciler interface
 type MockServiceDependencyDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyDeletionReconcilerMockRecorder
 }
 
-// MockServiceDependencyDeletionReconcilerMockRecorder is the mock recorder for MockServiceDependencyDeletionReconciler.
+// MockServiceDependencyDeletionReconcilerMockRecorder is the mock recorder for MockServiceDependencyDeletionReconciler
 type MockServiceDependencyDeletionReconcilerMockRecorder struct {
 	mock *MockServiceDependencyDeletionReconciler
 }
 
-// NewMockServiceDependencyDeletionReconciler creates a new mock instance.
+// NewMockServiceDependencyDeletionReconciler creates a new mock instance
 func NewMockServiceDependencyDeletionReconciler(ctrl *gomock.Controller) *MockServiceDependencyDeletionReconciler {
 	mock := &MockServiceDependencyDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockServiceDependencyDeletionReconciler) EXPECT() *MockServiceDependencyDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileServiceDependencyDeletion mocks base method.
+// ReconcileServiceDependencyDeletion mocks base method
 func (m *MockServiceDependencyDeletionReconciler) ReconcileServiceDependencyDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileServiceDependencyDeletion", req)
@@ -450,50 +450,36 @@ func (m *MockServiceDependencyDeletionReconciler) ReconcileServiceDependencyDele
 	return ret0
 }
 
-// ReconcileServiceDependencyDeletion indicates an expected call of ReconcileServiceDependencyDeletion.
+// ReconcileServiceDependencyDeletion indicates an expected call of ReconcileServiceDependencyDeletion
 func (mr *MockServiceDependencyDeletionReconcilerMockRecorder) ReconcileServiceDependencyDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceDependencyDeletion", reflect.TypeOf((*MockServiceDependencyDeletionReconciler)(nil).ReconcileServiceDependencyDeletion), req)
 }
 
-// MockServiceDependencyFinalizer is a mock of ServiceDependencyFinalizer interface.
+// MockServiceDependencyFinalizer is a mock of ServiceDependencyFinalizer interface
 type MockServiceDependencyFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyFinalizerMockRecorder
 }
 
-// MockServiceDependencyFinalizerMockRecorder is the mock recorder for MockServiceDependencyFinalizer.
+// MockServiceDependencyFinalizerMockRecorder is the mock recorder for MockServiceDependencyFinalizer
 type MockServiceDependencyFinalizerMockRecorder struct {
 	mock *MockServiceDependencyFinalizer
 }
 
-// NewMockServiceDependencyFinalizer creates a new mock instance.
+// NewMockServiceDependencyFinalizer creates a new mock instance
 func NewMockServiceDependencyFinalizer(ctrl *gomock.Controller) *MockServiceDependencyFinalizer {
 	mock := &MockServiceDependencyFinalizer{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockServiceDependencyFinalizer) EXPECT() *MockServiceDependencyFinalizerMockRecorder {
 	return m.recorder
 }
 
-// FinalizeServiceDependency mocks base method.
-func (m *MockServiceDependencyFinalizer) FinalizeServiceDependency(obj *v1beta1.ServiceDependency) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeServiceDependency", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FinalizeServiceDependency indicates an expected call of FinalizeServiceDependency.
-func (mr *MockServiceDependencyFinalizerMockRecorder) FinalizeServiceDependency(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeServiceDependency", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).FinalizeServiceDependency), obj)
-}
-
-// ReconcileServiceDependency mocks base method.
+// ReconcileServiceDependency mocks base method
 func (m *MockServiceDependencyFinalizer) ReconcileServiceDependency(obj *v1beta1.ServiceDependency) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileServiceDependency", obj)
@@ -502,13 +488,13 @@ func (m *MockServiceDependencyFinalizer) ReconcileServiceDependency(obj *v1beta1
 	return ret0, ret1
 }
 
-// ReconcileServiceDependency indicates an expected call of ReconcileServiceDependency.
+// ReconcileServiceDependency indicates an expected call of ReconcileServiceDependency
 func (mr *MockServiceDependencyFinalizerMockRecorder) ReconcileServiceDependency(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceDependency", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).ReconcileServiceDependency), obj)
 }
 
-// ServiceDependencyFinalizerName mocks base method.
+// ServiceDependencyFinalizerName mocks base method
 func (m *MockServiceDependencyFinalizer) ServiceDependencyFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceDependencyFinalizerName")
@@ -516,36 +502,50 @@ func (m *MockServiceDependencyFinalizer) ServiceDependencyFinalizerName() string
 	return ret0
 }
 
-// ServiceDependencyFinalizerName indicates an expected call of ServiceDependencyFinalizerName.
+// ServiceDependencyFinalizerName indicates an expected call of ServiceDependencyFinalizerName
 func (mr *MockServiceDependencyFinalizerMockRecorder) ServiceDependencyFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencyFinalizerName", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).ServiceDependencyFinalizerName))
 }
 
-// MockServiceDependencyReconcileLoop is a mock of ServiceDependencyReconcileLoop interface.
+// FinalizeServiceDependency mocks base method
+func (m *MockServiceDependencyFinalizer) FinalizeServiceDependency(obj *v1beta1.ServiceDependency) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeServiceDependency", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeServiceDependency indicates an expected call of FinalizeServiceDependency
+func (mr *MockServiceDependencyFinalizerMockRecorder) FinalizeServiceDependency(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeServiceDependency", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).FinalizeServiceDependency), obj)
+}
+
+// MockServiceDependencyReconcileLoop is a mock of ServiceDependencyReconcileLoop interface
 type MockServiceDependencyReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyReconcileLoopMockRecorder
 }
 
-// MockServiceDependencyReconcileLoopMockRecorder is the mock recorder for MockServiceDependencyReconcileLoop.
+// MockServiceDependencyReconcileLoopMockRecorder is the mock recorder for MockServiceDependencyReconcileLoop
 type MockServiceDependencyReconcileLoopMockRecorder struct {
 	mock *MockServiceDependencyReconcileLoop
 }
 
-// NewMockServiceDependencyReconcileLoop creates a new mock instance.
+// NewMockServiceDependencyReconcileLoop creates a new mock instance
 func NewMockServiceDependencyReconcileLoop(ctrl *gomock.Controller) *MockServiceDependencyReconcileLoop {
 	mock := &MockServiceDependencyReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockServiceDependencyReconcileLoop) EXPECT() *MockServiceDependencyReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunServiceDependencyReconciler mocks base method.
+// RunServiceDependencyReconciler mocks base method
 func (m *MockServiceDependencyReconcileLoop) RunServiceDependencyReconciler(ctx context.Context, rec controller.ServiceDependencyReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -557,7 +557,7 @@ func (m *MockServiceDependencyReconcileLoop) RunServiceDependencyReconciler(ctx 
 	return ret0
 }
 
-// RunServiceDependencyReconciler indicates an expected call of RunServiceDependencyReconciler.
+// RunServiceDependencyReconciler indicates an expected call of RunServiceDependencyReconciler
 func (mr *MockServiceDependencyReconcileLoopMockRecorder) RunServiceDependencyReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)

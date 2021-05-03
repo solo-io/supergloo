@@ -11,7 +11,7 @@ weight: 2
 |glooMeshOperatorArgs.settingsRef|struct|{"name":"","namespace":""}|Name/namespace of the Settings object.|
 |glooMeshOperatorArgs.settingsRef.name|string| |Name of the Settings object.|
 |glooMeshOperatorArgs.settingsRef.namespace|string| |Namespace of the Settings object.|
-|settings|struct|{"mtls":null,"networkingExtensionServers":[],"discovery":null,"relay":null}|Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details.|
+|settings|struct|{"mtls":null,"networkingExtensionServers":[],"discovery":null,"relay":null,"dashboard":null}|Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details.|
 |settings.mtls|struct| ||
 |settings.mtls.istio|struct| ||
 |settings.mtls.istio.tls_mode|int32| ||
@@ -33,6 +33,8 @@ weight: 2
 |settings.relay.server.address|string| ||
 |settings.relay.server.insecure|bool| ||
 |settings.relay.server.reconnect_on_network_failures|bool| ||
+|settings.dashboard|struct| ||
+|settings.dashboard|interface| ||
 |disallowIntersectingConfig|bool|false|If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh.|
 |watchOutputTypes|bool|false|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|0|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
