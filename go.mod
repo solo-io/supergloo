@@ -91,3 +91,5 @@ require (
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/controller-runtime v0.7.0
 )
+
+replace github.com/solo-io/skv2 => /Users/ashwang/go/src/github.com/solo-io/skv2

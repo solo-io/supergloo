@@ -22,7 +22,6 @@ spec:
       labels:
         app: cert-agent
       annotations:
-        sidecar.istio.io/inject: "false"
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
