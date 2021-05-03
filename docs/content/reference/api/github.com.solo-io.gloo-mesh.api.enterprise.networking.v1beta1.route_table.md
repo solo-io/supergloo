@@ -1,7 +1,7 @@
 
 ---
 
-title: "virtual_host.proto"
+title: "route_table.proto"
 
 ---
 
@@ -11,16 +11,16 @@ title: "virtual_host.proto"
 
 <a name="top"></a>
 
-<a name="API Reference for virtual_host.proto"></a>
+<a name="API Reference for route_table.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## virtual_host.proto
+## route_table.proto
 
 
 ## Table of Contents
-  - [VirtualHostSpec](#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec)
-  - [VirtualHostSpec.VirtualHostOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions)
-  - [VirtualHostStatus](#networking.enterprise.mesh.gloo.solo.io.VirtualHostStatus)
+  - [RouteTableSpec](#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec)
+  - [RouteTableStatus](#networking.enterprise.mesh.gloo.solo.io.RouteTableStatus)
+  - [SelectedBy](#networking.enterprise.mesh.gloo.solo.io.SelectedBy)
 
 
 
@@ -28,51 +28,51 @@ title: "virtual_host.proto"
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.RouteTableSpec"></a>
 
-### VirtualHostSpec
-A `VirtualHost` is used to configure routes. It is selected by a `VirtualGateway`, and may be attached to more than one gateway. The `VirtualHost` contains the top-level configuration and route options, such as domains to match against, and any options to be shared by its routes. Routes can send traffic directly to a service, or can delegate to a `RouteTable` to perform further routing decisions.
+### RouteTableSpec
+RouteTable is a resource which can be referenced either from the top level VirtualHost resource, or from other RouteTables. It's primary use is to organizationally and logically separate the configuration of routes, so that the responsbilities of route configuration and maintenance can be divided between teams where appropriate.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| domains | []string | repeated | The list of domains (i.e.: matching the `Host` header of a request) that belong to this virtual host. Note that the wildcard will not match the empty string. e.g. “*-bar.foo.com” will match “baz-bar.foo.com” but not “-bar.foo.com”. Additionally, a special entry “*” is allowed which will match any host/authority header. Only a single virtual host on a gateway can match on “*”. A domain must be unique across all virtual hosts on a gateway or the config will be invalidated by Gloo Domains on virtual hosts obey the same rules as [Envoy Virtual Hosts](https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto) |
-  | routes | [][common.mesh.gloo.solo.io.Route]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.Route" >}}) | repeated | The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches this virtual host. If the request matches more than one route in the list, the first route matched will be selected. If the list of routes is empty, the virtual host will be ignored by Gloo. |
-  | virtualHostOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions" >}}) |  | Route table options contain additional configuration to be applied to all traffic served by the route table. Some configuration here can be overridden by Route Options. |
+| routes | [][common.mesh.gloo.solo.io.Route]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.route#common.mesh.gloo.solo.io.Route" >}}) | repeated | The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches this virtual host. If the request matches more than one route in the list, the first route matched will be selected. If the list of routes is empty, the virtual host will be ignored by Gloo. |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.RouteTableStatus"></a>
 
-### VirtualHostSpec.VirtualHostOptions
-TODO: Fill / maybe replace with traffic policy?<br>see message VirtualHostOptions in options.proto
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| todoAddOptions | string |  |  |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.VirtualHostStatus"></a>
-
-### VirtualHostStatus
+### RouteTableStatus
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  | The most recent generation observed in the the VirtualHost metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+| observedGeneration | int64 |  | The most recent generation observed in the the RouteTable metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
-  | attachedVirtualGateways | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of each VirtualGateway which has selected this VirtualHost |
-  | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
+  | selectedBy | [][networking.enterprise.mesh.gloo.solo.io.SelectedBy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.SelectedBy" >}}) | repeated | List of resources which have selected this RouteTable. Can be VirtualHosts or other RouteTables |
+  | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of child RouteTables that this RouteTable delegates to |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.SelectedBy"></a>
+
+### SelectedBy
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  | Name of resource selecting this RouteTable |
+  | namespace | string |  | Namespace of resource selecting this RouteTable |
+  | type | string |  | Type of resource selecting this RouteTable. Can be VirtualGateway, VirtualHost, or RouteTable. |
   
 
 

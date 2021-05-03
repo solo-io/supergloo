@@ -18,6 +18,9 @@ title: "virtual_gateway.proto"
 
 
 ## Table of Contents
+  - [SDSConfig](#networking.enterprise.mesh.gloo.solo.io.SDSConfig)
+  - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
+  - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
   - [VirtualGatewaySpec](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec)
   - [VirtualGatewaySpec.ConnectionHandler](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler)
   - [VirtualGatewaySpec.ConnectionHandler.ConnectionMatch](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch)
@@ -37,9 +40,7 @@ title: "virtual_gateway.proto"
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig)
   - [VirtualGatewaySpec.GatewayOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions)
   - [VirtualGatewayStatus](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus)
-  - [SDSConfig](#networking.enterprise.mesh.gloo.solo.io.SDSConfig)
-  - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
-  - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
+  - [VirtualGatewayStatus.CreatedIstioGatewaysEntry](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry)
   - [selectedGateway](#networking.enterprise.mesh.gloo.solo.io.selectedGateway)
   - [selectedVirtualHost](#networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost)
 
@@ -50,10 +51,60 @@ title: "virtual_gateway.proto"
 
 
 
+<a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig"></a>
+
+### SDSConfig
+Note: This message needs to be at this level (rather than nested) due to cue restrictions.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| targetUri | string |  | Target uri for the sds channel. currently only a unix domain socket is supported. |
+  | callCredentials | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials" >}}) |  | Call credentials. |
+  | clusterName | string |  | The name of the sds cluster in envoy |
+  | certificatesSecretName | string |  | The name of the secret containing the certificate |
+  | validationContextName | string |  | The name of secret containing the validation context (i.e. root ca) |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials"></a>
+
+### SDSConfig.CallCredentials
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| fileCredentialSource | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource" >}}) |  | Call credentials are coming from a file, |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource"></a>
+
+### SDSConfig.CallCredentials.FileCredentialSource
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| tokenFileName | string |  | File containing auth token. |
+  | header | string |  | Header to carry the token. |
+  
+
+
+
+
+
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec"></a>
 
 ### VirtualGatewaySpec
-VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh. A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh. VirtualGateways can route traffic to destination services which live in a specific cluster or mesh. This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to  perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
+VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh. A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh. VirtualGateways can route traffic to destination services which live in a specific cluster or mesh. This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
 
 
 | Field | Type | Label | Description |
@@ -169,7 +220,7 @@ TODO: Fill with HttpListenerOptions from gloo options.proto Team discussion topi
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| routeSelector | [common.mesh.gloo.solo.io.VirtualHostSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.VirtualHostSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
+| virtualHostSelector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
   | virtualHost | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec" >}}) |  | VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs. |
   
 
@@ -362,56 +413,23 @@ TODO: Fill in more options<br>route-level options (inherited by route)
   | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.selectedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.selectedGateway" >}}) | repeated |  |
   | selectedVirtualHosts | [][networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost" >}}) | repeated |  |
   | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
+  | createdIstioGateways | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry" >}}) | repeated | List of Istio Gateway CRs created by this VirtualGateway in each cluster |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry"></a>
 
-### SDSConfig
-Note: This message needs to be at this level (rather than nested) due to cue restrictions.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| targetUri | string |  | Target uri for the sds channel. currently only a unix domain socket is supported. |
-  | callCredentials | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials" >}}) |  | Call credentials. |
-  | clusterName | string |  | The name of the sds cluster in envoy |
-  | certificatesSecretName | string |  | The name of the secret containing the certificate |
-  | validationContextName | string |  | The name of secret containing the validation context (i.e. root ca) |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials"></a>
-
-### SDSConfig.CallCredentials
+### VirtualGatewayStatus.CreatedIstioGatewaysEntry
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| fileCredentialSource | [networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource" >}}) |  | Call credentials are coming from a file, |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource"></a>
-
-### SDSConfig.CallCredentials.FileCredentialSource
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| tokenFileName | string |  | File containing auth token. |
-  | header | string |  | Header to carry the token. |
+| key | string |  |  |
+  | value | [common.mesh.gloo.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.refs#common.mesh.gloo.solo.io.ObjectRefList" >}}) |  |  |
   
 
 

@@ -44,11 +44,11 @@ These docs describe Gloo Mesh CRDs.
 
   - [RouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec" >}})
 
+  - [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec" >}})
+
   - [VirtualGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec" >}})
 
   - [VirtualHost]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec" >}})
-
-  - [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec" >}})
 
   - [WasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.wasm_deployment#networking.enterprise.mesh.gloo.solo.io.WasmDeploymentSpec" >}})
 

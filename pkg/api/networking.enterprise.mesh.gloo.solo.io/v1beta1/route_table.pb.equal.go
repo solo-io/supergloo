@@ -130,17 +130,17 @@ func (m *RouteTableStatus) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetSelectedVirtualHosts()) != len(target.GetSelectedVirtualHosts()) {
+	if len(m.GetSelectedRouteTables()) != len(target.GetSelectedRouteTables()) {
 		return false
 	}
-	for idx, v := range m.GetSelectedVirtualHosts() {
+	for idx, v := range m.GetSelectedRouteTables() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSelectedVirtualHosts()[idx]) {
+			if !h.Equal(target.GetSelectedRouteTables()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetSelectedVirtualHosts()[idx]) {
+			if !proto.Equal(v, target.GetSelectedRouteTables()[idx]) {
 				return false
 			}
 		}

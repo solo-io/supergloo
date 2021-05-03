@@ -199,6 +199,23 @@ func (m *VirtualGatewayStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetCreatedIstioGateways()) != len(target.GetCreatedIstioGateways()) {
+		return false
+	}
+	for k, v := range m.GetCreatedIstioGateways() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetCreatedIstioGateways()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetCreatedIstioGateways()[k]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
