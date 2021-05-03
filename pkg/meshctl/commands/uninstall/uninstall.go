@@ -42,7 +42,7 @@ type Options struct {
 func (o *Options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.KubeCfgPath, &o.KubeContext, flags)
 	flags.BoolVarP(&o.DryRun, "dry-run", "d", false, "Output installation manifest")
-	flags.StringVar(&o.Namespace, "Namespace", defaults.DefaultPodNamespace, "Namespace in which to uninstall Gloo Mesh from")
+	flags.StringVar(&o.Namespace, "namespace", defaults.DefaultPodNamespace, "Namespace in which to uninstall Gloo Mesh from")
 	flags.StringVar(&o.ReleaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
 }
 
