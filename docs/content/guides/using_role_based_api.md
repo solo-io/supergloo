@@ -34,7 +34,7 @@ MGMT_CONTEXT=your_management_plane_context
 ## Role-based API
 
 The role-based API in Gloo Mesh Enterprise uses a `Role` Custom Resource Definition to create Custom Resources that represent roles you would like to define. The roles are then bound to users with a `RoleBinding` CRD
-and can be accessed via the `gmrole` alias.
+and can be accessed via the `gmrole` alias. The RoleBindings can be accessed via the `gmrolebinding` alias.
 
 The Roles are used to target some combination of *Workloads*, *Destinations*, *Meshes*, and *Virtual Meshes* and define actions the role is allowed to perform on the targets.
 
