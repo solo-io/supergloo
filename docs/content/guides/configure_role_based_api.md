@@ -11,7 +11,7 @@ This feature is available in Gloo Mesh Enterprise only. If you are using the ope
 Gloo Mesh's role-based API allows organizations to restrict access to policy configuration (i.e. creation, updating, and deletion of policy configuration objects)
 based on the roles of individual users, represented by a `Role` CRD. Similar to the Kubernetes RBAC model, Gloo Mesh users are bound to one or more roles. A user may create, update, or delete a networking policy if they are bound to at least one role that permits access for that policy.
 
-When you install Gloo Mesh Enterprise with default settings, the role-based API is disabled by default. If you enable it by setting the helm value `rbac-webhook.enabled=true`, this creates an implicit **deny** on all networking policy actions, and requires that Roles are created and bound to subject to grant them the permissions they need to perform their job duties.
+When you install Gloo Mesh Enterprise with default settings, the role-based API is disabled by default. If you enable it by setting the helm value `rbac-webhook.enabled=true`, this creates an implicit **deny** on all networking policy actions, and requires that Roles are created and bound to subjects to grant them the permissions they need to perform their job duties.
 
 In this guide, we will walk through some deployment options when it comes to configuring the role-based API. We are assuming that you already have installed Gloo Mesh Enterprise or have a Kubernetes cluster on which to install it.
 

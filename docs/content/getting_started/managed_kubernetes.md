@@ -154,7 +154,7 @@ installation options for Gloo Mesh Enterprise, including how to deploy Gloo Mesh
 
 To get you up and running as quickly as possible, we will not install the Gloo Mesh Enterprise component responsible
 for enforcing the [role-based API]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}). This is the
-case by default. If you wish to install it, simply invoke the install command with the `include-rbac` flag. 
+case by default. If you wish to install it, simply invoke the install command with the `--include-rbac` flag. 
 
 Note that if you have the `--include-rbac` flag, operations like creating a virtual mesh, later in this guide, will fail with permission errors. In that case, you will need to [understand]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) and [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities to proceed.
 
