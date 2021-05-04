@@ -6,6 +6,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 import "google/protobuf/wrappers.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
 
@@ -67,11 +68,7 @@ message Route {
     // Route Options extend the behavior of routes.
     // Route options include configuration such as retries, rate limiting, and request/response transformation.
     // RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
-    RouteOptions options = 9;
-
-    message RouteOptions {
-        // TODO: Route Options
-    }
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 9;
 
     // RouteActions are used to route matched requests to upstreams.
     message RouteAction {
