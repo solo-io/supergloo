@@ -25,7 +25,10 @@ var (
 )
 
 func TestMain(m *testing.M) {
-
+	if os.Getenv("RUN_INTEGRATION") == "" {
+		fmt.Println("skipping E2E Integration tests")
+		return
+	}
 	licenceKey := os.Getenv("GLOO_MESH_LICENSE_KEY")
 	// get kube settings from command line
 	config.Parse()
