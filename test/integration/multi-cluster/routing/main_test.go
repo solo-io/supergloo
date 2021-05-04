@@ -9,7 +9,6 @@ import (
 	"istio.io/istio/pkg/test/framework/components/echo"
 	"istio.io/istio/pkg/test/framework/components/environment/kube"
 	"istio.io/istio/pkg/test/framework/config"
-	"istio.io/istio/pkg/test/framework/label"
 	"istio.io/istio/pkg/test/framework/resource"
 	"net/http"
 	"os"
@@ -39,7 +38,6 @@ func TestMain(m *testing.M) {
 
 	framework.
 		NewSuite(m).
-		Label(label.Multicluster).
 		RequireMinClusters(2).
 		Setup(istio.Setup(&i, common.IstioSetupFunc("gloo-mesh-istio.yaml"))).
 		Setup(gloo_mesh.Deploy(&deploymentCtx, &gloo_mesh.Config{
@@ -145,7 +143,7 @@ func testTimeoutTrafficPolicy(ctx resource.Context, t *testing.T, deploymentCtx 
 		Scheme:    "http",
 		Address:   frontendHost,
 		Method:    http.MethodGet,
-		Path:      "/",
+		Path:      "",
 		Count:     5,
 		Validator: echo.ExpectOK(),
 	})

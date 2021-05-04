@@ -13,6 +13,7 @@ import (
 	"istio.io/istio/pkg/test/framework/components/cluster"
 	"istio.io/istio/pkg/test/framework/resource"
 	"istio.io/istio/pkg/test/util/retry"
+	"istio.io/pkg/log"
 	v1 "k8s.io/api/core/v1"
 	kubeApiMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
@@ -80,7 +81,7 @@ func (i *glooMeshInstance) deployManagementPlane(licenceKey string) error {
 			Options:            options,
 			LicenseKey:         licenceKey,
 			SkipUI:             false,
-			SkipRBAC:           false,
+			SkipRBAC:           true,
 			RelayServerAddress: "",
 		}); err != nil {
 			return err
@@ -206,7 +207,7 @@ func (i *glooMeshInstance) Close() error {
 		})
 	} else {
 		releaseName := fmt.Sprintf("%s-cp", i.instanceConfig.cluster.Name())
-		enterprise.DeregisterCluster(context.Background(), enterprise.RegistrationOptions{
+		if err := enterprise.DeregisterCluster(context.Background(), enterprise.RegistrationOptions{
 			Options: registration.Options{
 				KubeConfigPath:         i.instanceConfig.controlPlaneKubeConfigPath,
 				MgmtKubeConfigPath:     i.instanceConfig.managementPlaneKubeConfigPath,
@@ -235,7 +236,9 @@ func (i *glooMeshInstance) Close() error {
 			TokenSecretNamespace:      "",
 			TokenSecretKey:            "",
 			ReleaseName:               releaseName,
-		})
+		}); err != nil {
+			log.Error(err)
+		}
 	}
 
 	return nil
