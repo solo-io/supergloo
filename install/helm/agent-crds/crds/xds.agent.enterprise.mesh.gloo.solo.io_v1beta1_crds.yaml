@@ -69,7 +69,8 @@ spec:
               type: array
           type: object
         status:
-          description: The XdsConfig status is written by the CertificateRequesting agent.
+          description: The XdsConfig status is written by the CertificateRequesting
+            agent.
           properties:
             error:
               description: |-
