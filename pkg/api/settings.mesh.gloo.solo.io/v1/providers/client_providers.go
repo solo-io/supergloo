@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,28 +21,28 @@ import (
 
 // Provider for SettingsClient from Clientset
 func SettingsClientFromClientsetProvider(clients settings_mesh_gloo_solo_io_v1.Clientset) settings_mesh_gloo_solo_io_v1.SettingsClient {
-	return clients.Settings()
+    return clients.Settings()
 }
 
 // Provider for Settings Client from Client
 func SettingsClientProvider(client client.Client) settings_mesh_gloo_solo_io_v1.SettingsClient {
-	return settings_mesh_gloo_solo_io_v1.NewSettingsClient(client)
+    return settings_mesh_gloo_solo_io_v1.NewSettingsClient(client)
 }
 
 type SettingsClientFactory func(client client.Client) settings_mesh_gloo_solo_io_v1.SettingsClient
 
 func SettingsClientFactoryProvider() SettingsClientFactory {
-	return SettingsClientProvider
+    return SettingsClientProvider
 }
 
 type SettingsClientFromConfigFactory func(cfg *rest.Config) (settings_mesh_gloo_solo_io_v1.SettingsClient, error)
 
 func SettingsClientFromConfigFactoryProvider() SettingsClientFromConfigFactory {
-	return func(cfg *rest.Config) (settings_mesh_gloo_solo_io_v1.SettingsClient, error) {
-		clients, err := settings_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Settings(), nil
-	}
+    return func(cfg *rest.Config) (settings_mesh_gloo_solo_io_v1.SettingsClient, error) {
+        clients, err := settings_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Settings(), nil
+    }
 }

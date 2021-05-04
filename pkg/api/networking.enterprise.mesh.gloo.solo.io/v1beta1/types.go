@@ -4,9 +4,8 @@
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -15,22 +14,22 @@ import (
 
 // GroupVersionKind for WasmDeployment
 var WasmDeploymentGVK = schema.GroupVersionKind{
-	Group:   "networking.enterprise.mesh.gloo.solo.io",
-	Version: "v1beta1",
-	Kind:    "WasmDeployment",
+    Group: "networking.enterprise.mesh.gloo.solo.io",
+    Version: "v1beta1",
+    Kind: "WasmDeployment",
 }
 
 // WasmDeployment is the Schema for the wasmDeployment API
 type WasmDeployment struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   WasmDeploymentSpec   `json:"spec,omitempty"`
-	Status WasmDeploymentStatus `json:"status,omitempty"`
+    Spec WasmDeploymentSpec `json:"spec,omitempty"`
+    Status WasmDeploymentStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (WasmDeployment) GVK() schema.GroupVersionKind {
+func (WasmDeployment)  GVK() schema.GroupVersionKind {
 	return WasmDeploymentGVK
 }
 
@@ -38,9 +37,9 @@ func (WasmDeployment) GVK() schema.GroupVersionKind {
 
 // WasmDeploymentList contains a list of WasmDeployment
 type WasmDeploymentList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []WasmDeployment `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []WasmDeployment `json:"items"`
 }
 
 // +genclient
@@ -50,22 +49,22 @@ type WasmDeploymentList struct {
 
 // GroupVersionKind for VirtualDestination
 var VirtualDestinationGVK = schema.GroupVersionKind{
-	Group:   "networking.enterprise.mesh.gloo.solo.io",
-	Version: "v1beta1",
-	Kind:    "VirtualDestination",
+    Group: "networking.enterprise.mesh.gloo.solo.io",
+    Version: "v1beta1",
+    Kind: "VirtualDestination",
 }
 
 // VirtualDestination is the Schema for the virtualDestination API
 type VirtualDestination struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VirtualDestinationSpec   `json:"spec,omitempty"`
-	Status VirtualDestinationStatus `json:"status,omitempty"`
+    Spec VirtualDestinationSpec `json:"spec,omitempty"`
+    Status VirtualDestinationStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (VirtualDestination) GVK() schema.GroupVersionKind {
+func (VirtualDestination)  GVK() schema.GroupVersionKind {
 	return VirtualDestinationGVK
 }
 
@@ -73,9 +72,9 @@ func (VirtualDestination) GVK() schema.GroupVersionKind {
 
 // VirtualDestinationList contains a list of VirtualDestination
 type VirtualDestinationList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []VirtualDestination `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []VirtualDestination `json:"items"`
 }
 
 // +genclient
