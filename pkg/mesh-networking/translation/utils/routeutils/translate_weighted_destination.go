@@ -1,6 +1,7 @@
 package routeutils
 
 import (
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
 	"reflect"
 	"sort"
 	"strings"
@@ -186,6 +187,23 @@ func MakeDestinationRuleSubsetsForDestination(
 	return subsets
 }
 
+// exported for use in enterprise
+func MakeDestinationRuleSubsetsForVirtualDestination(
+	virtualDestination *v1beta1.VirtualDestination,
+	allTrafficTargets discoveryv1sets.DestinationSet,
+) []*networkingv1alpha3spec.Subset {
+	return makeDestinationRuleSubsets(
+		allTrafficTargets,
+		func(weightedDestination *networkingv1.WeightedDestination) bool {
+			virtualDestinationDest := weightedDestination.GetVirtualDestination()
+			if virtualDestinationDest == nil {
+				return false
+			}
+			return ezkube.RefsMatch(ezkube.MakeObjectRef(virtualDestination), virtualDestinationDest)
+		},
+	)
+}
+
 // used in DestinationRule translator as well
 func SubsetName(labels map[string]string) string {
 	if len(labels) == 0 {
@@ -206,6 +224,7 @@ func SubsetName(labels map[string]string) string {
 // match those on the DestinationRule for the Destination in the
 // remote cluster.
 // based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+// exported for use in enterprise
 func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 	return map[string]string{
 		"cluster": clusterName,

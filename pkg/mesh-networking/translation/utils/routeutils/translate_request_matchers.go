@@ -43,7 +43,7 @@ func TranslateRequestMatchers(
 
 	// If HttpRequestMatchers exist, generate cartesian product of sourceMatchers and httpRequestMatchers.
 	var translatedRequestMatchers []*networkingv1alpha3spec.HTTPMatchRequest
-	
+
 	// Set QueryParams, Headers, WithoutHeaders, Uri, and Method.
 	for _, sourceMatcher := range sourceMatchers {
 		for _, matcher := range requestMatchers {

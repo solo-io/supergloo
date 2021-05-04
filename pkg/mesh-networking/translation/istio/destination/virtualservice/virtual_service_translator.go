@@ -2,9 +2,10 @@ package virtualservice
 
 import (
 	"context"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	"reflect"
 	"sort"
+
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 
 	"github.com/golang/protobuf/proto"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
