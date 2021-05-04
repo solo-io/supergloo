@@ -62,8 +62,8 @@ requests that cross cluster boundaries.
 
 ### Gloo Mesh Enterprise
 
-When installing Gloo Mesh Enterprise, the `metricsBackend.prometheus.enabled` Helm value must be set to true. This can be done by providing
-the following argument to `Helm install`, `--set metricsBackend.prometheus.enabled=true`.
+When installing Gloo Mesh Enterprise, the `enterprise-networking.metricsBackend.prometheus.enabled` Helm value must be set to true. This can be done by providing
+the following argument to `Helm install`, `--set enterprise-networking.metricsBackend.prometheus.enabled=true`.
 
 This configures Gloo Mesh to install a Prometheus server which comes preconfigured to scrape the centralized metrics from the Enterprise Networking
 metrics endpoint.
