@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // bounce (delete) the listed pods
@@ -23,34 +22,36 @@ import (
 // we must wait for the following conditions:
 // 1. istiod control plane has come back online after it has been restarted
 // 2. istio's root cert has been propagated to all istio-controlled namespaces for consumption by the data plane.
-// this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
+// this should cause the reconcile to end early and persist the IssuedCertificate in the Issued state
 type PodBouncer interface {
 	BouncePods(
 		ctx context.Context,
-		podBounceDirective *v1.PodBounceDirective,
+		podBounceDirective *certificatesv1.PodBounceDirective,
 		allPods corev1sets.PodSet,
 		allConfigMaps corev1sets.ConfigMapSet,
 		allSecrets corev1sets.SecretSet,
 	) (bool, error)
 }
 
+func NewPodBouncer(podClient corev1client.PodClient) PodBouncer {
+	return &podBouncer{
+		podClient: podClient,
+	}
+}
+
 type podBouncer struct {
-	localClient client.Client
+	podClient corev1client.PodClient
 }
 
 func (p *podBouncer) BouncePods(
 	ctx context.Context,
-	podBounceDirective *v1.PodBounceDirective,
+	podBounceDirective *certificatesv1.PodBounceDirective,
 	allPods corev1sets.PodSet,
 	allConfigMaps corev1sets.ConfigMapSet,
 	allSecrets corev1sets.SecretSet,
 ) (bool, error) {
 
-	// create a client here to call for deletions
-	podClient := corev1client.NewPodClient(p.localClient)
-
 	var errs error
-
 	// collect the pods we want to delete in the order they're specified in the directive
 	// it is important Istiod is restarted before any of the other pods
 	for i, selector := range podBounceDirective.Spec.PodsToBounce {
@@ -112,7 +113,7 @@ func (p *podBouncer) BouncePods(
 		var bouncedPods []string
 		for _, pod := range podsToDelete {
 			contextutils.LoggerFrom(ctx).Debugf("deleting pod %v", sets.Key(pod))
-			if err := podClient.DeletePod(ctx, ezkube.MakeClientObjectKey(pod)); err != nil {
+			if err := p.podClient.DeletePod(ctx, ezkube.MakeClientObjectKey(pod)); err != nil {
 				errs = multierror.Append(errs, err)
 				continue
 			}
@@ -122,7 +123,7 @@ func (p *podBouncer) BouncePods(
 		// update the status to show we've bounced this selector already
 		podBounceDirective.Status.PodsBounced = append(
 			podBounceDirective.Status.PodsBounced,
-			&v1.PodBounceDirectiveStatus_BouncedPodSet{BouncedPods: bouncedPods},
+			&certificatesv1.PodBounceDirectiveStatus_BouncedPodSet{BouncedPods: bouncedPods},
 		)
 
 		if selector.WaitForReplicas > 0 {
@@ -138,7 +139,7 @@ func (p *podBouncer) BouncePods(
 // indicates whether replacements for the deleted pods to be ready
 func replacementsReady(
 	currentPods corev1sets.PodSet,
-	podSelector *v1.PodBounceDirectiveSpec_PodSelector,
+	podSelector *certificatesv1.PodBounceDirectiveSpec_PodSelector,
 	deletedPodNames []string,
 ) bool {
 	if podSelector.WaitForReplicas == 0 {
@@ -161,7 +162,7 @@ func replacementsReady(
 	return len(currentReadyPods) >= int(podSelector.WaitForReplicas)
 }
 
-func isPodSelected(pod *corev1.Pod, podSelector *v1.PodBounceDirectiveSpec_PodSelector) bool {
+func isPodSelected(pod *corev1.Pod, podSelector *certificatesv1.PodBounceDirectiveSpec_PodSelector) bool {
 	return podSelector.Namespace == pod.Namespace &&
 		labels.SelectorFromSet(podSelector.Labels).Matches(labels.Set(pod.Labels))
 }
