@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1478
+    description: Add the option to pass --set to add extra helm values to the Gloo Mesh installation using meshctl.
