@@ -217,7 +217,7 @@ type enterpriseOptions struct {
 	*options
 	licenseKey         string
 	skipUI             bool
-	skipRBAC           bool
+	includeRBAC        bool
 	relayServerAddress string
 }
 
@@ -226,7 +226,7 @@ func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.licenseKey, "license", "", "Gloo Mesh Enterprise license key (required)")
 	cobra.MarkFlagRequired(flags, "license")
 	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")
-	flags.BoolVar(&o.skipRBAC, "skip-rbac", false, "Skip installation of the RBAC Webhook")
+	flags.BoolVar(&o.includeRBAC, "include-rbac", false, "Install the RBAC Webhook")
 	flags.StringVar(&o.agentChartPath, "enterprise-agent-chart-file", "",
 		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
 			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",
@@ -245,8 +245,8 @@ func (o enterpriseOptions) getInstaller() helm.Installer {
 	if o.skipUI {
 		ins.Values["gloo-mesh-ui.enabled"] = "false"
 	}
-	if o.skipRBAC {
-		ins.Values["rbac-webhook.enabled"] = "false"
+	if o.includeRBAC {
+		ins.Values["rbac-webhook.enabled"] = "true"
 	}
 
 	return ins
