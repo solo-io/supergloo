@@ -3,8 +3,5 @@
 // Definitions for the Kubernetes types
 package v1
 
-import (
-)
-
 // SettingsSlice represents a slice of *Settings
 type SettingsSlice []*Settings

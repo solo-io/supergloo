@@ -3,20 +3,21 @@ package gloo_mesh
 import (
 	"context"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/uninstall"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	gloo_context "github.com/solo-io/gloo-mesh/pkg/test/apps/context"
-	"io"
 	"istio.io/istio/pkg/test/framework/components/cluster"
 	"istio.io/istio/pkg/test/framework/resource"
 	"istio.io/istio/pkg/test/util/retry"
 	"istio.io/pkg/log"
 	v1 "k8s.io/api/core/v1"
 	kubeApiMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
 )
 
 var (

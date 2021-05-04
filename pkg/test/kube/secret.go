@@ -2,8 +2,9 @@ package kube
 
 import (
 	"context"
-	"istio.io/istio/pkg/test/framework/components/cluster"
 	"time"
+
+	"istio.io/istio/pkg/test/framework/components/cluster"
 
 	kubeApiCore "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

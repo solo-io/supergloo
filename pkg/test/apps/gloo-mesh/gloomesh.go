@@ -2,10 +2,11 @@ package gloo_mesh
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	"istio.io/istio/pkg/test/framework/resource"
 	"istio.io/istio/pkg/test/util/retry"
-	"time"
 )
 
 type Config struct {

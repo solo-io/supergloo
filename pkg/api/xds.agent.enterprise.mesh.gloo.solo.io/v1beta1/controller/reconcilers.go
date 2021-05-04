@@ -5,24 +5,22 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
-
-
 import (
 	"context"
 
-    xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
 
-    "github.com/pkg/errors"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    "github.com/solo-io/skv2/pkg/reconcile"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/predicate"
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Reconcile Upsert events for the XdsConfig Resource.
 // implemented by the user
 type XdsConfigReconciler interface {
-    ReconcileXdsConfig(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error)
+	ReconcileXdsConfig(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the XdsConfig Resource.
@@ -30,109 +28,108 @@ type XdsConfigReconciler interface {
 // before being deleted.
 // implemented by the user
 type XdsConfigDeletionReconciler interface {
-    ReconcileXdsConfigDeletion(req reconcile.Request) error
+	ReconcileXdsConfigDeletion(req reconcile.Request) error
 }
 
 type XdsConfigReconcilerFuncs struct {
-    OnReconcileXdsConfig func(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error)
-    OnReconcileXdsConfigDeletion func(req reconcile.Request) error
+	OnReconcileXdsConfig         func(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error)
+	OnReconcileXdsConfigDeletion func(req reconcile.Request) error
 }
 
 func (f *XdsConfigReconcilerFuncs) ReconcileXdsConfig(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error) {
-    if f.OnReconcileXdsConfig == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileXdsConfig(obj)
+	if f.OnReconcileXdsConfig == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileXdsConfig(obj)
 }
 
 func (f *XdsConfigReconcilerFuncs) ReconcileXdsConfigDeletion(req reconcile.Request) error {
-    if f.OnReconcileXdsConfigDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileXdsConfigDeletion(req)
+	if f.OnReconcileXdsConfigDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileXdsConfigDeletion(req)
 }
 
 // Reconcile and finalize the XdsConfig Resource
 // implemented by the user
 type XdsConfigFinalizer interface {
-    XdsConfigReconciler
+	XdsConfigReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    XdsConfigFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	XdsConfigFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeXdsConfig(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeXdsConfig(obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) error
 }
 
 type XdsConfigReconcileLoop interface {
-    RunXdsConfigReconciler(ctx context.Context, rec XdsConfigReconciler, predicates ...predicate.Predicate) error
+	RunXdsConfigReconciler(ctx context.Context, rec XdsConfigReconciler, predicates ...predicate.Predicate) error
 }
 
 type xdsConfigReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewXdsConfigReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) XdsConfigReconcileLoop {
-    return &xdsConfigReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig{}, options),
-    }
+	return &xdsConfigReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig{}, options),
+	}
 }
 
 func (c *xdsConfigReconcileLoop) RunXdsConfigReconciler(ctx context.Context, reconciler XdsConfigReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericXdsConfigReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericXdsConfigReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(XdsConfigFinalizer); ok {
-        reconcilerWrapper = genericXdsConfigFinalizer{
-            genericXdsConfigReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericXdsConfigFinalizer{
+			genericXdsConfigReconciler: genericReconciler,
+			finalizingReconciler:       finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericXdsConfigHandler implements a generic reconcile.Reconciler
 type genericXdsConfigReconciler struct {
-    reconciler XdsConfigReconciler
+	reconciler XdsConfigReconciler
 }
 
 func (r genericXdsConfigReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: XdsConfig handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileXdsConfig(obj)
+	obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: XdsConfig handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileXdsConfig(obj)
 }
 
 func (r genericXdsConfigReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(XdsConfigDeletionReconciler); ok {
-        return deletionReconciler.ReconcileXdsConfigDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(XdsConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileXdsConfigDeletion(request)
+	}
+	return nil
 }
 
 // genericXdsConfigFinalizer implements a generic reconcile.FinalizingReconciler
 type genericXdsConfigFinalizer struct {
-    genericXdsConfigReconciler
-    finalizingReconciler XdsConfigFinalizer
+	genericXdsConfigReconciler
+	finalizingReconciler XdsConfigFinalizer
 }
 
-
 func (r genericXdsConfigFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.XdsConfigFinalizerName()
+	return r.finalizingReconciler.XdsConfigFinalizerName()
 }
 
 func (r genericXdsConfigFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig)
-    if !ok {
-        return errors.Errorf("internal error: XdsConfig handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeXdsConfig(obj)
+	obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig)
+	if !ok {
+		return errors.Errorf("internal error: XdsConfig handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeXdsConfig(obj)
 }

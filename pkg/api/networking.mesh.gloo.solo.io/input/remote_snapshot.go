@@ -2,9 +2,6 @@
 
 //go:generate mockgen -source ./remote_snapshot.go -destination mocks/remote_snapshot.go
 
-
-
-
 // The Input RemoteSnapshot contains the set of all:
 // * IssuedCertificates
 // * PodBounceDirectives
@@ -27,22 +24,8 @@
 package input
 
 import (
-    "context"
-    "encoding/json"
-
-    "k8s.io/apimachinery/pkg/runtime/schema"
-    "github.com/solo-io/skv2/pkg/resource"
-    "github.com/solo-io/skv2/pkg/verifier"
-
-    "github.com/hashicorp/go-multierror"
-
-
-
-
-    "github.com/solo-io/skv2/pkg/controllerutils"
-    "github.com/solo-io/skv2/pkg/multicluster"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"context"
+	"encoding/json"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
@@ -50,29 +33,28 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/hashicorp/go-multierror"
 
-    certificates_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-    certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-    certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
+	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 
-    xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
-    xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
-    xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/sets"
+	networking_istio_io_v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	networking_istio_io_v1alpha3_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
-
-
-    networking_istio_io_v1alpha3_types "istio.io/client-go/pkg/apis/networking/v1alpha3"
-    networking_istio_io_v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
-    networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-
-
-
-    security_istio_io_v1beta1_types "istio.io/client-go/pkg/apis/security/v1beta1"
-    security_istio_io_v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
-    security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-
+	security_istio_io_v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
+	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+	security_istio_io_v1beta1_types "istio.io/client-go/pkg/apis/security/v1beta1"
 )
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
@@ -142,6 +124,55 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 
 
 
+	schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "IssuedCertificate",
+	},
+	schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "PodBounceDirective",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "XdsConfig",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "DestinationRule",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "EnvoyFilter",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "Gateway",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "ServiceEntry",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "VirtualService",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "security.istio.io",
+		Version: "v1beta1",
+		Kind:    "AuthorizationPolicy",
+	},
+}
 
 // the snapshot of input resources consumed by translation
 type RemoteSnapshot interface {
@@ -208,11 +239,12 @@ type RemoteSyncStatusOptions struct {
 }
 
 type snapshotRemote struct {
-    name string
+	name string
 
+	issuedCertificates  certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
-    issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
-    podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
@@ -221,16 +253,16 @@ type snapshotRemote struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 }
 
 func NewRemoteSnapshot(
 	name string,
 
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
 
-    issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
-    podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
-
-    xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet,
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -239,7 +271,7 @@ func NewRemoteSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
-    authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 ) RemoteSnapshot {
 	return &snapshotRemote{
@@ -260,21 +292,8 @@ func NewRemoteSnapshot(
 
 func NewRemoteSnapshotFromGeneric(
 	name string,
-    genericSnapshot resource.ClusterSnapshot,
+	genericSnapshot resource.ClusterSnapshot,
 ) RemoteSnapshot {
-    
-    issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
-    podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
-    
-    xdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
-    
-    destinationRuleSet := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
-    envoyFilterSet := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
-    gatewaySet := networking_istio_io_v1alpha3_sets.NewGatewaySet()
-    serviceEntrySet := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
-    virtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
-    
-    authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
 	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
 	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
@@ -291,110 +310,6 @@ func NewRemoteSnapshotFromGeneric(
 	authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
 	for _, snapshot := range genericSnapshot {
-    
-    
-    issuedCertificates := snapshot[schema.GroupVersionKind{
-        Group: "certificates.mesh.gloo.solo.io",
-        Version: "v1",
-        Kind: "IssuedCertificate",
-    }]
-
-    for _, issuedCertificate := range issuedCertificates {
-        issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate))
-    }
-    podBounceDirectives := snapshot[schema.GroupVersionKind{
-        Group: "certificates.mesh.gloo.solo.io",
-        Version: "v1",
-        Kind: "PodBounceDirective",
-    }]
-
-    for _, podBounceDirective := range podBounceDirectives {
-        podBounceDirectiveSet.Insert(podBounceDirective.(*certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective))
-    }
-    
-    
-    xdsConfigs := snapshot[schema.GroupVersionKind{
-        Group: "xds.agent.enterprise.mesh.gloo.solo.io",
-        Version: "v1beta1",
-        Kind: "XdsConfig",
-    }]
-
-    for _, xdsConfig := range xdsConfigs {
-        xdsConfigSet.Insert(xdsConfig.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types.XdsConfig))
-    }
-    
-    
-    destinationRules := snapshot[schema.GroupVersionKind{
-        Group: "networking.istio.io",
-        Version: "v1alpha3",
-        Kind: "DestinationRule",
-    }]
-
-    for _, destinationRule := range destinationRules {
-        destinationRuleSet.Insert(destinationRule.(*networking_istio_io_v1alpha3_types.DestinationRule))
-    }
-    envoyFilters := snapshot[schema.GroupVersionKind{
-        Group: "networking.istio.io",
-        Version: "v1alpha3",
-        Kind: "EnvoyFilter",
-    }]
-
-    for _, envoyFilter := range envoyFilters {
-        envoyFilterSet.Insert(envoyFilter.(*networking_istio_io_v1alpha3_types.EnvoyFilter))
-    }
-    gateways := snapshot[schema.GroupVersionKind{
-        Group: "networking.istio.io",
-        Version: "v1alpha3",
-        Kind: "Gateway",
-    }]
-
-    for _, gateway := range gateways {
-        gatewaySet.Insert(gateway.(*networking_istio_io_v1alpha3_types.Gateway))
-    }
-    serviceEntries := snapshot[schema.GroupVersionKind{
-        Group: "networking.istio.io",
-        Version: "v1alpha3",
-        Kind: "ServiceEntry",
-    }]
-
-    for _, serviceEntry := range serviceEntries {
-        serviceEntrySet.Insert(serviceEntry.(*networking_istio_io_v1alpha3_types.ServiceEntry))
-    }
-    virtualServices := snapshot[schema.GroupVersionKind{
-        Group: "networking.istio.io",
-        Version: "v1alpha3",
-        Kind: "VirtualService",
-    }]
-
-    for _, virtualService := range virtualServices {
-        virtualServiceSet.Insert(virtualService.(*networking_istio_io_v1alpha3_types.VirtualService))
-    }
-    
-    
-    authorizationPolicies := snapshot[schema.GroupVersionKind{
-        Group: "security.istio.io",
-        Version: "v1beta1",
-        Kind: "AuthorizationPolicy",
-    }]
-
-    for _, authorizationPolicy := range authorizationPolicies {
-        authorizationPolicySet.Insert(authorizationPolicy.(*security_istio_io_v1beta1_types.AuthorizationPolicy))
-    }
-
-    }
-    return NewRemoteSnapshot(
-    	name,
-    issuedCertificateSet,
-    podBounceDirectiveSet,
-    xdsConfigSet,
-    destinationRuleSet,
-    envoyFilterSet,
-    gatewaySet,
-    serviceEntrySet,
-    virtualServiceSet,
-    authorizationPolicySet,
-    )
-}
 
 		issuedCertificates := snapshot[schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
@@ -504,37 +419,35 @@ func NewRemoteSnapshotFromGeneric(
 }
 
 func (s snapshotRemote) IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
-    return s.issuedCertificates
+	return s.issuedCertificates
 }
 
 func (s snapshotRemote) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet {
-    return s.podBounceDirectives
+	return s.podBounceDirectives
 }
-
 
 func (s snapshotRemote) XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet {
-    return s.xdsConfigs
+	return s.xdsConfigs
 }
 
-
 func (s snapshotRemote) DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
-    return s.destinationRules
+	return s.destinationRules
 }
 
 func (s snapshotRemote) EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
-    return s.envoyFilters
+	return s.envoyFilters
 }
 
 func (s snapshotRemote) Gateways() networking_istio_io_v1alpha3_sets.GatewaySet {
-    return s.gateways
+	return s.gateways
 }
 
 func (s snapshotRemote) ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
-    return s.serviceEntries
+	return s.serviceEntries
 }
 
 func (s snapshotRemote) VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
-    return s.virtualServices
+	return s.virtualServices
 }
 
 func (s snapshotRemote) Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet {
@@ -542,85 +455,80 @@ func (s snapshotRemote) Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet 
 }
 
 func (s snapshotRemote) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
-    return s.authorizationPolicies
+	return s.authorizationPolicies
 }
 
 func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error {
 	var errs error
-    
-    
-    if opts.IssuedCertificate {
-        for _, obj := range s.IssuedCertificates().List() {
-            clusterClient, err := mcClient.Cluster(obj.ClusterName)
-            if err != nil {
-                errs = multierror.Append(errs, err)
-                continue
-            }
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
-    }
-    if opts.PodBounceDirective {
-        for _, obj := range s.PodBounceDirectives().List() {
-            clusterClient, err := mcClient.Cluster(obj.ClusterName)
-            if err != nil {
-                errs = multierror.Append(errs, err)
-                continue
-            }
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
-    }
-    
-    if opts.XdsConfig {
-        for _, obj := range s.XdsConfigs().List() {
-            clusterClient, err := mcClient.Cluster(obj.ClusterName)
-            if err != nil {
-                errs = multierror.Append(errs, err)
-                continue
-            }
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
-    }
-    
-    
-    return errs
+
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.PodBounceDirective {
+		for _, obj := range s.PodBounceDirectives().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.XdsConfig {
+		for _, obj := range s.XdsConfigs().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	return errs
 }
 
-
 func (s snapshotRemote) SyncStatuses(ctx context.Context, c client.Client, opts RemoteSyncStatusOptions) error {
-    var errs error
-    
-    
-    if opts.IssuedCertificate {
-        for _, obj := range s.IssuedCertificates().List() {
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
-    }
-    if opts.PodBounceDirective {
-        for _, obj := range s.PodBounceDirectives().List() {
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
-    }
-    
-    if opts.XdsConfig {
-        for _, obj := range s.XdsConfigs().List() {
-            if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-                errs = multierror.Append(errs, err)
-            }
-        }
-    }
-    
-    
-    return errs
+	var errs error
+
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.PodBounceDirective {
+		for _, obj := range s.PodBounceDirectives().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.XdsConfig {
+		for _, obj := range s.XdsConfigs().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	return errs
 }
 
 func (s snapshotRemote) MarshalJSON() ([]byte, error) {
@@ -641,7 +549,7 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 
 // builds the input snapshot from API Clients.
 type RemoteBuilder interface {
-    BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error)
+	BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error)
 }
 
 // Options for building a snapshot
@@ -675,28 +583,28 @@ type RemoteBuildOptions struct {
 // Options for reading resources of a given type
 type ResourceRemoteBuildOptions struct {
 
-    // List options for composing a snapshot from a resource type
-    ListOptions []client.ListOption
+	// List options for composing a snapshot from a resource type
+	ListOptions []client.ListOption
 
-    // If provided, ensure the resource has been verified before adding it to snapshots
-    Verifier verifier.ServerResourceVerifier
+	// If provided, ensure the resource has been verified before adding it to snapshots
+	Verifier verifier.ServerResourceVerifier
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterRemoteBuilder struct {
-    clusters multicluster.Interface
-    client   multicluster.Client
+	clusters multicluster.Interface
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewMultiClusterRemoteBuilder(
-        clusters multicluster.Interface,
-        client multicluster.Client,
+	clusters multicluster.Interface,
+	client multicluster.Client,
 ) RemoteBuilder {
-    return &multiClusterRemoteBuilder{
-        clusters: clusters,
-        client:   client,
-    }
+	return &multiClusterRemoteBuilder{
+		clusters: clusters,
+		client:   client,
+	}
 }
 
 func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {
@@ -770,306 +678,348 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 	return outputSnap, errs
 }
 
+		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertPodBounceDirectivesFromCluster(ctx, cluster, podBounceDirectives, opts.PodBounceDirectives); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertXdsConfigsFromCluster(ctx, cluster, xdsConfigs, opts.XdsConfigs); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertDestinationRulesFromCluster(ctx, cluster, destinationRules, opts.DestinationRules); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertEnvoyFiltersFromCluster(ctx, cluster, envoyFilters, opts.EnvoyFilters); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertGatewaysFromCluster(ctx, cluster, gateways, opts.Gateways); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertServiceEntriesFromCluster(ctx, cluster, serviceEntries, opts.ServiceEntries); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
+	}
 
+	outputSnap := NewRemoteSnapshot(
+		name,
+
+		issuedCertificates,
+		podBounceDirectives,
+		xdsConfigs,
+		destinationRules,
+		envoyFilters,
+		gateways,
+		serviceEntries,
+		virtualServices,
+		authorizationPolicies,
+	)
+
+	return outputSnap, errs
+}
 
 func (b *multiClusterRemoteBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
-    issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "certificates.mesh.gloo.solo.io",
-            Version: "v1",
-            Kind:    "IssuedCertificate",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "IssuedCertificate",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range issuedCertificateList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        issuedCertificates.Insert(item)
-    }
+	for _, item := range issuedCertificateList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		issuedCertificates.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *multiClusterRemoteBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
-    podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "certificates.mesh.gloo.solo.io",
-            Version: "v1",
-            Kind:    "PodBounceDirective",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "PodBounceDirective",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    podBounceDirectiveList, err := podBounceDirectiveClient.ListPodBounceDirective(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	podBounceDirectiveList, err := podBounceDirectiveClient.ListPodBounceDirective(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range podBounceDirectiveList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        podBounceDirectives.Insert(item)
-    }
+	for _, item := range podBounceDirectiveList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		podBounceDirectives.Insert(item)
+	}
 
-    return nil
+	return nil
 }
-
 
 func (b *multiClusterRemoteBuilder) insertXdsConfigsFromCluster(ctx context.Context, cluster string, xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
-    xdsConfigClient, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	xdsConfigClient, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-            Version: "v1beta1",
-            Kind:    "XdsConfig",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "XdsConfig",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    xdsConfigList, err := xdsConfigClient.ListXdsConfig(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	xdsConfigList, err := xdsConfigClient.ListXdsConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range xdsConfigList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        xdsConfigs.Insert(item)
-    }
+	for _, item := range xdsConfigList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		xdsConfigs.Insert(item)
+	}
 
-    return nil
+	return nil
 }
-
 
 func (b *multiClusterRemoteBuilder) insertDestinationRulesFromCluster(ctx context.Context, cluster string, destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceRemoteBuildOptions) error {
-    destinationRuleClient, err := networking_istio_io_v1alpha3.NewMulticlusterDestinationRuleClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	destinationRuleClient, err := networking_istio_io_v1alpha3.NewMulticlusterDestinationRuleClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "DestinationRule",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "DestinationRule",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    destinationRuleList, err := destinationRuleClient.ListDestinationRule(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	destinationRuleList, err := destinationRuleClient.ListDestinationRule(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range destinationRuleList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        destinationRules.Insert(item)
-    }
+	for _, item := range destinationRuleList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		destinationRules.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *multiClusterRemoteBuilder) insertEnvoyFiltersFromCluster(ctx context.Context, cluster string, envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet, opts ResourceRemoteBuildOptions) error {
-    envoyFilterClient, err := networking_istio_io_v1alpha3.NewMulticlusterEnvoyFilterClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	envoyFilterClient, err := networking_istio_io_v1alpha3.NewMulticlusterEnvoyFilterClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "EnvoyFilter",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "EnvoyFilter",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    envoyFilterList, err := envoyFilterClient.ListEnvoyFilter(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	envoyFilterList, err := envoyFilterClient.ListEnvoyFilter(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range envoyFilterList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        envoyFilters.Insert(item)
-    }
+	for _, item := range envoyFilterList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		envoyFilters.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *multiClusterRemoteBuilder) insertGatewaysFromCluster(ctx context.Context, cluster string, gateways networking_istio_io_v1alpha3_sets.GatewaySet, opts ResourceRemoteBuildOptions) error {
-    gatewayClient, err := networking_istio_io_v1alpha3.NewMulticlusterGatewayClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	gatewayClient, err := networking_istio_io_v1alpha3.NewMulticlusterGatewayClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "Gateway",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Gateway",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    gatewayList, err := gatewayClient.ListGateway(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	gatewayList, err := gatewayClient.ListGateway(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range gatewayList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        gateways.Insert(item)
-    }
+	for _, item := range gatewayList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		gateways.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *multiClusterRemoteBuilder) insertServiceEntriesFromCluster(ctx context.Context, cluster string, serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet, opts ResourceRemoteBuildOptions) error {
-    serviceEntryClient, err := networking_istio_io_v1alpha3.NewMulticlusterServiceEntryClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+	serviceEntryClient, err := networking_istio_io_v1alpha3.NewMulticlusterServiceEntryClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "ServiceEntry",
-        }
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "ServiceEntry",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    serviceEntryList, err := serviceEntryClient.ListServiceEntry(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	serviceEntryList, err := serviceEntryClient.ListServiceEntry(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range serviceEntryList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        serviceEntries.Insert(item)
-    }
+	for _, item := range serviceEntryList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		serviceEntries.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *multiClusterRemoteBuilder) insertVirtualServicesFromCluster(ctx context.Context, cluster string, virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceRemoteBuildOptions) error {
     virtualServiceClient, err := networking_istio_io_v1alpha3.NewMulticlusterVirtualServiceClient(b.client).Cluster(cluster)
@@ -1156,74 +1106,109 @@ func (b *multiClusterRemoteBuilder) insertSidecarsFromCluster(ctx context.Contex
 	return nil
 }
 
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
 
-func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx context.Context, cluster string, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
-    authorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
-    if err != nil {
-        return err
-    }
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "VirtualService",
+		}
 
-    if opts.Verifier != nil {
-    	mgr, err := b.clusters.Cluster(cluster)
-    	if err != nil {
-    		return err
-        }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-        gvk := schema.GroupVersionKind{
-            Group:   "security.istio.io",
-            Version: "v1beta1",
-            Kind:    "AuthorizationPolicy",
-        }
+	virtualServiceList, err := virtualServiceClient.ListVirtualService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-        	cluster,
-        	mgr.GetConfig(),
-        	gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+	for _, item := range virtualServiceList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualServices.Insert(item)
+	}
 
-    authorizationPolicyList, err := authorizationPolicyClient.ListAuthorizationPolicy(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
-
-    for _, item := range authorizationPolicyList.Items {
-        item := item.DeepCopy()             // pike + own
-        item.ClusterName = cluster // set cluster for in-memory processing
-        authorizationPolicies.Insert(item)
-    }
-
-    return nil
+	return nil
 }
 
+func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx context.Context, cluster string, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
+	authorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "security.istio.io",
+			Version: "v1beta1",
+			Kind:    "AuthorizationPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	authorizationPolicyList, err := authorizationPolicyClient.ListAuthorizationPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range authorizationPolicyList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		authorizationPolicies.Insert(item)
+	}
+
+	return nil
+}
 
 // build a snapshot from resources in a single cluster
 type singleClusterRemoteBuilder struct {
-    mgr manager.Manager
-    clusterName string
+	mgr         manager.Manager
+	clusterName string
 }
 
 // Produces snapshots of resources read from the manager for the given cluster
 func NewSingleClusterRemoteBuilder(
-        mgr manager.Manager,
+	mgr manager.Manager,
 ) RemoteBuilder {
-    return NewSingleClusterRemoteBuilderWithClusterName(mgr, "")
+	return NewSingleClusterRemoteBuilderWithClusterName(mgr, "")
 }
 
 // Produces snapshots of resources read from the manager for the given cluster.
 // Snapshot resources will be marked with the given ClusterName.
 func NewSingleClusterRemoteBuilderWithClusterName(
-        mgr manager.Manager,
-        clusterName string,
+	mgr manager.Manager,
+	clusterName string,
 ) RemoteBuilder {
-    return &singleClusterRemoteBuilder{
-        mgr: mgr,
-        clusterName: clusterName,
-    }
+	return &singleClusterRemoteBuilder{
+		mgr:         mgr,
+		clusterName: clusterName,
+	}
 }
 
 
@@ -1284,304 +1269,295 @@ func NewSingleClusterRemoteBuilderWithClusterName(
 		authorizationPolicies,
 	)
 
-    issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
-    podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
+	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 
-    xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
+	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
+	envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
+	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
+	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
+	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
 
-    destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
-    envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
-    gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
-    serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
-    virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
-    authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+	var errs error
 
-    var errs error
+	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertPodBounceDirectives(ctx, podBounceDirectives, opts.PodBounceDirectives); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertXdsConfigs(ctx, xdsConfigs, opts.XdsConfigs); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertDestinationRules(ctx, destinationRules, opts.DestinationRules); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertEnvoyFilters(ctx, envoyFilters, opts.EnvoyFilters); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertGateways(ctx, gateways, opts.Gateways); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertServiceEntries(ctx, serviceEntries, opts.ServiceEntries); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
+	outputSnap := NewRemoteSnapshot(
+		name,
 
-    if err := b.insertIssuedCertificates(ctx,  issuedCertificates, opts.IssuedCertificates); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertPodBounceDirectives(ctx,  podBounceDirectives, opts.PodBounceDirectives); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertXdsConfigs(ctx,  xdsConfigs, opts.XdsConfigs); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertDestinationRules(ctx,  destinationRules, opts.DestinationRules); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertEnvoyFilters(ctx,  envoyFilters, opts.EnvoyFilters); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertGateways(ctx,  gateways, opts.Gateways); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertServiceEntries(ctx,  serviceEntries, opts.ServiceEntries); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertVirtualServices(ctx,  virtualServices, opts.VirtualServices); err != nil {
-        errs = multierror.Append(errs, err)
-    }
-    if err := b.insertAuthorizationPolicies(ctx,  authorizationPolicies, opts.AuthorizationPolicies); err != nil {
-        errs = multierror.Append(errs, err)
-    }
+		issuedCertificates,
+		podBounceDirectives,
+		xdsConfigs,
+		destinationRules,
+		envoyFilters,
+		gateways,
+		serviceEntries,
+		virtualServices,
+		authorizationPolicies,
+	)
 
-    outputSnap := NewRemoteSnapshot(
-        name,
-
-        issuedCertificates,
-        podBounceDirectives,
-        xdsConfigs,
-        destinationRules,
-        envoyFilters,
-        gateways,
-        serviceEntries,
-        virtualServices,
-        authorizationPolicies,
-    )
-
-    return outputSnap, errs
+	return outputSnap, errs
 }
-
-
-
 
 func (b *singleClusterRemoteBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "certificates.mesh.gloo.solo.io",
-            Version: "v1",
-            Kind:    "IssuedCertificate",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "IssuedCertificate",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range issuedCertificateList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        issuedCertificates.Insert(item)
-    }
+	for _, item := range issuedCertificateList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		issuedCertificates.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *singleClusterRemoteBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "certificates.mesh.gloo.solo.io",
-            Version: "v1",
-            Kind:    "PodBounceDirective",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "PodBounceDirective",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range podBounceDirectiveList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        podBounceDirectives.Insert(item)
-    }
+	for _, item := range podBounceDirectiveList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		podBounceDirectives.Insert(item)
+	}
 
-    return nil
+	return nil
 }
-
 
 func (b *singleClusterRemoteBuilder) insertXdsConfigs(ctx context.Context, xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-            Version: "v1beta1",
-            Kind:    "XdsConfig",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "XdsConfig",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    xdsConfigList, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	xdsConfigList, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range xdsConfigList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        xdsConfigs.Insert(item)
-    }
+	for _, item := range xdsConfigList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		xdsConfigs.Insert(item)
+	}
 
-    return nil
+	return nil
 }
-
 
 func (b *singleClusterRemoteBuilder) insertDestinationRules(ctx context.Context, destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "DestinationRule",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "DestinationRule",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    destinationRuleList, err := networking_istio_io_v1alpha3.NewDestinationRuleClient(b.mgr.GetClient()).ListDestinationRule(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	destinationRuleList, err := networking_istio_io_v1alpha3.NewDestinationRuleClient(b.mgr.GetClient()).ListDestinationRule(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range destinationRuleList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        destinationRules.Insert(item)
-    }
+	for _, item := range destinationRuleList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		destinationRules.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *singleClusterRemoteBuilder) insertEnvoyFilters(ctx context.Context, envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "EnvoyFilter",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "EnvoyFilter",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    envoyFilterList, err := networking_istio_io_v1alpha3.NewEnvoyFilterClient(b.mgr.GetClient()).ListEnvoyFilter(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	envoyFilterList, err := networking_istio_io_v1alpha3.NewEnvoyFilterClient(b.mgr.GetClient()).ListEnvoyFilter(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range envoyFilterList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        envoyFilters.Insert(item)
-    }
+	for _, item := range envoyFilterList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		envoyFilters.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *singleClusterRemoteBuilder) insertGateways(ctx context.Context, gateways networking_istio_io_v1alpha3_sets.GatewaySet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "Gateway",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Gateway",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    gatewayList, err := networking_istio_io_v1alpha3.NewGatewayClient(b.mgr.GetClient()).ListGateway(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	gatewayList, err := networking_istio_io_v1alpha3.NewGatewayClient(b.mgr.GetClient()).ListGateway(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range gatewayList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        gateways.Insert(item)
-    }
+	for _, item := range gatewayList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		gateways.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *singleClusterRemoteBuilder) insertServiceEntries(ctx context.Context, serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "networking.istio.io",
-            Version: "v1alpha3",
-            Kind:    "ServiceEntry",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "ServiceEntry",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    serviceEntryList, err := networking_istio_io_v1alpha3.NewServiceEntryClient(b.mgr.GetClient()).ListServiceEntry(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	serviceEntryList, err := networking_istio_io_v1alpha3.NewServiceEntryClient(b.mgr.GetClient()).ListServiceEntry(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range serviceEntryList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        serviceEntries.Insert(item)
-    }
+	for _, item := range serviceEntryList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		serviceEntries.Insert(item)
+	}
 
-    return nil
+	return nil
 }
 func (b *singleClusterRemoteBuilder) insertVirtualServices(ctx context.Context, virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceRemoteBuildOptions) error {
 
@@ -1650,54 +1626,77 @@ func (b *singleClusterRemoteBuilder) insertSidecars(ctx context.Context, sidecar
 	return nil
 }
 
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualServiceList, err := networking_istio_io_v1alpha3.NewVirtualServiceClient(b.mgr.GetClient()).ListVirtualService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualServiceList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		virtualServices.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *singleClusterRemoteBuilder) insertAuthorizationPolicies(ctx context.Context, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
 
-    if opts.Verifier != nil {
-        gvk := schema.GroupVersionKind{
-            Group:   "security.istio.io",
-            Version: "v1beta1",
-            Kind:    "AuthorizationPolicy",
-        }
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "security.istio.io",
+			Version: "v1beta1",
+			Kind:    "AuthorizationPolicy",
+		}
 
-        if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-            "", // verify in the local cluster
-            b.mgr.GetConfig(),
-            gvk,
-        ); err != nil{
-            return err
-        } else if !resourceRegistered {
-            return nil
-        }
-    }
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
 
-    authorizationPolicyList, err := security_istio_io_v1beta1.NewAuthorizationPolicyClient(b.mgr.GetClient()).ListAuthorizationPolicy(ctx, opts.ListOptions...)
-    if err != nil {
-        return err
-    }
+	authorizationPolicyList, err := security_istio_io_v1beta1.NewAuthorizationPolicyClient(b.mgr.GetClient()).ListAuthorizationPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
 
-    for _, item := range authorizationPolicyList.Items {
-        item := item.DeepCopy()               // pike + own the item.
-        item.ClusterName = b.clusterName
-        authorizationPolicies.Insert(item)
-    }
+	for _, item := range authorizationPolicyList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		authorizationPolicies.Insert(item)
+	}
 
-    return nil
+	return nil
 }
-
 
 // build a snapshot from resources in a single cluster
 type inMemoryRemoteBuilder struct {
-    getSnapshot func() (resource.ClusterSnapshot, error)
+	getSnapshot func() (resource.ClusterSnapshot, error)
 }
 
 // Produces snapshots of resources read from the manager for the given cluster
 func NewInMemoryRemoteBuilder(
-        getSnapshot func() (resource.ClusterSnapshot, error),
+	getSnapshot func() (resource.ClusterSnapshot, error),
 ) RemoteBuilder {
-    return &inMemoryRemoteBuilder{
-        getSnapshot: getSnapshot,
-    }
+	return &inMemoryRemoteBuilder{
+		getSnapshot: getSnapshot,
+	}
 }
 
 func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {

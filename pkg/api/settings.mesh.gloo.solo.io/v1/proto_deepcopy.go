@@ -5,16 +5,17 @@
 package v1
 
 import (
-    proto "github.com/golang/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the Settings.Spec
 func (in *SettingsSpec) DeepCopyInto(out *SettingsSpec) {
-    p := proto.Clone(in).(*SettingsSpec)
-    *out = *p
+	p := proto.Clone(in).(*SettingsSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the Settings.Status
 func (in *SettingsStatus) DeepCopyInto(out *SettingsStatus) {
-    p := proto.Clone(in).(*SettingsStatus)
-    *out = *p
+	p := proto.Clone(in).(*SettingsStatus)
+	*out = *p
 }

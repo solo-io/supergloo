@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"testing"
+
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	echo2 "github.com/solo-io/gloo-mesh/pkg/test/apps/echo"
 	gloo_mesh "github.com/solo-io/gloo-mesh/pkg/test/apps/gloo-mesh"
@@ -10,9 +14,6 @@ import (
 	"istio.io/istio/pkg/test/framework/components/environment/kube"
 	"istio.io/istio/pkg/test/framework/config"
 	"istio.io/istio/pkg/test/framework/resource"
-	"net/http"
-	"os"
-	"testing"
 
 	"istio.io/istio/pkg/test/framework"
 	"istio.io/istio/pkg/test/framework/components/istio"

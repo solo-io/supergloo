@@ -4,646 +4,641 @@
 
 package v1sets
 
-
-
 import (
-    certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 
-    "github.com/rotisserie/eris"
-    sksets "github.com/solo-io/skv2/contrib/pkg/sets"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    "k8s.io/apimachinery/pkg/util/sets"
+	"github.com/rotisserie/eris"
+	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type IssuedCertificateSet interface {
 	// Get the set stored keys
-    Keys() sets.String
-    // List of resources stored in the set. Pass an optional filter function to filter on the list.
-    List(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-    UnsortedList(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-    // Return the Set as a map of key to resource.
-    Map() map[string]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-    // Insert a resource into the set.
-    Insert(issuedCertificate ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate)
-    // Compare the equality of the keys in two sets (not the resources themselves)
-    Equal(issuedCertificateSet IssuedCertificateSet) bool
-    // Check if the set contains a key matching the resource (not the resource itself)
-    Has(issuedCertificate ezkube.ResourceId) bool
-    // Delete the key matching the resource
-    Delete(issuedCertificate  ezkube.ResourceId)
-    // Return the union with the provided set
-    Union(set IssuedCertificateSet) IssuedCertificateSet
-    // Return the difference with the provided set
-    Difference(set IssuedCertificateSet) IssuedCertificateSet
-    // Return the intersection with the provided set
-    Intersection(set IssuedCertificateSet) IssuedCertificateSet
-    // Find the resource with the given ID
-    Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, error)
-    // Get the length of the set
-    Length() int
-    // returns the generic implementation of the set
-    Generic() sksets.ResourceSet
-    // returns the delta between this and and another IssuedCertificateSet
-    Delta(newSet IssuedCertificateSet) sksets.ResourceDelta
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
+	// Return the Set as a map of key to resource.
+	Map() map[string]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
+	// Insert a resource into the set.
+	Insert(issuedCertificate ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(issuedCertificateSet IssuedCertificateSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(issuedCertificate ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(issuedCertificate ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set IssuedCertificateSet) IssuedCertificateSet
+	// Return the difference with the provided set
+	Difference(set IssuedCertificateSet) IssuedCertificateSet
+	// Return the intersection with the provided set
+	Intersection(set IssuedCertificateSet) IssuedCertificateSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another IssuedCertificateSet
+	Delta(newSet IssuedCertificateSet) sksets.ResourceDelta
 }
 
 func makeGenericIssuedCertificateSet(issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) sksets.ResourceSet {
-    var genericResources []ezkube.ResourceId
-    for _, obj := range issuedCertificateList {
-        genericResources = append(genericResources, obj)
-    }
-    return sksets.NewResourceSet(genericResources...)
+	var genericResources []ezkube.ResourceId
+	for _, obj := range issuedCertificateList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
 }
 
 type issuedCertificateSet struct {
-    set sksets.ResourceSet
+	set sksets.ResourceSet
 }
 
 func NewIssuedCertificateSet(issuedCertificateList ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) IssuedCertificateSet {
-    return &issuedCertificateSet{set: makeGenericIssuedCertificateSet(issuedCertificateList)}
+	return &issuedCertificateSet{set: makeGenericIssuedCertificateSet(issuedCertificateList)}
 }
 
 func NewIssuedCertificateSetFromList(issuedCertificateList *certificates_mesh_gloo_solo_io_v1.IssuedCertificateList) IssuedCertificateSet {
-    list := make([]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, 0, len(issuedCertificateList.Items))
-    for idx := range issuedCertificateList.Items {
-        list = append(list, &issuedCertificateList.Items[idx])
-    }
-    return &issuedCertificateSet{set: makeGenericIssuedCertificateSet(list)}
+	list := make([]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, 0, len(issuedCertificateList.Items))
+	for idx := range issuedCertificateList.Items {
+		list = append(list, &issuedCertificateList.Items[idx])
+	}
+	return &issuedCertificateSet{set: makeGenericIssuedCertificateSet(list)}
 }
 
 func (s *issuedCertificateSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-    }
-    return s.Generic().Keys()
+	}
+	return s.Generic().Keys()
 }
 
-func (s *issuedCertificateSet) List(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
-        })
-    }
+func (s *issuedCertificateSet) List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+		})
+	}
 
-    objs := s.Generic().List(genericFilters...)
-    issuedCertificateList := make([]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, 0, len(objs))
-    for _, obj := range objs {
-        issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
-    }
-    return issuedCertificateList
+	objs := s.Generic().List(genericFilters...)
+	issuedCertificateList := make([]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, 0, len(objs))
+	for _, obj := range objs {
+		issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+	}
+	return issuedCertificateList
 }
 
-func (s *issuedCertificateSet) UnsortedList(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
-        })
-    }
+func (s *issuedCertificateSet) UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+		})
+	}
 
-    var issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-        issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
-    }
-    return issuedCertificateList
+	var issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+	}
+	return issuedCertificateList
 }
 
 func (s *issuedCertificateSet) Map() map[string]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate {
-    if s == nil {
-        return nil
-    }
+	if s == nil {
+		return nil
+	}
 
-    newMap := map[string]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate{}
-    for k, v := range s.Generic().Map() {
-        newMap[k] = v.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate)
-    }
-    return newMap
+	newMap := map[string]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate)
+	}
+	return newMap
 }
 
 func (s *issuedCertificateSet) Insert(
-        issuedCertificateList ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate,
+	issuedCertificateList ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate,
 ) {
-    if s == nil {
-        panic("cannot insert into nil set")
-    }
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
 
-    for _, obj := range issuedCertificateList {
-        s.Generic().Insert(obj)
-    }
+	for _, obj := range issuedCertificateList {
+		s.Generic().Insert(obj)
+	}
 }
 
 func (s *issuedCertificateSet) Has(issuedCertificate ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    return s.Generic().Has(issuedCertificate)
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(issuedCertificate)
 }
 
 func (s *issuedCertificateSet) Equal(
-        issuedCertificateSet IssuedCertificateSet,
+	issuedCertificateSet IssuedCertificateSet,
 ) bool {
-    if s == nil {
-        return issuedCertificateSet == nil
-    }
-    return s.Generic().Equal(issuedCertificateSet.Generic())
+	if s == nil {
+		return issuedCertificateSet == nil
+	}
+	return s.Generic().Equal(issuedCertificateSet.Generic())
 }
 
 func (s *issuedCertificateSet) Delete(IssuedCertificate ezkube.ResourceId) {
-    if s == nil {
-        return
-    }
-    s.Generic().Delete(IssuedCertificate)
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(IssuedCertificate)
 }
 
 func (s *issuedCertificateSet) Union(set IssuedCertificateSet) IssuedCertificateSet {
-    if s == nil {
-        return set
-    }
-    return NewIssuedCertificateSet(append(s.List(), set.List()...)...)
+	if s == nil {
+		return set
+	}
+	return NewIssuedCertificateSet(append(s.List(), set.List()...)...)
 }
 
 func (s *issuedCertificateSet) Difference(set IssuedCertificateSet) IssuedCertificateSet {
-    if s == nil {
-        return set
-    }
-    newSet := s.Generic().Difference(set.Generic())
-    return &issuedCertificateSet{set: newSet}
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &issuedCertificateSet{set: newSet}
 }
 
 func (s *issuedCertificateSet) Intersection(set IssuedCertificateSet) IssuedCertificateSet {
-    if s == nil {
-        return nil
-    }
-    newSet := s.Generic().Intersection(set.Generic())
-    var issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-    for _, obj := range newSet.List() {
-        issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
-    }
-    return NewIssuedCertificateSet(issuedCertificateList...)
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
+	for _, obj := range newSet.List() {
+		issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+	}
+	return NewIssuedCertificateSet(issuedCertificateList...)
 }
 
-
 func (s *issuedCertificateSet) Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find IssuedCertificate %v", sksets.Key(id))
-    }
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find IssuedCertificate %v", sksets.Key(id))
+	}
 	obj, err := s.Generic().Find(&certificates_mesh_gloo_solo_io_v1.IssuedCertificate{}, id)
 	if err != nil {
 		return nil, err
-    }
+	}
 
-    return obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate), nil
+	return obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate), nil
 }
 
 func (s *issuedCertificateSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    return s.Generic().Length()
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
 }
 
 func (s *issuedCertificateSet) Generic() sksets.ResourceSet {
-    if s == nil {
-        return nil
-    }
-    return s.set
+	if s == nil {
+		return nil
+	}
+	return s.set
 }
 
 func (s *issuedCertificateSet) Delta(newSet IssuedCertificateSet) sksets.ResourceDelta {
-    if s == nil {
-        return sksets.ResourceDelta{
-            Inserted: newSet.Generic(),
-        }
-    }
-    return s.Generic().Delta(newSet.Generic())
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type CertificateRequestSet interface {
 	// Get the set stored keys
-    Keys() sets.String
-    // List of resources stored in the set. Pass an optional filter function to filter on the list.
-    List(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-    UnsortedList(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-    // Return the Set as a map of key to resource.
-    Map() map[string]*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-    // Insert a resource into the set.
-    Insert(certificateRequest ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest)
-    // Compare the equality of the keys in two sets (not the resources themselves)
-    Equal(certificateRequestSet CertificateRequestSet) bool
-    // Check if the set contains a key matching the resource (not the resource itself)
-    Has(certificateRequest ezkube.ResourceId) bool
-    // Delete the key matching the resource
-    Delete(certificateRequest  ezkube.ResourceId)
-    // Return the union with the provided set
-    Union(set CertificateRequestSet) CertificateRequestSet
-    // Return the difference with the provided set
-    Difference(set CertificateRequestSet) CertificateRequestSet
-    // Return the intersection with the provided set
-    Intersection(set CertificateRequestSet) CertificateRequestSet
-    // Find the resource with the given ID
-    Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.CertificateRequest, error)
-    // Get the length of the set
-    Length() int
-    // returns the generic implementation of the set
-    Generic() sksets.ResourceSet
-    // returns the delta between this and and another CertificateRequestSet
-    Delta(newSet CertificateRequestSet) sksets.ResourceDelta
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
+	// Return the Set as a map of key to resource.
+	Map() map[string]*certificates_mesh_gloo_solo_io_v1.CertificateRequest
+	// Insert a resource into the set.
+	Insert(certificateRequest ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(certificateRequestSet CertificateRequestSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(certificateRequest ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(certificateRequest ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set CertificateRequestSet) CertificateRequestSet
+	// Return the difference with the provided set
+	Difference(set CertificateRequestSet) CertificateRequestSet
+	// Return the intersection with the provided set
+	Intersection(set CertificateRequestSet) CertificateRequestSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.CertificateRequest, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another CertificateRequestSet
+	Delta(newSet CertificateRequestSet) sksets.ResourceDelta
 }
 
 func makeGenericCertificateRequestSet(certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest) sksets.ResourceSet {
-    var genericResources []ezkube.ResourceId
-    for _, obj := range certificateRequestList {
-        genericResources = append(genericResources, obj)
-    }
-    return sksets.NewResourceSet(genericResources...)
+	var genericResources []ezkube.ResourceId
+	for _, obj := range certificateRequestList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
 }
 
 type certificateRequestSet struct {
-    set sksets.ResourceSet
+	set sksets.ResourceSet
 }
 
 func NewCertificateRequestSet(certificateRequestList ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest) CertificateRequestSet {
-    return &certificateRequestSet{set: makeGenericCertificateRequestSet(certificateRequestList)}
+	return &certificateRequestSet{set: makeGenericCertificateRequestSet(certificateRequestList)}
 }
 
 func NewCertificateRequestSetFromList(certificateRequestList *certificates_mesh_gloo_solo_io_v1.CertificateRequestList) CertificateRequestSet {
-    list := make([]*certificates_mesh_gloo_solo_io_v1.CertificateRequest, 0, len(certificateRequestList.Items))
-    for idx := range certificateRequestList.Items {
-        list = append(list, &certificateRequestList.Items[idx])
-    }
-    return &certificateRequestSet{set: makeGenericCertificateRequestSet(list)}
+	list := make([]*certificates_mesh_gloo_solo_io_v1.CertificateRequest, 0, len(certificateRequestList.Items))
+	for idx := range certificateRequestList.Items {
+		list = append(list, &certificateRequestList.Items[idx])
+	}
+	return &certificateRequestSet{set: makeGenericCertificateRequestSet(list)}
 }
 
 func (s *certificateRequestSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-    }
-    return s.Generic().Keys()
+	}
+	return s.Generic().Keys()
 }
 
-func (s *certificateRequestSet) List(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
-        })
-    }
+func (s *certificateRequestSet) List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+		})
+	}
 
-    objs := s.Generic().List(genericFilters...)
-    certificateRequestList := make([]*certificates_mesh_gloo_solo_io_v1.CertificateRequest, 0, len(objs))
-    for _, obj := range objs {
-        certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
-    }
-    return certificateRequestList
+	objs := s.Generic().List(genericFilters...)
+	certificateRequestList := make([]*certificates_mesh_gloo_solo_io_v1.CertificateRequest, 0, len(objs))
+	for _, obj := range objs {
+		certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+	}
+	return certificateRequestList
 }
 
-func (s *certificateRequestSet) UnsortedList(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
-        })
-    }
+func (s *certificateRequestSet) UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+		})
+	}
 
-    var certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-        certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
-    }
-    return certificateRequestList
+	var certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+	}
+	return certificateRequestList
 }
 
 func (s *certificateRequestSet) Map() map[string]*certificates_mesh_gloo_solo_io_v1.CertificateRequest {
-    if s == nil {
-        return nil
-    }
+	if s == nil {
+		return nil
+	}
 
-    newMap := map[string]*certificates_mesh_gloo_solo_io_v1.CertificateRequest{}
-    for k, v := range s.Generic().Map() {
-        newMap[k] = v.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest)
-    }
-    return newMap
+	newMap := map[string]*certificates_mesh_gloo_solo_io_v1.CertificateRequest{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest)
+	}
+	return newMap
 }
 
 func (s *certificateRequestSet) Insert(
-        certificateRequestList ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest,
+	certificateRequestList ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest,
 ) {
-    if s == nil {
-        panic("cannot insert into nil set")
-    }
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
 
-    for _, obj := range certificateRequestList {
-        s.Generic().Insert(obj)
-    }
+	for _, obj := range certificateRequestList {
+		s.Generic().Insert(obj)
+	}
 }
 
 func (s *certificateRequestSet) Has(certificateRequest ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    return s.Generic().Has(certificateRequest)
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(certificateRequest)
 }
 
 func (s *certificateRequestSet) Equal(
-        certificateRequestSet CertificateRequestSet,
+	certificateRequestSet CertificateRequestSet,
 ) bool {
-    if s == nil {
-        return certificateRequestSet == nil
-    }
-    return s.Generic().Equal(certificateRequestSet.Generic())
+	if s == nil {
+		return certificateRequestSet == nil
+	}
+	return s.Generic().Equal(certificateRequestSet.Generic())
 }
 
 func (s *certificateRequestSet) Delete(CertificateRequest ezkube.ResourceId) {
-    if s == nil {
-        return
-    }
-    s.Generic().Delete(CertificateRequest)
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(CertificateRequest)
 }
 
 func (s *certificateRequestSet) Union(set CertificateRequestSet) CertificateRequestSet {
-    if s == nil {
-        return set
-    }
-    return NewCertificateRequestSet(append(s.List(), set.List()...)...)
+	if s == nil {
+		return set
+	}
+	return NewCertificateRequestSet(append(s.List(), set.List()...)...)
 }
 
 func (s *certificateRequestSet) Difference(set CertificateRequestSet) CertificateRequestSet {
-    if s == nil {
-        return set
-    }
-    newSet := s.Generic().Difference(set.Generic())
-    return &certificateRequestSet{set: newSet}
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &certificateRequestSet{set: newSet}
 }
 
 func (s *certificateRequestSet) Intersection(set CertificateRequestSet) CertificateRequestSet {
-    if s == nil {
-        return nil
-    }
-    newSet := s.Generic().Intersection(set.Generic())
-    var certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-    for _, obj := range newSet.List() {
-        certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
-    }
-    return NewCertificateRequestSet(certificateRequestList...)
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
+	for _, obj := range newSet.List() {
+		certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+	}
+	return NewCertificateRequestSet(certificateRequestList...)
 }
 
-
 func (s *certificateRequestSet) Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.CertificateRequest, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find CertificateRequest %v", sksets.Key(id))
-    }
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find CertificateRequest %v", sksets.Key(id))
+	}
 	obj, err := s.Generic().Find(&certificates_mesh_gloo_solo_io_v1.CertificateRequest{}, id)
 	if err != nil {
 		return nil, err
-    }
+	}
 
-    return obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest), nil
+	return obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest), nil
 }
 
 func (s *certificateRequestSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    return s.Generic().Length()
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
 }
 
 func (s *certificateRequestSet) Generic() sksets.ResourceSet {
-    if s == nil {
-        return nil
-    }
-    return s.set
+	if s == nil {
+		return nil
+	}
+	return s.set
 }
 
 func (s *certificateRequestSet) Delta(newSet CertificateRequestSet) sksets.ResourceDelta {
-    if s == nil {
-        return sksets.ResourceDelta{
-            Inserted: newSet.Generic(),
-        }
-    }
-    return s.Generic().Delta(newSet.Generic())
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type PodBounceDirectiveSet interface {
 	// Get the set stored keys
-    Keys() sets.String
-    // List of resources stored in the set. Pass an optional filter function to filter on the list.
-    List(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-    // Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-    UnsortedList(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-    // Return the Set as a map of key to resource.
-    Map() map[string]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-    // Insert a resource into the set.
-    Insert(podBounceDirective ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective)
-    // Compare the equality of the keys in two sets (not the resources themselves)
-    Equal(podBounceDirectiveSet PodBounceDirectiveSet) bool
-    // Check if the set contains a key matching the resource (not the resource itself)
-    Has(podBounceDirective ezkube.ResourceId) bool
-    // Delete the key matching the resource
-    Delete(podBounceDirective  ezkube.ResourceId)
-    // Return the union with the provided set
-    Union(set PodBounceDirectiveSet) PodBounceDirectiveSet
-    // Return the difference with the provided set
-    Difference(set PodBounceDirectiveSet) PodBounceDirectiveSet
-    // Return the intersection with the provided set
-    Intersection(set PodBounceDirectiveSet) PodBounceDirectiveSet
-    // Find the resource with the given ID
-    Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, error)
-    // Get the length of the set
-    Length() int
-    // returns the generic implementation of the set
-    Generic() sksets.ResourceSet
-    // returns the delta between this and and another PodBounceDirectiveSet
-    Delta(newSet PodBounceDirectiveSet) sksets.ResourceDelta
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
+	// Return the Set as a map of key to resource.
+	Map() map[string]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
+	// Insert a resource into the set.
+	Insert(podBounceDirective ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(podBounceDirectiveSet PodBounceDirectiveSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(podBounceDirective ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(podBounceDirective ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set PodBounceDirectiveSet) PodBounceDirectiveSet
+	// Return the difference with the provided set
+	Difference(set PodBounceDirectiveSet) PodBounceDirectiveSet
+	// Return the intersection with the provided set
+	Intersection(set PodBounceDirectiveSet) PodBounceDirectiveSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another PodBounceDirectiveSet
+	Delta(newSet PodBounceDirectiveSet) sksets.ResourceDelta
 }
 
 func makeGenericPodBounceDirectiveSet(podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) sksets.ResourceSet {
-    var genericResources []ezkube.ResourceId
-    for _, obj := range podBounceDirectiveList {
-        genericResources = append(genericResources, obj)
-    }
-    return sksets.NewResourceSet(genericResources...)
+	var genericResources []ezkube.ResourceId
+	for _, obj := range podBounceDirectiveList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
 }
 
 type podBounceDirectiveSet struct {
-    set sksets.ResourceSet
+	set sksets.ResourceSet
 }
 
 func NewPodBounceDirectiveSet(podBounceDirectiveList ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) PodBounceDirectiveSet {
-    return &podBounceDirectiveSet{set: makeGenericPodBounceDirectiveSet(podBounceDirectiveList)}
+	return &podBounceDirectiveSet{set: makeGenericPodBounceDirectiveSet(podBounceDirectiveList)}
 }
 
 func NewPodBounceDirectiveSetFromList(podBounceDirectiveList *certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveList) PodBounceDirectiveSet {
-    list := make([]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, 0, len(podBounceDirectiveList.Items))
-    for idx := range podBounceDirectiveList.Items {
-        list = append(list, &podBounceDirectiveList.Items[idx])
-    }
-    return &podBounceDirectiveSet{set: makeGenericPodBounceDirectiveSet(list)}
+	list := make([]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, 0, len(podBounceDirectiveList.Items))
+	for idx := range podBounceDirectiveList.Items {
+		list = append(list, &podBounceDirectiveList.Items[idx])
+	}
+	return &podBounceDirectiveSet{set: makeGenericPodBounceDirectiveSet(list)}
 }
 
 func (s *podBounceDirectiveSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
-    }
-    return s.Generic().Keys()
+	}
+	return s.Generic().Keys()
 }
 
-func (s *podBounceDirectiveSet) List(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
-        })
-    }
+func (s *podBounceDirectiveSet) List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+		})
+	}
 
-    objs := s.Generic().List(genericFilters...)
-    podBounceDirectiveList := make([]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, 0, len(objs))
-    for _, obj := range objs {
-        podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
-    }
-    return podBounceDirectiveList
+	objs := s.Generic().List(genericFilters...)
+	podBounceDirectiveList := make([]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, 0, len(objs))
+	for _, obj := range objs {
+		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+	}
+	return podBounceDirectiveList
 }
 
-func (s *podBounceDirectiveSet) UnsortedList(filterResource ... func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective {
-    if s == nil {
-        return nil
-    }
-    var genericFilters []func(ezkube.ResourceId) bool
-    for _, filter := range filterResource {
-        genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-            return filter(obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
-        })
-    }
+func (s *podBounceDirectiveSet) UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+		})
+	}
 
-    var podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-    for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-        podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
-    }
-    return podBounceDirectiveList
+	var podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+	}
+	return podBounceDirectiveList
 }
 
 func (s *podBounceDirectiveSet) Map() map[string]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective {
-    if s == nil {
-        return nil
-    }
+	if s == nil {
+		return nil
+	}
 
-    newMap := map[string]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective{}
-    for k, v := range s.Generic().Map() {
-        newMap[k] = v.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective)
-    }
-    return newMap
+	newMap := map[string]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective)
+	}
+	return newMap
 }
 
 func (s *podBounceDirectiveSet) Insert(
-        podBounceDirectiveList ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective,
+	podBounceDirectiveList ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective,
 ) {
-    if s == nil {
-        panic("cannot insert into nil set")
-    }
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
 
-    for _, obj := range podBounceDirectiveList {
-        s.Generic().Insert(obj)
-    }
+	for _, obj := range podBounceDirectiveList {
+		s.Generic().Insert(obj)
+	}
 }
 
 func (s *podBounceDirectiveSet) Has(podBounceDirective ezkube.ResourceId) bool {
-    if s == nil {
-        return false
-    }
-    return s.Generic().Has(podBounceDirective)
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(podBounceDirective)
 }
 
 func (s *podBounceDirectiveSet) Equal(
-        podBounceDirectiveSet PodBounceDirectiveSet,
+	podBounceDirectiveSet PodBounceDirectiveSet,
 ) bool {
-    if s == nil {
-        return podBounceDirectiveSet == nil
-    }
-    return s.Generic().Equal(podBounceDirectiveSet.Generic())
+	if s == nil {
+		return podBounceDirectiveSet == nil
+	}
+	return s.Generic().Equal(podBounceDirectiveSet.Generic())
 }
 
 func (s *podBounceDirectiveSet) Delete(PodBounceDirective ezkube.ResourceId) {
-    if s == nil {
-        return
-    }
-    s.Generic().Delete(PodBounceDirective)
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(PodBounceDirective)
 }
 
 func (s *podBounceDirectiveSet) Union(set PodBounceDirectiveSet) PodBounceDirectiveSet {
-    if s == nil {
-        return set
-    }
-    return NewPodBounceDirectiveSet(append(s.List(), set.List()...)...)
+	if s == nil {
+		return set
+	}
+	return NewPodBounceDirectiveSet(append(s.List(), set.List()...)...)
 }
 
 func (s *podBounceDirectiveSet) Difference(set PodBounceDirectiveSet) PodBounceDirectiveSet {
-    if s == nil {
-        return set
-    }
-    newSet := s.Generic().Difference(set.Generic())
-    return &podBounceDirectiveSet{set: newSet}
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &podBounceDirectiveSet{set: newSet}
 }
 
 func (s *podBounceDirectiveSet) Intersection(set PodBounceDirectiveSet) PodBounceDirectiveSet {
-    if s == nil {
-        return nil
-    }
-    newSet := s.Generic().Intersection(set.Generic())
-    var podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-    for _, obj := range newSet.List() {
-        podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
-    }
-    return NewPodBounceDirectiveSet(podBounceDirectiveList...)
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
+	for _, obj := range newSet.List() {
+		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+	}
+	return NewPodBounceDirectiveSet(podBounceDirectiveList...)
 }
 
-
 func (s *podBounceDirectiveSet) Find(id ezkube.ResourceId) (*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, error) {
-    if s == nil {
-        return nil, eris.Errorf("empty set, cannot find PodBounceDirective %v", sksets.Key(id))
-    }
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find PodBounceDirective %v", sksets.Key(id))
+	}
 	obj, err := s.Generic().Find(&certificates_mesh_gloo_solo_io_v1.PodBounceDirective{}, id)
 	if err != nil {
 		return nil, err
-    }
+	}
 
-    return obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective), nil
+	return obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective), nil
 }
 
 func (s *podBounceDirectiveSet) Length() int {
-    if s == nil {
-        return 0
-    }
-    return s.Generic().Length()
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
 }
 
 func (s *podBounceDirectiveSet) Generic() sksets.ResourceSet {
-    if s == nil {
-        return nil
-    }
-    return s.set
+	if s == nil {
+		return nil
+	}
+	return s.set
 }
 
 func (s *podBounceDirectiveSet) Delta(newSet PodBounceDirectiveSet) sksets.ResourceDelta {
-    if s == nil {
-        return sksets.ResourceDelta{
-            Inserted: newSet.Generic(),
-        }
-    }
-    return s.Generic().Delta(newSet.Generic())
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

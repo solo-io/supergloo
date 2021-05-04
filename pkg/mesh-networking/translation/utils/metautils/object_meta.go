@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/labels"
 	"reflect"
 	"strings"
+
+	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/labels"
 
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"

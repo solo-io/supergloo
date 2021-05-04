@@ -17,12 +17,16 @@ difference between the editions.
 ### Options
 
 ```
+      --Namespace string           Namespace in which to install Gloo Mesh (default "gloo-mesh")
+  -r, --Register                   Also Register the cluster
+      --Version string             Version to install.
+                                   Community defaults to meshctl Version, enterprise defaults to latest stable
       --chart-file string          Path to a local Helm chart for installing Gloo Mesh.
                                    If unset, this command will install Gloo Mesh from the publicly released Helm chart.
       --chart-values-file string   File containing value overrides for the Gloo Mesh Helm chart
       --cluster-domain string      The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. 
                                    Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/ (default "cluster.local")
-      --cluster-name string        Name with which to register the cluster running Gloo Mesh, only applies if --register is also set (default "mgmt-cluster")
+      --cluster-name string        Name with which to Register the cluster running Gloo Mesh, only applies if --Register is also set (default "mgmt-cluster")
   -d, --dry-run                    Output installation manifest
   -h, --help                       help for install
       --kubeconfig string          Path to the kubeconfig from which the management cluster will be accessed

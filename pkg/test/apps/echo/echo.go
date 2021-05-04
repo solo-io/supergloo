@@ -2,6 +2,8 @@ package echo
 
 import (
 	"embed"
+	"strconv"
+
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	"github.com/solo-io/gloo-mesh/pkg/test/tlssecret"
 	"istio.io/istio/pkg/config/protocol"
@@ -12,7 +14,6 @@ import (
 	"istio.io/istio/pkg/test/framework/components/namespace"
 	"istio.io/istio/pkg/test/framework/resource"
 	"istio.io/istio/pkg/test/scopes"
-	"strconv"
 )
 
 var (
@@ -50,7 +51,7 @@ func DeployEchos(deploymentCtx *context.DeploymentContext) resource.SetupFn {
 
 func deployApplications(ctx resource.Context, echoCtx *context.EchoDeploymentContext) (echo.Instances, error) {
 	builder := echoboot.NewBuilder(ctx)
-	for _,c := range ctx.Clusters() {
+	for _, c := range ctx.Clusters() {
 		frontendApp := newEchoConfig("frontend", echoCtx.AppNamespace, c, true, false)
 		if _, err := builder.With(nil, frontendApp).Build(); err != nil {
 			scopes.Framework.Errorf("error setting up frontend echo %v", err.Error())
@@ -115,7 +116,7 @@ func generateTLSCertificates(ctx resource.Context, secretName string, ns namespa
 	if err != nil {
 		scopes.Framework.Error(err)
 	}
-	for _,c := range ctx.Clusters() {
+	for _, c := range ctx.Clusters() {
 		_, err = tlssecret.New(ctx, &tlssecret.Config{
 			Namespace: ns.Name(),
 			Name:      secretName,

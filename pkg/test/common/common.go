@@ -2,14 +2,15 @@ package common
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	"github.com/solo-io/gloo-mesh/pkg/test/manifests"
 	"istio.io/istio/pkg/test/framework/components/istio"
 	"istio.io/istio/pkg/test/framework/resource"
 	"istio.io/istio/pkg/test/scopes"
 	"istio.io/pkg/log"
-	"testing"
-	"time"
 )
 
 func IstioSetupFunc(operatorFile string) func(ctx resource.Context, cfg *istio.Config) {
@@ -67,7 +68,7 @@ func (g TestGroup) Run(ctx resource.Context, t *testing.T, deploymentContext *co
 				t.Skipf("skipping due to previous errors: %v", skipNextTests)
 			}
 
-			configYAMLStr, err := manifests.RenderTestFile(test.FileName,test.Folder, deploymentContext)
+			configYAMLStr, err := manifests.RenderTestFile(test.FileName, test.Folder, deploymentContext)
 			if err != nil {
 				t.Fatalf("failed to render tests file: %v", err)
 			}

@@ -139,6 +139,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 
 	return nil
 }
+
 // lowers first letter in the string
 func lowerFirst(s string) string {
 	if s == "" {
