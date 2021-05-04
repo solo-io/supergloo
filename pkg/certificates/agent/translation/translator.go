@@ -42,12 +42,17 @@ func IssuedCertificateSecretType() corev1.SecretType {
 	return corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1.SchemeGroupVersion.Group))
 }
 
+// These functions coresponse to issued certiticate statuses
+// PENDING
+// REQUESTED
+// ISSUED
 type Translator interface {
 	IssuedCertiticatePending(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
 		outputs certagent.Builder,
 	) ([]byte, error)
+
 	IssuedCertificateRequested(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
@@ -55,12 +60,19 @@ type Translator interface {
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) error
+
 	IssuedCertificateIssued(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) error
+}
+
+func NewCertAgentTranslator(localClient client.Client) Translator {
+	return &certAgentTranslator{
+		localClient: localClient,
+	}
 }
 
 type certAgentTranslator struct {
@@ -84,7 +96,7 @@ func (c *certAgentTranslator) IssuedCertificateIssued(
 	return nil
 }
 
-func (c *certAgentTranslator) IssuedCertiticateRequested(
+func (c *certAgentTranslator) IssuedCertificateRequested(
 	ctx context.Context,
 	issuedCertificate *v1.IssuedCertificate,
 	certificateRequest *v1.CertificateRequest,

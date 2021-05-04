@@ -119,6 +119,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	// state-machine style processor
 	switch issuedCertificate.Status.State {
 	case v1.IssuedCertificateStatus_FINISHED:
+		// TODO: add extension point
 		if issuedCertificateSecret, err := inputSnap.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// ensure issued cert secret exists, nothing to do for this issued certificate
 			// add secret output to prevent it from being GC'ed
@@ -137,6 +138,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		}
 
+		// TODO: Figure out if we want to reuse the certificate request object
 		certificateRequest := &v1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,

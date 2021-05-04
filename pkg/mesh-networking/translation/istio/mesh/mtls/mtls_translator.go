@@ -26,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -55,7 +56,7 @@ var (
 	// used when the user provides a nil root cert
 	defaultSelfSignedRootCa = &v1.VirtualMeshSpec_RootCertificateAuthority{
 		CaSource: &v1.VirtualMeshSpec_RootCertificateAuthority_Generated{
-			Generated: &v1.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{
+			Generated: &commonv1.CommonCertOptions{
 				TtlDays:         defaultRootCertTTLDays,
 				RsaKeySizeBytes: defaultRootCertRsaKeySize,
 				OrgName:         defaultOrgName,
@@ -326,7 +327,7 @@ const (
 )
 
 func generateSelfSignedCert(
-	builtinCA *v1.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert,
+	builtinCA *commonv1.CommonCertOptions,
 ) (*secrets.RootCAData, error) {
 	org := defaultOrgName
 	if builtinCA.GetOrgName() != "" {

@@ -54,10 +54,11 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| caPath | string |  |  |
-  | csrPath | string |  |  |
+| caPath | string |  | ca_path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name". |
+  | csrPath | string |  | ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g: "my_pki_mount/intermediate/generate/exported". exported is necessary here as istio needs access to the private key |
   | server | string |  |  |
   | caBundle | bytes |  |  |
+  | namespace | string |  |  |
   | tokenSecretRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
   | appRole | [common.mesh.gloo.solo.io.VaultCA.AppRole]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.certificates#common.mesh.gloo.solo.io.VaultCA.AppRole" >}}) |  |  |
   | kubernetesAuth | [common.mesh.gloo.solo.io.VaultCA.Kubernetes]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.certificates#common.mesh.gloo.solo.io.VaultCA.Kubernetes" >}}) |  |  |
@@ -94,6 +95,7 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | ----- | ---- | ----- | ----------- |
 | path | string |  |  |
   | secretRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
+  | secretTokenKey | string |  |  |
   | role | string |  |  |
   
 

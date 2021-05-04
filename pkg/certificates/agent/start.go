@@ -5,9 +5,12 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
 
+	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation"
+	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/internal/pod-bouncer"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
@@ -26,9 +29,14 @@ func StartFunc(
 
 	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 
+	podCLient := corev1client.NewPodClient(parameters.MasterManager.GetClient())
+	podBouncer := pod_bouncer.NewPodBouncer(podCLient)
+	translator := translation.NewCertAgentTranslator(parameters.MasterManager.GetClient())
 	return reconciliation.Start(
 		ctx,
 		snapshotBuilder,
 		parameters.MasterManager,
+		podBouncer,
+		translator,
 	)
 }

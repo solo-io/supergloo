@@ -62,6 +62,10 @@ func (m *VaultCA) Equal(that interface{}) bool {
 		return false
 	}
 
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
 	switch m.AuthType.(type) {
 
 	case *VaultCA_TokenSecretRef:
@@ -230,6 +234,10 @@ func (m *VaultCA_Kubernetes) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetSecretRef(), target.GetSecretRef()) {
 			return false
 		}
+	}
+
+	if strings.Compare(m.GetSecretTokenKey(), target.GetSecretTokenKey()) != 0 {
+		return false
 	}
 
 	if strings.Compare(m.GetRole(), target.GetRole()) != 0 {

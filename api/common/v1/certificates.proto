@@ -9,15 +9,31 @@ option (extproto.equal_all) = true;
 
 message VaultCA {
 
+	// ca_path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
+	// "my_pki_mount/sign/my-role-name".
   string ca_path = 1;
 
+	// ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g:
+	// "my_pki_mount/intermediate/generate/exported".
+  // exported is necessary here as istio needs access to the private key
   string csr_path = 2;
 
   string server = 3;
 
   bytes CaBundle = 4;
 
+  string namespace = 5;
+
   // CommonCertOptions cert_options = 5;
+  oneof auth_type {
+
+    .core.skv2.solo.io.ObjectRef token_secret_ref = 6;
+
+    AppRole app_role = 7;
+
+    Kubernetes kubernetes_auth = 8;
+
+  }
 
   message AppRole {
 
@@ -34,17 +50,9 @@ message VaultCA {
 
     .core.skv2.solo.io.ObjectRef secret_ref = 2;
 
-    string role = 3;
+    string secret_token_key = 3;
 
-  }
-
-  oneof auth_type {
-
-    .core.skv2.solo.io.ObjectRef token_secret_ref = 5;
-
-    AppRole app_role = 6;
-
-    Kubernetes kubernetes_auth = 7;
+    string role = 4;
 
   }
 

@@ -162,8 +162,15 @@ spec:
                       type: object
                   type: object
                 caPath:
+                  description: |-
+                    ca_path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
+                    "my_pki_mount/sign/my-role-name".
                   type: string
                 csrPath:
+                  description: |-
+                    ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g:
+                    "my_pki_mount/intermediate/generate/exported".
+                    exported is necessary here as istio needs access to the private key
                   type: string
                 kubernetesAuth:
                   properties:
@@ -180,7 +187,11 @@ spec:
                           description: namespace of the resource being referenced
                           type: string
                       type: object
+                    secretTokenKey:
+                      type: string
                   type: object
+                namespace:
+                  type: string
                 server:
                   type: string
                 tokenSecretRef:
