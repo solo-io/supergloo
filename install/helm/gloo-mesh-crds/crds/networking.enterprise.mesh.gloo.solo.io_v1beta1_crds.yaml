@@ -771,20 +771,7 @@ spec:
                                           - redirectAction
                                         - required:
                                           - directResponseAction
-                                        - properties:
-                                            delegateAction:
-                                              oneOf:
-                                              - not:
-                                                  anyOf:
-                                                  - required:
-                                                    - ref
-                                                  - required:
-                                                    - selector
-                                              - required:
-                                                - ref
-                                              - required:
-                                                - selector
-                                          required:
+                                        - required:
                                           - delegateAction
                                     - required:
                                       - routeAction
@@ -805,20 +792,7 @@ spec:
                                       - redirectAction
                                     - required:
                                       - directResponseAction
-                                    - properties:
-                                        delegateAction:
-                                          oneOf:
-                                          - not:
-                                              anyOf:
-                                              - required:
-                                                - ref
-                                              - required:
-                                                - selector
-                                          - required:
-                                            - ref
-                                          - required:
-                                            - selector
-                                      required:
+                                    - required:
                                       - delegateAction
                                     properties:
                                       delegateAction:
@@ -830,17 +804,20 @@ spec:
                                               to match on. When false, the part of the path matched in this resource will be
                                               removed, and the delegated child resource will only match on the remainder of the
                                               path. Default value is false.
+                                              {{/*TODO: hide from docs, not implemented */}}
                                             type: boolean
-                                          ref:
-                                            description: Delegate to the Route Table resource with the given `name` and `namespace.
-                                            properties:
-                                              name:
-                                                description: name of the resource being referenced
-                                                type: string
-                                              namespace:
-                                                description: namespace of the resource being referenced
-                                                type: string
-                                            type: object
+                                          refs:
+                                            description: Delegate to the Route Table resources with matching `name` and `namespace`.
+                                            items:
+                                              properties:
+                                                name:
+                                                  description: name of the resource being referenced
+                                                  type: string
+                                                namespace:
+                                                  description: namespace of the resource being referenced
+                                                  type: string
+                                              type: object
+                                            type: array
                                           selector:
                                             description: Delegate to the Route Tables that match the given selector.
                                             properties:
@@ -2044,20 +2021,7 @@ spec:
                       - redirectAction
                     - required:
                       - directResponseAction
-                    - properties:
-                        delegateAction:
-                          oneOf:
-                          - not:
-                              anyOf:
-                              - required:
-                                - ref
-                              - required:
-                                - selector
-                          - required:
-                            - ref
-                          - required:
-                            - selector
-                      required:
+                    - required:
                       - delegateAction
                 - required:
                   - routeAction
@@ -2078,20 +2042,7 @@ spec:
                   - redirectAction
                 - required:
                   - directResponseAction
-                - properties:
-                    delegateAction:
-                      oneOf:
-                      - not:
-                          anyOf:
-                          - required:
-                            - ref
-                          - required:
-                            - selector
-                      - required:
-                        - ref
-                      - required:
-                        - selector
-                  required:
+                - required:
                   - delegateAction
                 properties:
                   delegateAction:
@@ -2103,17 +2054,20 @@ spec:
                           to match on. When false, the part of the path matched in this resource will be
                           removed, and the delegated child resource will only match on the remainder of the
                           path. Default value is false.
+                          {{/*TODO: hide from docs, not implemented */}}
                         type: boolean
-                      ref:
-                        description: Delegate to the Route Table resource with the given `name` and `namespace.
-                        properties:
-                          name:
-                            description: name of the resource being referenced
-                            type: string
-                          namespace:
-                            description: namespace of the resource being referenced
-                            type: string
-                        type: object
+                      refs:
+                        description: Delegate to the Route Table resources with matching `name` and `namespace`.
+                        items:
+                          properties:
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                        type: array
                       selector:
                         description: Delegate to the Route Tables that match the given selector.
                         properties:
@@ -2555,20 +2509,7 @@ spec:
                       - redirectAction
                     - required:
                       - directResponseAction
-                    - properties:
-                        delegateAction:
-                          oneOf:
-                          - not:
-                              anyOf:
-                              - required:
-                                - ref
-                              - required:
-                                - selector
-                          - required:
-                            - ref
-                          - required:
-                            - selector
-                      required:
+                    - required:
                       - delegateAction
                 - required:
                   - routeAction
@@ -2589,20 +2530,7 @@ spec:
                   - redirectAction
                 - required:
                   - directResponseAction
-                - properties:
-                    delegateAction:
-                      oneOf:
-                      - not:
-                          anyOf:
-                          - required:
-                            - ref
-                          - required:
-                            - selector
-                      - required:
-                        - ref
-                      - required:
-                        - selector
-                  required:
+                - required:
                   - delegateAction
                 properties:
                   delegateAction:
@@ -2614,17 +2542,20 @@ spec:
                           to match on. When false, the part of the path matched in this resource will be
                           removed, and the delegated child resource will only match on the remainder of the
                           path. Default value is false.
+                          {{/*TODO: hide from docs, not implemented */}}
                         type: boolean
-                      ref:
-                        description: Delegate to the Route Table resource with the given `name` and `namespace.
-                        properties:
-                          name:
-                            description: name of the resource being referenced
-                            type: string
-                          namespace:
-                            description: namespace of the resource being referenced
-                            type: string
-                        type: object
+                      refs:
+                        description: Delegate to the Route Table resources with matching `name` and `namespace`.
+                        items:
+                          properties:
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                        type: array
                       selector:
                         description: Delegate to the Route Tables that match the given selector.
                         properties:
