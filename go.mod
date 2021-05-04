@@ -42,7 +42,7 @@ require (
 	github.com/go-openapi/swag v0.19.6
 	github.com/go-test/deep v1.0.2
 	github.com/gobuffalo/packr v1.30.1
-	github.com/gobuffalo/packr/v2 v2.8.1
+	github.com/gobuffalo/packr/v2 v2.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
@@ -52,10 +52,8 @@ require (
 	github.com/iancoleman/strcase v0.1.3
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/logrusorgru/aurora/v3 v3.0.0
-	github.com/mfuentesg/ksd v1.0.6 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/mitchellh/hashstructure v1.0.0
-	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.11.0
