@@ -41,7 +41,6 @@ meshctl install enterprise [flags]
 ### Options inherited from parent commands
 
 ```
-      --Namespace string           Namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --Register                   Also Register the cluster
       --Version string             Version to install.
                                    Community defaults to meshctl Version, enterprise defaults to latest stable
