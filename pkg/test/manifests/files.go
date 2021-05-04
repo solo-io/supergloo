@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	//go:embed operator/* traffic/*
+	//go:embed operator/* traffic/* gloo-mesh/*
 	manifestFiles embed.FS
 )
 
@@ -30,8 +30,8 @@ func RenderOperator(operatorFile string, data interface{}) (string, error) {
 	return b.String(), nil
 }
 
-func RenderTestFile(operatorFile string, data interface{}) (string, error) {
-	filePath := "traffic/" + operatorFile
+func RenderTestFile(operatorFile string, folder string, data interface{}) (string, error) {
+	filePath := fmt.Sprintf("%s/%s", folder, operatorFile)
 	file, err := manifestFiles.ReadFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed finding file %s template: %w", filePath, err)

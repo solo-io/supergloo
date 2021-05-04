@@ -1,0 +1,14 @@
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  namespace: gloo-mesh
+  name: timeout-test
+spec:
+  destinationSelector:
+  - kubeServiceMatcher:
+      labels:
+        app: frontend
+      namespaces:
+      - {{.EchoContext.AppNamespace.Name}}
+  policy:
+    requestTimeout: 1s

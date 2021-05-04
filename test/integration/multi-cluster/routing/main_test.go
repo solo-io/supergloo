@@ -67,6 +67,15 @@ func TestRouting(t *testing.T) {
 							Test:        testPrefixMatch,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "prefix-1.yaml",
+							Folder:      "traffic",
+						},
+						{
+							Name:        "traffic-policy-timeout",
+							Description: "Timeout of 1s using Gloo Mesh traffic policy",
+							Test:        testTimeoutTrafficPolicy,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "timeout.yaml",
+							Folder:      "gloo-mesh",
 						},
 					},
 				},
@@ -120,5 +129,37 @@ func testPrefixMatch(ctx resource.Context, t *testing.T, deploymentCtx *context.
 		Path:      "/bad-route",
 		Count:     1,
 		Validator: echo.ExpectCode("404"),
+	})
+}
+
+// testTimeoutTrafficPolicy calling frontend applications to test timeout
+func testTimeoutTrafficPolicy(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("backend"))
+	frontendHost := "frontend." + deploymentCtx.EchoContext.AppNamespace.Name() + ".svc.cluster.local"
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    "http",
+		Address:   frontendHost,
+		Method:    http.MethodGet,
+		Path:      "/",
+		Count:     5,
+		Validator: echo.ExpectOK(),
+	})
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    "http",
+		Address:   frontendHost,
+		Method:    http.MethodGet,
+		Path:      "/?delay=4s",
+		Count:     5,
+		Validator: echo.ExpectCode("408"),
 	})
 }

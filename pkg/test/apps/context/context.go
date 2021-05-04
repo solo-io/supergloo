@@ -1,6 +1,7 @@
 package context
 
 import (
+	"istio.io/istio/pkg/test/framework/components/cluster"
 	"istio.io/istio/pkg/test/framework/components/echo"
 	"istio.io/istio/pkg/test/framework/components/namespace"
 	"istio.io/istio/pkg/test/framework/resource"
@@ -8,7 +9,7 @@ import (
 
 type DeploymentContext struct {
 	EchoContext *EchoDeploymentContext
-	Meshes []GlooMeshInstance
+	Meshes      []GlooMeshInstance
 }
 
 type EchoDeploymentContext struct {
@@ -24,5 +25,15 @@ type GlooMeshInstance interface {
 	GetKubeConfig() string
 	IsManagementPlane() bool
 	// for management plane only
-	GetRelayServerAddress() (string,error)
+	GetRelayServerAddress() (string, error)
+	GetCluster() cluster.Cluster
+}
+
+func (d *DeploymentContext) GetManagementPlaneCluster() cluster.Cluster {
+	for _, m := range d.Meshes {
+		if m.IsManagementPlane() {
+			return m.GetCluster()
+		}
+	}
+	return nil
 }

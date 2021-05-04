@@ -10,6 +10,8 @@ meshConfig:
       # Enable Istio agent to handle DNS requests for known hosts
       # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
       ISTIO_META_DNS_CAPTURE: "true"
+      # Enable automatic address allocation, optional
+      ISTIO_META_DNS_AUTO_ALLOCATE: "true"
 components:
   # Istio Gateway feature
   ingressGateways:

@@ -46,6 +46,8 @@ type TestCase struct {
 	Skip string
 	// Test file name to deploy to be fetched from box
 	FileName string
+	// Test folder the file exists in
+	Folder string
 }
 
 // Run runs the tests group by first by deploying the group application, then running through each tests case.
@@ -65,7 +67,7 @@ func (g TestGroup) Run(ctx resource.Context, t *testing.T, deploymentContext *co
 				t.Skipf("skipping due to previous errors: %v", skipNextTests)
 			}
 
-			configYAMLStr, err := manifests.RenderTestFile(test.FileName, deploymentContext)
+			configYAMLStr, err := manifests.RenderTestFile(test.FileName,test.Folder, deploymentContext)
 			if err != nil {
 				t.Fatalf("failed to render tests file: %v", err)
 			}

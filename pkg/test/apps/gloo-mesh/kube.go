@@ -187,6 +187,9 @@ func (i *glooMeshInstance) IsManagementPlane() bool {
 func (i *glooMeshInstance) GetKubeConfig() string {
 	return i.instanceConfig.managementPlaneKubeConfigPath
 }
+func (i *glooMeshInstance) GetCluster() cluster.Cluster {
+	return i.instanceConfig.cluster
+}
 
 // Close implements io.Closer.
 func (i *glooMeshInstance) Close() error {
