@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/internal/pod-bouncer"
+	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -56,6 +56,8 @@ func Start(
 		ctx:         ctx,
 		builder:     builder,
 		localClient: mgr.GetClient(),
+		podBouncer:  podBouncer,
+		translator:  translator,
 	}
 
 	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{})

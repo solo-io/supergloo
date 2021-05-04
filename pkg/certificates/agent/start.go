@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation"
-	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/internal/pod-bouncer"
+	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/skv2/pkg/bootstrap"
 )

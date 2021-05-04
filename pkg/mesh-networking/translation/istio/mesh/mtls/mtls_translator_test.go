@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	mock_istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
 	mock_local "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local/mocks"
@@ -81,7 +82,7 @@ var _ = Describe("MtlsTranslator", func() {
 	})
 
 	It("generated root CA", func() {
-		certSettings := &networkingv1.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{
+		certSettings := &commonv1.CommonCertOptions{
 			OrgName: "my-org",
 		}
 
