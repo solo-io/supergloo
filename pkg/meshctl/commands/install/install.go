@@ -55,9 +55,9 @@ type options struct {
 	releaseName     string
 	agentChartPath  string
 	agentValuesPath string
-	register      bool
-	clusterName   string
-	clusterDomain string
+	register        bool
+	clusterName     string
+	clusterDomain   string
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
