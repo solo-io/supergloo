@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1507
+    description: Deploy istio/gloo-mesh to multiple clusters and run e2e tests based on different scenarios. Currently only tested with Enterprise version.
