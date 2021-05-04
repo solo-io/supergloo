@@ -44,9 +44,10 @@ func (s *secretTranslator) Translate(
 	// generate the issued cert PEM encoded bytes
 	signedCert, err := utils.GenCertForCSR(
 		issuedCertificate.Spec.Hosts,
-		certificateRequest.Spec.CertificateSigningRequest,
+		certificateRequest.Spec.GetCertificateSigningRequest(),
 		signingCA.RootCert,
 		signingCA.PrivateKey,
+		issuedCertificate.Spec.GetTtlDays(),
 	)
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))

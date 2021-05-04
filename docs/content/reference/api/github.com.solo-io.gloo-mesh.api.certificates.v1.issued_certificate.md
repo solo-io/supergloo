@@ -37,7 +37,8 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | hosts | []string | repeated | A list of hostnames and IPs to generate a certificate for. This can also be set to the identity running the workload, e.g. a Kubernetes service account.<br>Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.<br>"cluster.local" may be replaced by the root of trust domain for the mesh. |
-  | org | string |  | The organization for this certificate. |
+  | org | string |  | The organization for this certificate. Deprecated in favor of `common_cert_options.org` |
+  | commonCertOptions | [common.mesh.gloo.solo.io.CommonCertOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.certificates#common.mesh.gloo.solo.io.CommonCertOptions" >}}) |  | Common certificate options used to generate this intermediate certificate |
   | signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster). |
   | vaultCa | [common.mesh.gloo.solo.io.VaultCA]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.certificates#common.mesh.gloo.solo.io.VaultCA" >}}) |  | The vault_ca config which will be used to sign this intermediate cert |
   | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster). |

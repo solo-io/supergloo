@@ -61,6 +61,10 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetTtlDays() != target.GetTtlDays() {
+		return false
+	}
+
 	if h, ok := interface{}(m.GetIssuedCertificateSecret()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetIssuedCertificateSecret()) {
 			return false

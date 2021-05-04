@@ -9,7 +9,7 @@ import (
 	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	. "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/internal/pod-bouncer"
+	. "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -30,15 +30,6 @@ var _ = Describe("PodBouncer", func() {
 	AfterEach(func() {
 		ctrl.Finish()
 	})
-
-	// It("can properly bounce pods", func() {
-	// 	podBouncer := NewPodBouncer(podClientMock)
-
-	// 	pbd := &certificatesv1.PodBounceDirective{}
-
-	// 	_, err := podBouncer.BouncePods(ctx, pbd, nil, nil, nil)
-	// 	Expect(err).NotTo(HaveOccurred())
-	// })
 
 	It("can signal that bounced pods are not ready", func() {
 		podBouncer := NewPodBouncer(podClientMock)

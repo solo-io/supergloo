@@ -41,6 +41,9 @@ message IssuedCertificateSpec {
     // The organization for this certificate.
     string org = 2;
 
+    // Number of days before intermediate cert expires. Defaults to 365.
+    uint32 ttl_days = 7;
+
     oneof signer {
 
         // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
