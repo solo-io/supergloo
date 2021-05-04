@@ -15,7 +15,7 @@ title: "request_matchers.proto"
 <p align="right"><a href="#top">Top</a></p>
 
 ## request_matchers.proto
-
+TODO(ilackarms): migrate this file to networking v1
 
 ## Table of Contents
   - [HeaderMatcher](#common.mesh.gloo.solo.io.HeaderMatcher)
@@ -56,7 +56,8 @@ Specify HTTP request level match criteria. All specified conditions must be sati
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| prefix | string |  | If specified, the targeted path must begin with the prefix. |
+| name | string |  | The name assigned to a match. The match's name will be concatenated with the parent route's name and will be logged in the access logs for requests matching this route. |
+  | prefix | string |  | If specified, the targeted path must begin with the prefix. |
   | exact | string |  | If specified, the targeted path must exactly match the value. |
   | regex | string |  | If specified, the targeted path must match the regex. |
   | headers | [][common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) | repeated | Specify a set of headers which requests must match in entirety (all headers must match). |

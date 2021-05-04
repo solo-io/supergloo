@@ -23,8 +23,6 @@ title: "route.proto"
   - [RedirectAction](#networking.enterprise.mesh.gloo.solo.io.RedirectAction)
   - [Route](#networking.enterprise.mesh.gloo.solo.io.Route)
   - [Route.RouteAction](#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction)
-  - [Route.RouteAction.Destinations](#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations)
-  - [Route.RouteAction.Destinations.DestinationOptions](#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations.DestinationOptions)
   - [Route.RouteOptions](#networking.enterprise.mesh.gloo.solo.io.Route.RouteOptions)
 
   - [RedirectAction.RedirectResponseCode](#networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode)
@@ -116,42 +114,7 @@ RouteActions are used to route matched requests to upstreams.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinations | [][networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations" >}}) | repeated | Defines the destination upstream for routing Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name to be specified). |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations"></a>
-
-### Route.RouteAction.Destinations
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| static | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a gloo mesh Static Destination |
-  | virtual | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a gloo mesh VirtualDestination |
-  | kube | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as  each gateway workload which routes to this destination. |
-  | clusterHeader | string |  | Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers. If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response. Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host. |
-  | weight | uint32 |  | Relative weight of this destination to others in the same route. If omitted, all destinations in the route will be load balanced between evenly. |
-  | destinationOptions | [networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations.DestinationOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations.DestinationOptions" >}}) |  | options applied when this destination is selected from a list of multiple destinations |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.Destinations.DestinationOptions"></a>
-
-### Route.RouteAction.Destinations.DestinationOptions
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| headerModification | string |  | TODO: Some subset of traffic policy (whatever Istio supports) TODO: Use correct type for header_modification |
+| destinations | [][networking.mesh.gloo.solo.io.WeightedDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.WeightedDestination" >}}) | repeated | Defines the destination upstream for routing Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name to be specified). |
   
 
 

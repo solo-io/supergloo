@@ -1,10 +1,11 @@
 package routeutils
 
 import (
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 
@@ -75,7 +76,8 @@ func resolveHostPortSubset(
 			destinationType.VirtualDestination,
 			virtualDestinations,
 		)
-	// TODO static
+	// TODO: Static
+	// TODO: ClusterHeader
 	default:
 		return "", nil, "", eris.Errorf("unsupported destination type %T", destinationType)
 	}
