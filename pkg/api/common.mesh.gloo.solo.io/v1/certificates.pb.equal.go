@@ -83,21 +83,6 @@ func (m *VaultCA) Equal(that interface{}) bool {
 			}
 		}
 
-	case *VaultCA_AppRole_:
-		if _, ok := target.AuthType.(*VaultCA_AppRole_); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetAppRole()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetAppRole()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetAppRole(), target.GetAppRole()) {
-				return false
-			}
-		}
-
 	case *VaultCA_KubernetesAuth:
 		if _, ok := target.AuthType.(*VaultCA_KubernetesAuth); !ok {
 			return false
@@ -154,48 +139,6 @@ func (m *CommonCertOptions) Equal(that interface{}) bool {
 
 	if strings.Compare(m.GetOrgName(), target.GetOrgName()) != 0 {
 		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VaultCA_AppRole) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VaultCA_AppRole)
-	if !ok {
-		that2, ok := that.(VaultCA_AppRole)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetPath(), target.GetPath()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetRoleId(), target.GetRoleId()) != 0 {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetSecretRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSecretRef()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSecretRef(), target.GetSecretRef()) {
-			return false
-		}
 	}
 
 	return true

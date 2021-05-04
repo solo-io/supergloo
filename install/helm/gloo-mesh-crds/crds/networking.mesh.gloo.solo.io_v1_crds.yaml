@@ -1059,13 +1059,9 @@ spec:
                                     - required:
                                       - tokenSecretRef
                                     - required:
-                                      - appRole
-                                    - required:
                                       - kubernetesAuth
                                 - required:
                                   - tokenSecretRef
-                                - required:
-                                  - appRole
                                 - required:
                                   - kubernetesAuth
                             required:
@@ -1082,13 +1078,9 @@ spec:
                                 - required:
                                   - tokenSecretRef
                                 - required:
-                                  - appRole
-                                - required:
                                   - kubernetesAuth
                             - required:
                               - tokenSecretRef
-                            - required:
-                              - appRole
                             - required:
                               - kubernetesAuth
                         required:
@@ -1130,25 +1122,13 @@ spec:
                         vault:
                           properties:
                             CaBundle:
+                              description: |-
+                                PEM encoded CA bundle used to validate Vault server certificate. Only used
+                                if the Server URL is using HTTPS protocol. This parameter is ignored for
+                                plain HTTP protocol connection. If not set the system root certificates
+                                are used to validate the TLS connection.
                               format: binary
                               type: string
-                            appRole:
-                              properties:
-                                path:
-                                  type: string
-                                roleId:
-                                  type: string
-                                secretRef:
-                                  properties:
-                                    name:
-                                      description: name of the resource being referenced
-                                      type: string
-                                    namespace:
-                                      description: namespace of the resource being
-                                        referenced
-                                      type: string
-                                  type: object
-                              type: object
                             caPath:
                               description: |-
                                 ca_path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
@@ -1161,6 +1141,9 @@ spec:
                                 exported is necessary here as istio needs access to the private key
                               type: string
                             kubernetesAuth:
+                              description: |-
+                                Kubernetes authenticates with Vault by passing the ServiceAccount
+                                token stored in the named Secret resource to the Vault server.
                               properties:
                                 path:
                                   type: string
@@ -1180,10 +1163,17 @@ spec:
                                   type: string
                               type: object
                             namespace:
+                              description: |-
+                                Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1"
+                                More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
                               type: string
                             server:
+                              description: 'Server is the connection address for the
+                                Vault server, e.g: "https://vault.example.com:8200".'
                               type: string
                             tokenSecretRef:
+                              description: TokenSecretRef authenticates with Vault
+                                by presenting a token.
                               properties:
                                 name:
                                   description: name of the resource being referenced

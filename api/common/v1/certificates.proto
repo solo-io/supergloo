@@ -18,30 +18,29 @@ message VaultCA {
   // exported is necessary here as istio needs access to the private key
   string csr_path = 2;
 
+  // Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
   string server = 3;
 
+	// PEM encoded CA bundle used to validate Vault server certificate. Only used
+	// if the Server URL is using HTTPS protocol. This parameter is ignored for
+	// plain HTTP protocol connection. If not set the system root certificates
+	// are used to validate the TLS connection.
   bytes CaBundle = 4;
 
+	// Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1"
+	// More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
   string namespace = 5;
 
   // CommonCertOptions cert_options = 5;
   oneof auth_type {
 
+    // TokenSecretRef authenticates with Vault by presenting a token.
     .core.skv2.solo.io.ObjectRef token_secret_ref = 6;
 
-    AppRole app_role = 7;
-
+    // Kubernetes authenticates with Vault by passing the ServiceAccount
+    // token stored in the named Secret resource to the Vault server.
     Kubernetes kubernetes_auth = 8;
 
-  }
-
-  message AppRole {
-
-    string path = 1;
-
-    string role_id = 2;
-
-    .core.skv2.solo.io.ObjectRef secret_ref = 3;
   }
 
   message Kubernetes {
