@@ -18,7 +18,7 @@ jobs:
     - name: Install Protoc
       uses: solo-io/setup-protoc@master
       with:
-        version: '3.15.8'
+        version: '3.6.1'
         repo-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     - name: Setup Hugo
       uses: peaceiris/actions-hugo@v2
