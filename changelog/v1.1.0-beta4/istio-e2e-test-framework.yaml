@@ -2,3 +2,39 @@ changelog:
   - type: NEW_FEATURE
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1507
     description: Deploy istio/gloo-mesh to multiple clusters and run e2e tests based on different scenarios. Currently only tested with Enterprise version.
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: k8s.io/client-go
+    dependencyTag: v0.20.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: k8s.io/cli-runtime
+    dependencyTag: v0.20.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: k8s.io/apimachinery
+    dependencyTag: v0.20.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: k8s.io/apiextensions-apiserver
+    dependencyTag: v0.20.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: k8s.io/api
+    dependencyTag: v0.20.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: istio.io/istio
+    dependencyTag: v1.9.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: istio.io/pkg
+    dependencyTag: v1.9.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: istio.io/api
+    dependencyTag: v1.9.4
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: protoc
+    dependencyTag: 3.15.8
