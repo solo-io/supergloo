@@ -1,0 +1,8 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1431
+    description: Opt-out of sidecar injection in the Gloo Mesh pod annotations.
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: skv2
+    dependencyTag: v0.17.16
