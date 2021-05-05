@@ -28,7 +28,6 @@ The edition registered must match the edition installed on the management cluste
   -h, --help                      help for register
       --kubeconfig string         path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string       name of the kubeconfig context to use for the management cluster
-      --mgmt-kubeconfig string    path to the kubeconfig for the managemtn plane if differente from which the registered cluster
       --mgmt-namespace string     namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created (default "gloo-mesh")
       --remote-context string     name of the kubeconfig context to use for the remote cluster
       --remote-namespace string   namespace in the target cluster where a service account enabling remote access will be created.
