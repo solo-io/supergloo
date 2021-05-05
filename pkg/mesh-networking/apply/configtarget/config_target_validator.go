@@ -66,13 +66,33 @@ func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1.VirtualMe
 
 func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1.TrafficPolicySlice) {
 	for _, trafficPolicy := range trafficPolicies {
-		errs := c.validateDestinationReferences(trafficPolicy.Spec.DestinationSelector)
+		errs := c.validateDestinationReferencesForTrafficPolicy(trafficPolicy.Spec.DestinationSelector)
 		if len(errs) == 0 {
 			continue
 		}
 		trafficPolicy.Status.State = commonv1.ApprovalState_INVALID
 		trafficPolicy.Status.Errors = getErrStrings(errs)
 	}
+}
+
+func (c *configTargetValidator) validateDestinationReferencesForTrafficPolicy(serviceSelectors []*commonv1.DestinationSelector) []error {
+	var errs []error
+	for _, destinationSelector := range serviceSelectors {
+		kubeServiceRefs := destinationSelector.GetKubeServiceRefs()
+		// only validate Destinations selected by direct reference
+		if kubeServiceRefs == nil {
+			continue
+		}
+		for _, ref := range kubeServiceRefs.Services {
+			if !c.kubeServiceExists(ref) {
+				errs = append(errs, eris.Errorf("Destination %s not found", sets.Key(ref)))
+			}
+			if ref.ClusterName == "*" {
+				errs = append(errs, eris.Errorf("Cannot use '*' for all clusters, please omit clusters property."))
+			}
+		}
+	}
+	return errs
 }
 
 func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1.AccessPolicySlice) {

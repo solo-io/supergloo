@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1513
+    description: "Adds validation for traffic policies that have clusters: '*' in kubeServiceMatcher"

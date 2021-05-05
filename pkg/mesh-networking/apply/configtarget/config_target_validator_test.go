@@ -106,6 +106,30 @@ var _ = Describe("ConfigTargetValidator", func() {
 					State: commonv1.ApprovalState_ACCEPTED,
 				},
 			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "valid",
+					Namespace: namespace,
+				},
+				Spec: v1.AccessPolicySpec{
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
+										Name:        "foo",
+										Namespace:   "bar",
+										ClusterName: "*",
+									},
+								},
+							},
+						},
+					},
+				},
+				Status: v1.AccessPolicyStatus{
+					State: commonv1.ApprovalState_INVALID,
+				},
+			},
 		}
 
 		trafficPolicies := v1.TrafficPolicySlice{
@@ -205,6 +229,7 @@ var _ = Describe("ConfigTargetValidator", func() {
 		Expect(virtualMeshes[0].Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
 
 		Expect(accessPolicies[1].Status.State).To(Equal(commonv1.ApprovalState_INVALID))
+		Expect(accessPolicies[2].Status.State).To(Equal(commonv1.ApprovalState_INVALID))
 		Expect(trafficPolicies[1].Status.State).To(Equal(commonv1.ApprovalState_INVALID))
 		Expect(virtualMeshes[1].Status.State).To(Equal(commonv1.ApprovalState_INVALID))
 	})
