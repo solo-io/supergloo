@@ -5,17 +5,14 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
-	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
-	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation/secret"
 	"github.com/solo-io/go-utils/contextutils"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // function which defines how the cert issuer reconciler should be registered with internal components.
@@ -40,28 +37,27 @@ func Start(
 	registerReconciler RegisterReconcilerFunc,
 	builder input.Builder,
 	syncInputStatuses SyncStatusFunc,
-	translatorExtensionFunc translation.TranslationExtensionFunc,
-	masterManager manager.Manager,
+	translator translation.Translator,
 ) error {
-	translators := []translation.Translator{
-		secret.NewSecretTranslator(corev1.NewSecretClient(masterManager.GetClient())),
-	}
-	if translatorExtensionFunc != nil {
-		extensionTranslators, err := translatorExtensionFunc()
-		if err != nil {
-			return err
-		}
-		translators = append(translators, extensionTranslators...)
-	}
 
+	reconcileFunc := NewCertificateRequestReconciler(ctx, builder, syncInputStatuses, translator)
+	return registerReconciler(ctx, reconcileFunc, time.Second/2)
+}
+
+// Expose for testing
+func NewCertificateRequestReconciler(
+	ctx context.Context,
+	builder input.Builder,
+	syncInputStatuses SyncStatusFunc,
+	translator translation.Translator,
+) skinput.MultiClusterReconcileFunc {
 	r := &certIssuerReconciler{
 		ctx:               ctx,
 		builder:           builder,
 		syncInputStatuses: syncInputStatuses,
-		translator:        translation.NewChainTranslator(translators...),
+		translator:        translator,
 	}
-
-	return registerReconciler(ctx, r.reconcile, time.Second/2)
+	return r.reconcile
 }
 
 // reconcile global state
@@ -76,17 +72,17 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 		if err := r.reconcileCertificateRequest(certificateRequest, inputSnap.IssuedCertificates()); err != nil {
 			contextutils.LoggerFrom(r.ctx).Warnf("certificate request could not be processed: %v", err)
 			certificateRequest.Status.Error = err.Error()
-			certificateRequest.Status.State = v1.CertificateRequestStatus_FAILED
+			certificateRequest.Status.State = certificatesv1.CertificateRequestStatus_FAILED
 		}
 	}
 
 	return false, r.syncInputStatuses(r.ctx, inputSnap)
 }
 
-func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1.CertificateRequest, issuedCertificates v1sets.IssuedCertificateSet) error {
+func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *certificatesv1.CertificateRequest, issuedCertificates v1sets.IssuedCertificateSet) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if certificateRequest.Status.ObservedGeneration != certificateRequest.Generation {
-		certificateRequest.Status.State = v1.CertificateRequestStatus_PENDING
+		certificateRequest.Status.State = certificatesv1.CertificateRequestStatus_PENDING
 	}
 
 	// reset & update status
@@ -94,18 +90,18 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 	certificateRequest.Status.Error = ""
 
 	switch certificateRequest.Status.State {
-	case v1.CertificateRequestStatus_FINISHED:
+	case certificatesv1.CertificateRequestStatus_FINISHED:
 		if len(certificateRequest.Status.SignedCertificate) > 0 {
 			contextutils.LoggerFrom(r.ctx).Debugf("skipping cert request %v which has already been fulfilled", sets.Key(certificateRequest))
 			return nil
 		}
 		// else treat as pending
 		fallthrough
-	case v1.CertificateRequestStatus_FAILED:
+	case certificatesv1.CertificateRequestStatus_FAILED:
 		// restart the workflow from PENDING
 		fallthrough
-	case v1.CertificateRequestStatus_PENDING:
-		//
+	case certificatesv1.CertificateRequestStatus_PENDING:
+		// Break out of switch statement here to start
 	default:
 		return eris.Errorf("unknown certificate request state: %v", certificateRequest.Status.State)
 	}
@@ -120,9 +116,9 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 		return eris.Wrapf(err, "failed to translate certificate request + issued certificate")
 	}
 
-	certificateRequest.Status = v1.CertificateRequestStatus{
+	certificateRequest.Status = certificatesv1.CertificateRequestStatus{
 		ObservedGeneration: certificateRequest.Generation,
-		State:              v1.CertificateRequestStatus_FINISHED,
+		State:              certificatesv1.CertificateRequestStatus_FINISHED,
 		SignedCertificate:  output.SignedCertificate,
 		SigningRootCa:      output.SigningRootCa,
 	}

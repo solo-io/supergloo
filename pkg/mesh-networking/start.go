@@ -3,24 +3,23 @@ package mesh_networking
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
-
+	corev1clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
 	certissuertranslation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/pkg/bootstrap"
 	"github.com/spf13/pflag"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type NetworkingOpts struct {
@@ -72,12 +71,13 @@ func (s networkingStarter) startReconciler(ctx context.Context, parameters boots
 	extensionOpts := s.makeExtensions(ctx, parameters)
 	extensionOpts.initDefaults(parameters)
 
+	baseTranslator := certissuertranslation.NewTranslator(corev1clients.NewSecretClient(parameters.MasterManager.GetClient()))
 	if err := startCertIssuer(
 		ctx,
 		extensionOpts.CertIssuerReconciler.RegisterCertIssuerReconciler,
 		extensionOpts.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
 		extensionOpts.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
-		extensionOpts.CertIssuerReconciler.RegisterCertIssuerTranslators,
+		extensionOpts.CertIssuerReconciler.MakeTranslator(baseTranslator),
 		parameters.MasterManager,
 	); err != nil {
 		return err
@@ -129,7 +129,7 @@ func startCertIssuer(
 	registerReconciler certissuerreconciliation.RegisterReconcilerFunc,
 	builder certissuerinput.Builder,
 	syncInputStatuses certissuerreconciliation.SyncStatusFunc,
-	translatorExtensions certissuertranslation.TranslationExtensionFunc,
+	translator certissuertranslation.Translator,
 	masterManager manager.Manager,
 ) error {
 	return certissuerreconciliation.Start(
@@ -137,7 +137,6 @@ func startCertIssuer(
 		registerReconciler,
 		builder,
 		syncInputStatuses,
-		translatorExtensions,
-		masterManager,
+		translator,
 	)
 }

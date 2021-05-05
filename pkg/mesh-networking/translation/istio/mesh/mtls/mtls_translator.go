@@ -388,7 +388,6 @@ func getPodsToBounce(
 
 	// bounce the control plane pod first
 	// order matters
-
 	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
 	// If the pki-sidecar is fulfilling the issued certificate request,
 	// then the control-plane should not be bounced.
