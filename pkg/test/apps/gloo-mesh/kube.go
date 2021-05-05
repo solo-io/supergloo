@@ -82,7 +82,7 @@ func (i *glooMeshInstance) deployManagementPlane(licenceKey string) error {
 			Options:            options,
 			LicenseKey:         licenceKey,
 			SkipUI:             false,
-			SkipRBAC:           true,
+			IncludeRBAC:        false,
 			RelayServerAddress: "",
 		}); err != nil {
 			return err
