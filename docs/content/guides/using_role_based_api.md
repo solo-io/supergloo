@@ -33,22 +33,24 @@ MGMT_CONTEXT=your_management_plane_context
 
 ## Role-based API
 
-The role-based API in Gloo Mesh Enterprise uses a `Role` Custom Resource Definition to create Custom Resources that represent roles you would like to define. The roles are then bound to users with a `RoleBinding` CRD. 
+The role-based API in Gloo Mesh Enterprise uses a `Role` Custom Resource Definition to create Custom Resources that represent roles you would like to define. The roles are then bound to users with a `RoleBinding` CRD. The Roles can be accessed via the `gmrole` alias and the RoleBindings can be accessed via the `gmrolebinding` alias.
 
 The Roles are used to target some combination of *Workloads*, *Destinations*, *Meshes*, and *Virtual Meshes* and define actions the role is allowed to perform on the targets.
 
-When you install Gloo Mesh Enterprise with the default settings, the role-based API is enabled by default. This comes with an implicit **deny** on all operations that are not explicitly allowed by a Role and RoleBinding.
+When you install Gloo Mesh Enterprise with the default settings, the role-based API is disabled by default.
+If you enable it, there will be an implicit **deny** on all operations that are not explicitly allowed by a Role and RoleBinding.
 
 Enforcement of the role-based API is accomplished through the RBAC webhook. If you would like to allow all actions, you can update the RBAC webhook by configuring the following setting in the Helm chart and updating the installation:
 
 ```yaml
 rbacWebhook:
+  enabled: true
   env:
     - name: RBAC_PERMISSIVE_MODE
       value: "true"
 ```
 
-That might be good for testing, but certainly shouldn't be done in a production environment. The alternative is to create and admin role that has permissions to perform all actions, and binding it to admin users who need that level of access.
+The permissive mode might be good for testing, but certainly shouldn't be done in a production environment. The alternative is to create and admin role that has permissions to perform all actions, and binding it to admin users who need that level of access.
 
 Let's try and create a network policy on our Gloo Mesh Enterprise deployment without first creating a role and binding.
 
