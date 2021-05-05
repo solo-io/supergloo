@@ -5,11 +5,12 @@
 package mock_mesh
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
-	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
