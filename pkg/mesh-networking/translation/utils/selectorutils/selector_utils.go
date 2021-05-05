@@ -271,7 +271,7 @@ func SelectorMatchesObject(
 			}
 		}
 
-	} else if len(selector.Expressions) > 0  {
+	} else if len(selector.Expressions) > 0 {
 		var requirements labels.Requirements
 		for _, expression := range selector.Expressions {
 			r, err := labels.NewRequirement(

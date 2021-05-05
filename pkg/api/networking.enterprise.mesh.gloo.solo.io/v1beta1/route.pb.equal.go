@@ -269,70 +269,34 @@ func (m *DelegateAction) Equal(that interface{}) bool {
 		return false
 	}
 
-	if m.GetPassFullPath() != target.GetPassFullPath() {
+	if len(m.GetRefs()) != len(target.GetRefs()) {
 		return false
 	}
+	for idx, v := range m.GetRefs() {
 
-	switch m.DelegationType.(type) {
-
-	case *DelegateAction_Ref:
-		if _, ok := target.DelegationType.(*DelegateAction_Ref); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetRef()) {
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRefs()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetRef(), target.GetRef()) {
+			if !proto.Equal(v, target.GetRefs()[idx]) {
 				return false
 			}
 		}
 
-	case *DelegateAction_Selector:
-		if _, ok := target.DelegationType.(*DelegateAction_Selector); !ok {
+	}
+
+	if h, ok := interface{}(m.GetSelector()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSelector()) {
 			return false
 		}
-
-		if h, ok := interface{}(m.GetSelector()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSelector()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetSelector(), target.GetSelector()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.DelegationType != target.DelegationType {
+	} else {
+		if !proto.Equal(m.GetSelector(), target.GetSelector()) {
 			return false
 		}
 	}
 
-	return true
-}
-
-// Equal function
-func (m *Route_RouteOptions) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*Route_RouteOptions)
-	if !ok {
-		that2, ok := that.(Route_RouteOptions)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
+	if m.GetPassFullPath() != target.GetPassFullPath() {
 		return false
 	}
 

@@ -23,7 +23,6 @@ title: "route.proto"
   - [RedirectAction](#networking.enterprise.mesh.gloo.solo.io.RedirectAction)
   - [Route](#networking.enterprise.mesh.gloo.solo.io.Route)
   - [Route.RouteAction](#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction)
-  - [Route.RouteOptions](#networking.enterprise.mesh.gloo.solo.io.Route.RouteOptions)
 
   - [RedirectAction.RedirectResponseCode](#networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode)
 
@@ -40,9 +39,9 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Delegate to the Route Table resource with the given `name` and `namespace. |
+| refs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Delegate to the Route Table resources with matching `name` and `namespace`. |
   | selector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | Delegate to the Route Tables that match the given selector. |
-  | passFullPath | bool |  | If set to true, `passFullPath` will send the full path for the delegated child route to match on. When false, the part of the path matched in this resource will be removed, and the delegated child resource will only match on the remainder of the path. Default value is false. |
+  | passFullPath | bool |  | If set to true, `passFullPath` will send the full path for the delegated child route to match on. When false, the part of the path matched in this resource will be removed, and the delegated child resource will only match on the remainder of the path. Default value is false. {{/*TODO: hide from docs, not implemented */}} |
   
 
 
@@ -99,7 +98,7 @@ A route specifies how to match a request and what action to take when the reques
   | redirectAction | [networking.enterprise.mesh.gloo.solo.io.RedirectAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.RedirectAction" >}}) |  | Redirect actions tell the proxy to return a redirect response to the downstream client. |
   | directResponseAction | [networking.enterprise.mesh.gloo.solo.io.DirectResponseAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DirectResponseAction" >}}) |  | Return an arbitrary HTTP response directly, without proxying. |
   | delegateAction | [networking.enterprise.mesh.gloo.solo.io.DelegateAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DelegateAction" >}}) |  | Delegate routing actions for the given matcher to one or more RouteTables. |
-  | options | [networking.enterprise.mesh.gloo.solo.io.Route.RouteOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.Route.RouteOptions" >}}) |  | Route Options extend the behavior of routes. Route options include configuration such as retries, rate limiting, and request/response transformation. RouteOption behavior will be inherited by delegated routes which do not specify their own `options` |
+  | options | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Route Options extend the behavior of routes. Route options include configuration such as retries, rate limiting, and request/response transformation. RouteOption behavior will be inherited by delegated routes which do not specify their own `options` |
   
 
 
@@ -116,16 +115,6 @@ RouteActions are used to route matched requests to upstreams.
 | ----- | ---- | ----- | ----------- |
 | destinations | [][networking.mesh.gloo.solo.io.WeightedDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.WeightedDestination" >}}) | repeated | Defines the destination upstream for routing Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name to be specified). |
   
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.Route.RouteOptions"></a>
-
-### Route.RouteOptions
-TODO: Route Options
-
 
 
 
