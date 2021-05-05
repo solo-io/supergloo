@@ -1009,14 +1009,15 @@ spec:
               format: int64
               type: integer
             requiredSubsets:
-              description: The set of TrafficPolicy traffic shifts that reference subsets on this Destination.
+              description: The set of TrafficPolicy traffic shifts that reference
+                subsets on this Destination.
               items:
                 properties:
                   observedGeneration:
                     description: The observed generation of the TrafficPolicy.
                     format: int64
                     type: integer
-                  ref:
+                  trafficPolicyRef:
                     description: Reference to the TrafficPolicy object.
                     properties:
                       name:
@@ -1048,7 +1049,8 @@ spec:
                               description: Specify a Kubernetes Service.
                               properties:
                                 clusterName:
-                                  description: The Gloo Mesh cluster name (registration name) of the service.
+                                  description: The Gloo Mesh cluster name (registration
+                                    name) of the service.
                                   type: string
                                 name:
                                   description: The name of the service.
@@ -1057,29 +1059,36 @@ spec:
                                   description: The namespace of the service.
                                   type: string
                                 port:
-                                  description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                  description: Port on the service to receive traffic.
+                                    Required if the service exposes more than one
+                                    port.
                                   maximum: 4294967295
                                   minimum: 0
                                   type: integer
                                 subset:
                                   additionalProperties:
                                     type: string
-                                  description: Specify, by labels, a subset of service instances to route to.
+                                  description: Specify, by labels, a subset of service
+                                    instances to route to.
                                   type: object
                               type: object
                             virtualDestination:
                               description: Specify a VirtualDestination.
                               properties:
                                 name:
-                                  description: The name of the VirtualDestination object.
+                                  description: The name of the VirtualDestination
+                                    object.
                                   type: string
                                 namespace:
-                                  description: The namespace of the VirtualDestination object.
+                                  description: The namespace of the VirtualDestination
+                                    object.
                                   type: string
                                 subset:
                                   additionalProperties:
                                     type: string
-                                  description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                  description: Specify, by labels, a subset of service
+                                    instances backing the VirtualDestination to route
+                                    to.
                                   type: object
                               type: object
                             weight:

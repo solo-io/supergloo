@@ -720,6 +720,7 @@ func referencedByTrafficShiftSubset(destination *discoveryv1.Destination, traffi
 		kubeService := trafficShiftDestination.GetKubeService()
 		if len(kubeService.GetSubset()) > 0 && destinationutils.IsDestinationForKubeService(destination, kubeService) {
 			referenced = true
+			break
 		}
 	}
 

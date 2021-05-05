@@ -918,12 +918,12 @@ func (m *DestinationStatus_RequiredSubsets) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRef()) {
+	if h, ok := interface{}(m.GetTrafficPolicyRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTrafficPolicyRef()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetRef(), target.GetRef()) {
+		if !proto.Equal(m.GetTrafficPolicyRef(), target.GetTrafficPolicyRef()) {
 			return false
 		}
 	}

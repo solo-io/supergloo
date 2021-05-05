@@ -264,7 +264,7 @@ message DestinationStatus {
     // Note: this is an Istio-specific feature.
     message RequiredSubsets {
         // Reference to the TrafficPolicy object.
-        .core.skv2.solo.io.ObjectRef ref = 1;
+        .core.skv2.solo.io.ObjectRef traffic_policy_ref = 1;
 
         // The observed generation of the TrafficPolicy.
         int64 observedGeneration = 2;

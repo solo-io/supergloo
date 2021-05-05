@@ -1018,18 +1018,18 @@ func (m *DestinationStatus_RequiredSubsets) Hash(hasher hash.Hash64) (uint64, er
 		return 0, err
 	}
 
-	if h, ok := interface{}(m.GetRef()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("Ref")); err != nil {
+	if h, ok := interface{}(m.GetTrafficPolicyRef()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("TrafficPolicyRef")); err != nil {
 			return 0, err
 		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetRef(), nil); err != nil {
+		if fieldValue, err := hashstructure.Hash(m.GetTrafficPolicyRef(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("Ref")); err != nil {
+			if _, err = hasher.Write([]byte("TrafficPolicyRef")); err != nil {
 				return 0, err
 			}
 			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
