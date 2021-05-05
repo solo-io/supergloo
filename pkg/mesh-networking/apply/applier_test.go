@@ -756,12 +756,12 @@ var _ = Describe("Applier", func() {
 
 			expectedRequiredSubsets := []*discoveryv1.DestinationStatus_RequiredSubsets{
 				{
-					Ref:                ezkube.MakeObjectRef(trafficPolicy1),
+					TrafficPolicyRef:   ezkube.MakeObjectRef(trafficPolicy1),
 					ObservedGeneration: trafficPolicy1.Generation,
 					TrafficShift:       trafficPolicy1.Spec.Policy.TrafficShift,
 				},
 				{
-					Ref:                ezkube.MakeObjectRef(trafficPolicy2),
+					TrafficPolicyRef:   ezkube.MakeObjectRef(trafficPolicy2),
 					ObservedGeneration: trafficPolicy2.Generation,
 					TrafficShift:       trafficPolicy2.Spec.Policy.TrafficShift,
 				},

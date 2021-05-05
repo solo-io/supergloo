@@ -362,9 +362,12 @@ func validateAndReturnRequiredSubsets(
 
 	for _, requiredSubset := range destination.Status.RequiredSubsets {
 
-		trafficPolicy, err := input.TrafficPolicies().Find(requiredSubset.Ref)
+		trafficPolicy, err := input.TrafficPolicies().Find(requiredSubset.TrafficPolicyRef)
 		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("could not find TrafficPolicy referenced in required subset: %s", sets.Key(requiredSubset.Ref))
+			contextutils.LoggerFrom(ctx).DPanicf(
+				"could not find TrafficPolicy referenced in required subset: %s",
+				sets.Key(requiredSubset.TrafficPolicyRef),
+			)
 			continue
 		}
 
@@ -703,7 +706,7 @@ func getRequiredSubsets(
 	for _, policy := range matchingTrafficPolicies {
 		policy := policy // pike
 		requiredSubsets = append(requiredSubsets, &discoveryv1.DestinationStatus_RequiredSubsets{
-			Ref:                ezkube.MakeObjectRef(policy),
+			TrafficPolicyRef:   ezkube.MakeObjectRef(policy),
 			ObservedGeneration: policy.Generation,
 			TrafficShift:       policy.Spec.Policy.TrafficShift,
 		})

@@ -110,7 +110,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
 					{
-						Ref: &skv2corev1.ObjectRef{
+						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "another-tp",
 							Namespace: "tp-namespace-1",
 						},
@@ -384,7 +384,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
 					{
-						Ref: &skv2corev1.ObjectRef{
+						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
@@ -405,7 +405,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						},
 					},
 					{
-						Ref: &skv2corev1.ObjectRef{
+						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "tp-2",
 							Namespace: "tp-namespace-2",
 						},
