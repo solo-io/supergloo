@@ -65,6 +65,15 @@ message VaultCA {
 
 }
 
+// Intermediate Certificate storage mechanism
+// Typically certiticates and their associated keys are stored in kubernetes secrets,
+// but some users may want to store this data in other places, such as the file system.
+// This enum describes all of the mechanisms the user can specify to store the intermediate certs
+enum StorageMechanism {
+  SECRET = 0;
+
+  FILE_SYSTEM = 1;
+}
 
 // Configuration for generating a self-signed root certificate.
 // Uses the X.509 format, RFC5280.

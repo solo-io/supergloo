@@ -28,6 +28,56 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+// Intermediate Certificate storage mechanism
+// Typically certiticates and their associated keys are stored in kubernetes secrets,
+// but some users may want to store this data in other places, such as the file system.
+// This enum describes all of the mechanisms the user can specify to store the intermediate certs
+type StorageMechanism int32
+
+const (
+	StorageMechanism_SECRET      StorageMechanism = 0
+	StorageMechanism_FILE_SYSTEM StorageMechanism = 1
+)
+
+// Enum value maps for StorageMechanism.
+var (
+	StorageMechanism_name = map[int32]string{
+		0: "SECRET",
+		1: "FILE_SYSTEM",
+	}
+	StorageMechanism_value = map[string]int32{
+		"SECRET":      0,
+		"FILE_SYSTEM": 1,
+	}
+)
+
+func (x StorageMechanism) Enum() *StorageMechanism {
+	p := new(StorageMechanism)
+	*p = x
+	return p
+}
+
+func (x StorageMechanism) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StorageMechanism) Descriptor() protoreflect.EnumDescriptor {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes[0].Descriptor()
+}
+
+func (StorageMechanism) Type() protoreflect.EnumType {
+	return &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes[0]
+}
+
+func (x StorageMechanism) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StorageMechanism.Descriptor instead.
+func (StorageMechanism) EnumDescriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescGZIP(), []int{0}
+}
+
 type VaultCA struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -362,12 +412,15 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDesc =
 	0x5f, 0x73, 0x69, 0x7a, 0x65, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x0d, 0x52, 0x0f, 0x72, 0x73, 0x61, 0x4b, 0x65, 0x79, 0x53, 0x69, 0x7a, 0x65, 0x42, 0x79, 0x74,
 	0x65, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x72, 0x67, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6f, 0x72, 0x67, 0x4e, 0x61, 0x6d, 0x65, 0x42, 0x46, 0x5a,
-	0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f,
-	0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73,
-	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76,
-	0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6f, 0x72, 0x67, 0x4e, 0x61, 0x6d, 0x65, 0x2a, 0x2f, 0x0a,
+	0x10, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x4d, 0x65, 0x63, 0x68, 0x61, 0x6e, 0x69, 0x73,
+	0x6d, 0x12, 0x0a, 0x0a, 0x06, 0x53, 0x45, 0x43, 0x52, 0x45, 0x54, 0x10, 0x00, 0x12, 0x0f, 0x0a,
+	0x0b, 0x46, 0x49, 0x4c, 0x45, 0x5f, 0x53, 0x59, 0x53, 0x54, 0x45, 0x4d, 0x10, 0x01, 0x42, 0x46,
+	0x5a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c,
+	0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70,
+	0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65,
+	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f,
+	0x76, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -382,17 +435,19 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescG
 	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescData
 }
 
+var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_goTypes = []interface{}{
-	(*VaultCA)(nil),            // 0: common.mesh.gloo.solo.io.VaultCA
-	(*CommonCertOptions)(nil),  // 1: common.mesh.gloo.solo.io.CommonCertOptions
-	(*VaultCA_Kubernetes)(nil), // 2: common.mesh.gloo.solo.io.VaultCA.Kubernetes
-	(*v1.ObjectRef)(nil),       // 3: core.skv2.solo.io.ObjectRef
+	(StorageMechanism)(0),      // 0: common.mesh.gloo.solo.io.StorageMechanism
+	(*VaultCA)(nil),            // 1: common.mesh.gloo.solo.io.VaultCA
+	(*CommonCertOptions)(nil),  // 2: common.mesh.gloo.solo.io.CommonCertOptions
+	(*VaultCA_Kubernetes)(nil), // 3: common.mesh.gloo.solo.io.VaultCA.Kubernetes
+	(*v1.ObjectRef)(nil),       // 4: core.skv2.solo.io.ObjectRef
 }
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_depIdxs = []int32{
-	3, // 0: common.mesh.gloo.solo.io.VaultCA.token_secret_ref:type_name -> core.skv2.solo.io.ObjectRef
-	2, // 1: common.mesh.gloo.solo.io.VaultCA.kubernetes_auth:type_name -> common.mesh.gloo.solo.io.VaultCA.Kubernetes
-	3, // 2: common.mesh.gloo.solo.io.VaultCA.Kubernetes.sa_ref:type_name -> core.skv2.solo.io.ObjectRef
+	4, // 0: common.mesh.gloo.solo.io.VaultCA.token_secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	3, // 1: common.mesh.gloo.solo.io.VaultCA.kubernetes_auth:type_name -> common.mesh.gloo.solo.io.VaultCA.Kubernetes
+	4, // 2: common.mesh.gloo.solo.io.VaultCA.Kubernetes.sa_ref:type_name -> core.skv2.solo.io.ObjectRef
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
@@ -452,13 +507,14 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDesc,
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_goTypes,
 		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_depIdxs,
+		EnumInfos:         file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes,
 		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes,
 	}.Build()
 	File_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto = out.File

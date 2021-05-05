@@ -1307,6 +1307,10 @@ spec:
                           type: integer
                       type: object
                     intermediateCertificateAuthority:
+                      description: |-
+                        Configures an Intermediate Certificiate Authority which remote clusters will use to generate intermediate
+                        certificates. In order for this to properly mesh all of the traffic across the different meshes, the CA
+                        being used must be configured to generate the intermediate certificates.
                       properties:
                         secret:
                           description: |-

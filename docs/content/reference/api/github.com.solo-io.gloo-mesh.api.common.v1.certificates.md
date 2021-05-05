@@ -22,6 +22,7 @@ title: "certificates.proto"
   - [VaultCA](#common.mesh.gloo.solo.io.VaultCA)
   - [VaultCA.Kubernetes](#common.mesh.gloo.solo.io.VaultCA.Kubernetes)
 
+  - [StorageMechanism](#common.mesh.gloo.solo.io.StorageMechanism)
 
 
 
@@ -84,6 +85,18 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 
 
  <!-- end messages -->
+
+
+<a name="common.mesh.gloo.solo.io.StorageMechanism"></a>
+
+### StorageMechanism
+Intermediate Certificate storage mechanism Typically certiticates and their associated keys are stored in kubernetes secrets, but some users may want to store this data in other places, such as the file system. This enum describes all of the mechanisms the user can specify to store the intermediate certs
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| SECRET | 0 |  |
+| FILE_SYSTEM | 1 |  |
+
 
  <!-- end enums -->
 
