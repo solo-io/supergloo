@@ -17,7 +17,7 @@ meshctl install community [flags]
   meshctl install community
 
   # Install to and Register the currently selected Kubernetes context
-  meshctl install community --Register
+  meshctl install community --register
 
   # Install to a different context
   meshctl install --kubecontext=some-context community
