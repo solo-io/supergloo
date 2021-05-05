@@ -170,8 +170,10 @@ func (t *translator) configureSharedTrust(
 		return nil
 	}
 
+	// Construct the skeleton of the issuedCertificate
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
+		sharedTrust,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
 	)
@@ -193,7 +195,10 @@ func (t *translator) configureSharedTrust(
 		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
 			SigningCertificateSecret: typedCaSource.Secret,
 		}
+	default:
+		return eris.Errorf("No ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
 	}
+
 	// Append the VirtualMesh as a parent to each output resource
 	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
@@ -255,7 +260,7 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 
 func (t *translator) constructIssuedCertificate(
 	mesh *discoveryv1.Mesh,
-	// rootCaSecret *skv2corev1.ObjectRef,
+	sharedTrust *networkingv1.SharedTrust,
 	agentNamespace string,
 	autoRestartPods bool,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
@@ -292,7 +297,7 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods)
+	podsToBounce := getPodsToBounce(mesh, sharedTrust, t.workloads, autoRestartPods)
 	var (
 		podBounceDirective *certificatesv1.PodBounceDirective
 		podBounceRef       *skv2corev1.ObjectRef
@@ -368,7 +373,12 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 }
 
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
-func getPodsToBounce(mesh *discoveryv1.Mesh, allWorkloads discoveryv1sets.WorkloadSet, autoRestartPods bool) []*certificatesv1.PodBounceDirectiveSpec_PodSelector {
+func getPodsToBounce(
+	mesh *discoveryv1.Mesh,
+	sharedTrust *networkingv1.SharedTrust,
+	allWorkloads discoveryv1sets.WorkloadSet,
+	autoRestartPods bool,
+) []*certificatesv1.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
 		return nil
@@ -378,14 +388,17 @@ func getPodsToBounce(mesh *discoveryv1.Mesh, allWorkloads discoveryv1sets.Worklo
 
 	// bounce the control plane pod first
 	// order matters
-	// TODO: Make this configurable, don't wanna do this when we have a sidecar
-	podsToBounce := []*certificatesv1.PodBounceDirectiveSpec_PodSelector{
-		{
+
+	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
+	// If the pki-sidecar is fulfilling the issued certificate request,
+	// then the control-plane should not be bounced.
+	if sharedTrust.GetIntermediateCertificateAuthority().GetStorageMechanism() != networkingv1.IntermediateCertificateAuthority_FILE_SYSTEM {
+		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,
 			// ensure at least one replica of istiod is ready before restarting the other pods
 			WaitForReplicas: 1,
-		},
+		})
 	}
 
 	// bounce the ingress gateway pods
