@@ -61,8 +61,14 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		return false
 	}
 
-	if m.GetTtlDays() != target.GetTtlDays() {
-		return false
+	if h, ok := interface{}(m.GetCommonCertOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCommonCertOptions()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetCommonCertOptions(), target.GetCommonCertOptions()) {
+			return false
+		}
 	}
 
 	if h, ok := interface{}(m.GetIssuedCertificateSecret()).(equality.Equalizer); ok {

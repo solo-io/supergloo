@@ -162,6 +162,13 @@ func (t *translator) configureSharedTrust(
 	localOutputs local.Builder,
 	autoRestartPods bool,
 ) error {
+
+	// switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
+	// case *networkingv1.SharedTrust_IntermediateCertificateAuthority:
+	// case *networkingv1.SharedTrust_RootCertificateAuthority:
+	// default:
+	// 	return eris.Errorf("No ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
+	// }
 	rootCA := sharedTrust.GetRootCertificateAuthority()
 
 	agentInfo := mesh.Spec.AgentInfo
@@ -196,7 +203,7 @@ func (t *translator) configureSharedTrust(
 			SigningCertificateSecret: typedCaSource.Secret,
 		}
 	default:
-		return eris.Errorf("No ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
+		return eris.Errorf("No root ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
 	}
 
 	// Append the VirtualMesh as a parent to each output resource
@@ -316,11 +323,8 @@ func (t *translator) constructIssuedCertificate(
 	return &certificatesv1.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
-			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
-			Org:   defaultIstioOrg,
-			// Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
-			// 	SigningCertificateSecret: rootCaSecret,
-			// },
+			Hosts:                   []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
+			Org:                     defaultIstioOrg,
 			IssuedCertificateSecret: istioCaCerts,
 			PodBounceDirective:      podBounceRef,
 		},

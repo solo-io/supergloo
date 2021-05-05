@@ -75,6 +75,25 @@ spec:
             required:
             - vaultCa
           properties:
+            commonCertOptions:
+              description: common cert options for intermediate certificate
+              properties:
+                orgName:
+                  description: Root cert organization name. Defaults to "gloo-mesh".
+                  type: string
+                rsaKeySizeBytes:
+                  description: Size in bytes of the root cert's private key. Defaults
+                    to 4096.
+                  maximum: 4294967295
+                  minimum: 0
+                  type: integer
+                ttlDays:
+                  description: Number of days before root cert expires. Defaults to
+                    365.
+                  maximum: 4294967295
+                  minimum: 0
+                  type: integer
+              type: object
             hosts:
               description: |-
                 A list of hostnames and IPs to generate a certificate for.
@@ -88,8 +107,9 @@ spec:
                 type: string
               type: array
             issuedCertificateSecret:
-              description: The secret containing the SSL certificate to be generated
-                for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
+              description: |-
+                The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
+                If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only)
               properties:
                 name:
                   description: name of the resource being referenced
@@ -99,7 +119,7 @@ spec:
                   type: string
               type: object
             org:
-              description: The organization for this certificate.
+              description: Deprecated in favor of `common_cert_options.org_name`
               type: string
             podBounceDirective:
               description: |-
@@ -130,12 +150,6 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
-            ttlDays:
-              description: Number of days before intermediate cert expires. Defaults
-                to 365.
-              maximum: 4294967295
-              minimum: 0
-              type: integer
             vaultCa:
               description: The vault_ca config which will be used to sign this intermediate
                 cert

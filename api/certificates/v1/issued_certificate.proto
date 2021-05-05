@@ -38,11 +38,11 @@ message IssuedCertificateSpec {
      */
     repeated string hosts = 1;
 
-    // The organization for this certificate.
+    // Deprecated in favor of `common_cert_options.org_name`
     string org = 2;
 
-    // Number of days before intermediate cert expires. Defaults to 365.
-    uint32 ttl_days = 7;
+    // common cert options for intermediate certificate
+    .common.mesh.gloo.solo.io.CommonCertOptions common_cert_options = 7;
 
     oneof signer {
 
@@ -55,6 +55,7 @@ message IssuedCertificateSpec {
     }
 
     // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
+    // If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only)
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 
     // A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
