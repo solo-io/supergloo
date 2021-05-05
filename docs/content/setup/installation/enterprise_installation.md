@@ -101,7 +101,6 @@ kubectl get pods -n gloo-mesh
 NAME                                     READY   STATUS    RESTARTS   AGE
 dashboard-6d6b944cdb-jcpvl               3/3     Running   0          4m2s
 enterprise-networking-84fc9fd6f5-rrbnq   1/1     Running   0          4m2s
-rbac-webhook-84865cb7dd-sbwp7            1/1     Running   0          4m2s
 ```
 
 Running the check command from meshctl will also verify everything was installed correctly:
