@@ -119,6 +119,7 @@ rules:
   resources:
   - wasmdeployments
   - virtualdestinations
+  - servicedependencies
   verbs:
   - get
   - list
@@ -177,6 +178,7 @@ rules:
   resources:
   - wasmdeployments/status
   - virtualdestinations/status
+  - servicedependencies/status
   verbs:
   - get
   - update

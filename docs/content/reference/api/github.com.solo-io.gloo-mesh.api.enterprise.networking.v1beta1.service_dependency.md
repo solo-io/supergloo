@@ -1,7 +1,7 @@
 
 ---
 
-title: "edge.proto"
+title: "service_dependency.proto"
 
 ---
 
@@ -11,10 +11,10 @@ title: "edge.proto"
 
 <a name="top"></a>
 
-<a name="API Reference for edge.proto"></a>
+<a name="API Reference for service_dependency.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## edge.proto
+## service_dependency.proto
 
 
 ## Table of Contents
@@ -35,8 +35,8 @@ TODO(harveyxia): Explain and motivate.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the traffic sources (i.e. Workloads) for this network ServiceDependency. |
-  | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Select the traffic destinations (i.e. Destination) for this network ServiceDependency. |
+| sourceSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Required. Select the traffic sources (i.e. Workloads) for this network ServiceDependency. |
+  | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Required. Select the traffic targets (i.e. Destination) for this network ServiceDependency. |
   
 
 

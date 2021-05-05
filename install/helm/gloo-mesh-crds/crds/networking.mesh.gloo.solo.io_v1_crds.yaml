@@ -889,7 +889,7 @@ spec:
                 selectors:
                   description: |-
                     Selectively federate Destinations to specific external meshes.
-                    If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+                    If omitted, no Destinations will be federated.
                   items:
                     properties:
                       destinationSelectors:

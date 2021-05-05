@@ -68,6 +68,9 @@ message WorkloadStatus {
     // The set of WasmDeployments that have been applied to this Workload.
     repeated AppliedWasmDeployment applied_wasm_deployments = 3;
 
+    // The set of ServiceDependencies that have been applied to this Workload.
+    repeated AppliedServiceDependency applied_service_dependencies = 4;
+
     // Describes an [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging/" >}}) that applies to this Workload.
     message AppliedAccessLogRecord {
 
@@ -92,5 +95,13 @@ message WorkloadStatus {
 
         // Any errors encountered while processing the WasmDeployment object.
         repeated string errors = 3;
+    }
+
+    message AppliedServiceDependency {
+        // Reference to the ServiceDependency object.
+        .core.skv2.solo.io.ObjectRef service_dependency_ref = 1;
+
+        // The observed generation of the ServiceDependency.
+        int64 observed_generation = 2;
     }
 }

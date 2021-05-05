@@ -444,7 +444,7 @@ type VirtualMeshSpec_Federation struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Selectively federate Destinations to specific external meshes.
-	// If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+	// If omitted, no Destinations will be federated.
 	Selectors []*VirtualMeshSpec_Federation_FederationSelector `protobuf:"bytes,4,rep,name=selectors,proto3" json:"selectors,omitempty"`
 	// DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
 	// The "mode" in which to federate Destinations within this VirtualMesh.

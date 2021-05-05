@@ -754,11 +754,13 @@ spec:
           description: 'TODO(harveyxia): Explain and motivate.'
           properties:
             destinationSelectors:
-              description: Select the traffic destinations (i.e. Destination) for this network ServiceDependency.
+              description: Required. Select the traffic targets (i.e. Destination)
+                for this network ServiceDependency.
               items:
                 properties:
                   kubeServiceMatcher:
-                    description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes Services by their labels, namespaces,
+                      and/or clusters.
                     properties:
                       clusters:
                         description: |-
@@ -796,7 +798,8 @@ spec:
                         items:
                           properties:
                             clusterName:
-                              description: name of the cluster in which the resource exists
+                              description: name of the cluster in which the resource
+                                exists
                               type: string
                             name:
                               description: name of the resource being referenced
@@ -810,11 +813,13 @@ spec:
                 type: object
               type: array
             sourceSelectors:
-              description: Select the traffic sources (i.e. Workloads) for this network ServiceDependency.
+              description: Required. Select the traffic sources (i.e. Workloads) for
+                this network ServiceDependency.
               items:
                 properties:
                   kubeWorkloadMatcher:
-                    description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes workloads by their labels, namespaces,
+                      and/or clusters.
                     properties:
                       clusters:
                         description: |-
@@ -847,7 +852,8 @@ spec:
         status:
           properties:
             errors:
-              description: Any errors found while processing this generation of the resource.
+              description: Any errors found while processing this generation of the
+                resource.
               items:
                 type: string
               type: array

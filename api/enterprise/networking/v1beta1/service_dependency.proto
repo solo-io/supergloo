@@ -15,10 +15,10 @@ option (extproto.equal_all) = true;
 */
 message ServiceDependencySpec {
 
-    // Select the traffic sources (i.e. Workloads) for this network ServiceDependency.
+    // Required. Select the traffic sources (i.e. Workloads) for this network ServiceDependency.
     repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selectors = 1;
 
-    // Select the traffic destinations (i.e. Destination) for this network ServiceDependency.
+    // Required. Select the traffic targets (i.e. Destination) for this network ServiceDependency.
     repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
 }
 

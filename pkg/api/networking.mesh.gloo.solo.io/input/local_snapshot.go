@@ -12,6 +12,7 @@
 // * VirtualMeshes
 // * WasmDeployments
 // * VirtualDestinations
+// * ServiceDependencies
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -120,6 +121,11 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "VirtualDestination",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "ServiceDependency",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -164,6 +170,8 @@ type LocalSnapshot interface {
 	WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
 	// return the set of input VirtualDestinations
 	VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	// return the set of input ServiceDependencies
+	ServiceDependencies() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	// return the set of input AccessLogRecords
 	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
@@ -207,6 +215,8 @@ type LocalSyncStatusOptions struct {
 	WasmDeployment bool
 	// sync status of VirtualDestination objects
 	VirtualDestination bool
+	// sync status of ServiceDependency objects
+	ServiceDependency bool
 
 	// sync status of AccessLogRecord objects
 	AccessLogRecord bool
@@ -233,6 +243,7 @@ type snapshotLocal struct {
 
 	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -256,6 +267,7 @@ func NewLocalSnapshot(
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet,
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet,
+	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet,
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
 
@@ -276,6 +288,7 @@ func NewLocalSnapshot(
 		virtualMeshes:       virtualMeshes,
 		wasmDeployments:     wasmDeployments,
 		virtualDestinations: virtualDestinations,
+		serviceDependencies: serviceDependencies,
 		accessLogRecords:    accessLogRecords,
 		secrets:             secrets,
 		kubernetesClusters:  kubernetesClusters,
@@ -299,6 +312,7 @@ func NewLocalSnapshotFromGeneric(
 
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinationSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	serviceDependencySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -392,6 +406,15 @@ func NewLocalSnapshotFromGeneric(
 		for _, virtualDestination := range virtualDestinations {
 			virtualDestinationSet.Insert(virtualDestination.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination))
 		}
+		serviceDependencies := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "ServiceDependency",
+		}]
+
+		for _, serviceDependency := range serviceDependencies {
+			serviceDependencySet.Insert(serviceDependency.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency))
+		}
 
 		accessLogRecords := snapshot[schema.GroupVersionKind{
 			Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -435,6 +458,7 @@ func NewLocalSnapshotFromGeneric(
 		virtualMeshSet,
 		wasmDeploymentSet,
 		virtualDestinationSet,
+		serviceDependencySet,
 		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
@@ -475,6 +499,10 @@ func (s snapshotLocal) WasmDeployments() networking_enterprise_mesh_gloo_solo_io
 
 func (s snapshotLocal) VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet {
 	return s.virtualDestinations
+}
+
+func (s snapshotLocal) ServiceDependencies() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet {
+	return s.serviceDependencies
 }
 
 func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet {
@@ -603,6 +631,18 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 			}
 		}
 	}
+	if opts.ServiceDependency {
+		for _, obj := range s.ServiceDependencies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
@@ -701,6 +741,13 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
+	if opts.ServiceDependency {
+		for _, obj := range s.ServiceDependencies().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
@@ -732,6 +779,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["wasmDeployments"] = s.wasmDeployments.List()
 	snapshotMap["virtualDestinations"] = s.virtualDestinations.List()
+	snapshotMap["serviceDependencies"] = s.serviceDependencies.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
@@ -767,6 +815,8 @@ type LocalBuildOptions struct {
 	WasmDeployments ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualDestinations
 	VirtualDestinations ResourceLocalBuildOptions
+	// List options for composing a snapshot from ServiceDependencies
+	ServiceDependencies ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from AccessLogRecords
 	AccessLogRecords ResourceLocalBuildOptions
@@ -819,6 +869,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -857,6 +908,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertVirtualDestinationsFromCluster(ctx, cluster, virtualDestinations, opts.VirtualDestinations); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertServiceDependenciesFromCluster(ctx, cluster, serviceDependencies, opts.ServiceDependencies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -881,6 +935,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		virtualMeshes,
 		wasmDeployments,
 		virtualDestinations,
+		serviceDependencies,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -1270,6 +1325,48 @@ func (b *multiClusterLocalBuilder) insertVirtualDestinationsFromCluster(ctx cont
 
 	return nil
 }
+func (b *multiClusterLocalBuilder) insertServiceDependenciesFromCluster(ctx context.Context, cluster string, serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet, opts ResourceLocalBuildOptions) error {
+	serviceDependencyClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterServiceDependencyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "ServiceDependency",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceDependencyList, err := serviceDependencyClient.ListServiceDependency(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceDependencyList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		serviceDependencies.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context.Context, cluster string, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 	accessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
@@ -1439,6 +1536,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1475,6 +1573,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertVirtualDestinations(ctx, virtualDestinations, opts.VirtualDestinations); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertServiceDependencies(ctx, serviceDependencies, opts.ServiceDependencies); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1497,6 +1598,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		virtualMeshes,
 		wasmDeployments,
 		virtualDestinations,
+		serviceDependencies,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -1805,6 +1907,39 @@ func (b *singleClusterLocalBuilder) insertVirtualDestinations(ctx context.Contex
 
 	return nil
 }
+func (b *singleClusterLocalBuilder) insertServiceDependencies(ctx context.Context, serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "ServiceDependency",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceDependencyList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewServiceDependencyClient(b.mgr.GetClient()).ListServiceDependency(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceDependencyList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		serviceDependencies.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 
@@ -1940,6 +2075,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1976,6 +2112,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert VirtualDestinations
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination:
 			virtualDestinations.Insert(obj)
+		// insert ServiceDependencies
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency:
+			serviceDependencies.Insert(obj)
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
 			accessLogRecords.Insert(obj)
@@ -2000,6 +2139,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		virtualMeshes,
 		wasmDeployments,
 		virtualDestinations,
+		serviceDependencies,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,

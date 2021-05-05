@@ -58,6 +58,7 @@ import (
 // * VirtualMeshes
 // * WasmDeployments
 // * VirtualDestinations
+// * ServiceDependencies
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -153,6 +154,10 @@ func RegisterInputReconciler(
 	}
 	// initialize VirtualDestinations reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualDestinationReconcileLoop("VirtualDestination", mgr, options.Local.VirtualDestinations).RunVirtualDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize ServiceDependencies reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewServiceDependencyReconcileLoop("ServiceDependency", mgr, options.Local.ServiceDependencies).RunServiceDependencyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -366,6 +371,8 @@ type LocalReconcileOptions struct {
 	WasmDeployments reconcile.Options
 	// Options for reconciling VirtualDestinations
 	VirtualDestinations reconcile.Options
+	// Options for reconciling ServiceDependencies
+	ServiceDependencies reconcile.Options
 
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
@@ -493,6 +500,19 @@ func (r *localInputReconciler) ReconcileVirtualDestination(obj *networking_enter
 }
 
 func (r *localInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileServiceDependencyDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

@@ -152,6 +152,23 @@ func (m *WorkloadStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetAppliedServiceDependencies()) != len(target.GetAppliedServiceDependencies()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedServiceDependencies() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedServiceDependencies()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedServiceDependencies()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -374,6 +391,44 @@ func (m *WorkloadStatus_AppliedWasmDeployment) Equal(that interface{}) bool {
 			return false
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *WorkloadStatus_AppliedServiceDependency) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*WorkloadStatus_AppliedServiceDependency)
+	if !ok {
+		that2, ok := that.(WorkloadStatus_AppliedServiceDependency)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetServiceDependencyRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetServiceDependencyRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetServiceDependencyRef(), target.GetServiceDependencyRef()) {
+			return false
+		}
+	}
+
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
+		return false
 	}
 
 	return true

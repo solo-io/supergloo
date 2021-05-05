@@ -106,7 +106,7 @@ message VirtualMeshSpec {
     message Federation {
 
         // Selectively federate Destinations to specific external meshes.
-        // If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+        // If omitted, no Destinations will be federated.
         repeated FederationSelector selectors = 4;
 
         // DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
