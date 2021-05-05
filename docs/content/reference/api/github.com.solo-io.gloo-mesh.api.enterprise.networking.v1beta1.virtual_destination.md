@@ -182,6 +182,7 @@ VirtualDestination port infomation. Contains information about which port to lis
   | meshes | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.MeshesEntry" >}}) | repeated | The status of the VirtualDestination for each Mesh to which it has been exported to. |
   | selectedDestinations | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedDestinations]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedDestinations" >}}) | repeated | The Destinations that comprise this VirtualDestination. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | requiredSubsets | [][discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets" >}}) | repeated | The set of TrafficPolicies that reference subsets on this VirtualDestination as a traffic shift. |
   
 
 
