@@ -1648,11 +1648,277 @@ spec:
                       oneOf:
                       - not:
                           anyOf:
-                          - required:
+                          - properties:
+                              shared:
+                                oneOf:
+                                - not:
+                                    anyOf:
+                                    - properties:
+                                        rootCertificateAuthority:
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - generated
+                                              - required:
+                                                - secret
+                                              - {}
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
+                                          - not:
+                                              anyOf:
+                                              - {}
+                                              - required:
+                                                - generated
+                                              - required:
+                                                - secret
+                                      required:
+                                      - rootCertificateAuthority
+                                    - properties:
+                                        intermediateCertificateAuthority:
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - secret
+                                              - properties:
+                                                  vault:
+                                                    oneOf:
+                                                    - not:
+                                                        anyOf:
+                                                        - required:
+                                                          - tokenSecretRef
+                                                        - required:
+                                                          - kubernetesAuth
+                                                    - required:
+                                                      - tokenSecretRef
+                                                    - required:
+                                                      - kubernetesAuth
+                                                required:
+                                                - vault
+                                          - required:
+                                            - secret
+                                          - properties:
+                                              vault:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - tokenSecretRef
+                                                    - required:
+                                                      - kubernetesAuth
+                                                - required:
+                                                  - tokenSecretRef
+                                                - required:
+                                                  - kubernetesAuth
+                                            required:
+                                            - vault
+                                      required:
+                                      - intermediateCertificateAuthority
+                                - properties:
+                                    rootCertificateAuthority:
+                                      oneOf:
+                                      - not:
+                                          anyOf:
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
+                                          - {}
+                                      - required:
+                                        - generated
+                                      - required:
+                                        - secret
+                                      - not:
+                                          anyOf:
+                                          - {}
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
+                                  required:
+                                  - rootCertificateAuthority
+                                - properties:
+                                    intermediateCertificateAuthority:
+                                      oneOf:
+                                      - not:
+                                          anyOf:
+                                          - required:
+                                            - secret
+                                          - properties:
+                                              vault:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - tokenSecretRef
+                                                    - required:
+                                                      - kubernetesAuth
+                                                - required:
+                                                  - tokenSecretRef
+                                                - required:
+                                                  - kubernetesAuth
+                                            required:
+                                            - vault
+                                      - required:
+                                        - secret
+                                      - properties:
+                                          vault:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - tokenSecretRef
+                                                - required:
+                                                  - kubernetesAuth
+                                            - required:
+                                              - tokenSecretRef
+                                            - required:
+                                              - kubernetesAuth
+                                        required:
+                                        - vault
+                                  required:
+                                  - intermediateCertificateAuthority
+                            required:
                             - shared
                           - required:
                             - limited
-                      - required:
+                      - properties:
+                          shared:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - properties:
+                                    rootCertificateAuthority:
+                                      oneOf:
+                                      - not:
+                                          anyOf:
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
+                                          - {}
+                                      - required:
+                                        - generated
+                                      - required:
+                                        - secret
+                                      - not:
+                                          anyOf:
+                                          - {}
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
+                                  required:
+                                  - rootCertificateAuthority
+                                - properties:
+                                    intermediateCertificateAuthority:
+                                      oneOf:
+                                      - not:
+                                          anyOf:
+                                          - required:
+                                            - secret
+                                          - properties:
+                                              vault:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - tokenSecretRef
+                                                    - required:
+                                                      - kubernetesAuth
+                                                - required:
+                                                  - tokenSecretRef
+                                                - required:
+                                                  - kubernetesAuth
+                                            required:
+                                            - vault
+                                      - required:
+                                        - secret
+                                      - properties:
+                                          vault:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - tokenSecretRef
+                                                - required:
+                                                  - kubernetesAuth
+                                            - required:
+                                              - tokenSecretRef
+                                            - required:
+                                              - kubernetesAuth
+                                        required:
+                                        - vault
+                                  required:
+                                  - intermediateCertificateAuthority
+                            - properties:
+                                rootCertificateAuthority:
+                                  oneOf:
+                                  - not:
+                                      anyOf:
+                                      - required:
+                                        - generated
+                                      - required:
+                                        - secret
+                                      - {}
+                                  - required:
+                                    - generated
+                                  - required:
+                                    - secret
+                                  - not:
+                                      anyOf:
+                                      - {}
+                                      - required:
+                                        - generated
+                                      - required:
+                                        - secret
+                              required:
+                              - rootCertificateAuthority
+                            - properties:
+                                intermediateCertificateAuthority:
+                                  oneOf:
+                                  - not:
+                                      anyOf:
+                                      - required:
+                                        - secret
+                                      - properties:
+                                          vault:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - tokenSecretRef
+                                                - required:
+                                                  - kubernetesAuth
+                                            - required:
+                                              - tokenSecretRef
+                                            - required:
+                                              - kubernetesAuth
+                                        required:
+                                        - vault
+                                  - required:
+                                    - secret
+                                  - properties:
+                                      vault:
+                                        oneOf:
+                                        - not:
+                                            anyOf:
+                                            - required:
+                                              - tokenSecretRef
+                                            - required:
+                                              - kubernetesAuth
+                                        - required:
+                                          - tokenSecretRef
+                                        - required:
+                                          - kubernetesAuth
+                                    required:
+                                    - vault
+                              required:
+                              - intermediateCertificateAuthority
+                        required:
                         - shared
                       - required:
                         - limited
@@ -1695,51 +1961,24 @@ spec:
                                   type: integer
                               type: object
                             intermediateCertificateAuthority:
-                              oneOf:
-                              - not:
-                                  anyOf:
-                                  - required:
-                                    - helloWorld
-                                  - properties:
-                                      vault:
-                                        oneOf:
-                                        - not:
-                                            anyOf:
-                                            - required:
-                                              - tokenSecretRef
-                                            - required:
-                                              - kubernetesAuth
-                                        - required:
-                                          - tokenSecretRef
-                                        - required:
-                                          - kubernetesAuth
-                                    required:
-                                    - vault
-                              - required:
-                                - helloWorld
-                              - properties:
-                                  vault:
-                                    oneOf:
-                                    - not:
-                                        anyOf:
-                                        - required:
-                                          - tokenSecretRef
-                                        - required:
-                                          - kubernetesAuth
-                                    - required:
-                                      - tokenSecretRef
-                                    - required:
-                                      - kubernetesAuth
-                                required:
-                                - vault
                               properties:
-                                hello:
-                                  type: string
-                                helloWorld:
+                                secret:
                                   description: |-
                                     Reference to a Kubernetes Secret containing the root certificate authority.
                                     Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
-                                    .core.skv2.solo.io.ObjectRef secret = 2;
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being
+                                        referenced
+                                      type: string
+                                  type: object
+                                storageMechanism:
+                                  enum:
+                                  - SECRET
+                                  - FILE_SYSTEM
                                   type: string
                                 vault:
                                   properties:
@@ -1826,11 +2065,40 @@ spec:
                                 Configure a Root Certificate Authority which will be shared by all Meshes associated with this VirtualMesh.
                                 If this is not provided, a self-signed certificate will be generated by Gloo Mesh.
                               properties:
-                                hello:
+                                generated:
+                                  description: Generate a self-signed root certificate
+                                    with the given options.
+                                  properties:
+                                    orgName:
+                                      description: Root cert organization name. Defaults
+                                        to "gloo-mesh".
+                                      type: string
+                                    rsaKeySizeBytes:
+                                      description: Size in bytes of the root cert's
+                                        private key. Defaults to 4096.
+                                      maximum: 4294967295
+                                      minimum: 0
+                                      type: integer
+                                    ttlDays:
+                                      description: Number of days before root cert
+                                        expires. Defaults to 365.
+                                      maximum: 4294967295
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                                secret:
                                   description: |-
-                                    .common.mesh.gloo.solo.io.VaultCA vault = 3;
-                                    }
-                                  type: string
+                                    Reference to a Kubernetes Secret containing the root certificate authority.
+                                    Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being
+                                        referenced
+                                      type: string
+                                  type: object
                               type: object
                           type: object
                       type: object

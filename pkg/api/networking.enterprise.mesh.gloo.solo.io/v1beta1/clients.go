@@ -4,89 +4,86 @@
 
 package v1beta1
 
-
-
-
 import (
-    "context"
+	"context"
 
-    "github.com/solo-io/skv2/pkg/controllerutils"
-    "github.com/solo-io/skv2/pkg/multicluster"
-    "k8s.io/apimachinery/pkg/runtime"
-    "k8s.io/client-go/kubernetes/scheme"
-    "k8s.io/client-go/rest"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MulticlusterClientset for the networking.enterprise.mesh.gloo.solo.io/v1beta1 APIs
 type MulticlusterClientset interface {
-    // Cluster returns a Clientset for the given cluster
-    Cluster(cluster string) (Clientset, error)
+	// Cluster returns a Clientset for the given cluster
+	Cluster(cluster string) (Clientset, error)
 }
 
 type multiclusterClientset struct {
-    client multicluster.Client
+	client multicluster.Client
 }
 
 func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
-    return &multiclusterClientset{client: client}
+	return &multiclusterClientset{client: client}
 }
 
 func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
-    client, err := m.client.Cluster(cluster)
-    if err != nil {
-        return nil, err
-    }
-    return NewClientset(client), nil
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewClientset(client), nil
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1 APIs
 type Clientset interface {
-    // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
-    WasmDeployments() WasmDeploymentClient
-    // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
-    VirtualDestinations() VirtualDestinationClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	WasmDeployments() WasmDeploymentClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	VirtualDestinations() VirtualDestinationClient
 }
 
 type clientSet struct {
-    client client.Client
+	client client.Client
 }
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
-    scheme := scheme.Scheme
-    if err := AddToScheme(scheme); err != nil{
-        return nil, err
-    }
-    client, err := client.New(cfg, client.Options{
-        Scheme: scheme,
-    })
-    if err != nil {
-        return nil, err
-    }
-    return NewClientset(client), nil
+	scheme := scheme.Scheme
+	if err := AddToScheme(scheme); err != nil {
+		return nil, err
+	}
+	client, err := client.New(cfg, client.Options{
+		Scheme: scheme,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return NewClientset(client), nil
 }
 
 func NewClientset(client client.Client) Clientset {
-    return &clientSet{client: client}
+	return &clientSet{client: client}
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) WasmDeployments() WasmDeploymentClient {
-    return NewWasmDeploymentClient(c.client)
+	return NewWasmDeploymentClient(c.client)
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
-    return NewVirtualDestinationClient(c.client)
+	return NewVirtualDestinationClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
 type WasmDeploymentReader interface {
-    // Get retrieves a WasmDeployment for the given object key
-    GetWasmDeployment(ctx context.Context, key client.ObjectKey) (*WasmDeployment, error)
+	// Get retrieves a WasmDeployment for the given object key
+	GetWasmDeployment(ctx context.Context, key client.ObjectKey) (*WasmDeployment, error)
 
-    // List retrieves list of WasmDeployments for a given namespace and list options.
-    ListWasmDeployment(ctx context.Context, opts ...client.ListOption) (*WasmDeploymentList, error)
+	// List retrieves list of WasmDeployments for a given namespace and list options.
+	ListWasmDeployment(ctx context.Context, opts ...client.ListOption) (*WasmDeploymentList, error)
 }
 
 // WasmDeploymentTransitionFunction instructs the WasmDeploymentWriter how to transition between an existing
@@ -95,142 +92,140 @@ type WasmDeploymentTransitionFunction func(existing, desired *WasmDeployment) er
 
 // Writer knows how to create, delete, and update WasmDeployments.
 type WasmDeploymentWriter interface {
-    // Create saves the WasmDeployment object.
-    CreateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.CreateOption) error
+	// Create saves the WasmDeployment object.
+	CreateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.CreateOption) error
 
-    // Delete deletes the WasmDeployment object.
-    DeleteWasmDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the WasmDeployment object.
+	DeleteWasmDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-    // Update updates the given WasmDeployment object.
-    UpdateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
+	// Update updates the given WasmDeployment object.
+	UpdateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
 
-    // Patch patches the given WasmDeployment object.
-    PatchWasmDeployment(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given WasmDeployment object.
+	PatchWasmDeployment(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
 
-    // DeleteAllOf deletes all WasmDeployment objects matching the given options.
-    DeleteAllOfWasmDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all WasmDeployment objects matching the given options.
+	DeleteAllOfWasmDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-    // Create or Update the WasmDeployment object.
-    UpsertWasmDeployment(ctx context.Context, obj *WasmDeployment, transitionFuncs ...WasmDeploymentTransitionFunction) error
+	// Create or Update the WasmDeployment object.
+	UpsertWasmDeployment(ctx context.Context, obj *WasmDeployment, transitionFuncs ...WasmDeploymentTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a WasmDeployment object.
 type WasmDeploymentStatusWriter interface {
-    // Update updates the fields corresponding to the status subresource for the
-    // given WasmDeployment object.
-    UpdateWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
+	// Update updates the fields corresponding to the status subresource for the
+	// given WasmDeployment object.
+	UpdateWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
 
-    // Patch patches the given WasmDeployment object's subresource.
-    PatchWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given WasmDeployment object's subresource.
+	PatchWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on WasmDeployments.
 type WasmDeploymentClient interface {
-    WasmDeploymentReader
-    WasmDeploymentWriter
-    WasmDeploymentStatusWriter
+	WasmDeploymentReader
+	WasmDeploymentWriter
+	WasmDeploymentStatusWriter
 }
 
 type wasmDeploymentClient struct {
-    client client.Client
+	client client.Client
 }
 
 func NewWasmDeploymentClient(client client.Client) *wasmDeploymentClient {
-    return &wasmDeploymentClient{client: client}
+	return &wasmDeploymentClient{client: client}
 }
 
-
 func (c *wasmDeploymentClient) GetWasmDeployment(ctx context.Context, key client.ObjectKey) (*WasmDeployment, error) {
-    obj := &WasmDeployment{}
-    if err := c.client.Get(ctx, key, obj); err != nil {
-        return nil, err
-    }
-    return obj, nil
+	obj := &WasmDeployment{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
 }
 
 func (c *wasmDeploymentClient) ListWasmDeployment(ctx context.Context, opts ...client.ListOption) (*WasmDeploymentList, error) {
-    list := &WasmDeploymentList{}
-    if err := c.client.List(ctx, list, opts...); err != nil {
-        return nil, err
-    }
-    return list, nil
+	list := &WasmDeploymentList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
 }
 
 func (c *wasmDeploymentClient) CreateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.CreateOption) error {
-    return c.client.Create(ctx, obj, opts...)
+	return c.client.Create(ctx, obj, opts...)
 }
 
-
 func (c *wasmDeploymentClient) DeleteWasmDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-    obj := &WasmDeployment{}
-    obj.SetName(key.Name)
-    obj.SetNamespace(key.Namespace)
-    return c.client.Delete(ctx, obj, opts...)
+	obj := &WasmDeployment{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) UpdateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error {
-    return c.client.Update(ctx, obj, opts...)
+	return c.client.Update(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) PatchWasmDeployment(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error {
-    return c.client.Patch(ctx, obj, patch, opts...)
+	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *wasmDeploymentClient) DeleteAllOfWasmDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-    obj := &WasmDeployment{}
-    return c.client.DeleteAllOf(ctx, obj, opts...)
+	obj := &WasmDeployment{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) UpsertWasmDeployment(ctx context.Context, obj *WasmDeployment, transitionFuncs ...WasmDeploymentTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
-        for _, txFunc := range transitionFuncs {
-            if err := txFunc(existing.(*WasmDeployment), desired.(*WasmDeployment)); err != nil {
-                return err
-            }
-        }
-        return nil
-    }
-    _, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
-    return err
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*WasmDeployment), desired.(*WasmDeployment)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *wasmDeploymentClient) UpdateWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error {
-    return c.client.Status().Update(ctx, obj, opts...)
+	return c.client.Status().Update(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) PatchWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error {
-    return c.client.Status().Patch(ctx, obj, patch, opts...)
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
 // Provides WasmDeploymentClients for multiple clusters.
 type MulticlusterWasmDeploymentClient interface {
-    // Cluster returns a WasmDeploymentClient for the given cluster
-    Cluster(cluster string) (WasmDeploymentClient, error)
+	// Cluster returns a WasmDeploymentClient for the given cluster
+	Cluster(cluster string) (WasmDeploymentClient, error)
 }
 
 type multiclusterWasmDeploymentClient struct {
-    client multicluster.Client
+	client multicluster.Client
 }
 
 func NewMulticlusterWasmDeploymentClient(client multicluster.Client) MulticlusterWasmDeploymentClient {
-    return &multiclusterWasmDeploymentClient{client: client}
+	return &multiclusterWasmDeploymentClient{client: client}
 }
 
 func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeploymentClient, error) {
-    client, err := m.client.Cluster(cluster)
-    if err != nil {
-        return nil, err
-    }
-    return  NewWasmDeploymentClient(client), nil
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewWasmDeploymentClient(client), nil
 }
 
 // Reader knows how to read and list VirtualDestinations.
 type VirtualDestinationReader interface {
-    // Get retrieves a VirtualDestination for the given object key
-    GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error)
+	// Get retrieves a VirtualDestination for the given object key
+	GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error)
 
-    // List retrieves list of VirtualDestinations for a given namespace and list options.
-    ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error)
+	// List retrieves list of VirtualDestinations for a given namespace and list options.
+	ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error)
 }
 
 // VirtualDestinationTransitionFunction instructs the VirtualDestinationWriter how to transition between an existing
@@ -239,131 +234,129 @@ type VirtualDestinationTransitionFunction func(existing, desired *VirtualDestina
 
 // Writer knows how to create, delete, and update VirtualDestinations.
 type VirtualDestinationWriter interface {
-    // Create saves the VirtualDestination object.
-    CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error
+	// Create saves the VirtualDestination object.
+	CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error
 
-    // Delete deletes the VirtualDestination object.
-    DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the VirtualDestination object.
+	DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-    // Update updates the given VirtualDestination object.
-    UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
+	// Update updates the given VirtualDestination object.
+	UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
 
-    // Patch patches the given VirtualDestination object.
-    PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given VirtualDestination object.
+	PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
 
-    // DeleteAllOf deletes all VirtualDestination objects matching the given options.
-    DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all VirtualDestination objects matching the given options.
+	DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-    // Create or Update the VirtualDestination object.
-    UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error
+	// Create or Update the VirtualDestination object.
+	UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a VirtualDestination object.
 type VirtualDestinationStatusWriter interface {
-    // Update updates the fields corresponding to the status subresource for the
-    // given VirtualDestination object.
-    UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
+	// Update updates the fields corresponding to the status subresource for the
+	// given VirtualDestination object.
+	UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
 
-    // Patch patches the given VirtualDestination object's subresource.
-    PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given VirtualDestination object's subresource.
+	PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on VirtualDestinations.
 type VirtualDestinationClient interface {
-    VirtualDestinationReader
-    VirtualDestinationWriter
-    VirtualDestinationStatusWriter
+	VirtualDestinationReader
+	VirtualDestinationWriter
+	VirtualDestinationStatusWriter
 }
 
 type virtualDestinationClient struct {
-    client client.Client
+	client client.Client
 }
 
 func NewVirtualDestinationClient(client client.Client) *virtualDestinationClient {
-    return &virtualDestinationClient{client: client}
+	return &virtualDestinationClient{client: client}
 }
 
-
 func (c *virtualDestinationClient) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error) {
-    obj := &VirtualDestination{}
-    if err := c.client.Get(ctx, key, obj); err != nil {
-        return nil, err
-    }
-    return obj, nil
+	obj := &VirtualDestination{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
 }
 
 func (c *virtualDestinationClient) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error) {
-    list := &VirtualDestinationList{}
-    if err := c.client.List(ctx, list, opts...); err != nil {
-        return nil, err
-    }
-    return list, nil
+	list := &VirtualDestinationList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
 }
 
 func (c *virtualDestinationClient) CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error {
-    return c.client.Create(ctx, obj, opts...)
+	return c.client.Create(ctx, obj, opts...)
 }
 
-
 func (c *virtualDestinationClient) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-    obj := &VirtualDestination{}
-    obj.SetName(key.Name)
-    obj.SetNamespace(key.Namespace)
-    return c.client.Delete(ctx, obj, opts...)
+	obj := &VirtualDestination{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
 }
 
 func (c *virtualDestinationClient) UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error {
-    return c.client.Update(ctx, obj, opts...)
+	return c.client.Update(ctx, obj, opts...)
 }
 
 func (c *virtualDestinationClient) PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
-    return c.client.Patch(ctx, obj, patch, opts...)
+	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *virtualDestinationClient) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-    obj := &VirtualDestination{}
-    return c.client.DeleteAllOf(ctx, obj, opts...)
+	obj := &VirtualDestination{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
 func (c *virtualDestinationClient) UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error {
-    genericTxFunc := func(existing, desired runtime.Object) error {
-        for _, txFunc := range transitionFuncs {
-            if err := txFunc(existing.(*VirtualDestination), desired.(*VirtualDestination)); err != nil {
-                return err
-            }
-        }
-        return nil
-    }
-    _, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
-    return err
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*VirtualDestination), desired.(*VirtualDestination)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
 }
 
 func (c *virtualDestinationClient) UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error {
-    return c.client.Status().Update(ctx, obj, opts...)
+	return c.client.Status().Update(ctx, obj, opts...)
 }
 
 func (c *virtualDestinationClient) PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
-    return c.client.Status().Patch(ctx, obj, patch, opts...)
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
 // Provides VirtualDestinationClients for multiple clusters.
 type MulticlusterVirtualDestinationClient interface {
-    // Cluster returns a VirtualDestinationClient for the given cluster
-    Cluster(cluster string) (VirtualDestinationClient, error)
+	// Cluster returns a VirtualDestinationClient for the given cluster
+	Cluster(cluster string) (VirtualDestinationClient, error)
 }
 
 type multiclusterVirtualDestinationClient struct {
-    client multicluster.Client
+	client multicluster.Client
 }
 
 func NewMulticlusterVirtualDestinationClient(client multicluster.Client) MulticlusterVirtualDestinationClient {
-    return &multiclusterVirtualDestinationClient{client: client}
+	return &multiclusterVirtualDestinationClient{client: client}
 }
 
 func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualDestinationClient, error) {
-    client, err := m.client.Cluster(cluster)
-    if err != nil {
-        return nil, err
-    }
-    return  NewVirtualDestinationClient(client), nil
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualDestinationClient(client), nil
 }

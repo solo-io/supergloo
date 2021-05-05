@@ -3,9 +3,6 @@
 // Definitions for the Kubernetes types
 package v1
 
-import (
-)
-
 // RoleSlice represents a slice of *Role
 type RoleSlice []*Role
 
