@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"istio.io/istio/pkg/spiffe"
 	"istio.io/istio/security/pkg/pki/util"
@@ -54,8 +54,8 @@ var (
 	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1.SchemeGroupVersion.Group))
 
 	// used when the user provides a nil root cert
-	defaultSelfSignedRootCa = &v1.VirtualMeshSpec_RootCertificateAuthority{
-		CaSource: &v1.VirtualMeshSpec_RootCertificateAuthority_Generated{
+	defaultSelfSignedRootCa = &networkingv1.RootCertificateAuthority{
+		CaSource: &networkingv1.RootCertificateAuthority_Generated{
 			Generated: &commonv1.CommonCertOptions{
 				TtlDays:         defaultRootCertTTLDays,
 				RsaKeySizeBytes: defaultRootCertRsaKeySize,
@@ -136,7 +136,7 @@ func (t *translator) updateMtlsOutputs(
 	}
 
 	switch trustModel := mtlsConfig.TrustModel.(type) {
-	case *v1.VirtualMeshSpec_MTLSConfig_Shared:
+	case *networkingv1.VirtualMeshSpec_MTLSConfig_Shared:
 		return t.configureSharedTrust(
 			mesh,
 			trustModel.Shared,
@@ -145,7 +145,7 @@ func (t *translator) updateMtlsOutputs(
 			localOutputs,
 			mtlsConfig.AutoRestartPods,
 		)
-	case *v1.VirtualMeshSpec_MTLSConfig_Limited:
+	case *networkingv1.VirtualMeshSpec_MTLSConfig_Limited:
 		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}
 
@@ -156,7 +156,7 @@ func (t *translator) updateMtlsOutputs(
 // otherwise will return the user-provided secret ref in the mtls config
 func (t *translator) configureSharedTrust(
 	mesh *discoveryv1.Mesh,
-	sharedTrust *v1.VirtualMeshSpec_MTLSConfig_SharedTrust,
+	sharedTrust *networkingv1.SharedTrust,
 	virtualMeshRef *skv2corev1.ObjectRef,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
@@ -177,7 +177,7 @@ func (t *translator) configureSharedTrust(
 	)
 
 	switch typedCaSource := rootCA.CaSource.(type) {
-	case *v1.VirtualMeshSpec_RootCertificateAuthority_Generated:
+	case *networkingv1.RootCertificateAuthority_Generated:
 		rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
 			typedCaSource.Generated,
 			virtualMeshRef,
@@ -189,17 +189,14 @@ func (t *translator) configureSharedTrust(
 		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
 			SigningCertificateSecret: rootCaSecret,
 		}
-	case *v1.VirtualMeshSpec_RootCertificateAuthority_Secret:
+	case *networkingv1.RootCertificateAuthority_Secret:
 		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
 			SigningCertificateSecret: typedCaSource.Secret,
 		}
-		// issuedCertificate.
-	case *v1.VirtualMeshSpec_RootCertificateAuthority_Vault:
-		panic("not implemented yet")
 	}
 	// Append the VirtualMesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
 
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
 	istioOutputs.AddPodBounceDirectives(podBounceDirective)
@@ -249,7 +246,7 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 	}
 
 	// Append the VirtualMesh as a parent to the output secret
-	metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
 
 	localOutputs.AddSecrets(selfSignedCertSecret)
 

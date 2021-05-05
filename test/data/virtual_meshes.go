@@ -33,13 +33,17 @@ func SelfSignedVirtualMesh(
 		Spec: networkingv1.VirtualMeshSpec{
 			Meshes: meshes,
 			MtlsConfig: &networkingv1.VirtualMeshSpec_MTLSConfig{
-				TrustModel: &networkingv1.VirtualMeshSpec_MTLSConfig_Shared{Shared: &networkingv1.VirtualMeshSpec_MTLSConfig_SharedTrust{
-					RootCertificateAuthority: &networkingv1.VirtualMeshSpec_RootCertificateAuthority{
-						CaSource: &networkingv1.VirtualMeshSpec_RootCertificateAuthority_Generated{
-							Generated: &commonv1.CommonCertOptions{},
+				TrustModel: &networkingv1.VirtualMeshSpec_MTLSConfig_Shared{
+					Shared: &networkingv1.SharedTrust{
+						CertificateAuthority: &networkingv1.SharedTrust_RootCertificateAuthority{
+							RootCertificateAuthority: &networkingv1.RootCertificateAuthority{
+								CaSource: &networkingv1.RootCertificateAuthority_Generated{
+									Generated: &commonv1.CommonCertOptions{},
+								},
+							},
 						},
 					},
-				}},
+				},
 				AutoRestartPods: true,
 			},
 			Federation: &networkingv1.VirtualMeshSpec_Federation{

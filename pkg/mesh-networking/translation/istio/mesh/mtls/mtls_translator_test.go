@@ -94,10 +94,12 @@ var _ = Describe("MtlsTranslator", func() {
 			Spec: &networkingv1.VirtualMeshSpec{
 				MtlsConfig: &networkingv1.VirtualMeshSpec_MTLSConfig{
 					TrustModel: &networkingv1.VirtualMeshSpec_MTLSConfig_Shared{
-						Shared: &networkingv1.VirtualMeshSpec_MTLSConfig_SharedTrust{
-							RootCertificateAuthority: &networkingv1.VirtualMeshSpec_RootCertificateAuthority{
-								CaSource: &networkingv1.VirtualMeshSpec_RootCertificateAuthority_Generated{
-									Generated: certSettings,
+						Shared: &networkingv1.SharedTrust{
+							CertificateAuthority: &networkingv1.SharedTrust_RootCertificateAuthority{
+								RootCertificateAuthority: &networkingv1.RootCertificateAuthority{
+									CaSource: &networkingv1.RootCertificateAuthority_Generated{
+										Generated: certSettings,
+									},
 								},
 							},
 						},
@@ -161,12 +163,14 @@ var _ = Describe("MtlsTranslator", func() {
 			Spec: &networkingv1.VirtualMeshSpec{
 				MtlsConfig: &networkingv1.VirtualMeshSpec_MTLSConfig{
 					TrustModel: &networkingv1.VirtualMeshSpec_MTLSConfig_Shared{
-						Shared: &networkingv1.VirtualMeshSpec_MTLSConfig_SharedTrust{
-							RootCertificateAuthority: &networkingv1.VirtualMeshSpec_RootCertificateAuthority{
-								CaSource: &networkingv1.VirtualMeshSpec_RootCertificateAuthority_Secret{
-									Secret: &skv2corev1.ObjectRef{
-										Name:      generatedSecret.GetName(),
-										Namespace: generatedSecret.GetNamespace(),
+						Shared: &networkingv1.SharedTrust{
+							CertificateAuthority: &networkingv1.SharedTrust_RootCertificateAuthority{
+								RootCertificateAuthority: &networkingv1.RootCertificateAuthority{
+									CaSource: &networkingv1.RootCertificateAuthority_Secret{
+										Secret: &skv2corev1.ObjectRef{
+											Name:      generatedSecret.GetName(),
+											Namespace: generatedSecret.GetNamespace(),
+										},
 									},
 								},
 							},
