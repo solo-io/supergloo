@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1490
+    description: Optimize subset translation by reducing iteration across Destinations. Surface required subsets on Destination status with new `required_subsets` field.

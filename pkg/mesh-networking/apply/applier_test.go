@@ -575,6 +575,202 @@ var _ = Describe("Applier", func() {
 			Expect(destination2.Status.AppliedFederation).To(Equal(expectedAppliedFederation2))
 		})
 	})
+
+	Context("required subsets", func() {
+		var applier Applier
+
+		BeforeEach(func() {
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {}}
+			applier = NewApplier(translator)
+		})
+
+		It("computes a Destination's required subsets", func() {
+			destination := &discoveryv1.Destination{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "ms1",
+					Namespace: "ns",
+				},
+				Spec: discoveryv1.DestinationSpec{
+					Mesh: &skv2corev1.ObjectRef{
+						Name:      "mesh1",
+						Namespace: "ns",
+					},
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
+								Name:        "svc-name",
+								Namespace:   "svc-namespace",
+								ClusterName: "svc-cluster",
+							},
+						},
+					},
+				},
+			}
+			workload := &discoveryv1.Workload{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "wkld1",
+					Namespace: "ns",
+				},
+				Spec: discoveryv1.WorkloadSpec{
+					Mesh: &skv2corev1.ObjectRef{
+						Name:      "mesh1",
+						Namespace: "ns",
+					},
+				},
+			}
+			mesh := &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh1",
+					Namespace: "ns",
+				},
+			}
+			trafficPolicy1 := &networkingv1.TrafficPolicy{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tp1",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.TrafficPolicySpec{
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									Weight: 50,
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        destination.Spec.GetKubeService().Ref.Name,
+											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
+											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
+											Subset: map[string]string{
+												"version": "v1",
+											},
+										},
+									},
+								},
+								{
+									Weight: 50,
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        "ignored",
+											Namespace:   "ignored",
+											ClusterName: "ignored",
+											Subset: map[string]string{
+												"version": "v2",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			trafficPolicy2 := &networkingv1.TrafficPolicy{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tp2",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.TrafficPolicySpec{
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									Weight: 50,
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        destination.Spec.GetKubeService().Ref.Name,
+											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
+											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
+											Subset: map[string]string{
+												"version": "v2",
+											},
+										},
+									},
+								},
+								{
+									Weight: 50,
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        "ignored",
+											Namespace:   "ignored",
+											ClusterName: "ignored",
+											Subset: map[string]string{
+												"version": "v2",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			// should not be in required subsets
+			invalidTrafficPolicy := &networkingv1.TrafficPolicy{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tp3",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.TrafficPolicySpec{
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
+										Name:        "nonexistent",
+										Namespace:   "namespace",
+										ClusterName: "cluster",
+									},
+								},
+							},
+						},
+					},
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        destination.Spec.GetKubeService().Ref.Name,
+											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
+											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
+											Subset: map[string]string{
+												"version": "v3",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			snap := input.NewInputLocalSnapshotManualBuilder("").
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy1, trafficPolicy2, invalidTrafficPolicy}).
+				AddWorkloads(discoveryv1.WorkloadSlice{workload}).
+				AddMeshes(discoveryv1.MeshSlice{mesh}).
+				Build()
+
+			applier.Apply(context.TODO(), snap, nil)
+
+			expectedRequiredSubsets := []*discoveryv1.DestinationStatus_RequiredSubsets{
+				{
+					TrafficPolicyRef:   ezkube.MakeObjectRef(trafficPolicy1),
+					ObservedGeneration: trafficPolicy1.Generation,
+					TrafficShift:       trafficPolicy1.Spec.Policy.TrafficShift,
+				},
+				{
+					TrafficPolicyRef:   ezkube.MakeObjectRef(trafficPolicy2),
+					ObservedGeneration: trafficPolicy2.Generation,
+					TrafficShift:       trafficPolicy2.Spec.Policy.TrafficShift,
+				},
+			}
+
+			Expect(destination.Status.RequiredSubsets).To(Equal(expectedRequiredSubsets))
+		})
+
+	})
 })
 
 // NOTE(ilackarms): we implement a test translator here instead of using a mock because

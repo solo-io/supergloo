@@ -22,7 +22,8 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: The Destination is an abstraction for any entity capable of receiving networking requests.
+          description: The Destination is an abstraction for any entity capable of
+            receiving networking requests.
           oneOf:
           - not:
               anyOf:
@@ -55,14 +56,16 @@ spec:
                   items:
                     properties:
                       address:
-                        description: The address of the external service. Can be a domain or an IP.
+                        description: The address of the external service. Can be a
+                          domain or an IP.
                         type: string
                       ports:
                         additionalProperties:
                           maximum: 4294967295
                           minimum: 0
                           type: integer
-                        description: 'The port(s) of the external endpoint. Eg: `https: 443`'
+                        description: 'The port(s) of the external endpoint. Eg: `https:
+                          443`'
                         type: object
                     type: object
                   type: array
@@ -84,7 +87,8 @@ spec:
                         description: A label for the port, eg "http"
                         type: string
                       number:
-                        description: The port number. Must be a valid, non-negative integer port number.
+                        description: The port number. Must be a valid, non-negative
+                          integer port number.
                         maximum: 4294967295
                         minimum: 0
                         type: integer
@@ -115,16 +119,22 @@ spec:
                             labels:
                               additionalProperties:
                                 type: string
-                              description: Labels which belong to this IP. These are taken from the backing workload instance.
+                              description: Labels which belong to this IP. These are
+                                taken from the backing workload instance.
                               type: object
                             subLocality:
-                              description: The zone and sub-zone (if controlled by Istio) of the endpoint.
+                              description: The zone and sub-zone (if controlled by
+                                Istio) of the endpoint.
                               properties:
                                 subZone:
-                                  description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                                  description: A subdivision of zone. Only applies
+                                    to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/)
+                                    for more information.
                                   type: string
                                 zone:
-                                  description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
+                                  description: A subdivision of a geographical region,
+                                    see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone)
+                                    for more information.
                                   type: string
                               type: object
                           type: object
@@ -133,7 +143,8 @@ spec:
                         items:
                           properties:
                             appProtocol:
-                              description: Available in Kubernetes 1.18+, describes the application protocol.
+                              description: Available in Kubernetes 1.18+, describes
+                                the application protocol.
                               type: string
                             name:
                               description: Name of the port
@@ -144,7 +155,8 @@ spec:
                               minimum: 0
                               type: integer
                             protocol:
-                              description: Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
+                              description: Protocol on which this port serves traffic
+                                (HTTP, TCP, UDP, etc...)
                               type: string
                           type: object
                         type: array
@@ -171,18 +183,21 @@ spec:
                       - targetPortNumber
                     properties:
                       appProtocol:
-                        description: Available in Kubernetes 1.18+, describes the application protocol.
+                        description: Available in Kubernetes 1.18+, describes the
+                          application protocol.
                         type: string
                       name:
                         description: Name of the port
                         type: string
                       port:
-                        description: External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
+                        description: External-facing port for this Kubernetes service
+                          (*not* the service's target port on the targeted pods).
                         maximum: 4294967295
                         minimum: 0
                         type: integer
                       protocol:
-                        description: Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
+                        description: Protocol on which this port serves traffic (HTTP,
+                          TCP, UDP, etc...)
                         type: string
                       targetPortName:
                         description: Name of the target port
@@ -208,7 +223,8 @@ spec:
                       type: string
                   type: object
                 region:
-                  description: The region the service resides in, typically representing a large geographic area.
+                  description: The region the service resides in, typically representing
+                    a large geographic area.
                   type: string
                 subsets:
                   additionalProperties:
@@ -223,7 +239,8 @@ spec:
                 workloadSelectorLabels:
                   additionalProperties:
                     type: string
-                  description: Selectors for the set of pods targeted by the Kubernetes service.
+                  description: Selectors for the set of pods targeted by the Kubernetes
+                    service.
                   type: object
               type: object
             mesh:
@@ -242,7 +259,8 @@ spec:
         status:
           properties:
             appliedAccessPolicies:
-              description: The set of AccessPolicies that have been applied to this Destination.
+              description: The set of AccessPolicies that have been applied to this
+                Destination.
               items:
                 properties:
                   observedGeneration:
@@ -299,7 +317,8 @@ spec:
                         items:
                           properties:
                             kubeServiceMatcher:
-                              description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                              description: Match Kubernetes Services by their labels,
+                                namespaces, and/or clusters.
                               properties:
                                 clusters:
                                   description: |-
@@ -337,13 +356,15 @@ spec:
                                   items:
                                     properties:
                                       clusterName:
-                                        description: name of the cluster in which the resource exists
+                                        description: name of the cluster in which
+                                          the resource exists
                                         type: string
                                       name:
                                         description: name of the resource being referenced
                                         type: string
                                       namespace:
-                                        description: namespace of the resource being referenced
+                                        description: namespace of the resource being
+                                          referenced
                                         type: string
                                     type: object
                                   type: array
@@ -357,7 +378,8 @@ spec:
                         items:
                           properties:
                             kubeIdentityMatcher:
-                              description: Match request identities based on the Kubernetes namespace and cluster.
+                              description: Match request identities based on the Kubernetes
+                                namespace and cluster.
                               properties:
                                 clusters:
                                   description: |-
@@ -377,7 +399,8 @@ spec:
                                   type: array
                               type: object
                             kubeServiceAccountRefs:
-                              description: Match request identities based on the Kubernetes service account of the request.
+                              description: Match request identities based on the Kubernetes
+                                service account of the request.
                               properties:
                                 serviceAccounts:
                                   description: |-
@@ -387,13 +410,15 @@ spec:
                                   items:
                                     properties:
                                       clusterName:
-                                        description: name of the cluster in which the resource exists
+                                        description: name of the cluster in which
+                                          the resource exists
                                         type: string
                                       name:
                                         description: name of the resource being referenced
                                         type: string
                                       namespace:
-                                        description: namespace of the resource being referenced
+                                        description: namespace of the resource being
+                                          referenced
                                         type: string
                                     type: object
                                   type: array
@@ -404,7 +429,8 @@ spec:
                 type: object
               type: array
             appliedFederation:
-              description: Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
+              description: Federation metadata. Only populated if this Destination
+                is federated through a VirtualMesh.
               properties:
                 federatedHostname:
                   description: |-
@@ -413,7 +439,8 @@ spec:
                                For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination.
                   type: string
                 federatedToMeshes:
-                  description: The list of Meshes which are able to resolve this Destination's `federated_hostname`.
+                  description: The list of Meshes which are able to resolve this Destination's
+                    `federated_hostname`.
                   items:
                     properties:
                       name:
@@ -442,7 +469,8 @@ spec:
                   type: object
               type: object
             appliedTrafficPolicies:
-              description: The set of TrafficPolicies that have been applied to this Destination.
+              description: The set of TrafficPolicies that have been applied to this
+                Destination.
               items:
                 properties:
                   observedGeneration:
@@ -469,7 +497,8 @@ spec:
                         items:
                           properties:
                             kubeServiceMatcher:
-                              description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                              description: Match Kubernetes Services by their labels,
+                                namespaces, and/or clusters.
                               properties:
                                 clusters:
                                   description: |-
@@ -507,13 +536,15 @@ spec:
                                   items:
                                     properties:
                                       clusterName:
-                                        description: name of the cluster in which the resource exists
+                                        description: name of the cluster in which
+                                          the resource exists
                                         type: string
                                       name:
                                         description: name of the resource being referenced
                                         type: string
                                       namespace:
-                                        description: namespace of the resource being referenced
+                                        description: namespace of the resource being
+                                          referenced
                                         type: string
                                     type: object
                                   type: array
@@ -544,10 +575,12 @@ spec:
                             - regex
                           properties:
                             exact:
-                              description: If specified, the targeted path must exactly match the value.
+                              description: If specified, the targeted path must exactly
+                                match the value.
                               type: string
                             headers:
-                              description: Specify a set of headers which requests must match in entirety (all headers must match).
+                              description: Specify a set of headers which requests
+                                must match in entirety (all headers must match).
                               items:
                                 properties:
                                   invertMatch:
@@ -561,10 +594,12 @@ spec:
                                              - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                                     type: boolean
                                   name:
-                                    description: Specify the name of the header in the request.
+                                    description: Specify the name of the header in
+                                      the request.
                                     type: string
                                   regex:
-                                    description: Specify whether the header value should be treated as regex.
+                                    description: Specify whether the header value
+                                      should be treated as regex.
                                     type: boolean
                                   value:
                                     description: |-
@@ -583,25 +618,32 @@ spec:
                                 the access logs for requests matching this route.
                               type: string
                             prefix:
-                              description: If specified, the targeted path must begin with the prefix.
+                              description: If specified, the targeted path must begin
+                                with the prefix.
                               type: string
                             queryParameters:
-                              description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                              description: Specify a set of URL query parameters which
+                                requests must match in entirety (all query params
+                                must match).
                               items:
                                 properties:
                                   name:
-                                    description: Specify the name of a key that must be present in the requested path's query string.
+                                    description: Specify the name of a key that must
+                                      be present in the requested path's query string.
                                     type: string
                                   regex:
-                                    description: If true, treat `value` as a regular expression.
+                                    description: If true, treat `value` as a regular
+                                      expression.
                                     type: boolean
                                   value:
-                                    description: Specify the value of the query parameter keyed on `name`.
+                                    description: Specify the value of the query parameter
+                                      keyed on `name`.
                                     type: string
                                 type: object
                               type: array
                             regex:
-                              description: If specified, the targeted path must match the regex.
+                              description: If specified, the targeted path must match
+                                the regex.
                               type: string
                           type: object
                         type: array
@@ -635,7 +677,9 @@ spec:
                                   type: string
                                 type: array
                               allowOrigins:
-                                description: String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
+                                description: String patterns that match allowed origins.
+                                  An origin is allowed if any of the string matchers
+                                  match.
                                 items:
                                   oneOf:
                                   - not:
@@ -692,18 +736,24 @@ spec:
                               - abort
                             properties:
                               abort:
-                                description: Abort the request and return the specified error code back to traffic source.
+                                description: Abort the request and return the specified
+                                  error code back to traffic source.
                                 properties:
                                   httpStatus:
-                                    description: Required. HTTP status code to use to abort the request.
+                                    description: Required. HTTP status code to use
+                                      to abort the request.
                                     format: int32
                                     type: integer
                                 type: object
                               fixedDelay:
-                                description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                                description: 'Add a delay of a fixed duration before
+                                  sending the request. Format: `1h`/`1m`/`1s`/`1ms`.
+                                  MUST be >=1ms.'
                                 type: string
                               percentage:
-                                description: Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+                                description: Percentage of requests to be faulted.
+                                  Values range between 0 and 100. If omitted all requests
+                                  will be faulted.
                                 format: double
                                 type: number
                             type: object
@@ -713,26 +763,32 @@ spec:
                               appendRequestHeaders:
                                 additionalProperties:
                                   type: string
-                                description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                description: Additional HTTP headers to add before
+                                  forwarding a request to the destination service.
                                 type: object
                               appendResponseHeaders:
                                 additionalProperties:
                                   type: string
-                                description: Additional HTTP headers to add before returning a response to the caller.
+                                description: Additional HTTP headers to add before
+                                  returning a response to the caller.
                                 type: object
                               removeRequestHeaders:
-                                description: HTTP headers to remove before forwarding a request to the destination service.
+                                description: HTTP headers to remove before forwarding
+                                  a request to the destination service.
                                 items:
                                   type: string
                                 type: array
                               removeResponseHeaders:
-                                description: HTTP headers to remove before returning a response to the caller.
+                                description: HTTP headers to remove before returning
+                                  a response to the caller.
                                 items:
                                   type: string
                                 type: array
                             type: object
                           mirror:
-                            description: Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
+                            description: Mirror traffic to a another destination (traffic
+                              will be sent to its original destination in addition
+                              to the mirrored destinations).
                             oneOf:
                             - not:
                                 anyOf:
@@ -742,10 +798,12 @@ spec:
                               - kubeService
                             properties:
                               kubeService:
-                                description: Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
+                                description: Reference (name, namespace, Gloo Mesh
+                                  cluster) to a Kubernetes service.
                                 properties:
                                   clusterName:
-                                    description: name of the cluster in which the resource exists
+                                    description: name of the cluster in which the
+                                      resource exists
                                     type: string
                                   name:
                                     description: name of the resource being referenced
@@ -755,19 +813,27 @@ spec:
                                     type: string
                                 type: object
                               percentage:
-                                description: Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
+                                description: Percentage of traffic to mirror. If omitted
+                                  all traffic will be mirrored. Values must be between
+                                  0 and 100.
                                 format: double
                                 type: number
                               port:
-                                description: Port on the destination to receive traffic. Required if the destination exposes multiple ports.
+                                description: Port on the destination to receive traffic.
+                                  Required if the destination exposes multiple ports.
                                 maximum: 4294967295
                                 minimum: 0
                                 type: integer
                             type: object
                           mtls:
+<<<<<<< HEAD
                             description: |-
                               Configure mTLS settings. If specified will override global default defined in Settings.
                               DEPRECATED: use DestinationPolicy to configure MTLS
+=======
+                            description: Configure mTLS settings. If specified will
+                              override global default defined in Settings.
+>>>>>>> main
                             properties:
                               istio:
                                 description: Istio TLS settings.
@@ -788,15 +854,21 @@ spec:
                               DEPRECATED: use DestinationPolicy to configure Outlier Detection
                             properties:
                               baseEjectionTime:
-                                description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                                description: 'The minimum ejection duration. Format:
+                                  `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default
+                                  will be used if not set.'
                                 type: string
                               consecutiveErrors:
-                                description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                                description: The number of errors before a host is
+                                  ejected from the connection pool. A default will
+                                  be used if not set.
                                 maximum: 4294967295
                                 minimum: 0
                                 type: integer
                               interval:
-                                description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                                description: 'The time interval between ejection sweep
+                                  analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be
+                                  >= `1ms`. A default will be used if not set.'
                                 type: string
                               maxEjectionPercent:
                                 description: |-
@@ -817,7 +889,9 @@ spec:
                                 format: int32
                                 type: integer
                               perTryTimeout:
-                                description: 'Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                                description: 'Timeout per retry attempt for a given
+                                  request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be
+                                  >= 1ms*.'
                                 type: string
                             type: object
                           trafficShift:
@@ -857,7 +931,8 @@ spec:
                                       description: Specify a Kubernetes Service.
                                       properties:
                                         clusterName:
-                                          description: The Gloo Mesh cluster name (registration name) of the service.
+                                          description: The Gloo Mesh cluster name
+                                            (registration name) of the service.
                                           type: string
                                         name:
                                           description: The name of the service.
@@ -866,14 +941,17 @@ spec:
                                           description: The namespace of the service.
                                           type: string
                                         port:
-                                          description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                          description: Port on the service to receive
+                                            traffic. Required if the service exposes
+                                            more than one port.
                                           maximum: 4294967295
                                           minimum: 0
                                           type: integer
                                         subset:
                                           additionalProperties:
                                             type: string
-                                          description: Specify, by labels, a subset of service instances to route to.
+                                          description: Specify, by labels, a subset
+                                            of service instances to route to.
                                           type: object
                                       type: object
                                     options:
@@ -920,15 +998,19 @@ spec:
                                       description: Specify a VirtualDestination.
                                       properties:
                                         name:
-                                          description: The name of the VirtualDestination object.
+                                          description: The name of the VirtualDestination
+                                            object.
                                           type: string
                                         namespace:
-                                          description: The namespace of the VirtualDestination object.
+                                          description: The namespace of the VirtualDestination
+                                            object.
                                           type: string
                                         subset:
                                           additionalProperties:
                                             type: string
-                                          description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                          description: Specify, by labels, a subset
+                                            of service instances backing the VirtualDestination
+                                            to route to.
                                           type: object
                                       type: object
                                     weight:
@@ -949,7 +1031,8 @@ spec:
                         items:
                           properties:
                             kubeWorkloadMatcher:
-                              description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                              description: Match Kubernetes workloads by their labels,
+                                namespaces, and/or clusters.
                               properties:
                                 clusters:
                                   description: |-
@@ -993,6 +1076,101 @@ spec:
                 recent version of this resource.
               format: int64
               type: integer
+            requiredSubsets:
+              description: The set of TrafficPolicy traffic shifts that reference
+                subsets on this Destination.
+              items:
+                properties:
+                  observedGeneration:
+                    description: The observed generation of the TrafficPolicy.
+                    format: int64
+                    type: integer
+                  trafficPolicyRef:
+                    description: Reference to the TrafficPolicy object.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                  trafficShift:
+                    description: The applied traffic shift.
+                    properties:
+                      destinations:
+                        description: Specify weighted traffic shift destinations.
+                        items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - kubeService
+                              - required:
+                                - virtualDestination
+                          - required:
+                            - kubeService
+                          - required:
+                            - virtualDestination
+                          properties:
+                            kubeService:
+                              description: Specify a Kubernetes Service.
+                              properties:
+                                clusterName:
+                                  description: The Gloo Mesh cluster name (registration
+                                    name) of the service.
+                                  type: string
+                                name:
+                                  description: The name of the service.
+                                  type: string
+                                namespace:
+                                  description: The namespace of the service.
+                                  type: string
+                                port:
+                                  description: Port on the service to receive traffic.
+                                    Required if the service exposes more than one
+                                    port.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                subset:
+                                  additionalProperties:
+                                    type: string
+                                  description: Specify, by labels, a subset of service
+                                    instances to route to.
+                                  type: object
+                              type: object
+                            virtualDestination:
+                              description: Specify a VirtualDestination.
+                              properties:
+                                name:
+                                  description: The name of the VirtualDestination
+                                    object.
+                                  type: string
+                                namespace:
+                                  description: The namespace of the VirtualDestination
+                                    object.
+                                  type: string
+                                subset:
+                                  additionalProperties:
+                                    type: string
+                                  description: Specify, by labels, a subset of service
+                                    instances backing the VirtualDestination to route
+                                    to.
+                                  type: object
+                              type: object
+                            weight:
+                              description: |-
+                                Specify the proportion of traffic to be forwarded to this destination.
+                                Weights across all of the `destinations` must sum to 100.
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                          type: object
+                        type: array
+                    type: object
+                type: object
+              type: array
           type: object
       type: object
   versions:
@@ -1036,7 +1214,8 @@ spec:
               description: Metadata specific to an App Mesh controlled workload.
               properties:
                 ports:
-                  description: Ports exposed by this workload. Needed for declaring App Mesh VirtualNode listeners.
+                  description: Ports exposed by this workload. Needed for declaring
+                    App Mesh VirtualNode listeners.
                   items:
                     properties:
                       port:
@@ -1048,14 +1227,16 @@ spec:
                     type: object
                   type: array
                 virtualNodeName:
-                  description: The value of the env var APPMESH_VIRTUAL_NODE_NAME on the App Mesh envoy proxy container.
+                  description: The value of the env var APPMESH_VIRTUAL_NODE_NAME
+                    on the App Mesh envoy proxy container.
                   type: string
               type: object
             kubernetes:
               description: Information describing workloads backed by Kubernetes Pods.
               properties:
                 controller:
-                  description: Resource reference to the Kubernetes Pod controller (i.e. Deployment, ReplicaSet, DaemonSet) for this Workload..
+                  description: Resource reference to the Kubernetes Pod controller
+                    (i.e. Deployment, ReplicaSet, DaemonSet) for this Workload..
                   properties:
                     clusterName:
                       description: name of the cluster in which the resource exists
@@ -1070,10 +1251,12 @@ spec:
                 podLabels:
                   additionalProperties:
                     type: string
-                  description: Labels on the Pod itself (read from `metadata.labels`), which are used to determine which Services front this workload.
+                  description: Labels on the Pod itself (read from `metadata.labels`),
+                    which are used to determine which Services front this workload.
                   type: object
                 serviceAccountName:
-                  description: Service account associated with the Pods owned by this controller.
+                  description: Service account associated with the Pods owned by this
+                    controller.
                   type: string
               type: object
             mesh:
@@ -1090,11 +1273,13 @@ spec:
         status:
           properties:
             appliedAccessLogRecords:
-              description: The set of AccessLogRecords that have been applied to this Workload.
+              description: The set of AccessLogRecords that have been applied to this
+                Workload.
               items:
                 properties:
                   errors:
-                    description: Any errors encountered while processing the AccessLogRecord object
+                    description: Any errors encountered while processing the AccessLogRecord
+                      object
                     items:
                       type: string
                     type: array
@@ -1115,11 +1300,13 @@ spec:
                 type: object
               type: array
             appliedWasmDeployments:
-              description: The set of WasmDeployments that have been applied to this Workload.
+              description: The set of WasmDeployments that have been applied to this
+                Workload.
               items:
                 properties:
                   errors:
-                    description: Any errors encountered while processing the WasmDeployment object.
+                    description: Any errors encountered while processing the WasmDeployment
+                      object.
                     items:
                       type: string
                     type: array
@@ -1202,41 +1389,49 @@ spec:
             - osm
           properties:
             agentInfo:
-              description: Describes the Gloo Mesh agent if it has been installed to the managed cluster.
+              description: Describes the Gloo Mesh agent if it has been installed
+                to the managed cluster.
               properties:
                 agentNamespace:
                   description: The namespace in which the Gloo Mesh agent is installed.
                   type: string
               type: object
             awsAppMesh:
-              description: Describes an [AWS App Mesh](https://aws.amazon.com/app-mesh/) service mesh.
+              description: Describes an [AWS App Mesh](https://aws.amazon.com/app-mesh/)
+                service mesh.
               properties:
                 arn:
                   description: The unique AWS ARN associated with the App Mesh instance.
                   type: string
                 awsAccountId:
-                  description: The AWS Account ID associated with the Mesh. Populated at REST API registration time.
+                  description: The AWS Account ID associated with the Mesh. Populated
+                    at REST API registration time.
                   type: string
                 awsName:
-                  description: The AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
+                  description: The AWS name for the App Mesh instance, must be unique
+                    across all AppMesh instances owned by the AWS account.
                   type: string
                 clusters:
-                  description: The Kubernetes clusters on which sidecars for this App Mesh instance have been discovered.
+                  description: The Kubernetes clusters on which sidecars for this
+                    App Mesh instance have been discovered.
                   items:
                     type: string
                   type: array
                 region:
-                  description: The AWS region the App Mesh control plane resources exist in.
+                  description: The AWS region the App Mesh control plane resources
+                    exist in.
                   type: string
               type: object
             consulConnect:
-              description: Describes a [Consul Connect](https://www.consul.io/docs/connect) service mesh.
+              description: Describes a [Consul Connect](https://www.consul.io/docs/connect)
+                service mesh.
               properties:
                 installation:
                   description: Describes the ConsulConnect control plane deployment.
                   properties:
                     cluster:
-                      description: The Gloo Mesh cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane
+                        has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1244,7 +1439,8 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: The labels on the control plane pods (read from the deployment).
+                      description: The labels on the control plane pods (read from
+                        the deployment).
                       type: object
                     region:
                       description: |-
@@ -1278,7 +1474,8 @@ spec:
                       - ip
                     properties:
                       dnsName:
-                        description: Will be populated if the LoadBalancer Address is a DNS name
+                        description: Will be populated if the LoadBalancer Address
+                          is a DNS name
                         type: string
                       externalAddress:
                         description: 'DEPRECATED: in favor of dns_name or external_ip'
@@ -1293,7 +1490,8 @@ spec:
                         minimum: 0
                         type: integer
                       ip:
-                        description: Will be populated if the LoadBalancer Address is an IP
+                        description: Will be populated if the LoadBalancer Address
+                          is an IP
                         type: string
                       namespace:
                         description: the namespace in which the ingress gateway is running.
@@ -1318,7 +1516,8 @@ spec:
                   description: Describes the Istio control plane deployment.
                   properties:
                     cluster:
-                      description: The Gloo Mesh cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane
+                        has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1326,7 +1525,8 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: The labels on the control plane pods (read from the deployment).
+                      description: The labels on the control plane pods (read from
+                        the deployment).
                       type: object
                     region:
                       description: |-
@@ -1341,10 +1541,12 @@ spec:
                       type: string
                   type: object
                 istiodServiceAccount:
-                  description: The istiod service account which determines identity for the Istio CA cert.
+                  description: The istiod service account which determines identity
+                    for the Istio CA cert.
                   type: string
                 smartDnsProxyingEnabled:
-                  description: True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
+                  description: True if smart DNS proxying is enabled, which allows
+                    for arbitrary DNS domains.
                   type: boolean
                 trustDomain:
                   description: |-
@@ -1356,13 +1558,16 @@ spec:
               description: Describes a [Linkerd](https://linkerd.io/) service mesh.
               properties:
                 clusterDomain:
-                  description: The cluster domain suffix this Linkerd mesh is configured with. See [this reference](https://linkerd.io/2/tasks/using-custom-domain/) for more info.
+                  description: The cluster domain suffix this Linkerd mesh is configured
+                    with. See [this reference](https://linkerd.io/2/tasks/using-custom-domain/)
+                    for more info.
                   type: string
                 installation:
                   description: Describes the Linkerd control plane deployment.
                   properties:
                     cluster:
-                      description: The Gloo Mesh cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane
+                        has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1370,7 +1575,8 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: The labels on the control plane pods (read from the deployment).
+                      description: The labels on the control plane pods (read from
+                        the deployment).
                       type: object
                     region:
                       description: |-
@@ -1386,13 +1592,15 @@ spec:
                   type: object
               type: object
             osm:
-              description: Describes an [Open Service Mesh](https://openservicemesh.io/) service mesh.
+              description: Describes an [Open Service Mesh](https://openservicemesh.io/)
+                service mesh.
               properties:
                 installation:
                   description: Describes the OSM control plane deployment.
                   properties:
                     cluster:
-                      description: The Gloo Mesh cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane
+                        has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1400,7 +1608,8 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: The labels on the control plane pods (read from the deployment).
+                      description: The labels on the control plane pods (read from
+                        the deployment).
                       type: object
                     region:
                       description: |-
@@ -1464,7 +1673,8 @@ spec:
                   description: The spec of the last known valid VirtualMesh.
                   properties:
                     federation:
-                      description: Specify how to federate Destinations across service mesh boundaries.
+                      description: Specify how to federate Destinations across service
+                        mesh boundaries.
                       oneOf:
                       - not:
                           anyOf:
@@ -1505,7 +1715,8 @@ spec:
                                 items:
                                   properties:
                                     kubeServiceMatcher:
-                                      description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                                      description: Match Kubernetes Services by their
+                                        labels, namespaces, and/or clusters.
                                       properties:
                                         clusters:
                                           description: |-
@@ -1533,7 +1744,8 @@ spec:
                                           type: array
                                       type: object
                                     kubeServiceRefs:
-                                      description: Match Kubernetes Services by direct reference.
+                                      description: Match Kubernetes Services by direct
+                                        reference.
                                       properties:
                                         services:
                                           description: |-
@@ -1543,13 +1755,16 @@ spec:
                                           items:
                                             properties:
                                               clusterName:
-                                                description: name of the cluster in which the resource exists
+                                                description: name of the cluster in
+                                                  which the resource exists
                                                 type: string
                                               name:
-                                                description: name of the resource being referenced
+                                                description: name of the resource
+                                                  being referenced
                                                 type: string
                                               namespace:
-                                                description: namespace of the resource being referenced
+                                                description: namespace of the resource
+                                                  being referenced
                                                 type: string
                                             type: object
                                           type: array
@@ -1566,7 +1781,8 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 type: array
@@ -1574,7 +1790,8 @@ spec:
                           type: array
                       type: object
                     globalAccessPolicy:
-                      description: Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
+                      description: Specify a global access policy for all Workloads
+                        and Destinations associated with this VirtualMesh.
                       enum:
                       - MESH_DEFAULT
                       - ENABLED
@@ -1614,10 +1831,13 @@ spec:
                             `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info.
                           type: boolean
                         limited:
-                          description: Limited trust (selectively allow communication between Workloads and Destinations in the grouped Meshes). *Currently not available.*
+                          description: Limited trust (selectively allow communication
+                            between Workloads and Destinations in the grouped Meshes).
+                            *Currently not available.*
                           type: object
                         shared:
-                          description: Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes).
+                          description: Shared trust (allow communication between any
+                            pair of Workloads and Destinations in the grouped Meshes).
                           properties:
                             rootCertificateAuthority:
                               description: |-
@@ -1636,18 +1856,22 @@ spec:
                                 - secret
                               properties:
                                 generated:
-                                  description: Generate a self-signed root certificate with the given options.
+                                  description: Generate a self-signed root certificate
+                                    with the given options.
                                   properties:
                                     orgName:
-                                      description: Root cert organization name. Defaults to "gloo-mesh".
+                                      description: Root cert organization name. Defaults
+                                        to "gloo-mesh".
                                       type: string
                                     rsaKeySizeBytes:
-                                      description: Size in bytes of the root cert's private key. Defaults to 4096.
+                                      description: Size in bytes of the root cert's
+                                        private key. Defaults to 4096.
                                       maximum: 4294967295
                                       minimum: 0
                                       type: integer
                                     ttlDays:
-                                      description: Number of days before root cert expires. Defaults to 365.
+                                      description: Number of days before root cert
+                                        expires. Defaults to 365.
                                       maximum: 4294967295
                                       minimum: 0
                                       type: integer
@@ -1661,7 +1885,8 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                               type: object

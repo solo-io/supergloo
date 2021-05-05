@@ -45,7 +45,8 @@ spec:
                   - headerMatcher
                 properties:
                   headerMatcher:
-                    description: Matches against a request or response header. Omit to match any headers.
+                    description: Matches against a request or response header. Omit
+                      to match any headers.
                     properties:
                       invertMatch:
                         description: |-
@@ -61,7 +62,8 @@ spec:
                         description: Specify the name of the header in the request.
                         type: string
                       regex:
-                        description: Specify whether the header value should be treated as regex.
+                        description: Specify whether the header value should be treated
+                          as regex.
                         type: boolean
                       value:
                         description: |-
@@ -70,7 +72,8 @@ spec:
                         type: string
                     type: object
                   statusCodeMatcher:
-                    description: Matches against a response status code. Omit to match any status code.
+                    description: Matches against a response status code. Omit to match
+                      any status code.
                     properties:
                       comparator:
                         description: The comparison type used for matching.
@@ -114,7 +117,8 @@ spec:
               items:
                 properties:
                   kubeWorkloadMatcher:
-                    description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes workloads by their labels, namespaces,
+                      and/or clusters.
                     properties:
                       clusters:
                         description: |-
@@ -147,7 +151,8 @@ spec:
         status:
           properties:
             errors:
-              description: Any errors encountered during processing. Also reported to any Workloads that this object applies to.
+              description: Any errors encountered during processing. Also reported
+                to any Workloads that this object applies to.
               items:
                 type: string
               type: array
@@ -169,7 +174,8 @@ spec:
               - FAILED
               type: string
             workloads:
-              description: references to workloads that this AccessLogRecord applies to
+              description: references to workloads that this AccessLogRecord applies
+                to
               items:
                 properties:
                   name:

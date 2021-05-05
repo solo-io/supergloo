@@ -153,19 +153,19 @@ func resolveHostPortSubsetVirtualDestination(
 // traverses all the applied traffic policies to find subsets matching this destination
 func MakeDestinationRuleSubsetsForDestination(
 	destination *discoveryv1.Destination,
-	allDestinations discoveryv1sets.DestinationSet,
 	sourceCluster string,
 ) []*networkingv1alpha3spec.Subset {
-	subsets := makeDestinationRuleSubsets(
-		allDestinations,
-		func(weightedDestination *networkingv1.WeightedDestination) bool {
-			switch destType := weightedDestination.DestinationType.(type) {
-			case *networkingv1.WeightedDestination_KubeService:
-				return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
-			}
-			return false
-		},
-	)
+	subsets := makeDestinationRuleSubsets(destination.Status.GetRequiredSubsets())
+	// subsets := makeDestinationRuleSubsets(
+	// 	allDestinations,
+	// 	func(weightedDestination *networkingv1.WeightedDestination) bool {
+	// 		switch destType := weightedDestination.DestinationType.(type) {
+	// 		case *networkingv1.WeightedDestination_KubeService:
+	// 			return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
+	// 		}
+	// 		return false
+	// 	},
+	// )
 
 	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated Destination,
 	// which contain all the matching subset names for the remote destination rule.
@@ -194,16 +194,17 @@ func MakeDestinationRuleSubsetsForVirtualDestination(
 	virtualDestination *v1beta1.VirtualDestination,
 	allTrafficTargets discoveryv1sets.DestinationSet,
 ) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
-		allTrafficTargets,
-		func(weightedDestination *networkingv1.WeightedDestination) bool {
-			virtualDestinationDest := weightedDestination.GetVirtualDestination()
-			if virtualDestinationDest == nil {
-				return false
-			}
-			return ezkube.RefsMatch(ezkube.MakeObjectRef(virtualDestination), virtualDestinationDest)
-		},
-	)
+	makeDestinationRuleSubsets(virtualDestination.Status.GetRequiredSubsets())
+	// return makeDestinationRuleSubsets(
+	// 	allTrafficTargets,
+	// 	func(weightedDestination *networkingv1.WeightedDestination) bool {
+	// 		virtualDestinationDest := weightedDestination.GetVirtualDestination()
+	// 		if virtualDestinationDest == nil {
+	// 			return false
+	// 		}
+	// 		return ezkube.RefsMatch(ezkube.MakeObjectRef(virtualDestination), virtualDestinationDest)
+	// 	},
+	// )
 }
 
 // used in DestinationRule translator as well
@@ -234,8 +235,7 @@ func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 }
 
 func makeDestinationRuleSubsets(
-	allDestinations discoveryv1sets.DestinationSet,
-	destinationMatchFunc func(weightedDestination *networkingv1.WeightedDestination) bool,
+	requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -250,16 +250,13 @@ func makeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	for _, destination := range allDestinations.UnsortedList() {
-		for _, policy := range destination.Status.AppliedTrafficPolicies {
-			trafficShiftDestinations := policy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
-			for _, dest := range trafficShiftDestinations {
-				if destinationMatchFunc(dest) {
-					switch destType := dest.DestinationType.(type) {
-					case *networkingv1.WeightedDestination_KubeService:
-						appendUniqueSubset(destType.KubeService.Subset)
-					}
-				}
+	for _, requiredSubset := range requiredSubsets {
+		for _, dest := range requiredSubset.TrafficShift.Destinations {
+			switch destType := dest.DestinationType.(type) {
+			case *networkingv1.WeightedDestination_KubeService:
+				appendUniqueSubset(destType.KubeService.Subset)
+			case *networkingv1.WeightedDestination_VirtualDestination_:
+				appendUniqueSubset(destType.VirtualDestination.Subset)
 			}
 		}
 	}
