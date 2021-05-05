@@ -164,15 +164,6 @@ func (t *translator) configureSharedTrust(
 ) error {
 	rootCA := sharedTrust.GetRootCertificateAuthority()
 
-	rootCaSecret, err := t.getOrCreateRootCaSecret(
-		rootCA,
-		virtualMeshRef,
-		localOutputs,
-	)
-	if err != nil {
-		return err
-	}
-
 	agentInfo := mesh.Spec.AgentInfo
 	if agentInfo == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("cannot configure root certificates for mesh %v which has no cert-agent", sets.Key(mesh))
@@ -181,11 +172,41 @@ func (t *translator) configureSharedTrust(
 
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
-		rootCaSecret,
+		// rootCaSecret,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
 	)
 
+	// rootCaSecret, err := t.getOrCreateRootCaSecret(
+	// 	rootCA,
+	// 	virtualMeshRef,
+	// 	localOutputs,
+	// )
+	// if err != nil {
+	// 	return err
+	// }
+
+	switch typedCaSource := rootCA.CaSource.(type) {
+	case *v1.VirtualMeshSpec_RootCertificateAuthority_Generated:
+		rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
+			rootCA,
+			virtualMeshRef,
+			localOutputs,
+		)
+		if err != nil {
+			return err
+		}
+		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
+			SigningCertificateSecret: rootCaSecret,
+		}
+	case *v1.VirtualMeshSpec_RootCertificateAuthority_Secret:
+		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
+			SigningCertificateSecret: typedCaSource.Secret,
+		}
+		// issuedCertificate.
+	case *v1.VirtualMeshSpec_RootCertificateAuthority_Vault:
+		panic("not implemented yet")
+	}
 	// Append the VirtualMesh as a parent to each output resource
 	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1.VirtualMesh{}.GVK())
@@ -197,7 +218,7 @@ func (t *translator) configureSharedTrust(
 
 // will create the secret if it is self-signed,
 // otherwise will return the user-provided secret ref in the mtls config
-func (t *translator) getOrCreateRootCaSecret(
+func (t *translator) getOrCreateGeneratedCaSecret(
 	rootCA *v1.VirtualMeshSpec_RootCertificateAuthority,
 	virtualMeshRef *skv2corev1.ObjectRef,
 	localOutputs local.Builder,
@@ -252,7 +273,7 @@ func (t *translator) getOrCreateRootCaSecret(
 
 func (t *translator) constructIssuedCertificate(
 	mesh *discoveryv1.Mesh,
-	rootCaSecret *skv2corev1.ObjectRef,
+	// rootCaSecret *skv2corev1.ObjectRef,
 	agentNamespace string,
 	autoRestartPods bool,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
@@ -310,9 +331,9 @@ func (t *translator) constructIssuedCertificate(
 		Spec: certificatesv1.IssuedCertificateSpec{
 			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
 			Org:   defaultIstioOrg,
-			Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
-				SigningCertificateSecret: rootCaSecret,
-			},
+			// Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
+			// 	SigningCertificateSecret: rootCaSecret,
+			// },
 			IssuedCertificateSecret: istioCaCerts,
 			PodBounceDirective:      podBounceRef,
 		},

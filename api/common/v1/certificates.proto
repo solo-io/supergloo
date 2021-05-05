@@ -50,7 +50,8 @@ message VaultCA {
     // default value "/v1/auth/kubernetes" will be used.
     string path = 1;
 
-    .core.skv2.solo.io.ObjectRef secret_ref = 2;
+    // Reference to a service account 
+    .core.skv2.solo.io.ObjectRef sa_ref = 2;
 
     // Key in the token to search for the sa_token
     // Default to "token"
