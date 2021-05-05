@@ -172,24 +172,14 @@ func (t *translator) configureSharedTrust(
 
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
-		// rootCaSecret,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
 	)
 
-	// rootCaSecret, err := t.getOrCreateRootCaSecret(
-	// 	rootCA,
-	// 	virtualMeshRef,
-	// 	localOutputs,
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-
 	switch typedCaSource := rootCA.CaSource.(type) {
 	case *v1.VirtualMeshSpec_RootCertificateAuthority_Generated:
 		rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
-			rootCA,
+			typedCaSource.Generated,
 			virtualMeshRef,
 			localOutputs,
 		)
@@ -219,54 +209,49 @@ func (t *translator) configureSharedTrust(
 // will create the secret if it is self-signed,
 // otherwise will return the user-provided secret ref in the mtls config
 func (t *translator) getOrCreateGeneratedCaSecret(
-	rootCA *v1.VirtualMeshSpec_RootCertificateAuthority,
+	generatedRootCa *commonv1.CommonCertOptions,
 	virtualMeshRef *skv2corev1.ObjectRef,
 	localOutputs local.Builder,
 ) (*skv2corev1.ObjectRef, error) {
-	if rootCA == nil || rootCA.CaSource == nil {
-		rootCA = defaultSelfSignedRootCa
+
+	if generatedRootCa == nil {
+		generatedRootCa = defaultSelfSignedRootCa.GetGenerated()
 	}
 
-	var rootCaSecret *skv2corev1.ObjectRef
-	switch caType := rootCA.CaSource.(type) {
-	case *v1.VirtualMeshSpec_RootCertificateAuthority_Generated:
-		generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
-		// write the signing secret to the gloomesh namespace
-		generatedSecretNamespace := defaults.GetPodNamespace()
-		// use the existing secret if it exists
-		rootCaSecret = &skv2corev1.ObjectRef{
-			Name:      generatedSecretName,
-			Namespace: generatedSecretNamespace,
-		}
-		selfSignedCertSecret, err := t.secrets.Find(rootCaSecret)
+	generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
+	// write the signing secret to the gloomesh namespace
+	generatedSecretNamespace := defaults.GetPodNamespace()
+	// use the existing secret if it exists
+	rootCaSecret := &skv2corev1.ObjectRef{
+		Name:      generatedSecretName,
+		Namespace: generatedSecretNamespace,
+	}
+	selfSignedCertSecret, err := t.secrets.Find(rootCaSecret)
+	if err != nil {
+		selfSignedCert, err := generateSelfSignedCert(generatedRootCa)
 		if err != nil {
-			selfSignedCert, err := generateSelfSignedCert(caType.Generated)
-			if err != nil {
-				// should never happen
-				return nil, err
-			}
-			// the self signed cert goes to the master/local cluster
-			selfSignedCertSecret = &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: generatedSecretName,
-					// write to the agent namespace
-					Namespace: generatedSecretNamespace,
-					// ensure the secret is written to the maser/local cluster
-					ClusterName: "",
-					Labels:      metautils.TranslatedObjectLabels(),
-				},
-				Data: selfSignedCert.ToSecretData(),
-				Type: signingCertSecretType,
-			}
+			// should never happen
+			return nil, err
 		}
-
-		// Append the VirtualMesh as a parent to the output secret
-		metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1.VirtualMesh{}.GVK())
-
-		localOutputs.AddSecrets(selfSignedCertSecret)
-	case *v1.VirtualMeshSpec_RootCertificateAuthority_Secret:
-		rootCaSecret = caType.Secret
+		// the self signed cert goes to the master/local cluster
+		selfSignedCertSecret = &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: generatedSecretName,
+				// write to the agent namespace
+				Namespace: generatedSecretNamespace,
+				// ensure the secret is written to the maser/local cluster
+				ClusterName: "",
+				Labels:      metautils.TranslatedObjectLabels(),
+			},
+			Data: selfSignedCert.ToSecretData(),
+			Type: signingCertSecretType,
+		}
 	}
+
+	// Append the VirtualMesh as a parent to the output secret
+	metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1.VirtualMesh{}.GVK())
+
+	localOutputs.AddSecrets(selfSignedCertSecret)
 
 	return rootCaSecret, nil
 }
