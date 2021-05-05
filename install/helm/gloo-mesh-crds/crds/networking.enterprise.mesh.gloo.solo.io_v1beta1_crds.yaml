@@ -603,11 +603,26 @@ spec:
                                 - kubeService
                               - required:
                                 - virtualDestination
+                              - required:
+                                - static
+                              - required:
+                                - clusterHeader
                           - required:
                             - kubeService
                           - required:
                             - virtualDestination
+                          - required:
+                            - static
+                          - required:
+                            - clusterHeader
                           properties:
+                            clusterHeader:
+                              description: |-
+                                Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                                If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                                Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                                {{/* NOTE: unimplemented */}}
+                              type: string
                             kubeService:
                               description: Specify a Kubernetes Service.
                               properties:
@@ -634,6 +649,52 @@ spec:
                                   description: Specify, by labels, a subset of service
                                     instances to route to.
                                   type: object
+                              type: object
+                            options:
+                              description: |-
+                                additional options / config for a route which will be applied
+                                when this destination is selected.
+                              properties:
+                                headerManipulation:
+                                  description: manipualte headers on traffic sent
+                                    to this destination
+                                  properties:
+                                    appendRequestHeaders:
+                                      additionalProperties:
+                                        type: string
+                                      description: Additional HTTP headers to add
+                                        before forwarding a request to the destination
+                                        service.
+                                      type: object
+                                    appendResponseHeaders:
+                                      additionalProperties:
+                                        type: string
+                                      description: Additional HTTP headers to add
+                                        before returning a response to the caller.
+                                      type: object
+                                    removeRequestHeaders:
+                                      description: HTTP headers to remove before forwarding
+                                        a request to the destination service.
+                                      items:
+                                        type: string
+                                      type: array
+                                    removeResponseHeaders:
+                                      description: HTTP headers to remove before returning
+                                        a response to the caller.
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
+                              type: object
+                            static:
+                              description: Reference to a gloo mesh Static Destination
+                              properties:
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
                               type: object
                             virtualDestination:
                               description: Specify a VirtualDestination.
@@ -817,7 +878,8 @@ spec:
                         type: string
                     type: object
                   connectionOptions:
-                    description: Top level optional configuration for all routes on the ConnectionHandler.
+                    description: Top level optional configuration for all routes on
+                      the ConnectionHandler.
                     properties:
                       enableProxyProtocol:
                         description: enable PROXY protocol for this connection handler.
@@ -856,7 +918,9 @@ spec:
                             - virtualHost
                           properties:
                             virtualHost:
-                              description: VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
+                              description: VirtualHost allows in-lining a route table
+                                directly in the Gateway Resource, for simple configs
+                                using fewer CRDs.
                               properties:
                                 domains:
                                   description: |-
@@ -922,7 +986,8 @@ spec:
                                       - delegateAction
                                     properties:
                                       delegateAction:
-                                        description: Delegate routing actions for the given matcher to one or more RouteTables.
+                                        description: Delegate routing actions for
+                                          the given matcher to one or more RouteTables.
                                         properties:
                                           passFullPath:
                                             description: |-
@@ -933,19 +998,23 @@ spec:
                                               {{/*TODO: hide from docs, not implemented */}}
                                             type: boolean
                                           refs:
-                                            description: Delegate to the Route Table resources with matching `name` and `namespace`.
+                                            description: Delegate to the Route Table
+                                              resources with matching `name` and `namespace`.
                                             items:
                                               properties:
                                                 name:
-                                                  description: name of the resource being referenced
+                                                  description: name of the resource
+                                                    being referenced
                                                   type: string
                                                 namespace:
-                                                  description: namespace of the resource being referenced
+                                                  description: namespace of the resource
+                                                    being referenced
                                                   type: string
                                               type: object
                                             type: array
                                           selector:
-                                            description: Delegate to the Route Tables that match the given selector.
+                                            description: Delegate to the Route Tables
+                                              that match the given selector.
                                             properties:
                                               expressions:
                                                 description: |-
@@ -959,7 +1028,10 @@ spec:
                                                         https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
                                                       type: string
                                                     operator:
-                                                      description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                                      description: The operator can
+                                                        only be in, notin, =, ==,
+                                                        !=, exists, ! (DoesNotExist),
+                                                        gt (GreaterThan), lt (LessThan).
                                                       enum:
                                                       - Equals
                                                       - DoubleEquals
@@ -980,7 +1052,9 @@ spec:
                                               labels:
                                                 additionalProperties:
                                                   type: string
-                                                description: Select objects whose labels match the ones specified here.
+                                                description: Select objects whose
+                                                  labels match the ones specified
+                                                  here.
                                                 type: object
                                               namespaces:
                                                 description: |-
@@ -993,7 +1067,8 @@ spec:
                                             type: object
                                         type: object
                                       directResponseAction:
-                                        description: Return an arbitrary HTTP response directly, without proxying.
+                                        description: Return an arbitrary HTTP response
+                                          directly, without proxying.
                                         properties:
                                           body:
                                             description: |-
@@ -1004,7 +1079,8 @@ spec:
                                                 Route, ConnectionHandler, or Gateway options.
                                             type: string
                                           status:
-                                            description: Specifies the HTTP response status to be returned.
+                                            description: Specifies the HTTP response
+                                              status to be returned.
                                             maximum: 4294967295
                                             minimum: 0
                                             type: integer
@@ -1032,10 +1108,13 @@ spec:
                                             - regex
                                           properties:
                                             exact:
-                                              description: If specified, the targeted path must exactly match the value.
+                                              description: If specified, the targeted
+                                                path must exactly match the value.
                                               type: string
                                             headers:
-                                              description: Specify a set of headers which requests must match in entirety (all headers must match).
+                                              description: Specify a set of headers
+                                                which requests must match in entirety
+                                                (all headers must match).
                                               items:
                                                 properties:
                                                   invertMatch:
@@ -1049,10 +1128,13 @@ spec:
                                                              - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                                                     type: boolean
                                                   name:
-                                                    description: Specify the name of the header in the request.
+                                                    description: Specify the name
+                                                      of the header in the request.
                                                     type: string
                                                   regex:
-                                                    description: Specify whether the header value should be treated as regex.
+                                                    description: Specify whether the
+                                                      header value should be treated
+                                                      as regex.
                                                     type: boolean
                                                   value:
                                                     description: |-
@@ -1062,7 +1144,8 @@ spec:
                                                 type: object
                                               type: array
                                             method:
-                                              description: Specify an HTTP method to match against.
+                                              description: Specify an HTTP method
+                                                to match against.
                                               type: string
                                             name:
                                               description: |-
@@ -1071,25 +1154,36 @@ spec:
                                                 the access logs for requests matching this route.
                                               type: string
                                             prefix:
-                                              description: If specified, the targeted path must begin with the prefix.
+                                              description: If specified, the targeted
+                                                path must begin with the prefix.
                                               type: string
                                             queryParameters:
-                                              description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                                              description: Specify a set of URL query
+                                                parameters which requests must match
+                                                in entirety (all query params must
+                                                match).
                                               items:
                                                 properties:
                                                   name:
-                                                    description: Specify the name of a key that must be present in the requested path's query string.
+                                                    description: Specify the name
+                                                      of a key that must be present
+                                                      in the requested path's query
+                                                      string.
                                                     type: string
                                                   regex:
-                                                    description: If true, treat `value` as a regular expression.
+                                                    description: If true, treat `value`
+                                                      as a regular expression.
                                                     type: boolean
                                                   value:
-                                                    description: Specify the value of the query parameter keyed on `name`.
+                                                    description: Specify the value
+                                                      of the query parameter keyed
+                                                      on `name`.
                                                     type: string
                                                 type: object
                                               type: array
                                             regex:
-                                              description: If specified, the targeted path must match the regex.
+                                              description: If specified, the targeted
+                                                path must match the regex.
                                               type: string
                                           type: object
                                         type: array
@@ -1131,7 +1225,10 @@ spec:
                                                   type: string
                                                 type: array
                                               allowOrigins:
-                                                description: String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
+                                                description: String patterns that
+                                                  match allowed origins. An origin
+                                                  is allowed if any of the string
+                                                  matchers match.
                                                 items:
                                                   oneOf:
                                                   - not:
@@ -1156,7 +1253,8 @@ spec:
                                                       description: Prefix-based match.
                                                       type: string
                                                     regex:
-                                                      description: ECMAscript style regex-based match.
+                                                      description: ECMAscript style
+                                                        regex-based match.
                                                       type: string
                                                   type: object
                                                 type: array
@@ -1188,47 +1286,68 @@ spec:
                                               - abort
                                             properties:
                                               abort:
-                                                description: Abort the request and return the specified error code back to traffic source.
+                                                description: Abort the request and
+                                                  return the specified error code
+                                                  back to traffic source.
                                                 properties:
                                                   httpStatus:
-                                                    description: Required. HTTP status code to use to abort the request.
+                                                    description: Required. HTTP status
+                                                      code to use to abort the request.
                                                     format: int32
                                                     type: integer
                                                 type: object
                                               fixedDelay:
-                                                description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                                                description: 'Add a delay of a fixed
+                                                  duration before sending the request.
+                                                  Format: `1h`/`1m`/`1s`/`1ms`. MUST
+                                                  be >=1ms.'
                                                 type: string
                                               percentage:
-                                                description: Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+                                                description: Percentage of requests
+                                                  to be faulted. Values range between
+                                                  0 and 100. If omitted all requests
+                                                  will be faulted.
                                                 format: double
                                                 type: number
                                             type: object
                                           headerManipulation:
-                                            description: Manipulate request and response headers.
+                                            description: Manipulate request and response
+                                              headers.
                                             properties:
                                               appendRequestHeaders:
                                                 additionalProperties:
                                                   type: string
-                                                description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                                description: Additional HTTP headers
+                                                  to add before forwarding a request
+                                                  to the destination service.
                                                 type: object
                                               appendResponseHeaders:
                                                 additionalProperties:
                                                   type: string
-                                                description: Additional HTTP headers to add before returning a response to the caller.
+                                                description: Additional HTTP headers
+                                                  to add before returning a response
+                                                  to the caller.
                                                 type: object
                                               removeRequestHeaders:
-                                                description: HTTP headers to remove before forwarding a request to the destination service.
+                                                description: HTTP headers to remove
+                                                  before forwarding a request to the
+                                                  destination service.
                                                 items:
                                                   type: string
                                                 type: array
                                               removeResponseHeaders:
-                                                description: HTTP headers to remove before returning a response to the caller.
+                                                description: HTTP headers to remove
+                                                  before returning a response to the
+                                                  caller.
                                                 items:
                                                   type: string
                                                 type: array
                                             type: object
                                           mirror:
-                                            description: Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
+                                            description: Mirror traffic to a another
+                                              destination (traffic will be sent to
+                                              its original destination in addition
+                                              to the mirrored destinations).
                                             oneOf:
                                             - not:
                                                 anyOf:
@@ -1238,24 +1357,35 @@ spec:
                                               - kubeService
                                             properties:
                                               kubeService:
-                                                description: Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
+                                                description: Reference (name, namespace,
+                                                  Gloo Mesh cluster) to a Kubernetes
+                                                  service.
                                                 properties:
                                                   clusterName:
-                                                    description: name of the cluster in which the resource exists
+                                                    description: name of the cluster
+                                                      in which the resource exists
                                                     type: string
                                                   name:
-                                                    description: name of the resource being referenced
+                                                    description: name of the resource
+                                                      being referenced
                                                     type: string
                                                   namespace:
-                                                    description: namespace of the resource being referenced
+                                                    description: namespace of the
+                                                      resource being referenced
                                                     type: string
                                                 type: object
                                               percentage:
-                                                description: Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
+                                                description: Percentage of traffic
+                                                  to mirror. If omitted all traffic
+                                                  will be mirrored. Values must be
+                                                  between 0 and 100.
                                                 format: double
                                                 type: number
                                               port:
-                                                description: Port on the destination to receive traffic. Required if the destination exposes multiple ports.
+                                                description: Port on the destination
+                                                  to receive traffic. Required if
+                                                  the destination exposes multiple
+                                                  ports.
                                                 maximum: 4294967295
                                                 minimum: 0
                                                 type: integer
@@ -1284,15 +1414,25 @@ spec:
                                               DEPRECATED: use DestinationPolicy to configure Outlier Detection
                                             properties:
                                               baseEjectionTime:
-                                                description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                                                description: 'The minimum ejection
+                                                  duration. Format: `1h`/`1m`/`1s`/`1ms`.
+                                                  Must be >= `1ms`. A default will
+                                                  be used if not set.'
                                                 type: string
                                               consecutiveErrors:
-                                                description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                                                description: The number of errors
+                                                  before a host is ejected from the
+                                                  connection pool. A default will
+                                                  be used if not set.
                                                 maximum: 4294967295
                                                 minimum: 0
                                                 type: integer
                                               interval:
-                                                description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                                                description: 'The time interval between
+                                                  ejection sweep analysis. Format:
+                                                  `1h`/`1m`/`1s`/`1ms`. Must be >=
+                                                  `1ms`. A default will be used if
+                                                  not set.'
                                                 type: string
                                               maxEjectionPercent:
                                                 description: |-
@@ -1309,18 +1449,23 @@ spec:
                                             description: Set a retry policy on requests.
                                             properties:
                                               attempts:
-                                                description: Number of retries for a given request
+                                                description: Number of retries for
+                                                  a given request
                                                 format: int32
                                                 type: integer
                                               perTryTimeout:
-                                                description: 'Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                                                description: 'Timeout per retry attempt
+                                                  for a given request. Format: `1h`/`1m`/`1s`/`1ms`.
+                                                  *Must be >= 1ms*.'
                                                 type: string
                                             type: object
                                           trafficShift:
-                                            description: Shift traffic to a different destination.
+                                            description: Shift traffic to a different
+                                              destination.
                                             properties:
                                               destinations:
-                                                description: Specify weighted traffic shift destinations.
+                                                description: Specify weighted traffic
+                                                  shift destinations.
                                                 items:
                                                   oneOf:
                                                   - not:
@@ -1350,26 +1495,37 @@ spec:
                                                         {{/* NOTE: unimplemented */}}
                                                       type: string
                                                     kubeService:
-                                                      description: Specify a Kubernetes Service.
+                                                      description: Specify a Kubernetes
+                                                        Service.
                                                       properties:
                                                         clusterName:
-                                                          description: The Gloo Mesh cluster name (registration name) of the service.
+                                                          description: The Gloo Mesh
+                                                            cluster name (registration
+                                                            name) of the service.
                                                           type: string
                                                         name:
-                                                          description: The name of the service.
+                                                          description: The name of
+                                                            the service.
                                                           type: string
                                                         namespace:
-                                                          description: The namespace of the service.
+                                                          description: The namespace
+                                                            of the service.
                                                           type: string
                                                         port:
-                                                          description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                                          description: Port on the
+                                                            service to receive traffic.
+                                                            Required if the service
+                                                            exposes more than one
+                                                            port.
                                                           maximum: 4294967295
                                                           minimum: 0
                                                           type: integer
                                                         subset:
                                                           additionalProperties:
                                                             type: string
-                                                          description: Specify, by labels, a subset of service instances to route to.
+                                                          description: Specify, by
+                                                            labels, a subset of service
+                                                            instances to route to.
                                                           type: object
                                                       type: object
                                                     options:
@@ -1378,53 +1534,79 @@ spec:
                                                         when this destination is selected.
                                                       properties:
                                                         headerManipulation:
-                                                          description: manipualte headers on traffic sent to this destination
+                                                          description: manipualte
+                                                            headers on traffic sent
+                                                            to this destination
                                                           properties:
                                                             appendRequestHeaders:
                                                               additionalProperties:
                                                                 type: string
-                                                              description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                                              description: Additional
+                                                                HTTP headers to add
+                                                                before forwarding
+                                                                a request to the destination
+                                                                service.
                                                               type: object
                                                             appendResponseHeaders:
                                                               additionalProperties:
                                                                 type: string
-                                                              description: Additional HTTP headers to add before returning a response to the caller.
+                                                              description: Additional
+                                                                HTTP headers to add
+                                                                before returning a
+                                                                response to the caller.
                                                               type: object
                                                             removeRequestHeaders:
-                                                              description: HTTP headers to remove before forwarding a request to the destination service.
+                                                              description: HTTP headers
+                                                                to remove before forwarding
+                                                                a request to the destination
+                                                                service.
                                                               items:
                                                                 type: string
                                                               type: array
                                                             removeResponseHeaders:
-                                                              description: HTTP headers to remove before returning a response to the caller.
+                                                              description: HTTP headers
+                                                                to remove before returning
+                                                                a response to the
+                                                                caller.
                                                               items:
                                                                 type: string
                                                               type: array
                                                           type: object
                                                       type: object
                                                     static:
-                                                      description: Reference to a gloo mesh Static Destination
+                                                      description: Reference to a
+                                                        gloo mesh Static Destination
                                                       properties:
                                                         name:
-                                                          description: name of the resource being referenced
+                                                          description: name of the
+                                                            resource being referenced
                                                           type: string
                                                         namespace:
-                                                          description: namespace of the resource being referenced
+                                                          description: namespace of
+                                                            the resource being referenced
                                                           type: string
                                                       type: object
                                                     virtualDestination:
                                                       description: Specify a VirtualDestination.
                                                       properties:
                                                         name:
-                                                          description: The name of the VirtualDestination object.
+                                                          description: The name of
+                                                            the VirtualDestination
+                                                            object.
                                                           type: string
                                                         namespace:
-                                                          description: The namespace of the VirtualDestination object.
+                                                          description: The namespace
+                                                            of the VirtualDestination
+                                                            object.
                                                           type: string
                                                         subset:
                                                           additionalProperties:
                                                             type: string
-                                                          description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                                          description: Specify, by
+                                                            labels, a subset of service
+                                                            instances backing the
+                                                            VirtualDestination to
+                                                            route to.
                                                           type: object
                                                       type: object
                                                     weight:
@@ -1439,16 +1621,21 @@ spec:
                                             type: object
                                         type: object
                                       redirectAction:
-                                        description: Redirect actions tell the proxy to return a redirect response to the downstream client.
+                                        description: Redirect actions tell the proxy
+                                          to return a redirect response to the downstream
+                                          client.
                                         properties:
                                           hostRedirect:
-                                            description: The host portion of the URL will be swapped with this value.
+                                            description: The host portion of the URL
+                                              will be swapped with this value.
                                             type: string
                                           httpsRedirect:
-                                            description: The scheme portion of the URL will be swapped with "https".
+                                            description: The scheme portion of the
+                                              URL will be swapped with "https".
                                             type: boolean
                                           pathRedirect:
-                                            description: The path portion of the URL will be swapped with this value.
+                                            description: The path portion of the URL
+                                              will be swapped with this value.
                                             type: string
                                           prefixRewrite:
                                             description: |-
@@ -1515,26 +1702,36 @@ spec:
                                                     {{/* NOTE: unimplemented */}}
                                                   type: string
                                                 kubeService:
-                                                  description: Specify a Kubernetes Service.
+                                                  description: Specify a Kubernetes
+                                                    Service.
                                                   properties:
                                                     clusterName:
-                                                      description: The Gloo Mesh cluster name (registration name) of the service.
+                                                      description: The Gloo Mesh cluster
+                                                        name (registration name) of
+                                                        the service.
                                                       type: string
                                                     name:
-                                                      description: The name of the service.
+                                                      description: The name of the
+                                                        service.
                                                       type: string
                                                     namespace:
-                                                      description: The namespace of the service.
+                                                      description: The namespace of
+                                                        the service.
                                                       type: string
                                                     port:
-                                                      description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                                      description: Port on the service
+                                                        to receive traffic. Required
+                                                        if the service exposes more
+                                                        than one port.
                                                       maximum: 4294967295
                                                       minimum: 0
                                                       type: integer
                                                     subset:
                                                       additionalProperties:
                                                         type: string
-                                                      description: Specify, by labels, a subset of service instances to route to.
+                                                      description: Specify, by labels,
+                                                        a subset of service instances
+                                                        to route to.
                                                       type: object
                                                   type: object
                                                 options:
@@ -1543,53 +1740,73 @@ spec:
                                                     when this destination is selected.
                                                   properties:
                                                     headerManipulation:
-                                                      description: manipualte headers on traffic sent to this destination
+                                                      description: manipualte headers
+                                                        on traffic sent to this destination
                                                       properties:
                                                         appendRequestHeaders:
                                                           additionalProperties:
                                                             type: string
-                                                          description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                                          description: Additional
+                                                            HTTP headers to add before
+                                                            forwarding a request to
+                                                            the destination service.
                                                           type: object
                                                         appendResponseHeaders:
                                                           additionalProperties:
                                                             type: string
-                                                          description: Additional HTTP headers to add before returning a response to the caller.
+                                                          description: Additional
+                                                            HTTP headers to add before
+                                                            returning a response to
+                                                            the caller.
                                                           type: object
                                                         removeRequestHeaders:
-                                                          description: HTTP headers to remove before forwarding a request to the destination service.
+                                                          description: HTTP headers
+                                                            to remove before forwarding
+                                                            a request to the destination
+                                                            service.
                                                           items:
                                                             type: string
                                                           type: array
                                                         removeResponseHeaders:
-                                                          description: HTTP headers to remove before returning a response to the caller.
+                                                          description: HTTP headers
+                                                            to remove before returning
+                                                            a response to the caller.
                                                           items:
                                                             type: string
                                                           type: array
                                                       type: object
                                                   type: object
                                                 static:
-                                                  description: Reference to a gloo mesh Static Destination
+                                                  description: Reference to a gloo
+                                                    mesh Static Destination
                                                   properties:
                                                     name:
-                                                      description: name of the resource being referenced
+                                                      description: name of the resource
+                                                        being referenced
                                                       type: string
                                                     namespace:
-                                                      description: namespace of the resource being referenced
+                                                      description: namespace of the
+                                                        resource being referenced
                                                       type: string
                                                   type: object
                                                 virtualDestination:
                                                   description: Specify a VirtualDestination.
                                                   properties:
                                                     name:
-                                                      description: The name of the VirtualDestination object.
+                                                      description: The name of the
+                                                        VirtualDestination object.
                                                       type: string
                                                     namespace:
-                                                      description: The namespace of the VirtualDestination object.
+                                                      description: The namespace of
+                                                        the VirtualDestination object.
                                                       type: string
                                                     subset:
                                                       additionalProperties:
                                                         type: string
-                                                      description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                                      description: Specify, by labels,
+                                                        a subset of service instances
+                                                        backing the VirtualDestination
+                                                        to route to.
                                                       type: object
                                                   type: object
                                                 weight:
@@ -1614,7 +1831,8 @@ spec:
                                   type: object
                               type: object
                             virtualHostSelector:
-                              description: RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
+                              description: RouteSelector is used to specify which
+                                VirtualHosts should be attached to this gateway.
                               properties:
                                 expressions:
                                   description: |-
@@ -1628,7 +1846,9 @@ spec:
                                           https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
                                         type: string
                                       operator:
-                                        description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                        description: The operator can only be in,
+                                          notin, =, ==, !=, exists, ! (DoesNotExist),
+                                          gt (GreaterThan), lt (LessThan).
                                         enum:
                                         - Equals
                                         - DoubleEquals
@@ -1649,7 +1869,8 @@ spec:
                                 labels:
                                   additionalProperties:
                                     type: string
-                                  description: Select objects whose labels match the ones specified here.
+                                  description: Select objects whose labels match the
+                                    ones specified here.
                                   type: object
                                 namespaces:
                                   description: |-
@@ -1663,7 +1884,8 @@ spec:
                           type: object
                         type: array
                       routeOptions:
-                        description: HTTP Listener Options // Root level RouteTable + VirtualHost + routes level
+                        description: HTTP Listener Options // Root level RouteTable
+                          + VirtualHost + routes level
                         type: object
                     type: object
                   tcp:
@@ -1690,7 +1912,8 @@ spec:
                                   will be proxied upstream as per usual.
                                 properties:
                                   hostname:
-                                    description: The hostname to send in the synthesized CONNECT headers to the upstream proxy.
+                                    description: The hostname to send in the synthesized
+                                      CONNECT headers to the upstream proxy.
                                     type: string
                                 type: object
                             type: object
@@ -1733,13 +1956,15 @@ spec:
                                     each gateway workload which routes to this destination.
                                   properties:
                                     clusterName:
-                                      description: name of the cluster in which the resource exists
+                                      description: name of the cluster in which the
+                                        resource exists
                                       type: string
                                     name:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 static:
@@ -1749,7 +1974,8 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 virtual:
@@ -1759,7 +1985,8 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 weight:
@@ -1771,10 +1998,12 @@ spec:
                                   type: integer
                               type: object
                             name:
-                              description: the logical name of the tcp host. names must be unique for each tcp host within a listener
+                              description: the logical name of the tcp host. names
+                                must be unique for each tcp host within a listener
                               type: string
                             sslConfig:
-                              description: If provided, the Gateway will serve TLS/SSL traffic for this set of routes
+                              description: If provided, the Gateway will serve TLS/SSL
+                                traffic for this set of routes
                               oneOf:
                               - not:
                                   anyOf:
@@ -1881,7 +2110,8 @@ spec:
                                       description: Call credentials.
                                       properties:
                                         fileCredentialSource:
-                                          description: Call credentials are coming from a file,
+                                          description: Call credentials are coming
+                                            from a file,
                                           properties:
                                             header:
                                               description: Header to carry the token.
@@ -1892,16 +2122,20 @@ spec:
                                           type: object
                                       type: object
                                     certificatesSecretName:
-                                      description: The name of the secret containing the certificate
+                                      description: The name of the secret containing
+                                        the certificate
                                       type: string
                                     clusterName:
-                                      description: The name of the sds cluster in envoy
+                                      description: The name of the sds cluster in
+                                        envoy
                                       type: string
                                     targetUri:
-                                      description: Target uri for the sds channel. currently only a unix domain socket is supported.
+                                      description: Target uri for the sds channel.
+                                        currently only a unix domain socket is supported.
                                       type: string
                                     validationContextName:
-                                      description: The name of secret containing the validation context (i.e. root ca)
+                                      description: The name of secret containing the
+                                        validation context (i.e. root ca)
                                       type: string
                                   type: object
                                 secretRef:
@@ -1913,16 +2147,19 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 sniDomains:
-                                  description: optional. the SNI domains that should be considered for TLS connections
+                                  description: optional. the SNI domains that should
+                                    be considered for TLS connections
                                   items:
                                     type: string
                                   type: array
                                 sslFiles:
-                                  description: SSLFiles reference paths to certificates which are local to the proxy
+                                  description: SSLFiles reference paths to certificates
+                                    which are local to the proxy
                                   properties:
                                     rootCa:
                                       description: for client cert validation. optional
@@ -1991,7 +2228,8 @@ spec:
                             type: string
                           type: array
                         allowOrigins:
-                          description: String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
+                          description: String patterns that match allowed origins.
+                            An origin is allowed if any of the string matchers match.
                           items:
                             oneOf:
                             - not:
@@ -2048,18 +2286,23 @@ spec:
                         - abort
                       properties:
                         abort:
-                          description: Abort the request and return the specified error code back to traffic source.
+                          description: Abort the request and return the specified
+                            error code back to traffic source.
                           properties:
                             httpStatus:
-                              description: Required. HTTP status code to use to abort the request.
+                              description: Required. HTTP status code to use to abort
+                                the request.
                               format: int32
                               type: integer
                           type: object
                         fixedDelay:
-                          description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                          description: 'Add a delay of a fixed duration before sending
+                            the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
                           type: string
                         percentage:
-                          description: Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+                          description: Percentage of requests to be faulted. Values
+                            range between 0 and 100. If omitted all requests will
+                            be faulted.
                           format: double
                           type: number
                       type: object
@@ -2069,26 +2312,32 @@ spec:
                         appendRequestHeaders:
                           additionalProperties:
                             type: string
-                          description: Additional HTTP headers to add before forwarding a request to the destination service.
+                          description: Additional HTTP headers to add before forwarding
+                            a request to the destination service.
                           type: object
                         appendResponseHeaders:
                           additionalProperties:
                             type: string
-                          description: Additional HTTP headers to add before returning a response to the caller.
+                          description: Additional HTTP headers to add before returning
+                            a response to the caller.
                           type: object
                         removeRequestHeaders:
-                          description: HTTP headers to remove before forwarding a request to the destination service.
+                          description: HTTP headers to remove before forwarding a
+                            request to the destination service.
                           items:
                             type: string
                           type: array
                         removeResponseHeaders:
-                          description: HTTP headers to remove before returning a response to the caller.
+                          description: HTTP headers to remove before returning a response
+                            to the caller.
                           items:
                             type: string
                           type: array
                       type: object
                     mirror:
-                      description: Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
+                      description: Mirror traffic to a another destination (traffic
+                        will be sent to its original destination in addition to the
+                        mirrored destinations).
                       oneOf:
                       - not:
                           anyOf:
@@ -2098,10 +2347,12 @@ spec:
                         - kubeService
                       properties:
                         kubeService:
-                          description: Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
+                          description: Reference (name, namespace, Gloo Mesh cluster)
+                            to a Kubernetes service.
                           properties:
                             clusterName:
-                              description: name of the cluster in which the resource exists
+                              description: name of the cluster in which the resource
+                                exists
                               type: string
                             name:
                               description: name of the resource being referenced
@@ -2111,11 +2362,14 @@ spec:
                               type: string
                           type: object
                         percentage:
-                          description: Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
+                          description: Percentage of traffic to mirror. If omitted
+                            all traffic will be mirrored. Values must be between 0
+                            and 100.
                           format: double
                           type: number
                         port:
-                          description: Port on the destination to receive traffic. Required if the destination exposes multiple ports.
+                          description: Port on the destination to receive traffic.
+                            Required if the destination exposes multiple ports.
                           maximum: 4294967295
                           minimum: 0
                           type: integer
@@ -2144,15 +2398,20 @@ spec:
                         DEPRECATED: use DestinationPolicy to configure Outlier Detection
                       properties:
                         baseEjectionTime:
-                          description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                          description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
+                            Must be >= `1ms`. A default will be used if not set.'
                           type: string
                         consecutiveErrors:
-                          description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                          description: The number of errors before a host is ejected
+                            from the connection pool. A default will be used if not
+                            set.
                           maximum: 4294967295
                           minimum: 0
                           type: integer
                         interval:
-                          description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                          description: 'The time interval between ejection sweep analysis.
+                            Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default
+                            will be used if not set.'
                           type: string
                         maxEjectionPercent:
                           description: |-
@@ -2173,7 +2432,8 @@ spec:
                           format: int32
                           type: integer
                         perTryTimeout:
-                          description: 'Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                          description: 'Timeout per retry attempt for a given request.
+                            Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
                           type: string
                       type: object
                     trafficShift:
@@ -2213,7 +2473,8 @@ spec:
                                 description: Specify a Kubernetes Service.
                                 properties:
                                   clusterName:
-                                    description: The Gloo Mesh cluster name (registration name) of the service.
+                                    description: The Gloo Mesh cluster name (registration
+                                      name) of the service.
                                     type: string
                                   name:
                                     description: The name of the service.
@@ -2222,14 +2483,17 @@ spec:
                                     description: The namespace of the service.
                                     type: string
                                   port:
-                                    description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                    description: Port on the service to receive traffic.
+                                      Required if the service exposes more than one
+                                      port.
                                     maximum: 4294967295
                                     minimum: 0
                                     type: integer
                                   subset:
                                     additionalProperties:
                                       type: string
-                                    description: Specify, by labels, a subset of service instances to route to.
+                                    description: Specify, by labels, a subset of service
+                                      instances to route to.
                                     type: object
                                 type: object
                               options:
@@ -2238,25 +2502,32 @@ spec:
                                   when this destination is selected.
                                 properties:
                                   headerManipulation:
-                                    description: manipualte headers on traffic sent to this destination
+                                    description: manipualte headers on traffic sent
+                                      to this destination
                                     properties:
                                       appendRequestHeaders:
                                         additionalProperties:
                                           type: string
-                                        description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                        description: Additional HTTP headers to add
+                                          before forwarding a request to the destination
+                                          service.
                                         type: object
                                       appendResponseHeaders:
                                         additionalProperties:
                                           type: string
-                                        description: Additional HTTP headers to add before returning a response to the caller.
+                                        description: Additional HTTP headers to add
+                                          before returning a response to the caller.
                                         type: object
                                       removeRequestHeaders:
-                                        description: HTTP headers to remove before forwarding a request to the destination service.
+                                        description: HTTP headers to remove before
+                                          forwarding a request to the destination
+                                          service.
                                         items:
                                           type: string
                                         type: array
                                       removeResponseHeaders:
-                                        description: HTTP headers to remove before returning a response to the caller.
+                                        description: HTTP headers to remove before
+                                          returning a response to the caller.
                                         items:
                                           type: string
                                         type: array
@@ -2276,15 +2547,19 @@ spec:
                                 description: Specify a VirtualDestination.
                                 properties:
                                   name:
-                                    description: The name of the VirtualDestination object.
+                                    description: The name of the VirtualDestination
+                                      object.
                                     type: string
                                   namespace:
-                                    description: The namespace of the VirtualDestination object.
+                                    description: The namespace of the VirtualDestination
+                                      object.
                                     type: string
                                   subset:
                                     additionalProperties:
                                       type: string
-                                    description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                    description: Specify, by labels, a subset of service
+                                      instances backing the VirtualDestination to
+                                      route to.
                                     type: object
                                 type: object
                               weight:
@@ -2307,7 +2582,8 @@ spec:
               items:
                 properties:
                   kubeWorkloadMatcher:
-                    description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes workloads by their labels, namespaces,
+                      and/or clusters.
                     properties:
                       clusters:
                         description: |-
@@ -2354,10 +2630,12 @@ spec:
                       type: object
                     type: array
                 type: object
-              description: List of Istio Gateway CRs created by this VirtualGateway in each cluster
+              description: List of Istio Gateway CRs created by this VirtualGateway
+                in each cluster
               type: object
             errors:
-              description: Any errors found while processing this generation of the resource.
+              description: Any errors found while processing this generation of the
+                resource.
               items:
                 type: string
               type: array
@@ -2382,7 +2660,8 @@ spec:
                 type: object
               type: array
             selectedRouteTables:
-              description: List of Delegated Route tables that this Route table delegates to
+              description: List of Delegated Route tables that this Route table delegates
+                to
               items:
                 properties:
                   name:
@@ -2405,7 +2684,8 @@ spec:
                 type: object
               type: array
             warnings:
-              description: Any warnings found while processing this generation of the resource.
+              description: Any warnings found while processing this generation of
+                the resource.
               items:
                 type: string
               type: array
@@ -2509,7 +2789,8 @@ spec:
                   - delegateAction
                 properties:
                   delegateAction:
-                    description: Delegate routing actions for the given matcher to one or more RouteTables.
+                    description: Delegate routing actions for the given matcher to
+                      one or more RouteTables.
                     properties:
                       passFullPath:
                         description: |-
@@ -2520,7 +2801,8 @@ spec:
                           {{/*TODO: hide from docs, not implemented */}}
                         type: boolean
                       refs:
-                        description: Delegate to the Route Table resources with matching `name` and `namespace`.
+                        description: Delegate to the Route Table resources with matching
+                          `name` and `namespace`.
                         items:
                           properties:
                             name:
@@ -2532,7 +2814,8 @@ spec:
                           type: object
                         type: array
                       selector:
-                        description: Delegate to the Route Tables that match the given selector.
+                        description: Delegate to the Route Tables that match the given
+                          selector.
                         properties:
                           expressions:
                             description: |-
@@ -2546,7 +2829,9 @@ spec:
                                     https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
                                   type: string
                                 operator:
-                                  description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                  description: The operator can only be in, notin,
+                                    =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan),
+                                    lt (LessThan).
                                   enum:
                                   - Equals
                                   - DoubleEquals
@@ -2567,7 +2852,8 @@ spec:
                           labels:
                             additionalProperties:
                               type: string
-                            description: Select objects whose labels match the ones specified here.
+                            description: Select objects whose labels match the ones
+                              specified here.
                             type: object
                           namespaces:
                             description: |-
@@ -2580,7 +2866,8 @@ spec:
                         type: object
                     type: object
                   directResponseAction:
-                    description: Return an arbitrary HTTP response directly, without proxying.
+                    description: Return an arbitrary HTTP response directly, without
+                      proxying.
                     properties:
                       body:
                         description: |-
@@ -2619,10 +2906,12 @@ spec:
                         - regex
                       properties:
                         exact:
-                          description: If specified, the targeted path must exactly match the value.
+                          description: If specified, the targeted path must exactly
+                            match the value.
                           type: string
                         headers:
-                          description: Specify a set of headers which requests must match in entirety (all headers must match).
+                          description: Specify a set of headers which requests must
+                            match in entirety (all headers must match).
                           items:
                             properties:
                               invertMatch:
@@ -2636,10 +2925,12 @@ spec:
                                          - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                                 type: boolean
                               name:
-                                description: Specify the name of the header in the request.
+                                description: Specify the name of the header in the
+                                  request.
                                 type: string
                               regex:
-                                description: Specify whether the header value should be treated as regex.
+                                description: Specify whether the header value should
+                                  be treated as regex.
                                 type: boolean
                               value:
                                 description: |-
@@ -2658,25 +2949,31 @@ spec:
                             the access logs for requests matching this route.
                           type: string
                         prefix:
-                          description: If specified, the targeted path must begin with the prefix.
+                          description: If specified, the targeted path must begin
+                            with the prefix.
                           type: string
                         queryParameters:
-                          description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                          description: Specify a set of URL query parameters which
+                            requests must match in entirety (all query params must
+                            match).
                           items:
                             properties:
                               name:
-                                description: Specify the name of a key that must be present in the requested path's query string.
+                                description: Specify the name of a key that must be
+                                  present in the requested path's query string.
                                 type: string
                               regex:
                                 description: If true, treat `value` as a regular expression.
                                 type: boolean
                               value:
-                                description: Specify the value of the query parameter keyed on `name`.
+                                description: Specify the value of the query parameter
+                                  keyed on `name`.
                                 type: string
                             type: object
                           type: array
                         regex:
-                          description: If specified, the targeted path must match the regex.
+                          description: If specified, the targeted path must match
+                            the regex.
                           type: string
                       type: object
                     type: array
@@ -2718,7 +3015,8 @@ spec:
                               type: string
                             type: array
                           allowOrigins:
-                            description: String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
+                            description: String patterns that match allowed origins.
+                              An origin is allowed if any of the string matchers match.
                             items:
                               oneOf:
                               - not:
@@ -2775,18 +3073,23 @@ spec:
                           - abort
                         properties:
                           abort:
-                            description: Abort the request and return the specified error code back to traffic source.
+                            description: Abort the request and return the specified
+                              error code back to traffic source.
                             properties:
                               httpStatus:
-                                description: Required. HTTP status code to use to abort the request.
+                                description: Required. HTTP status code to use to
+                                  abort the request.
                                 format: int32
                                 type: integer
                             type: object
                           fixedDelay:
-                            description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                            description: 'Add a delay of a fixed duration before sending
+                              the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
                             type: string
                           percentage:
-                            description: Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+                            description: Percentage of requests to be faulted. Values
+                              range between 0 and 100. If omitted all requests will
+                              be faulted.
                             format: double
                             type: number
                         type: object
@@ -2796,26 +3099,32 @@ spec:
                           appendRequestHeaders:
                             additionalProperties:
                               type: string
-                            description: Additional HTTP headers to add before forwarding a request to the destination service.
+                            description: Additional HTTP headers to add before forwarding
+                              a request to the destination service.
                             type: object
                           appendResponseHeaders:
                             additionalProperties:
                               type: string
-                            description: Additional HTTP headers to add before returning a response to the caller.
+                            description: Additional HTTP headers to add before returning
+                              a response to the caller.
                             type: object
                           removeRequestHeaders:
-                            description: HTTP headers to remove before forwarding a request to the destination service.
+                            description: HTTP headers to remove before forwarding
+                              a request to the destination service.
                             items:
                               type: string
                             type: array
                           removeResponseHeaders:
-                            description: HTTP headers to remove before returning a response to the caller.
+                            description: HTTP headers to remove before returning a
+                              response to the caller.
                             items:
                               type: string
                             type: array
                         type: object
                       mirror:
-                        description: Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
+                        description: Mirror traffic to a another destination (traffic
+                          will be sent to its original destination in addition to
+                          the mirrored destinations).
                         oneOf:
                         - not:
                             anyOf:
@@ -2825,10 +3134,12 @@ spec:
                           - kubeService
                         properties:
                           kubeService:
-                            description: Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
+                            description: Reference (name, namespace, Gloo Mesh cluster)
+                              to a Kubernetes service.
                             properties:
                               clusterName:
-                                description: name of the cluster in which the resource exists
+                                description: name of the cluster in which the resource
+                                  exists
                                 type: string
                               name:
                                 description: name of the resource being referenced
@@ -2838,11 +3149,14 @@ spec:
                                 type: string
                             type: object
                           percentage:
-                            description: Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
+                            description: Percentage of traffic to mirror. If omitted
+                              all traffic will be mirrored. Values must be between
+                              0 and 100.
                             format: double
                             type: number
                           port:
-                            description: Port on the destination to receive traffic. Required if the destination exposes multiple ports.
+                            description: Port on the destination to receive traffic.
+                              Required if the destination exposes multiple ports.
                             maximum: 4294967295
                             minimum: 0
                             type: integer
@@ -2871,15 +3185,20 @@ spec:
                           DEPRECATED: use DestinationPolicy to configure Outlier Detection
                         properties:
                           baseEjectionTime:
-                            description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                            description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
+                              Must be >= `1ms`. A default will be used if not set.'
                             type: string
                           consecutiveErrors:
-                            description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                            description: The number of errors before a host is ejected
+                              from the connection pool. A default will be used if
+                              not set.
                             maximum: 4294967295
                             minimum: 0
                             type: integer
                           interval:
-                            description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                            description: 'The time interval between ejection sweep
+                              analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`.
+                              A default will be used if not set.'
                             type: string
                           maxEjectionPercent:
                             description: |-
@@ -2900,7 +3219,8 @@ spec:
                             format: int32
                             type: integer
                           perTryTimeout:
-                            description: 'Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                            description: 'Timeout per retry attempt for a given request.
+                              Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
                             type: string
                         type: object
                       trafficShift:
@@ -2940,7 +3260,8 @@ spec:
                                   description: Specify a Kubernetes Service.
                                   properties:
                                     clusterName:
-                                      description: The Gloo Mesh cluster name (registration name) of the service.
+                                      description: The Gloo Mesh cluster name (registration
+                                        name) of the service.
                                       type: string
                                     name:
                                       description: The name of the service.
@@ -2949,14 +3270,17 @@ spec:
                                       description: The namespace of the service.
                                       type: string
                                     port:
-                                      description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                      description: Port on the service to receive
+                                        traffic. Required if the service exposes more
+                                        than one port.
                                       maximum: 4294967295
                                       minimum: 0
                                       type: integer
                                     subset:
                                       additionalProperties:
                                         type: string
-                                      description: Specify, by labels, a subset of service instances to route to.
+                                      description: Specify, by labels, a subset of
+                                        service instances to route to.
                                       type: object
                                   type: object
                                 options:
@@ -2965,25 +3289,33 @@ spec:
                                     when this destination is selected.
                                   properties:
                                     headerManipulation:
-                                      description: manipualte headers on traffic sent to this destination
+                                      description: manipualte headers on traffic sent
+                                        to this destination
                                       properties:
                                         appendRequestHeaders:
                                           additionalProperties:
                                             type: string
-                                          description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                          description: Additional HTTP headers to
+                                            add before forwarding a request to the
+                                            destination service.
                                           type: object
                                         appendResponseHeaders:
                                           additionalProperties:
                                             type: string
-                                          description: Additional HTTP headers to add before returning a response to the caller.
+                                          description: Additional HTTP headers to
+                                            add before returning a response to the
+                                            caller.
                                           type: object
                                         removeRequestHeaders:
-                                          description: HTTP headers to remove before forwarding a request to the destination service.
+                                          description: HTTP headers to remove before
+                                            forwarding a request to the destination
+                                            service.
                                           items:
                                             type: string
                                           type: array
                                         removeResponseHeaders:
-                                          description: HTTP headers to remove before returning a response to the caller.
+                                          description: HTTP headers to remove before
+                                            returning a response to the caller.
                                           items:
                                             type: string
                                           type: array
@@ -2996,22 +3328,27 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 virtualDestination:
                                   description: Specify a VirtualDestination.
                                   properties:
                                     name:
-                                      description: The name of the VirtualDestination object.
+                                      description: The name of the VirtualDestination
+                                        object.
                                       type: string
                                     namespace:
-                                      description: The namespace of the VirtualDestination object.
+                                      description: The namespace of the VirtualDestination
+                                        object.
                                       type: string
                                     subset:
                                       additionalProperties:
                                         type: string
-                                      description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                      description: Specify, by labels, a subset of
+                                        service instances backing the VirtualDestination
+                                        to route to.
                                       type: object
                                   type: object
                                 weight:
@@ -3026,16 +3363,20 @@ spec:
                         type: object
                     type: object
                   redirectAction:
-                    description: Redirect actions tell the proxy to return a redirect response to the downstream client.
+                    description: Redirect actions tell the proxy to return a redirect
+                      response to the downstream client.
                     properties:
                       hostRedirect:
-                        description: The host portion of the URL will be swapped with this value.
+                        description: The host portion of the URL will be swapped with
+                          this value.
                         type: string
                       httpsRedirect:
-                        description: The scheme portion of the URL will be swapped with "https".
+                        description: The scheme portion of the URL will be swapped
+                          with "https".
                         type: boolean
                       pathRedirect:
-                        description: The path portion of the URL will be swapped with this value.
+                        description: The path portion of the URL will be swapped with
+                          this value.
                         type: string
                       prefixRewrite:
                         description: |-
@@ -3105,7 +3446,8 @@ spec:
                               description: Specify a Kubernetes Service.
                               properties:
                                 clusterName:
-                                  description: The Gloo Mesh cluster name (registration name) of the service.
+                                  description: The Gloo Mesh cluster name (registration
+                                    name) of the service.
                                   type: string
                                 name:
                                   description: The name of the service.
@@ -3114,14 +3456,17 @@ spec:
                                   description: The namespace of the service.
                                   type: string
                                 port:
-                                  description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                  description: Port on the service to receive traffic.
+                                    Required if the service exposes more than one
+                                    port.
                                   maximum: 4294967295
                                   minimum: 0
                                   type: integer
                                 subset:
                                   additionalProperties:
                                     type: string
-                                  description: Specify, by labels, a subset of service instances to route to.
+                                  description: Specify, by labels, a subset of service
+                                    instances to route to.
                                   type: object
                               type: object
                             options:
@@ -3130,25 +3475,31 @@ spec:
                                 when this destination is selected.
                               properties:
                                 headerManipulation:
-                                  description: manipualte headers on traffic sent to this destination
+                                  description: manipualte headers on traffic sent
+                                    to this destination
                                   properties:
                                     appendRequestHeaders:
                                       additionalProperties:
                                         type: string
-                                      description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                      description: Additional HTTP headers to add
+                                        before forwarding a request to the destination
+                                        service.
                                       type: object
                                     appendResponseHeaders:
                                       additionalProperties:
                                         type: string
-                                      description: Additional HTTP headers to add before returning a response to the caller.
+                                      description: Additional HTTP headers to add
+                                        before returning a response to the caller.
                                       type: object
                                     removeRequestHeaders:
-                                      description: HTTP headers to remove before forwarding a request to the destination service.
+                                      description: HTTP headers to remove before forwarding
+                                        a request to the destination service.
                                       items:
                                         type: string
                                       type: array
                                     removeResponseHeaders:
-                                      description: HTTP headers to remove before returning a response to the caller.
+                                      description: HTTP headers to remove before returning
+                                        a response to the caller.
                                       items:
                                         type: string
                                       type: array
@@ -3168,15 +3519,19 @@ spec:
                               description: Specify a VirtualDestination.
                               properties:
                                 name:
-                                  description: The name of the VirtualDestination object.
+                                  description: The name of the VirtualDestination
+                                    object.
                                   type: string
                                 namespace:
-                                  description: The namespace of the VirtualDestination object.
+                                  description: The namespace of the VirtualDestination
+                                    object.
                                   type: string
                                 subset:
                                   additionalProperties:
                                     type: string
-                                  description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                  description: Specify, by labels, a subset of service
+                                    instances backing the VirtualDestination to route
+                                    to.
                                   type: object
                               type: object
                             weight:
@@ -3215,7 +3570,8 @@ spec:
                 type: object
               type: array
             errors:
-              description: Any errors found while processing this generation of the resource.
+              description: Any errors found while processing this generation of the
+                resource.
               items:
                 type: string
               type: array
@@ -3239,7 +3595,8 @@ spec:
                 type: object
               type: array
             warnings:
-              description: Any warnings found while processing this generation of the resource.
+              description: Any warnings found while processing this generation of
+                the resource.
               items:
                 type: string
               type: array
@@ -3331,7 +3688,8 @@ spec:
                   - delegateAction
                 properties:
                   delegateAction:
-                    description: Delegate routing actions for the given matcher to one or more RouteTables.
+                    description: Delegate routing actions for the given matcher to
+                      one or more RouteTables.
                     properties:
                       passFullPath:
                         description: |-
@@ -3342,7 +3700,8 @@ spec:
                           {{/*TODO: hide from docs, not implemented */}}
                         type: boolean
                       refs:
-                        description: Delegate to the Route Table resources with matching `name` and `namespace`.
+                        description: Delegate to the Route Table resources with matching
+                          `name` and `namespace`.
                         items:
                           properties:
                             name:
@@ -3354,7 +3713,8 @@ spec:
                           type: object
                         type: array
                       selector:
-                        description: Delegate to the Route Tables that match the given selector.
+                        description: Delegate to the Route Tables that match the given
+                          selector.
                         properties:
                           expressions:
                             description: |-
@@ -3368,7 +3728,9 @@ spec:
                                     https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
                                   type: string
                                 operator:
-                                  description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                  description: The operator can only be in, notin,
+                                    =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan),
+                                    lt (LessThan).
                                   enum:
                                   - Equals
                                   - DoubleEquals
@@ -3389,7 +3751,8 @@ spec:
                           labels:
                             additionalProperties:
                               type: string
-                            description: Select objects whose labels match the ones specified here.
+                            description: Select objects whose labels match the ones
+                              specified here.
                             type: object
                           namespaces:
                             description: |-
@@ -3402,7 +3765,8 @@ spec:
                         type: object
                     type: object
                   directResponseAction:
-                    description: Return an arbitrary HTTP response directly, without proxying.
+                    description: Return an arbitrary HTTP response directly, without
+                      proxying.
                     properties:
                       body:
                         description: |-
@@ -3441,10 +3805,12 @@ spec:
                         - regex
                       properties:
                         exact:
-                          description: If specified, the targeted path must exactly match the value.
+                          description: If specified, the targeted path must exactly
+                            match the value.
                           type: string
                         headers:
-                          description: Specify a set of headers which requests must match in entirety (all headers must match).
+                          description: Specify a set of headers which requests must
+                            match in entirety (all headers must match).
                           items:
                             properties:
                               invertMatch:
@@ -3458,10 +3824,12 @@ spec:
                                          - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                                 type: boolean
                               name:
-                                description: Specify the name of the header in the request.
+                                description: Specify the name of the header in the
+                                  request.
                                 type: string
                               regex:
-                                description: Specify whether the header value should be treated as regex.
+                                description: Specify whether the header value should
+                                  be treated as regex.
                                 type: boolean
                               value:
                                 description: |-
@@ -3480,25 +3848,31 @@ spec:
                             the access logs for requests matching this route.
                           type: string
                         prefix:
-                          description: If specified, the targeted path must begin with the prefix.
+                          description: If specified, the targeted path must begin
+                            with the prefix.
                           type: string
                         queryParameters:
-                          description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                          description: Specify a set of URL query parameters which
+                            requests must match in entirety (all query params must
+                            match).
                           items:
                             properties:
                               name:
-                                description: Specify the name of a key that must be present in the requested path's query string.
+                                description: Specify the name of a key that must be
+                                  present in the requested path's query string.
                                 type: string
                               regex:
                                 description: If true, treat `value` as a regular expression.
                                 type: boolean
                               value:
-                                description: Specify the value of the query parameter keyed on `name`.
+                                description: Specify the value of the query parameter
+                                  keyed on `name`.
                                 type: string
                             type: object
                           type: array
                         regex:
-                          description: If specified, the targeted path must match the regex.
+                          description: If specified, the targeted path must match
+                            the regex.
                           type: string
                       type: object
                     type: array
@@ -3540,7 +3914,8 @@ spec:
                               type: string
                             type: array
                           allowOrigins:
-                            description: String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
+                            description: String patterns that match allowed origins.
+                              An origin is allowed if any of the string matchers match.
                             items:
                               oneOf:
                               - not:
@@ -3597,18 +3972,23 @@ spec:
                           - abort
                         properties:
                           abort:
-                            description: Abort the request and return the specified error code back to traffic source.
+                            description: Abort the request and return the specified
+                              error code back to traffic source.
                             properties:
                               httpStatus:
-                                description: Required. HTTP status code to use to abort the request.
+                                description: Required. HTTP status code to use to
+                                  abort the request.
                                 format: int32
                                 type: integer
                             type: object
                           fixedDelay:
-                            description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                            description: 'Add a delay of a fixed duration before sending
+                              the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
                             type: string
                           percentage:
-                            description: Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+                            description: Percentage of requests to be faulted. Values
+                              range between 0 and 100. If omitted all requests will
+                              be faulted.
                             format: double
                             type: number
                         type: object
@@ -3618,26 +3998,32 @@ spec:
                           appendRequestHeaders:
                             additionalProperties:
                               type: string
-                            description: Additional HTTP headers to add before forwarding a request to the destination service.
+                            description: Additional HTTP headers to add before forwarding
+                              a request to the destination service.
                             type: object
                           appendResponseHeaders:
                             additionalProperties:
                               type: string
-                            description: Additional HTTP headers to add before returning a response to the caller.
+                            description: Additional HTTP headers to add before returning
+                              a response to the caller.
                             type: object
                           removeRequestHeaders:
-                            description: HTTP headers to remove before forwarding a request to the destination service.
+                            description: HTTP headers to remove before forwarding
+                              a request to the destination service.
                             items:
                               type: string
                             type: array
                           removeResponseHeaders:
-                            description: HTTP headers to remove before returning a response to the caller.
+                            description: HTTP headers to remove before returning a
+                              response to the caller.
                             items:
                               type: string
                             type: array
                         type: object
                       mirror:
-                        description: Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
+                        description: Mirror traffic to a another destination (traffic
+                          will be sent to its original destination in addition to
+                          the mirrored destinations).
                         oneOf:
                         - not:
                             anyOf:
@@ -3647,10 +4033,12 @@ spec:
                           - kubeService
                         properties:
                           kubeService:
-                            description: Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
+                            description: Reference (name, namespace, Gloo Mesh cluster)
+                              to a Kubernetes service.
                             properties:
                               clusterName:
-                                description: name of the cluster in which the resource exists
+                                description: name of the cluster in which the resource
+                                  exists
                                 type: string
                               name:
                                 description: name of the resource being referenced
@@ -3660,11 +4048,14 @@ spec:
                                 type: string
                             type: object
                           percentage:
-                            description: Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
+                            description: Percentage of traffic to mirror. If omitted
+                              all traffic will be mirrored. Values must be between
+                              0 and 100.
                             format: double
                             type: number
                           port:
-                            description: Port on the destination to receive traffic. Required if the destination exposes multiple ports.
+                            description: Port on the destination to receive traffic.
+                              Required if the destination exposes multiple ports.
                             maximum: 4294967295
                             minimum: 0
                             type: integer
@@ -3693,15 +4084,20 @@ spec:
                           DEPRECATED: use DestinationPolicy to configure Outlier Detection
                         properties:
                           baseEjectionTime:
-                            description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                            description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
+                              Must be >= `1ms`. A default will be used if not set.'
                             type: string
                           consecutiveErrors:
-                            description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                            description: The number of errors before a host is ejected
+                              from the connection pool. A default will be used if
+                              not set.
                             maximum: 4294967295
                             minimum: 0
                             type: integer
                           interval:
-                            description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                            description: 'The time interval between ejection sweep
+                              analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`.
+                              A default will be used if not set.'
                             type: string
                           maxEjectionPercent:
                             description: |-
@@ -3722,7 +4118,8 @@ spec:
                             format: int32
                             type: integer
                           perTryTimeout:
-                            description: 'Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                            description: 'Timeout per retry attempt for a given request.
+                              Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
                             type: string
                         type: object
                       trafficShift:
@@ -3762,7 +4159,8 @@ spec:
                                   description: Specify a Kubernetes Service.
                                   properties:
                                     clusterName:
-                                      description: The Gloo Mesh cluster name (registration name) of the service.
+                                      description: The Gloo Mesh cluster name (registration
+                                        name) of the service.
                                       type: string
                                     name:
                                       description: The name of the service.
@@ -3771,14 +4169,17 @@ spec:
                                       description: The namespace of the service.
                                       type: string
                                     port:
-                                      description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                      description: Port on the service to receive
+                                        traffic. Required if the service exposes more
+                                        than one port.
                                       maximum: 4294967295
                                       minimum: 0
                                       type: integer
                                     subset:
                                       additionalProperties:
                                         type: string
-                                      description: Specify, by labels, a subset of service instances to route to.
+                                      description: Specify, by labels, a subset of
+                                        service instances to route to.
                                       type: object
                                   type: object
                                 options:
@@ -3787,25 +4188,33 @@ spec:
                                     when this destination is selected.
                                   properties:
                                     headerManipulation:
-                                      description: manipualte headers on traffic sent to this destination
+                                      description: manipualte headers on traffic sent
+                                        to this destination
                                       properties:
                                         appendRequestHeaders:
                                           additionalProperties:
                                             type: string
-                                          description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                          description: Additional HTTP headers to
+                                            add before forwarding a request to the
+                                            destination service.
                                           type: object
                                         appendResponseHeaders:
                                           additionalProperties:
                                             type: string
-                                          description: Additional HTTP headers to add before returning a response to the caller.
+                                          description: Additional HTTP headers to
+                                            add before returning a response to the
+                                            caller.
                                           type: object
                                         removeRequestHeaders:
-                                          description: HTTP headers to remove before forwarding a request to the destination service.
+                                          description: HTTP headers to remove before
+                                            forwarding a request to the destination
+                                            service.
                                           items:
                                             type: string
                                           type: array
                                         removeResponseHeaders:
-                                          description: HTTP headers to remove before returning a response to the caller.
+                                          description: HTTP headers to remove before
+                                            returning a response to the caller.
                                           items:
                                             type: string
                                           type: array
@@ -3818,22 +4227,27 @@ spec:
                                       description: name of the resource being referenced
                                       type: string
                                     namespace:
-                                      description: namespace of the resource being referenced
+                                      description: namespace of the resource being
+                                        referenced
                                       type: string
                                   type: object
                                 virtualDestination:
                                   description: Specify a VirtualDestination.
                                   properties:
                                     name:
-                                      description: The name of the VirtualDestination object.
+                                      description: The name of the VirtualDestination
+                                        object.
                                       type: string
                                     namespace:
-                                      description: The namespace of the VirtualDestination object.
+                                      description: The namespace of the VirtualDestination
+                                        object.
                                       type: string
                                     subset:
                                       additionalProperties:
                                         type: string
-                                      description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                      description: Specify, by labels, a subset of
+                                        service instances backing the VirtualDestination
+                                        to route to.
                                       type: object
                                   type: object
                                 weight:
@@ -3848,16 +4262,20 @@ spec:
                         type: object
                     type: object
                   redirectAction:
-                    description: Redirect actions tell the proxy to return a redirect response to the downstream client.
+                    description: Redirect actions tell the proxy to return a redirect
+                      response to the downstream client.
                     properties:
                       hostRedirect:
-                        description: The host portion of the URL will be swapped with this value.
+                        description: The host portion of the URL will be swapped with
+                          this value.
                         type: string
                       httpsRedirect:
-                        description: The scheme portion of the URL will be swapped with "https".
+                        description: The scheme portion of the URL will be swapped
+                          with "https".
                         type: boolean
                       pathRedirect:
-                        description: The path portion of the URL will be swapped with this value.
+                        description: The path portion of the URL will be swapped with
+                          this value.
                         type: string
                       prefixRewrite:
                         description: |-
@@ -3927,7 +4345,8 @@ spec:
                               description: Specify a Kubernetes Service.
                               properties:
                                 clusterName:
-                                  description: The Gloo Mesh cluster name (registration name) of the service.
+                                  description: The Gloo Mesh cluster name (registration
+                                    name) of the service.
                                   type: string
                                 name:
                                   description: The name of the service.
@@ -3936,14 +4355,17 @@ spec:
                                   description: The namespace of the service.
                                   type: string
                                 port:
-                                  description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                  description: Port on the service to receive traffic.
+                                    Required if the service exposes more than one
+                                    port.
                                   maximum: 4294967295
                                   minimum: 0
                                   type: integer
                                 subset:
                                   additionalProperties:
                                     type: string
-                                  description: Specify, by labels, a subset of service instances to route to.
+                                  description: Specify, by labels, a subset of service
+                                    instances to route to.
                                   type: object
                               type: object
                             options:
@@ -3952,25 +4374,31 @@ spec:
                                 when this destination is selected.
                               properties:
                                 headerManipulation:
-                                  description: manipualte headers on traffic sent to this destination
+                                  description: manipualte headers on traffic sent
+                                    to this destination
                                   properties:
                                     appendRequestHeaders:
                                       additionalProperties:
                                         type: string
-                                      description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                      description: Additional HTTP headers to add
+                                        before forwarding a request to the destination
+                                        service.
                                       type: object
                                     appendResponseHeaders:
                                       additionalProperties:
                                         type: string
-                                      description: Additional HTTP headers to add before returning a response to the caller.
+                                      description: Additional HTTP headers to add
+                                        before returning a response to the caller.
                                       type: object
                                     removeRequestHeaders:
-                                      description: HTTP headers to remove before forwarding a request to the destination service.
+                                      description: HTTP headers to remove before forwarding
+                                        a request to the destination service.
                                       items:
                                         type: string
                                       type: array
                                     removeResponseHeaders:
-                                      description: HTTP headers to remove before returning a response to the caller.
+                                      description: HTTP headers to remove before returning
+                                        a response to the caller.
                                       items:
                                         type: string
                                       type: array
@@ -3990,15 +4418,19 @@ spec:
                               description: Specify a VirtualDestination.
                               properties:
                                 name:
-                                  description: The name of the VirtualDestination object.
+                                  description: The name of the VirtualDestination
+                                    object.
                                   type: string
                                 namespace:
-                                  description: The namespace of the VirtualDestination object.
+                                  description: The namespace of the VirtualDestination
+                                    object.
                                   type: string
                                 subset:
                                   additionalProperties:
                                     type: string
-                                  description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                  description: Specify, by labels, a subset of service
+                                    instances backing the VirtualDestination to route
+                                    to.
                                   type: object
                               type: object
                             weight:
@@ -4017,7 +4449,8 @@ spec:
         status:
           properties:
             errors:
-              description: Any errors found while processing this generation of the resource.
+              description: Any errors found while processing this generation of the
+                resource.
               items:
                 type: string
               type: array
@@ -4029,7 +4462,8 @@ spec:
               format: int64
               type: integer
             selectedBy:
-              description: List of resources which have selected this RouteTable. Can be VirtualHosts or other RouteTables
+              description: List of resources which have selected this RouteTable.
+                Can be VirtualHosts or other RouteTables
               items:
                 properties:
                   name:
@@ -4046,7 +4480,8 @@ spec:
                 type: object
               type: array
             selectedRouteTables:
-              description: List of child RouteTables that this RouteTable delegates to
+              description: List of child RouteTables that this RouteTable delegates
+                to
               items:
                 properties:
                   name:
@@ -4058,7 +4493,8 @@ spec:
                 type: object
               type: array
             warnings:
-              description: Any warnings found while processing this generation of the resource.
+              description: Any warnings found while processing this generation of
+                the resource.
               items:
                 type: string
               type: array

@@ -351,14 +351,9 @@ spec:
                       type: integer
                   type: object
                 mtls:
-<<<<<<< HEAD
                   description: |-
                     Configure mTLS settings. If specified will override global default defined in Settings.
                     DEPRECATED: use DestinationPolicy to configure MTLS
-=======
-                  description: Configure mTLS settings. If specified will override
-                    global default defined in Settings.
->>>>>>> main
                   properties:
                     istio:
                       description: Istio TLS settings.
@@ -481,25 +476,30 @@ spec:
                               when this destination is selected.
                             properties:
                               headerManipulation:
-                                description: manipualte headers on traffic sent to this destination
+                                description: manipualte headers on traffic sent to
+                                  this destination
                                 properties:
                                   appendRequestHeaders:
                                     additionalProperties:
                                       type: string
-                                    description: Additional HTTP headers to add before forwarding a request to the destination service.
+                                    description: Additional HTTP headers to add before
+                                      forwarding a request to the destination service.
                                     type: object
                                   appendResponseHeaders:
                                     additionalProperties:
                                       type: string
-                                    description: Additional HTTP headers to add before returning a response to the caller.
+                                    description: Additional HTTP headers to add before
+                                      returning a response to the caller.
                                     type: object
                                   removeRequestHeaders:
-                                    description: HTTP headers to remove before forwarding a request to the destination service.
+                                    description: HTTP headers to remove before forwarding
+                                      a request to the destination service.
                                     items:
                                       type: string
                                     type: array
                                   removeResponseHeaders:
-                                    description: HTTP headers to remove before returning a response to the caller.
+                                    description: HTTP headers to remove before returning
+                                      a response to the caller.
                                     items:
                                       type: string
                                     type: array
