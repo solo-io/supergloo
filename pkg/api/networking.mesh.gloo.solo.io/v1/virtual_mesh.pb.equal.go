@@ -235,84 +235,6 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *VirtualMeshSpec_RootCertificateAuthority) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshSpec_RootCertificateAuthority)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_RootCertificateAuthority)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.CaSource.(type) {
-
-	case *VirtualMeshSpec_RootCertificateAuthority_Generated:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Generated); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetGenerated()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetGenerated()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetGenerated(), target.GetGenerated()) {
-				return false
-			}
-		}
-
-	case *VirtualMeshSpec_RootCertificateAuthority_Secret:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Secret); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetSecret()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSecret()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetSecret(), target.GetSecret()) {
-				return false
-			}
-		}
-
-	case *VirtualMeshSpec_RootCertificateAuthority_Vault:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Vault); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetVault()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetVault()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetVault(), target.GetVault()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.CaSource != target.CaSource {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -406,22 +328,51 @@ func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetRootCertificateAuthority()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRootCertificateAuthority()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetRootCertificateAuthority(), target.GetRootCertificateAuthority()) {
-			return false
-		}
-	}
-
 	if h, ok := interface{}(m.GetIntermediateCertOptions()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetIntermediateCertOptions()) {
 			return false
 		}
 	} else {
 		if !proto.Equal(m.GetIntermediateCertOptions(), target.GetIntermediateCertOptions()) {
+			return false
+		}
+	}
+
+	switch m.CertificateAuthority.(type) {
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_:
+		if _, ok := target.CertificateAuthority.(*VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetRootCertificateAuthority()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRootCertificateAuthority()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetRootCertificateAuthority(), target.GetRootCertificateAuthority()) {
+				return false
+			}
+		}
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority_:
+		if _, ok := target.CertificateAuthority.(*VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority_); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetIntermediateCertificateAuthority()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetIntermediateCertificateAuthority()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetIntermediateCertificateAuthority(), target.GetIntermediateCertificateAuthority()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.CertificateAuthority != target.CertificateAuthority {
 			return false
 		}
 	}
@@ -448,6 +399,155 @@ func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) Equal(that interface{}) bool {
 		return m == nil
 	} else if m == nil {
 		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetStorageMechanism() != target.GetStorageMechanism() {
+		return false
+	}
+
+	switch m.CaSource.(type) {
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority_Secret:
+		if _, ok := target.CaSource.(*VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority_Secret); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetSecret()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSecret()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetSecret(), target.GetSecret()) {
+				return false
+			}
+		}
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority_Vault:
+		if _, ok := target.CaSource.(*VirtualMeshSpec_MTLSConfig_SharedTrust_IntermediateCertificateAuthority_Vault); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetVault()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVault()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetVault(), target.GetVault()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.CaSource != target.CaSource {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetStorageMechanism() != target.GetStorageMechanism() {
+		return false
+	}
+
+	switch m.CaSource.(type) {
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_Generated:
+		if _, ok := target.CaSource.(*VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_Generated); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetGenerated()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGenerated()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetGenerated(), target.GetGenerated()) {
+				return false
+			}
+		}
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_Secret:
+		if _, ok := target.CaSource.(*VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_Secret); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetSecret()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSecret()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetSecret(), target.GetSecret()) {
+				return false
+			}
+		}
+
+	case *VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_Vault:
+		if _, ok := target.CaSource.(*VirtualMeshSpec_MTLSConfig_SharedTrust_RootCertificateAuthority_Vault); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetVault()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVault()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetVault(), target.GetVault()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.CaSource != target.CaSource {
+			return false
+		}
 	}
 
 	return true

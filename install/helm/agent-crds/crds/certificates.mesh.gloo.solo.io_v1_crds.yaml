@@ -176,7 +176,8 @@ spec:
                         A required field containing the Vault Role to assume. A Role binds a
                         Kubernetes ServiceAccount with a set of Vault policies.
                       type: string
-                    secretRef:
+                    saRef:
+                      description: Reference to a service account
                       properties:
                         name:
                           description: name of the resource being referenced

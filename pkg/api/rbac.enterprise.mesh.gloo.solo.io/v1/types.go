@@ -4,9 +4,8 @@
 package v1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -15,22 +14,22 @@ import (
 
 // GroupVersionKind for Role
 var RoleGVK = schema.GroupVersionKind{
-	Group:   "rbac.enterprise.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "Role",
+    Group: "rbac.enterprise.mesh.gloo.solo.io",
+    Version: "v1",
+    Kind: "Role",
 }
 
 // Role is the Schema for the role API
 type Role struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RoleSpec   `json:"spec,omitempty"`
-	Status RoleStatus `json:"status,omitempty"`
+    Spec RoleSpec `json:"spec,omitempty"`
+    Status RoleStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (Role) GVK() schema.GroupVersionKind {
+func (Role)  GVK() schema.GroupVersionKind {
 	return RoleGVK
 }
 
@@ -38,9 +37,9 @@ func (Role) GVK() schema.GroupVersionKind {
 
 // RoleList contains a list of Role
 type RoleList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Role `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []Role `json:"items"`
 }
 
 // +genclient
@@ -50,22 +49,22 @@ type RoleList struct {
 
 // GroupVersionKind for RoleBinding
 var RoleBindingGVK = schema.GroupVersionKind{
-	Group:   "rbac.enterprise.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "RoleBinding",
+    Group: "rbac.enterprise.mesh.gloo.solo.io",
+    Version: "v1",
+    Kind: "RoleBinding",
 }
 
 // RoleBinding is the Schema for the roleBinding API
 type RoleBinding struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RoleBindingSpec   `json:"spec,omitempty"`
-	Status RoleBindingStatus `json:"status,omitempty"`
+    Spec RoleBindingSpec `json:"spec,omitempty"`
+    Status RoleBindingStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (RoleBinding) GVK() schema.GroupVersionKind {
+func (RoleBinding)  GVK() schema.GroupVersionKind {
 	return RoleBindingGVK
 }
 
@@ -73,12 +72,12 @@ func (RoleBinding) GVK() schema.GroupVersionKind {
 
 // RoleBindingList contains a list of RoleBinding
 type RoleBindingList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []RoleBinding `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []RoleBinding `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Role{}, &RoleList{})
-	SchemeBuilder.Register(&RoleBinding{}, &RoleBindingList{})
+    SchemeBuilder.Register(&Role{}, &RoleList{})
+    SchemeBuilder.Register(&RoleBinding{}, &RoleBindingList{})
 }

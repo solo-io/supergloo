@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	rbac_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.gloo.solo.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    rbac_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.gloo.solo.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,56 +21,56 @@ import (
 
 // Provider for RoleClient from Clientset
 func RoleClientFromClientsetProvider(clients rbac_enterprise_mesh_gloo_solo_io_v1.Clientset) rbac_enterprise_mesh_gloo_solo_io_v1.RoleClient {
-	return clients.Roles()
+    return clients.Roles()
 }
 
 // Provider for Role Client from Client
 func RoleClientProvider(client client.Client) rbac_enterprise_mesh_gloo_solo_io_v1.RoleClient {
-	return rbac_enterprise_mesh_gloo_solo_io_v1.NewRoleClient(client)
+    return rbac_enterprise_mesh_gloo_solo_io_v1.NewRoleClient(client)
 }
 
 type RoleClientFactory func(client client.Client) rbac_enterprise_mesh_gloo_solo_io_v1.RoleClient
 
 func RoleClientFactoryProvider() RoleClientFactory {
-	return RoleClientProvider
+    return RoleClientProvider
 }
 
 type RoleClientFromConfigFactory func(cfg *rest.Config) (rbac_enterprise_mesh_gloo_solo_io_v1.RoleClient, error)
 
 func RoleClientFromConfigFactoryProvider() RoleClientFromConfigFactory {
-	return func(cfg *rest.Config) (rbac_enterprise_mesh_gloo_solo_io_v1.RoleClient, error) {
-		clients, err := rbac_enterprise_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Roles(), nil
-	}
+    return func(cfg *rest.Config) (rbac_enterprise_mesh_gloo_solo_io_v1.RoleClient, error) {
+        clients, err := rbac_enterprise_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Roles(), nil
+    }
 }
 
 // Provider for RoleBindingClient from Clientset
 func RoleBindingClientFromClientsetProvider(clients rbac_enterprise_mesh_gloo_solo_io_v1.Clientset) rbac_enterprise_mesh_gloo_solo_io_v1.RoleBindingClient {
-	return clients.RoleBindings()
+    return clients.RoleBindings()
 }
 
 // Provider for RoleBinding Client from Client
 func RoleBindingClientProvider(client client.Client) rbac_enterprise_mesh_gloo_solo_io_v1.RoleBindingClient {
-	return rbac_enterprise_mesh_gloo_solo_io_v1.NewRoleBindingClient(client)
+    return rbac_enterprise_mesh_gloo_solo_io_v1.NewRoleBindingClient(client)
 }
 
 type RoleBindingClientFactory func(client client.Client) rbac_enterprise_mesh_gloo_solo_io_v1.RoleBindingClient
 
 func RoleBindingClientFactoryProvider() RoleBindingClientFactory {
-	return RoleBindingClientProvider
+    return RoleBindingClientProvider
 }
 
 type RoleBindingClientFromConfigFactory func(cfg *rest.Config) (rbac_enterprise_mesh_gloo_solo_io_v1.RoleBindingClient, error)
 
 func RoleBindingClientFromConfigFactoryProvider() RoleBindingClientFromConfigFactory {
-	return func(cfg *rest.Config) (rbac_enterprise_mesh_gloo_solo_io_v1.RoleBindingClient, error) {
-		clients, err := rbac_enterprise_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.RoleBindings(), nil
-	}
+    return func(cfg *rest.Config) (rbac_enterprise_mesh_gloo_solo_io_v1.RoleBindingClient, error) {
+        clients, err := rbac_enterprise_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.RoleBindings(), nil
+    }
 }

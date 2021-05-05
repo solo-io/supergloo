@@ -2,11 +2,13 @@
 
 package v1beta1
 
-import (
-	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,28 +21,28 @@ import (
 
 // Provider for XdsConfigClient from Clientset
 func XdsConfigClientFromClientsetProvider(clients xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigClient {
-	return clients.XdsConfigs()
+    return clients.XdsConfigs()
 }
 
 // Provider for XdsConfig Client from Client
 func XdsConfigClientProvider(client client.Client) xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigClient {
-	return xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewXdsConfigClient(client)
+    return xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewXdsConfigClient(client)
 }
 
 type XdsConfigClientFactory func(client client.Client) xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigClient
 
 func XdsConfigClientFactoryProvider() XdsConfigClientFactory {
-	return XdsConfigClientProvider
+    return XdsConfigClientProvider
 }
 
 type XdsConfigClientFromConfigFactory func(cfg *rest.Config) (xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigClient, error)
 
 func XdsConfigClientFromConfigFactoryProvider() XdsConfigClientFromConfigFactory {
-	return func(cfg *rest.Config) (xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigClient, error) {
-		clients, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.XdsConfigs(), nil
-	}
+    return func(cfg *rest.Config) (xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigClient, error) {
+        clients, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.XdsConfigs(), nil
+    }
 }

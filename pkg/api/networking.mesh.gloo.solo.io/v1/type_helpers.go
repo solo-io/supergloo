@@ -3,6 +3,9 @@
 // Definitions for the Kubernetes types
 package v1
 
+import (
+)
+
 // TrafficPolicySlice represents a slice of *TrafficPolicy
 type TrafficPolicySlice []*TrafficPolicy
 

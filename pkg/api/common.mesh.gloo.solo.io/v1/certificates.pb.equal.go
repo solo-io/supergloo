@@ -169,12 +169,12 @@ func (m *VaultCA_Kubernetes) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetSecretRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSecretRef()) {
+	if h, ok := interface{}(m.GetSaRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSaRef()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetSecretRef(), target.GetSecretRef()) {
+		if !proto.Equal(m.GetSaRef(), target.GetSaRef()) {
 			return false
 		}
 	}
