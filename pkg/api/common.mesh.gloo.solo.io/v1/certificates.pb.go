@@ -238,10 +238,18 @@ type VaultCA_Kubernetes struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Path           string        `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	SecretRef      *v1.ObjectRef `protobuf:"bytes,2,opt,name=secret_ref,json=secretRef,proto3" json:"secret_ref,omitempty"`
-	SecretTokenKey string        `protobuf:"bytes,3,opt,name=secret_token_key,json=secretTokenKey,proto3" json:"secret_token_key,omitempty"`
-	Role           string        `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	// The Vault mountPath here is the mount path to use when authenticating with
+	// Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+	// `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+	// default value "/v1/auth/kubernetes" will be used.
+	Path      string        `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	SecretRef *v1.ObjectRef `protobuf:"bytes,2,opt,name=secret_ref,json=secretRef,proto3" json:"secret_ref,omitempty"`
+	// Key in the token to search for the sa_token
+	// Default to "token"
+	SecretTokenKey string `protobuf:"bytes,3,opt,name=secret_token_key,json=secretTokenKey,proto3" json:"secret_token_key,omitempty"`
+	// A required field containing the Vault Role to assume. A Role binds a
+	// Kubernetes ServiceAccount with a set of Vault policies.
+	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 }
 
 func (x *VaultCA_Kubernetes) Reset() {
