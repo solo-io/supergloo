@@ -219,7 +219,7 @@ type EnterpriseOptions struct {
 	*Options
 	LicenseKey         string
 	SkipUI             bool
-	IncludeRBAC           bool
+	IncludeRBAC        bool
 	RelayServerAddress string
 }
 

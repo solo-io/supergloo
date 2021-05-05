@@ -49,8 +49,6 @@ type options registration.Options
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfigPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
-	flags.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "",
-		"path to the kubeconfig for the managemtn plane if differente from which the registered cluster")
 	flags.StringVar(&o.MgmtContext, "mgmt-context", "", "name of the kubeconfig context to use for the management cluster")
 	flags.StringVar(&o.RemoteContext, "remote-context", "", "name of the kubeconfig context to use for the remote cluster")
 	flags.StringVar(&o.MgmtNamespace, "mgmt-namespace", defaults.DefaultPodNamespace, "namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created")
@@ -71,7 +69,6 @@ installed on the remote cluster.`,
 			regOpts.AgentChartPathOverride = opts.AgentChartPathOverride
 			regOpts.AgentChartValuesPath = opts.AgentChartValuesPath
 			regOpts.ClusterName = args[0]
-			regOpts.MgmtKubeConfigPath = opts.MgmtKubeConfigPath
 			registrant, err := registration.NewRegistrant(registration.Options(*regOpts))
 			if err != nil {
 				return err
