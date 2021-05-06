@@ -3,6 +3,7 @@ package install
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
@@ -49,14 +50,14 @@ type options struct {
 	namespace       string
 	chartPath       string
 	chartValuesFile string
+	extraHelmValues []string
 	version         string
 	releaseName     string
 	agentChartPath  string
 	agentValuesPath string
-
-	register      bool
-	clusterName   string
-	clusterDomain string
+	register        bool
+	clusterName     string
+	clusterDomain   string
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
@@ -66,7 +67,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh.\nIf unset, this command will install Gloo Mesh from the publicly released Helm chart.")
 	flags.StringVar(&o.chartValuesFile, "chart-values-file", "", "File containing value overrides for the Gloo Mesh Helm chart")
 	flags.StringVar(&o.version, "version", "", "Version to install.\nCommunity defaults to meshctl version, enterprise defaults to latest stable")
-
+	flags.StringArrayVar(&o.extraHelmValues, "set", []string{}, "Extra helm values for the Gloo Mesh chart.")
 	flags.BoolVarP(&o.register, "register", "r", false, "Also register the cluster")
 	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Gloo Mesh, only applies if --register is also set")
@@ -87,7 +88,7 @@ func (o *options) getInstaller(chartUriTemplate string) helm.Installer {
 		KubeContext: o.kubeContext,
 		Namespace:   o.namespace,
 		ReleaseName: o.releaseName,
-		Values:      make(map[string]string),
+		Values:      getStringMap(o.extraHelmValues),
 		Verbose:     o.Verbose,
 		DryRun:      o.dryRun,
 	}
@@ -217,7 +218,7 @@ type enterpriseOptions struct {
 	*options
 	licenseKey         string
 	skipUI             bool
-	skipRBAC           bool
+	includeRBAC        bool
 	relayServerAddress string
 }
 
@@ -226,7 +227,7 @@ func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.licenseKey, "license", "", "Gloo Mesh Enterprise license key (required)")
 	cobra.MarkFlagRequired(flags, "license")
 	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")
-	flags.BoolVar(&o.skipRBAC, "skip-rbac", false, "Skip installation of the RBAC Webhook")
+	flags.BoolVar(&o.includeRBAC, "include-rbac", false, "Install the RBAC Webhook")
 	flags.StringVar(&o.agentChartPath, "enterprise-agent-chart-file", "",
 		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
 			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",
@@ -245,8 +246,8 @@ func (o enterpriseOptions) getInstaller() helm.Installer {
 	if o.skipUI {
 		ins.Values["gloo-mesh-ui.enabled"] = "false"
 	}
-	if o.skipRBAC {
-		ins.Values["rbac-webhook.enabled"] = "false"
+	if o.includeRBAC {
+		ins.Values["rbac-webhook.enabled"] = "true"
 	}
 
 	return ins
@@ -299,4 +300,15 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 	}
 
 	return nil
+}
+
+func getStringMap(values []string) map[string]string {
+	m := make(map[string]string)
+	for _, e := range values {
+		tokens := strings.Split(e, "=")
+		k := strings.TrimSpace(tokens[0])
+		v := strings.TrimSpace(tokens[1])
+		m[k] = v
+	}
+	return m
 }
