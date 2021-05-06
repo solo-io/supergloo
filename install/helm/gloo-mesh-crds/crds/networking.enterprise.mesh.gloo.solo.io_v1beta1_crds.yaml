@@ -754,8 +754,8 @@ spec:
           description: 'TODO(harveyxia): Explain and motivate.'
           properties:
             destinationSelectors:
-              description: Required. Select the traffic targets (i.e. Destination)
-                for this network ServiceDependency.
+              description: Select the traffic targets (i.e. Destination) for this
+                network ServiceDependency. If omitted, selects all Destinations.
               items:
                 properties:
                   kubeServiceMatcher:
@@ -813,8 +813,8 @@ spec:
                 type: object
               type: array
             sourceSelectors:
-              description: Required. Select the traffic sources (i.e. Workloads) for
-                this network ServiceDependency.
+              description: Select the traffic sources (i.e. Workloads) for this network
+                ServiceDependency. If omitted, selects all Workloads.
               items:
                 properties:
                   kubeWorkloadMatcher:
@@ -874,6 +874,12 @@ spec:
               - INVALID
               - FAILED
               type: string
+            workloadWarnings:
+              additionalProperties:
+                type: string
+              description: Warnings for selected Workloads found while processing
+                this generation of the resource.
+              type: object
             workloads:
               description: The Workloads that this ServiceDependency applies to.
               items:

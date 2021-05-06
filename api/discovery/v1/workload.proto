@@ -68,8 +68,9 @@ message WorkloadStatus {
     // The set of WasmDeployments that have been applied to this Workload.
     repeated AppliedWasmDeployment applied_wasm_deployments = 3;
 
-    // The set of ServiceDependencies that have been applied to this Workload.
-    repeated AppliedServiceDependency applied_service_dependencies = 4;
+    // Specifies the [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}})
+    // that apply to this Workload, and the resulting Destination hostnames that this Workload can send traffic to.
+    DestinationDependencies destination_dependencies = 4;
 
     // Describes an [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging/" >}}) that applies to this Workload.
     message AppliedAccessLogRecord {
@@ -97,11 +98,22 @@ message WorkloadStatus {
         repeated string errors = 3;
     }
 
-    message AppliedServiceDependency {
-        // Reference to the ServiceDependency object.
-        .core.skv2.solo.io.ObjectRef service_dependency_ref = 1;
+    message DestinationDependencies {
 
-        // The observed generation of the ServiceDependency.
-        int64 observed_generation = 2;
+        // The set of [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}}) that have been applied to this Workload.
+        repeated AppliedServiceDependency applied_service_dependencies = 1;
+
+        // The set of Destination hostnames that this Workload depends on.
+        repeated string destination_hostnames = 2;
+
+        // Describes a [ServiceDependency]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}})
+        // that applies to this workload.
+        message AppliedServiceDependency {
+            // Reference to the ServiceDependency object.
+            .core.skv2.solo.io.ObjectRef service_dependency_ref = 1;
+
+            // The observed generation of the ServiceDependency.
+            int64 observed_generation = 2;
+        }
     }
 }

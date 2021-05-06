@@ -152,21 +152,14 @@ func (m *WorkloadStatus) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetAppliedServiceDependencies()) != len(target.GetAppliedServiceDependencies()) {
-		return false
-	}
-	for idx, v := range m.GetAppliedServiceDependencies() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetAppliedServiceDependencies()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetAppliedServiceDependencies()[idx]) {
-				return false
-			}
+	if h, ok := interface{}(m.GetDestinationDependencies()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDestinationDependencies()) {
+			return false
 		}
-
+	} else {
+		if !proto.Equal(m.GetDestinationDependencies(), target.GetDestinationDependencies()) {
+			return false
+		}
 	}
 
 	return true
@@ -397,14 +390,66 @@ func (m *WorkloadStatus_AppliedWasmDeployment) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *WorkloadStatus_AppliedServiceDependency) Equal(that interface{}) bool {
+func (m *WorkloadStatus_DestinationDependencies) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*WorkloadStatus_AppliedServiceDependency)
+	target, ok := that.(*WorkloadStatus_DestinationDependencies)
 	if !ok {
-		that2, ok := that.(WorkloadStatus_AppliedServiceDependency)
+		that2, ok := that.(WorkloadStatus_DestinationDependencies)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetAppliedServiceDependencies()) != len(target.GetAppliedServiceDependencies()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedServiceDependencies() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedServiceDependencies()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedServiceDependencies()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetDestinationHostnames()) != len(target.GetDestinationHostnames()) {
+		return false
+	}
+	for idx, v := range m.GetDestinationHostnames() {
+
+		if strings.Compare(v, target.GetDestinationHostnames()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *WorkloadStatus_DestinationDependencies_AppliedServiceDependency) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*WorkloadStatus_DestinationDependencies_AppliedServiceDependency)
+	if !ok {
+		that2, ok := that.(WorkloadStatus_DestinationDependencies_AppliedServiceDependency)
 		if ok {
 			target = &that2
 		} else {

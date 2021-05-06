@@ -144,5 +144,16 @@ func (m *ServiceDependencyStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetWorkloadWarnings()) != len(target.GetWorkloadWarnings()) {
+		return false
+	}
+	for k, v := range m.GetWorkloadWarnings() {
+
+		if strings.Compare(v, target.GetWorkloadWarnings()[k]) != 0 {
+			return false
+		}
+
+	}
+
 	return true
 }
