@@ -297,7 +297,7 @@ func SelectorMatchesObject(
 	case all:
 		nsMatches = true
 	case owner:
-		nsMatches = candidate.GetName() == ownerNamespace
+		nsMatches = candidate.GetNamespace() == ownerNamespace
 	case list:
 		for _, ns := range selector.Namespaces {
 			if ns == candidate.GetNamespace() {

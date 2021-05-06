@@ -66,10 +66,10 @@ var _ = Describe("OsmE2e", func() {
 				},
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Destinations: []*networkingv1.WeightedDestination{
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        fmt.Sprintf("%s-v1", bookStore),
 										Namespace:   bookStore,
 										ClusterName: mgmtClusterName,
@@ -78,8 +78,8 @@ var _ = Describe("OsmE2e", func() {
 								Weight: 50,
 							},
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        fmt.Sprintf("%s-v2", bookStore),
 										Namespace:   bookStore,
 										ClusterName: mgmtClusterName,
