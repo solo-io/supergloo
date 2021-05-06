@@ -31,10 +31,10 @@ meshctl install enterprise [flags]
       --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
-      --include-rbac                           Install the RBAC Webhook
       --license string                         Gloo Mesh Enterprise license key (required)
       --relay-server-address string            The address that the enterprise agentw will communicate with the relay server via.
       --release-name string                    Helm release name (default "gloo-mesh")
+      --skip-rbac                              Skip installation of the RBAC Webhook
       --skip-ui                                Skip installation of the Gloo Mesh UI
 ```
 
@@ -52,7 +52,6 @@ meshctl install enterprise [flags]
       --kubecontext string         Name of the kubeconfig context to use for the management cluster
       --namespace string           namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --register                   Also register the cluster
-      --set stringArray            Extra helm values for the Gloo Mesh chart.
   -v, --verbose                    Enable verbose logging
       --version string             Version to install.
                                    Community defaults to meshctl version, enterprise defaults to latest stable

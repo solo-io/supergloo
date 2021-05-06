@@ -28,7 +28,6 @@ var _ = Describe("CertGen workflow", func() {
 			csr,
 			signingRoot,
 			signingKey,
-			365,
 		)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(inetermediaryCert)).To(ContainSubstring("-----BEGIN CERTIFICATE-----"))
