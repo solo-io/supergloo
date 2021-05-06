@@ -150,12 +150,6 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
-            storageMechanism:
-              description: common cert options for intermediate certificate
-              enum:
-              - SECRET
-              - FILE_SYSTEM
-              type: string
             vaultCa:
               description: The vault_ca config which will be used to sign this intermediate
                 cert

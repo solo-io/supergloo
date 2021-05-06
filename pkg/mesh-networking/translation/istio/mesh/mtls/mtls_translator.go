@@ -51,7 +51,9 @@ const (
 )
 
 var (
-	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1.SchemeGroupVersion.Group))
+	signingCertSecretType = corev1.SecretType(
+		fmt.Sprintf("%s/generated_signing_cert", certificatesv1.SchemeGroupVersion.Group),
+	)
 
 	// used when the user provides a nil root cert
 	defaultSelfSignedRootCa = &networkingv1.RootCertificateAuthority{
@@ -91,7 +93,11 @@ type translator struct {
 	workloads discoveryv1sets.WorkloadSet
 }
 
-func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads discoveryv1sets.WorkloadSet) Translator {
+func NewTranslator(
+	ctx context.Context,
+	secrets corev1sets.SecretSet,
+	workloads discoveryv1sets.WorkloadSet,
+) Translator {
 	return &translator{
 		ctx:       ctx,
 		secrets:   secrets,
@@ -395,7 +401,8 @@ func getPodsToBounce(
 	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
 	// If the pki-sidecar is fulfilling the issued certificate request,
 	// then the control-plane should not be bounced.
-	if sharedTrust.GetIntermediateCertificateAuthority().GetStorageMechanism() != networkingv1.IntermediateCertificateAuthority_FILE_SYSTEM {
+	storageMechanism := sharedTrust.GetIntermediateCertificateAuthority().GetStorageMechanism()
+	if storageMechanism != commonv1.StorageMechanism_FILE_SYSTEM {
 		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,

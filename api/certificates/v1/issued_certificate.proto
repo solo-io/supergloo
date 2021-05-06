@@ -44,9 +44,6 @@ message IssuedCertificateSpec {
     // common cert options for intermediate certificate
     .common.mesh.gloo.solo.io.CommonCertOptions common_cert_options = 7;
 
-    // common cert options for intermediate certificate
-    .common.mesh.gloo.solo.io.StorageMechanism storage_mechanism = 8;
-
     oneof signer {
 
         // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).

@@ -71,10 +71,6 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	if m.GetStorageMechanism() != target.GetStorageMechanism() {
-		return false
-	}
-
 	if h, ok := interface{}(m.GetIssuedCertificateSecret()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetIssuedCertificateSecret()) {
 			return false
