@@ -66,7 +66,7 @@ func (s *secretTranslator) Translate(
 		certificateRequest.Spec.GetCertificateSigningRequest(),
 		signingCA.RootCert,
 		signingCA.PrivateKey,
-		issuedCertificate.Spec.GetCommonCertOptions().GetTtlDays(),
+		issuedCertificate.Spec.GetCertOptions().GetTtlDays(),
 	)
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))
