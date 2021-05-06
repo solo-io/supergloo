@@ -8,332 +8,332 @@ package controller
 import (
 	"context"
 
-    discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 
-    "github.com/pkg/errors"
-    "github.com/solo-io/skv2/pkg/events"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/predicate"
-    "sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/events"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Handle events for the Destination Resource
 // DEPRECATED: Prefer reconciler pattern.
 type DestinationEventHandler interface {
-    CreateDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
-    UpdateDestination(old, new *discovery_mesh_gloo_solo_io_v1.Destination) error
-    DeleteDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
-    GenericDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	CreateDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	UpdateDestination(old, new *discovery_mesh_gloo_solo_io_v1.Destination) error
+	DeleteDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	GenericDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
 }
 
 type DestinationEventHandlerFuncs struct {
-    OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
-    OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1.Destination) error
-    OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
-    OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1.Destination) error
+	OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
+	OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1.Destination) error
 }
 
 func (f *DestinationEventHandlerFuncs) CreateDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error {
-    if f.OnCreate == nil {
-        return nil
-    }
-    return f.OnCreate(obj)
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
 }
 
 func (f *DestinationEventHandlerFuncs) DeleteDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error {
-    if f.OnDelete == nil {
-        return nil
-    }
-    return f.OnDelete(obj)
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
 }
 
 func (f *DestinationEventHandlerFuncs) UpdateDestination(objOld, objNew *discovery_mesh_gloo_solo_io_v1.Destination) error {
-    if f.OnUpdate == nil {
-        return nil
-    }
-    return f.OnUpdate(objOld, objNew)
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
 }
 
 func (f *DestinationEventHandlerFuncs) GenericDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) error {
-    if f.OnGeneric == nil {
-        return nil
-    }
-    return f.OnGeneric(obj)
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
 }
 
 type DestinationEventWatcher interface {
-    AddEventHandler(ctx context.Context, h DestinationEventHandler, predicates ...predicate.Predicate) error
+	AddEventHandler(ctx context.Context, h DestinationEventHandler, predicates ...predicate.Predicate) error
 }
 
 type destinationEventWatcher struct {
-    watcher events.EventWatcher
+	watcher events.EventWatcher
 }
 
 func NewDestinationEventWatcher(name string, mgr manager.Manager) DestinationEventWatcher {
-    return &destinationEventWatcher{
-        watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1.Destination{}),
-    }
+	return &destinationEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1.Destination{}),
+	}
 }
 
 func (c *destinationEventWatcher) AddEventHandler(ctx context.Context, h DestinationEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericDestinationHandler{handler: h}
-    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
-        return err
-    }
-    return nil
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
 }
 
 // genericDestinationHandler implements a generic events.EventHandler
 type genericDestinationHandler struct {
-    handler DestinationEventHandler
+	handler DestinationEventHandler
 }
 
 func (h genericDestinationHandler) Create(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return errors.Errorf("internal error: Destination handler received event for %T", object)
-    }
-    return h.handler.CreateDestination(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
+	}
+	return h.handler.CreateDestination(obj)
 }
 
 func (h genericDestinationHandler) Delete(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return errors.Errorf("internal error: Destination handler received event for %T", object)
-    }
-    return h.handler.DeleteDestination(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
+	}
+	return h.handler.DeleteDestination(obj)
 }
 
 func (h genericDestinationHandler) Update(old, new client.Object) error {
-    objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return errors.Errorf("internal error: Destination handler received event for %T", old)
-    }
-    objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return errors.Errorf("internal error: Destination handler received event for %T", new)
-    }
-    return h.handler.UpdateDestination(objOld, objNew)
+	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return errors.Errorf("internal error: Destination handler received event for %T", old)
+	}
+	objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return errors.Errorf("internal error: Destination handler received event for %T", new)
+	}
+	return h.handler.UpdateDestination(objOld, objNew)
 }
 
 func (h genericDestinationHandler) Generic(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
-    if !ok {
-        return errors.Errorf("internal error: Destination handler received event for %T", object)
-    }
-    return h.handler.GenericDestination(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Destination)
+	if !ok {
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
+	}
+	return h.handler.GenericDestination(obj)
 }
 
 // Handle events for the Workload Resource
 // DEPRECATED: Prefer reconciler pattern.
 type WorkloadEventHandler interface {
-    CreateWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
-    UpdateWorkload(old, new *discovery_mesh_gloo_solo_io_v1.Workload) error
-    DeleteWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
-    GenericWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	CreateWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	UpdateWorkload(old, new *discovery_mesh_gloo_solo_io_v1.Workload) error
+	DeleteWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	GenericWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
 }
 
 type WorkloadEventHandlerFuncs struct {
-    OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
-    OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1.Workload) error
-    OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
-    OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1.Workload) error
+	OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
+	OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1.Workload) error
 }
 
 func (f *WorkloadEventHandlerFuncs) CreateWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error {
-    if f.OnCreate == nil {
-        return nil
-    }
-    return f.OnCreate(obj)
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
 }
 
 func (f *WorkloadEventHandlerFuncs) DeleteWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error {
-    if f.OnDelete == nil {
-        return nil
-    }
-    return f.OnDelete(obj)
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
 }
 
 func (f *WorkloadEventHandlerFuncs) UpdateWorkload(objOld, objNew *discovery_mesh_gloo_solo_io_v1.Workload) error {
-    if f.OnUpdate == nil {
-        return nil
-    }
-    return f.OnUpdate(objOld, objNew)
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
 }
 
 func (f *WorkloadEventHandlerFuncs) GenericWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) error {
-    if f.OnGeneric == nil {
-        return nil
-    }
-    return f.OnGeneric(obj)
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
 }
 
 type WorkloadEventWatcher interface {
-    AddEventHandler(ctx context.Context, h WorkloadEventHandler, predicates ...predicate.Predicate) error
+	AddEventHandler(ctx context.Context, h WorkloadEventHandler, predicates ...predicate.Predicate) error
 }
 
 type workloadEventWatcher struct {
-    watcher events.EventWatcher
+	watcher events.EventWatcher
 }
 
 func NewWorkloadEventWatcher(name string, mgr manager.Manager) WorkloadEventWatcher {
-    return &workloadEventWatcher{
-        watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1.Workload{}),
-    }
+	return &workloadEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1.Workload{}),
+	}
 }
 
 func (c *workloadEventWatcher) AddEventHandler(ctx context.Context, h WorkloadEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericWorkloadHandler{handler: h}
-    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
-        return err
-    }
-    return nil
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
 }
 
 // genericWorkloadHandler implements a generic events.EventHandler
 type genericWorkloadHandler struct {
-    handler WorkloadEventHandler
+	handler WorkloadEventHandler
 }
 
 func (h genericWorkloadHandler) Create(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return errors.Errorf("internal error: Workload handler received event for %T", object)
-    }
-    return h.handler.CreateWorkload(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
+	}
+	return h.handler.CreateWorkload(obj)
 }
 
 func (h genericWorkloadHandler) Delete(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return errors.Errorf("internal error: Workload handler received event for %T", object)
-    }
-    return h.handler.DeleteWorkload(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
+	}
+	return h.handler.DeleteWorkload(obj)
 }
 
 func (h genericWorkloadHandler) Update(old, new client.Object) error {
-    objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return errors.Errorf("internal error: Workload handler received event for %T", old)
-    }
-    objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return errors.Errorf("internal error: Workload handler received event for %T", new)
-    }
-    return h.handler.UpdateWorkload(objOld, objNew)
+	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return errors.Errorf("internal error: Workload handler received event for %T", old)
+	}
+	objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return errors.Errorf("internal error: Workload handler received event for %T", new)
+	}
+	return h.handler.UpdateWorkload(objOld, objNew)
 }
 
 func (h genericWorkloadHandler) Generic(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
-    if !ok {
-        return errors.Errorf("internal error: Workload handler received event for %T", object)
-    }
-    return h.handler.GenericWorkload(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Workload)
+	if !ok {
+		return errors.Errorf("internal error: Workload handler received event for %T", object)
+	}
+	return h.handler.GenericWorkload(obj)
 }
 
 // Handle events for the Mesh Resource
 // DEPRECATED: Prefer reconciler pattern.
 type MeshEventHandler interface {
-    CreateMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
-    UpdateMesh(old, new *discovery_mesh_gloo_solo_io_v1.Mesh) error
-    DeleteMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
-    GenericMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	CreateMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	UpdateMesh(old, new *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	DeleteMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	GenericMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
 }
 
 type MeshEventHandlerFuncs struct {
-    OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
-    OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1.Mesh) error
-    OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
-    OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
+	OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error
 }
 
 func (f *MeshEventHandlerFuncs) CreateMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error {
-    if f.OnCreate == nil {
-        return nil
-    }
-    return f.OnCreate(obj)
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
 }
 
 func (f *MeshEventHandlerFuncs) DeleteMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error {
-    if f.OnDelete == nil {
-        return nil
-    }
-    return f.OnDelete(obj)
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
 }
 
 func (f *MeshEventHandlerFuncs) UpdateMesh(objOld, objNew *discovery_mesh_gloo_solo_io_v1.Mesh) error {
-    if f.OnUpdate == nil {
-        return nil
-    }
-    return f.OnUpdate(objOld, objNew)
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
 }
 
 func (f *MeshEventHandlerFuncs) GenericMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) error {
-    if f.OnGeneric == nil {
-        return nil
-    }
-    return f.OnGeneric(obj)
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
 }
 
 type MeshEventWatcher interface {
-    AddEventHandler(ctx context.Context, h MeshEventHandler, predicates ...predicate.Predicate) error
+	AddEventHandler(ctx context.Context, h MeshEventHandler, predicates ...predicate.Predicate) error
 }
 
 type meshEventWatcher struct {
-    watcher events.EventWatcher
+	watcher events.EventWatcher
 }
 
 func NewMeshEventWatcher(name string, mgr manager.Manager) MeshEventWatcher {
-    return &meshEventWatcher{
-        watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1.Mesh{}),
-    }
+	return &meshEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1.Mesh{}),
+	}
 }
 
 func (c *meshEventWatcher) AddEventHandler(ctx context.Context, h MeshEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericMeshHandler{handler: h}
-    if err := c.watcher.Watch(ctx, handler, predicates...); err != nil{
-        return err
-    }
-    return nil
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
 }
 
 // genericMeshHandler implements a generic events.EventHandler
 type genericMeshHandler struct {
-    handler MeshEventHandler
+	handler MeshEventHandler
 }
 
 func (h genericMeshHandler) Create(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return errors.Errorf("internal error: Mesh handler received event for %T", object)
-    }
-    return h.handler.CreateMesh(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return errors.Errorf("internal error: Mesh handler received event for %T", object)
+	}
+	return h.handler.CreateMesh(obj)
 }
 
 func (h genericMeshHandler) Delete(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return errors.Errorf("internal error: Mesh handler received event for %T", object)
-    }
-    return h.handler.DeleteMesh(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return errors.Errorf("internal error: Mesh handler received event for %T", object)
+	}
+	return h.handler.DeleteMesh(obj)
 }
 
 func (h genericMeshHandler) Update(old, new client.Object) error {
-    objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return errors.Errorf("internal error: Mesh handler received event for %T", old)
-    }
-    objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return errors.Errorf("internal error: Mesh handler received event for %T", new)
-    }
-    return h.handler.UpdateMesh(objOld, objNew)
+	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return errors.Errorf("internal error: Mesh handler received event for %T", old)
+	}
+	objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return errors.Errorf("internal error: Mesh handler received event for %T", new)
+	}
+	return h.handler.UpdateMesh(objOld, objNew)
 }
 
 func (h genericMeshHandler) Generic(object client.Object) error {
-    obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
-    if !ok {
-        return errors.Errorf("internal error: Mesh handler received event for %T", object)
-    }
-    return h.handler.GenericMesh(obj)
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1.Mesh)
+	if !ok {
+		return errors.Errorf("internal error: Mesh handler received event for %T", object)
+	}
+	return h.handler.GenericMesh(obj)
 }

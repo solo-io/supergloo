@@ -5,24 +5,22 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
-
-
 import (
 	"context"
 
-    networking_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
+	networking_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
 
-    "github.com/pkg/errors"
-    "github.com/solo-io/skv2/pkg/ezkube"
-    "github.com/solo-io/skv2/pkg/reconcile"
-    "sigs.k8s.io/controller-runtime/pkg/manager"
-    "sigs.k8s.io/controller-runtime/pkg/predicate"
+	"github.com/pkg/errors"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Reconcile Upsert events for the WasmDeployment Resource.
 // implemented by the user
 type WasmDeploymentReconciler interface {
-    ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error)
+	ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the WasmDeployment Resource.
@@ -30,117 +28,116 @@ type WasmDeploymentReconciler interface {
 // before being deleted.
 // implemented by the user
 type WasmDeploymentDeletionReconciler interface {
-    ReconcileWasmDeploymentDeletion(req reconcile.Request) error
+	ReconcileWasmDeploymentDeletion(req reconcile.Request) error
 }
 
 type WasmDeploymentReconcilerFuncs struct {
-    OnReconcileWasmDeployment func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error)
-    OnReconcileWasmDeploymentDeletion func(req reconcile.Request) error
+	OnReconcileWasmDeployment         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error)
+	OnReconcileWasmDeploymentDeletion func(req reconcile.Request) error
 }
 
 func (f *WasmDeploymentReconcilerFuncs) ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error) {
-    if f.OnReconcileWasmDeployment == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileWasmDeployment(obj)
+	if f.OnReconcileWasmDeployment == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileWasmDeployment(obj)
 }
 
 func (f *WasmDeploymentReconcilerFuncs) ReconcileWasmDeploymentDeletion(req reconcile.Request) error {
-    if f.OnReconcileWasmDeploymentDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileWasmDeploymentDeletion(req)
+	if f.OnReconcileWasmDeploymentDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileWasmDeploymentDeletion(req)
 }
 
 // Reconcile and finalize the WasmDeployment Resource
 // implemented by the user
 type WasmDeploymentFinalizer interface {
-    WasmDeploymentReconciler
+	WasmDeploymentReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    WasmDeploymentFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	WasmDeploymentFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) error
 }
 
 type WasmDeploymentReconcileLoop interface {
-    RunWasmDeploymentReconciler(ctx context.Context, rec WasmDeploymentReconciler, predicates ...predicate.Predicate) error
+	RunWasmDeploymentReconciler(ctx context.Context, rec WasmDeploymentReconciler, predicates ...predicate.Predicate) error
 }
 
 type wasmDeploymentReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewWasmDeploymentReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) WasmDeploymentReconcileLoop {
-    return &wasmDeploymentReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment{}, options),
-    }
+	return &wasmDeploymentReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment{}, options),
+	}
 }
 
 func (c *wasmDeploymentReconcileLoop) RunWasmDeploymentReconciler(ctx context.Context, reconciler WasmDeploymentReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericWasmDeploymentReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericWasmDeploymentReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(WasmDeploymentFinalizer); ok {
-        reconcilerWrapper = genericWasmDeploymentFinalizer{
-            genericWasmDeploymentReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericWasmDeploymentFinalizer{
+			genericWasmDeploymentReconciler: genericReconciler,
+			finalizingReconciler:            finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericWasmDeploymentHandler implements a generic reconcile.Reconciler
 type genericWasmDeploymentReconciler struct {
-    reconciler WasmDeploymentReconciler
+	reconciler WasmDeploymentReconciler
 }
 
 func (r genericWasmDeploymentReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileWasmDeployment(obj)
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileWasmDeployment(obj)
 }
 
 func (r genericWasmDeploymentReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(WasmDeploymentDeletionReconciler); ok {
-        return deletionReconciler.ReconcileWasmDeploymentDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(WasmDeploymentDeletionReconciler); ok {
+		return deletionReconciler.ReconcileWasmDeploymentDeletion(request)
+	}
+	return nil
 }
 
 // genericWasmDeploymentFinalizer implements a generic reconcile.FinalizingReconciler
 type genericWasmDeploymentFinalizer struct {
-    genericWasmDeploymentReconciler
-    finalizingReconciler WasmDeploymentFinalizer
+	genericWasmDeploymentReconciler
+	finalizingReconciler WasmDeploymentFinalizer
 }
 
-
 func (r genericWasmDeploymentFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.WasmDeploymentFinalizerName()
+	return r.finalizingReconciler.WasmDeploymentFinalizerName()
 }
 
 func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment)
-    if !ok {
-        return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeWasmDeployment(obj)
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment)
+	if !ok {
+		return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }
 
 // Reconcile Upsert events for the VirtualDestination Resource.
 // implemented by the user
 type VirtualDestinationReconciler interface {
-    ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error)
+	ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the VirtualDestination Resource.
@@ -148,111 +145,110 @@ type VirtualDestinationReconciler interface {
 // before being deleted.
 // implemented by the user
 type VirtualDestinationDeletionReconciler interface {
-    ReconcileVirtualDestinationDeletion(req reconcile.Request) error
+	ReconcileVirtualDestinationDeletion(req reconcile.Request) error
 }
 
 type VirtualDestinationReconcilerFuncs struct {
-    OnReconcileVirtualDestination func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error)
-    OnReconcileVirtualDestinationDeletion func(req reconcile.Request) error
+	OnReconcileVirtualDestination         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error)
+	OnReconcileVirtualDestinationDeletion func(req reconcile.Request) error
 }
 
 func (f *VirtualDestinationReconcilerFuncs) ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error) {
-    if f.OnReconcileVirtualDestination == nil {
-        return reconcile.Result{}, nil
-    }
-    return f.OnReconcileVirtualDestination(obj)
+	if f.OnReconcileVirtualDestination == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileVirtualDestination(obj)
 }
 
 func (f *VirtualDestinationReconcilerFuncs) ReconcileVirtualDestinationDeletion(req reconcile.Request) error {
-    if f.OnReconcileVirtualDestinationDeletion == nil {
-        return nil
-    }
-    return f.OnReconcileVirtualDestinationDeletion(req)
+	if f.OnReconcileVirtualDestinationDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileVirtualDestinationDeletion(req)
 }
 
 // Reconcile and finalize the VirtualDestination Resource
 // implemented by the user
 type VirtualDestinationFinalizer interface {
-    VirtualDestinationReconciler
+	VirtualDestinationReconciler
 
-    // name of the finalizer used by this handler.
-    // finalizer names should be unique for a single task
-    VirtualDestinationFinalizerName() string
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	VirtualDestinationFinalizerName() string
 
-    // finalize the object before it is deleted.
-    // Watchers created with a finalizing handler will a
-    FinalizeVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) error
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) error
 }
 
 type VirtualDestinationReconcileLoop interface {
-    RunVirtualDestinationReconciler(ctx context.Context, rec VirtualDestinationReconciler, predicates ...predicate.Predicate) error
+	RunVirtualDestinationReconciler(ctx context.Context, rec VirtualDestinationReconciler, predicates ...predicate.Predicate) error
 }
 
 type virtualDestinationReconcileLoop struct {
-    loop reconcile.Loop
+	loop reconcile.Loop
 }
 
 func NewVirtualDestinationReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualDestinationReconcileLoop {
-    return &virtualDestinationReconcileLoop{
-    	// empty cluster indicates this reconciler is built for the local cluster
-        loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination{}, options),
-    }
+	return &virtualDestinationReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination{}, options),
+	}
 }
 
 func (c *virtualDestinationReconcileLoop) RunVirtualDestinationReconciler(ctx context.Context, reconciler VirtualDestinationReconciler, predicates ...predicate.Predicate) error {
-    genericReconciler := genericVirtualDestinationReconciler{
-        reconciler: reconciler,
-    }
+	genericReconciler := genericVirtualDestinationReconciler{
+		reconciler: reconciler,
+	}
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(VirtualDestinationFinalizer); ok {
-        reconcilerWrapper = genericVirtualDestinationFinalizer{
-            genericVirtualDestinationReconciler: genericReconciler,
-            finalizingReconciler: finalizingReconciler,
-        }
-    } else {
-        reconcilerWrapper = genericReconciler
-    }
+		reconcilerWrapper = genericVirtualDestinationFinalizer{
+			genericVirtualDestinationReconciler: genericReconciler,
+			finalizingReconciler:                finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericVirtualDestinationHandler implements a generic reconcile.Reconciler
 type genericVirtualDestinationReconciler struct {
-    reconciler VirtualDestinationReconciler
+	reconciler VirtualDestinationReconciler
 }
 
 func (r genericVirtualDestinationReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-    obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination)
-    if !ok {
-        return reconcile.Result{}, errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
-    }
-    return r.reconciler.ReconcileVirtualDestination(obj)
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileVirtualDestination(obj)
 }
 
 func (r genericVirtualDestinationReconciler) ReconcileDeletion(request reconcile.Request) error {
-    if deletionReconciler, ok := r.reconciler.(VirtualDestinationDeletionReconciler); ok {
-        return deletionReconciler.ReconcileVirtualDestinationDeletion(request)
-    }
-    return nil
+	if deletionReconciler, ok := r.reconciler.(VirtualDestinationDeletionReconciler); ok {
+		return deletionReconciler.ReconcileVirtualDestinationDeletion(request)
+	}
+	return nil
 }
 
 // genericVirtualDestinationFinalizer implements a generic reconcile.FinalizingReconciler
 type genericVirtualDestinationFinalizer struct {
-    genericVirtualDestinationReconciler
-    finalizingReconciler VirtualDestinationFinalizer
+	genericVirtualDestinationReconciler
+	finalizingReconciler VirtualDestinationFinalizer
 }
 
-
 func (r genericVirtualDestinationFinalizer) FinalizerName() string {
-    return r.finalizingReconciler.VirtualDestinationFinalizerName()
+	return r.finalizingReconciler.VirtualDestinationFinalizerName()
 }
 
 func (r genericVirtualDestinationFinalizer) Finalize(object ezkube.Object) error {
-    obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination)
-    if !ok {
-        return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
-    }
-    return r.finalizingReconciler.FinalizeVirtualDestination(obj)
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeVirtualDestination(obj)
 }
 
 // Reconcile Upsert events for the ServiceDependency Resource.

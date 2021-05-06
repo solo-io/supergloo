@@ -3,9 +3,6 @@
 // Definitions for the Kubernetes types
 package v1
 
-import (
-)
-
 // DestinationSlice represents a slice of *Destination
 type DestinationSlice []*Destination
 
