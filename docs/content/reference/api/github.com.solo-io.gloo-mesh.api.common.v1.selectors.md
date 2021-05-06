@@ -92,7 +92,7 @@ Match Kubernetes Services by direct reference.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| services | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match Kubernetes Services by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field. |
+| services | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match Kubernetes Services by direct reference. All fields are required. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field. |
   
 
 
