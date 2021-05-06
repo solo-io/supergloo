@@ -28,56 +28,6 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Intermediate Certificate storage mechanism
-// Typically certiticates and their associated keys are stored in kubernetes secrets,
-// but some users may want to store this data in other places, such as the file system.
-// This enum describes all of the mechanisms the user can specify to store the intermediate certs
-type StorageMechanism int32
-
-const (
-	StorageMechanism_SECRET      StorageMechanism = 0
-	StorageMechanism_FILE_SYSTEM StorageMechanism = 1
-)
-
-// Enum value maps for StorageMechanism.
-var (
-	StorageMechanism_name = map[int32]string{
-		0: "SECRET",
-		1: "FILE_SYSTEM",
-	}
-	StorageMechanism_value = map[string]int32{
-		"SECRET":      0,
-		"FILE_SYSTEM": 1,
-	}
-)
-
-func (x StorageMechanism) Enum() *StorageMechanism {
-	p := new(StorageMechanism)
-	*p = x
-	return p
-}
-
-func (x StorageMechanism) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (StorageMechanism) Descriptor() protoreflect.EnumDescriptor {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes[0].Descriptor()
-}
-
-func (StorageMechanism) Type() protoreflect.EnumType {
-	return &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes[0]
-}
-
-func (x StorageMechanism) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use StorageMechanism.Descriptor instead.
-func (StorageMechanism) EnumDescriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescGZIP(), []int{0}
-}
-
 type VaultCA struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -283,6 +233,257 @@ func (x *CommonCertOptions) GetOrgName() string {
 	return ""
 }
 
+// Specify parameters for configuring the root certificate authority for a VirtualMesh.
+type IntermediateCertificateAuthority struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Specify the source of the Root CA data which Gloo Mesh will use for the VirtualMesh.
+	//
+	// Types that are assignable to CaSource:
+	//	*IntermediateCertificateAuthority_Vault
+	CaSource isIntermediateCertificateAuthority_CaSource `protobuf_oneof:"ca_source"`
+}
+
+func (x *IntermediateCertificateAuthority) Reset() {
+	*x = IntermediateCertificateAuthority{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *IntermediateCertificateAuthority) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IntermediateCertificateAuthority) ProtoMessage() {}
+
+func (x *IntermediateCertificateAuthority) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IntermediateCertificateAuthority.ProtoReflect.Descriptor instead.
+func (*IntermediateCertificateAuthority) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescGZIP(), []int{2}
+}
+
+func (m *IntermediateCertificateAuthority) GetCaSource() isIntermediateCertificateAuthority_CaSource {
+	if m != nil {
+		return m.CaSource
+	}
+	return nil
+}
+
+func (x *IntermediateCertificateAuthority) GetVault() *VaultCA {
+	if x, ok := x.GetCaSource().(*IntermediateCertificateAuthority_Vault); ok {
+		return x.Vault
+	}
+	return nil
+}
+
+type isIntermediateCertificateAuthority_CaSource interface {
+	isIntermediateCertificateAuthority_CaSource()
+}
+
+type IntermediateCertificateAuthority_Vault struct {
+	Vault *VaultCA `protobuf:"bytes,1,opt,name=vault,proto3,oneof"`
+}
+
+func (*IntermediateCertificateAuthority_Vault) isIntermediateCertificateAuthority_CaSource() {}
+
+// Specify parameters for configuring the root certificate authority for a VirtualMesh.
+type RootCertificateAuthority struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Specify the source of the Root CA data which Gloo Mesh will use for the VirtualMesh.
+	//
+	// Types that are assignable to CaSource:
+	//	*RootCertificateAuthority_Generated
+	//	*RootCertificateAuthority_Secret
+	CaSource isRootCertificateAuthority_CaSource `protobuf_oneof:"ca_source"`
+}
+
+func (x *RootCertificateAuthority) Reset() {
+	*x = RootCertificateAuthority{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RootCertificateAuthority) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RootCertificateAuthority) ProtoMessage() {}
+
+func (x *RootCertificateAuthority) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RootCertificateAuthority.ProtoReflect.Descriptor instead.
+func (*RootCertificateAuthority) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescGZIP(), []int{3}
+}
+
+func (m *RootCertificateAuthority) GetCaSource() isRootCertificateAuthority_CaSource {
+	if m != nil {
+		return m.CaSource
+	}
+	return nil
+}
+
+func (x *RootCertificateAuthority) GetGenerated() *CommonCertOptions {
+	if x, ok := x.GetCaSource().(*RootCertificateAuthority_Generated); ok {
+		return x.Generated
+	}
+	return nil
+}
+
+func (x *RootCertificateAuthority) GetSecret() *v1.ObjectRef {
+	if x, ok := x.GetCaSource().(*RootCertificateAuthority_Secret); ok {
+		return x.Secret
+	}
+	return nil
+}
+
+type isRootCertificateAuthority_CaSource interface {
+	isRootCertificateAuthority_CaSource()
+}
+
+type RootCertificateAuthority_Generated struct {
+	// Generate a self-signed root certificate with the given options.
+	Generated *CommonCertOptions `protobuf:"bytes,1,opt,name=generated,proto3,oneof"`
+}
+
+type RootCertificateAuthority_Secret struct {
+	// Reference to a Kubernetes Secret containing the root certificate authority.
+	// Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
+	Secret *v1.ObjectRef `protobuf:"bytes,2,opt,name=secret,proto3,oneof"`
+}
+
+func (*RootCertificateAuthority_Generated) isRootCertificateAuthority_CaSource() {}
+
+func (*RootCertificateAuthority_Secret) isRootCertificateAuthority_CaSource() {}
+
+// Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity
+// between all Workloads and Destinations which wish to communicate within the VirtualMesh.
+type SharedTrust struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to CertificateAuthority:
+	//	*SharedTrust_RootCertificateAuthority
+	//	*SharedTrust_IntermediateCertificateAuthority
+	CertificateAuthority isSharedTrust_CertificateAuthority `protobuf_oneof:"certificate_authority"`
+	// Configuration options for generated intermediate certs
+	IntermediateCertOptions *CommonCertOptions `protobuf:"bytes,3,opt,name=intermediate_cert_options,json=intermediateCertOptions,proto3" json:"intermediate_cert_options,omitempty"`
+}
+
+func (x *SharedTrust) Reset() {
+	*x = SharedTrust{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SharedTrust) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SharedTrust) ProtoMessage() {}
+
+func (x *SharedTrust) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SharedTrust.ProtoReflect.Descriptor instead.
+func (*SharedTrust) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescGZIP(), []int{4}
+}
+
+func (m *SharedTrust) GetCertificateAuthority() isSharedTrust_CertificateAuthority {
+	if m != nil {
+		return m.CertificateAuthority
+	}
+	return nil
+}
+
+func (x *SharedTrust) GetRootCertificateAuthority() *RootCertificateAuthority {
+	if x, ok := x.GetCertificateAuthority().(*SharedTrust_RootCertificateAuthority); ok {
+		return x.RootCertificateAuthority
+	}
+	return nil
+}
+
+func (x *SharedTrust) GetIntermediateCertificateAuthority() *IntermediateCertificateAuthority {
+	if x, ok := x.GetCertificateAuthority().(*SharedTrust_IntermediateCertificateAuthority); ok {
+		return x.IntermediateCertificateAuthority
+	}
+	return nil
+}
+
+func (x *SharedTrust) GetIntermediateCertOptions() *CommonCertOptions {
+	if x != nil {
+		return x.IntermediateCertOptions
+	}
+	return nil
+}
+
+type isSharedTrust_CertificateAuthority interface {
+	isSharedTrust_CertificateAuthority()
+}
+
+type SharedTrust_RootCertificateAuthority struct {
+	// Configure a Root Certificate Authority which will be shared by all Meshes associated with this VirtualMesh.
+	// If this is not provided, a self-signed certificate will be generated by Gloo Mesh.
+	RootCertificateAuthority *RootCertificateAuthority `protobuf:"bytes,1,opt,name=root_certificate_authority,json=rootCertificateAuthority,proto3,oneof"`
+}
+
+type SharedTrust_IntermediateCertificateAuthority struct {
+	// Configures an Intermediate Certificiate Authority which remote clusters will use to generate intermediate
+	// certificates. In order for this to properly mesh all of the traffic across the different meshes, the CA
+	// being used must be configured to generate the intermediate certificates.
+	IntermediateCertificateAuthority *IntermediateCertificateAuthority `protobuf:"bytes,2,opt,name=intermediate_certificate_authority,json=intermediateCertificateAuthority,proto3,oneof"`
+}
+
+func (*SharedTrust_RootCertificateAuthority) isSharedTrust_CertificateAuthority() {}
+
+func (*SharedTrust_IntermediateCertificateAuthority) isSharedTrust_CertificateAuthority() {}
+
 type VaultCA_Kubernetes struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -306,7 +507,7 @@ type VaultCA_Kubernetes struct {
 func (x *VaultCA_Kubernetes) Reset() {
 	*x = VaultCA_Kubernetes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -319,7 +520,7 @@ func (x *VaultCA_Kubernetes) String() string {
 func (*VaultCA_Kubernetes) ProtoMessage() {}
 
 func (x *VaultCA_Kubernetes) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -412,15 +613,55 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDesc =
 	0x5f, 0x73, 0x69, 0x7a, 0x65, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x0d, 0x52, 0x0f, 0x72, 0x73, 0x61, 0x4b, 0x65, 0x79, 0x53, 0x69, 0x7a, 0x65, 0x42, 0x79, 0x74,
 	0x65, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x6f, 0x72, 0x67, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6f, 0x72, 0x67, 0x4e, 0x61, 0x6d, 0x65, 0x2a, 0x2f, 0x0a,
-	0x10, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x4d, 0x65, 0x63, 0x68, 0x61, 0x6e, 0x69, 0x73,
-	0x6d, 0x12, 0x0a, 0x0a, 0x06, 0x53, 0x45, 0x43, 0x52, 0x45, 0x54, 0x10, 0x00, 0x12, 0x0f, 0x0a,
-	0x0b, 0x46, 0x49, 0x4c, 0x45, 0x5f, 0x53, 0x59, 0x53, 0x54, 0x45, 0x4d, 0x10, 0x01, 0x42, 0x46,
-	0x5a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c,
-	0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70,
-	0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65,
-	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f,
-	0x76, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6f, 0x72, 0x67, 0x4e, 0x61, 0x6d, 0x65, 0x22, 0x6a, 0x0a,
+	0x20, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x74, 0x65, 0x43, 0x65, 0x72,
+	0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
+	0x79, 0x12, 0x39, 0x0a, 0x05, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x21, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
+	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x56, 0x61, 0x75, 0x6c,
+	0x74, 0x43, 0x41, 0x48, 0x00, 0x52, 0x05, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x42, 0x0b, 0x0a, 0x09,
+	0x63, 0x61, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0xac, 0x01, 0x0a, 0x18, 0x52, 0x6f,
+	0x6f, 0x74, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x41, 0x75, 0x74,
+	0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x4b, 0x0a, 0x09, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61,
+	0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c,
+	0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x43, 0x65, 0x72, 0x74, 0x4f,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x48, 0x00, 0x52, 0x09, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61,
+	0x74, 0x65, 0x64, 0x12, 0x36, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65,
+	0x66, 0x48, 0x00, 0x52, 0x06, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x42, 0x0b, 0x0a, 0x09, 0x63,
+	0x61, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0x90, 0x03, 0x0a, 0x0b, 0x53, 0x68, 0x61,
+	0x72, 0x65, 0x64, 0x54, 0x72, 0x75, 0x73, 0x74, 0x12, 0x72, 0x0a, 0x1a, 0x72, 0x6f, 0x6f, 0x74,
+	0x5f, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x75, 0x74,
+	0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x32, 0x2e, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x6f, 0x6f, 0x74, 0x43, 0x65, 0x72, 0x74,
+	0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79,
+	0x48, 0x00, 0x52, 0x18, 0x72, 0x6f, 0x6f, 0x74, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63,
+	0x61, 0x74, 0x65, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x8a, 0x01, 0x0a,
+	0x22, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x74, 0x65, 0x5f, 0x63, 0x65,
+	0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72,
+	0x69, 0x74, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3a, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c,
+	0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x74,
+	0x65, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x41, 0x75, 0x74, 0x68,
+	0x6f, 0x72, 0x69, 0x74, 0x79, 0x48, 0x00, 0x52, 0x20, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6d, 0x65,
+	0x64, 0x69, 0x61, 0x74, 0x65, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
+	0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x67, 0x0a, 0x19, 0x69, 0x6e, 0x74,
+	0x65, 0x72, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x74, 0x65, 0x5f, 0x63, 0x65, 0x72, 0x74, 0x5f, 0x6f,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x43, 0x65,
+	0x72, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x17, 0x69, 0x6e, 0x74, 0x65, 0x72,
+	0x6d, 0x65, 0x64, 0x69, 0x61, 0x74, 0x65, 0x43, 0x65, 0x72, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x42, 0x17, 0x0a, 0x15, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
+	0x65, 0x5f, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x42, 0x46, 0x5a, 0x40, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69,
+	0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f,
+	0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e,
+	0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0,
+	0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -435,24 +676,31 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescG
 	return file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_goTypes = []interface{}{
-	(StorageMechanism)(0),      // 0: common.mesh.gloo.solo.io.StorageMechanism
-	(*VaultCA)(nil),            // 1: common.mesh.gloo.solo.io.VaultCA
-	(*CommonCertOptions)(nil),  // 2: common.mesh.gloo.solo.io.CommonCertOptions
-	(*VaultCA_Kubernetes)(nil), // 3: common.mesh.gloo.solo.io.VaultCA.Kubernetes
-	(*v1.ObjectRef)(nil),       // 4: core.skv2.solo.io.ObjectRef
+	(*VaultCA)(nil),                          // 0: common.mesh.gloo.solo.io.VaultCA
+	(*CommonCertOptions)(nil),                // 1: common.mesh.gloo.solo.io.CommonCertOptions
+	(*IntermediateCertificateAuthority)(nil), // 2: common.mesh.gloo.solo.io.IntermediateCertificateAuthority
+	(*RootCertificateAuthority)(nil),         // 3: common.mesh.gloo.solo.io.RootCertificateAuthority
+	(*SharedTrust)(nil),                      // 4: common.mesh.gloo.solo.io.SharedTrust
+	(*VaultCA_Kubernetes)(nil),               // 5: common.mesh.gloo.solo.io.VaultCA.Kubernetes
+	(*v1.ObjectRef)(nil),                     // 6: core.skv2.solo.io.ObjectRef
 }
 var file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_depIdxs = []int32{
-	4, // 0: common.mesh.gloo.solo.io.VaultCA.token_secret_ref:type_name -> core.skv2.solo.io.ObjectRef
-	3, // 1: common.mesh.gloo.solo.io.VaultCA.kubernetes_auth:type_name -> common.mesh.gloo.solo.io.VaultCA.Kubernetes
-	4, // 2: common.mesh.gloo.solo.io.VaultCA.Kubernetes.sa_ref:type_name -> core.skv2.solo.io.ObjectRef
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	6, // 0: common.mesh.gloo.solo.io.VaultCA.token_secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	5, // 1: common.mesh.gloo.solo.io.VaultCA.kubernetes_auth:type_name -> common.mesh.gloo.solo.io.VaultCA.Kubernetes
+	0, // 2: common.mesh.gloo.solo.io.IntermediateCertificateAuthority.vault:type_name -> common.mesh.gloo.solo.io.VaultCA
+	1, // 3: common.mesh.gloo.solo.io.RootCertificateAuthority.generated:type_name -> common.mesh.gloo.solo.io.CommonCertOptions
+	6, // 4: common.mesh.gloo.solo.io.RootCertificateAuthority.secret:type_name -> core.skv2.solo.io.ObjectRef
+	3, // 5: common.mesh.gloo.solo.io.SharedTrust.root_certificate_authority:type_name -> common.mesh.gloo.solo.io.RootCertificateAuthority
+	2, // 6: common.mesh.gloo.solo.io.SharedTrust.intermediate_certificate_authority:type_name -> common.mesh.gloo.solo.io.IntermediateCertificateAuthority
+	1, // 7: common.mesh.gloo.solo.io.SharedTrust.intermediate_cert_options:type_name -> common.mesh.gloo.solo.io.CommonCertOptions
+	6, // 8: common.mesh.gloo.solo.io.VaultCA.Kubernetes.sa_ref:type_name -> core.skv2.solo.io.ObjectRef
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() }
@@ -486,6 +734,42 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() {
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*IntermediateCertificateAuthority); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RootCertificateAuthority); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SharedTrust); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VaultCA_Kubernetes); i {
 			case 0:
 				return &v.state
@@ -502,19 +786,29 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_init() {
 		(*VaultCA_TokenSecretRef)(nil),
 		(*VaultCA_KubernetesAuth)(nil),
 	}
+	file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[2].OneofWrappers = []interface{}{
+		(*IntermediateCertificateAuthority_Vault)(nil),
+	}
+	file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[3].OneofWrappers = []interface{}{
+		(*RootCertificateAuthority_Generated)(nil),
+		(*RootCertificateAuthority_Secret)(nil),
+	}
+	file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes[4].OneofWrappers = []interface{}{
+		(*SharedTrust_RootCertificateAuthority)(nil),
+		(*SharedTrust_IntermediateCertificateAuthority)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   3,
+			NumEnums:      0,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_goTypes,
 		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_depIdxs,
-		EnumInfos:         file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_enumTypes,
 		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto_msgTypes,
 	}.Build()
 	File_github_com_solo_io_gloo_mesh_api_common_v1_certificates_proto = out.File

@@ -61,12 +61,12 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetCommonCertOptions()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetCommonCertOptions()) {
+	if h, ok := interface{}(m.GetSigningCertificateSecret()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSigningCertificateSecret()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetCommonCertOptions(), target.GetCommonCertOptions()) {
+		if !proto.Equal(m.GetSigningCertificateSecret(), target.GetSigningCertificateSecret()) {
 			return false
 		}
 	}
@@ -91,41 +91,12 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	switch m.Signer.(type) {
-
-	case *IssuedCertificateSpec_SigningCertificateSecret:
-		if _, ok := target.Signer.(*IssuedCertificateSpec_SigningCertificateSecret); !ok {
+	if h, ok := interface{}(m.GetSharedTrustModel()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSharedTrustModel()) {
 			return false
 		}
-
-		if h, ok := interface{}(m.GetSigningCertificateSecret()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSigningCertificateSecret()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetSigningCertificateSecret(), target.GetSigningCertificateSecret()) {
-				return false
-			}
-		}
-
-	case *IssuedCertificateSpec_VaultCa:
-		if _, ok := target.Signer.(*IssuedCertificateSpec_VaultCa); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetVaultCa()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetVaultCa()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetVaultCa(), target.GetVaultCa()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.Signer != target.Signer {
+	} else {
+		if !proto.Equal(m.GetSharedTrustModel(), target.GetSharedTrustModel()) {
 			return false
 		}
 	}

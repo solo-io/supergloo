@@ -1009,18 +1009,10 @@ spec:
                                         - generated
                                       - required:
                                         - secret
-                                      - {}
                                   - required:
                                     - generated
                                   - required:
                                     - secret
-                                  - not:
-                                      anyOf:
-                                      - {}
-                                      - required:
-                                        - generated
-                                      - required:
-                                        - secret
                               required:
                               - rootCertificateAuthority
                             - properties:
@@ -1028,8 +1020,6 @@ spec:
                                   oneOf:
                                   - not:
                                       anyOf:
-                                      - required:
-                                        - secret
                                       - properties:
                                           vault:
                                             oneOf:
@@ -1045,8 +1035,6 @@ spec:
                                               - kubernetesAuth
                                         required:
                                         - vault
-                                  - required:
-                                    - secret
                                   - properties:
                                       vault:
                                         oneOf:
@@ -1073,18 +1061,10 @@ spec:
                                     - generated
                                   - required:
                                     - secret
-                                  - {}
                               - required:
                                 - generated
                               - required:
                                 - secret
-                              - not:
-                                  anyOf:
-                                  - {}
-                                  - required:
-                                    - generated
-                                  - required:
-                                    - secret
                           required:
                           - rootCertificateAuthority
                         - properties:
@@ -1092,8 +1072,6 @@ spec:
                               oneOf:
                               - not:
                                   anyOf:
-                                  - required:
-                                    - secret
                                   - properties:
                                       vault:
                                         oneOf:
@@ -1109,8 +1087,6 @@ spec:
                                           - kubernetesAuth
                                     required:
                                     - vault
-                              - required:
-                                - secret
                               - properties:
                                   vault:
                                     oneOf:
@@ -1146,18 +1122,10 @@ spec:
                                     - generated
                                   - required:
                                     - secret
-                                  - {}
                               - required:
                                 - generated
                               - required:
                                 - secret
-                              - not:
-                                  anyOf:
-                                  - {}
-                                  - required:
-                                    - generated
-                                  - required:
-                                    - secret
                           required:
                           - rootCertificateAuthority
                         - properties:
@@ -1165,8 +1133,6 @@ spec:
                               oneOf:
                               - not:
                                   anyOf:
-                                  - required:
-                                    - secret
                                   - properties:
                                       vault:
                                         oneOf:
@@ -1182,8 +1148,6 @@ spec:
                                           - kubernetesAuth
                                     required:
                                     - vault
-                              - required:
-                                - secret
                               - properties:
                                   vault:
                                     oneOf:
@@ -1210,18 +1174,10 @@ spec:
                                 - generated
                               - required:
                                 - secret
-                              - {}
                           - required:
                             - generated
                           - required:
                             - secret
-                          - not:
-                              anyOf:
-                              - {}
-                              - required:
-                                - generated
-                              - required:
-                                - secret
                       required:
                       - rootCertificateAuthority
                     - properties:
@@ -1229,8 +1185,6 @@ spec:
                           oneOf:
                           - not:
                               anyOf:
-                              - required:
-                                - secret
                               - properties:
                                   vault:
                                     oneOf:
@@ -1246,8 +1200,6 @@ spec:
                                       - kubernetesAuth
                                 required:
                                 - vault
-                          - required:
-                            - secret
                           - properties:
                               vault:
                                 oneOf:
@@ -1312,23 +1264,6 @@ spec:
                         certificates. In order for this to properly mesh all of the traffic across the different meshes, the CA
                         being used must be configured to generate the intermediate certificates.
                       properties:
-                        secret:
-                          description: |-
-                            Reference to a Kubernetes Secret containing the root certificate authority.
-                            Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
-                          properties:
-                            name:
-                              description: name of the resource being referenced
-                              type: string
-                            namespace:
-                              description: namespace of the resource being referenced
-                              type: string
-                          type: object
-                        storageMechanism:
-                          enum:
-                          - SECRET
-                          - FILE_SYSTEM
-                          type: string
                         vault:
                           properties:
                             CaBundle:
