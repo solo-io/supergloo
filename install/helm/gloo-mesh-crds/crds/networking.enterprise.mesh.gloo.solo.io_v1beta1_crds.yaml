@@ -560,6 +560,11 @@ spec:
                     - INVALID
                     - FAILED
                     type: string
+                  warnings:
+                    description: Any warnings observed while processing the resource.
+                    items:
+                      type: string
+                    type: array
                 type: object
               description: The status of the VirtualDestination for each Mesh to which
                 it has been exported to.
@@ -851,12 +856,6 @@ spec:
           type: object
         status:
           properties:
-            errors:
-              description: Any errors found while processing this generation of the
-                resource.
-              items:
-                type: string
-              type: array
             observedGeneration:
               description: |-
                 The most recent generation observed in the the ServiceDependency metadata.
@@ -874,27 +873,45 @@ spec:
               - INVALID
               - FAILED
               type: string
-            workloadWarnings:
-              additionalProperties:
-                type: string
-              description: Warnings for selected Workloads found while processing
-                this generation of the resource.
-              type: object
             workloads:
-              description: The Workloads that this ServiceDependency applies to.
-              items:
+              additionalProperties:
                 properties:
-                  clusterName:
-                    description: name of the cluster in which the resource exists
+                  acceptanceOrder:
+                    description: |-
+                      Represents the order in which the policy
+                      was accepted and applied to a discovery resource. The first accepted policy
+                      will have an acceptance_order of 0, the second 1, etc.
+                      When conflicts are detected in the system,
+                      the Policy with the lowest acceptance_order
+                      will be chosen and all other conflicting policies will be rejected.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
+                  errors:
+                    description: Any errors observed which prevented the resource
+                      from being Accepted.
+                    items:
+                      type: string
+                    type: array
+                  state:
+                    description: The result of attempting to apply the policy to the
+                      discovery resource.
+                    enum:
+                    - PENDING
+                    - ACCEPTED
+                    - INVALID
+                    - FAILED
                     type: string
-                  name:
-                    description: name of the resource being referenced
-                    type: string
-                  namespace:
-                    description: namespace of the resource being referenced
-                    type: string
+                  warnings:
+                    description: Any warnings observed while processing the resource.
+                    items:
+                      type: string
+                    type: array
                 type: object
-              type: array
+              description: |-
+                The status of the ServiceDependency for each selected Workload.
+                A ServiceDependency may have different statuses for each Workload it applies to.
+              type: object
           type: object
       type: object
   versions:

@@ -47,6 +47,7 @@ import (
 // * Gateways
 // * ServiceEntries
 // * VirtualServices
+// * Sidecars
 // * AuthorizationPolicies
 // from a remote cluster.
 // * Settings
@@ -113,6 +114,8 @@ func RegisterInputReconciler(
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterServiceEntryReconcileLoop("ServiceEntry", clusters, options.Remote.ServiceEntries).AddMulticlusterServiceEntryReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize VirtualServices reconcile loop for remote clusters
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.Remote.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize Sidecars reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterSidecarReconcileLoop("Sidecar", clusters, options.Remote.Sidecars).AddMulticlusterSidecarReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize AuthorizationPolicies reconcile loop for remote clusters
 	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
@@ -200,6 +203,8 @@ type RemoteReconcileOptions struct {
 	ServiceEntries reconcile.Options
 	// Options for reconciling VirtualServices
 	VirtualServices reconcile.Options
+	// Options for reconciling Sidecars
+	Sidecars reconcile.Options
 
 	// Options for reconciling AuthorizationPolicies
 	AuthorizationPolicies reconcile.Options
@@ -323,6 +328,21 @@ func (r *remoteInputReconciler) ReconcileVirtualService(clusterName string, obj 
 }
 
 func (r *remoteInputReconciler) ReconcileVirtualServiceDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileRemoteGeneric(ref)
+	return err
+}
+
+func (r *remoteInputReconciler) ReconcileSidecar(clusterName string, obj *networking_istio_io_v1alpha3.Sidecar) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *remoteInputReconciler) ReconcileSidecarDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,

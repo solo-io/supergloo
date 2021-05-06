@@ -32,6 +32,7 @@ type InputRemoteSnapshotManualBuilder struct {
 	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
 	serviceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 }
@@ -50,6 +51,7 @@ func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManual
 		gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
 		serviceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+		sidecars:         networking_istio_io_v1alpha3_sets.NewSidecarSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
 	}
@@ -69,6 +71,7 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 		i.gateways,
 		i.serviceEntries,
 		i.virtualServices,
+		i.sidecars,
 
 		i.authorizationPolicies,
 	)
@@ -103,6 +106,10 @@ func (i *InputRemoteSnapshotManualBuilder) AddServiceEntries(serviceEntries []*n
 }
 func (i *InputRemoteSnapshotManualBuilder) AddVirtualServices(virtualServices []*networking_istio_io_v1alpha3.VirtualService) *InputRemoteSnapshotManualBuilder {
 	i.virtualServices.Insert(virtualServices...)
+	return i
+}
+func (i *InputRemoteSnapshotManualBuilder) AddSidecars(sidecars []*networking_istio_io_v1alpha3.Sidecar) *InputRemoteSnapshotManualBuilder {
+	i.sidecars.Insert(sidecars...)
 	return i
 }
 func (i *InputRemoteSnapshotManualBuilder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputRemoteSnapshotManualBuilder {

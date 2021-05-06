@@ -68,6 +68,7 @@ var (
 				"EnvoyFilter",
 				"ServiceEntry",
 				"Gateway",
+				"Sidecar",
 			},
 			istiosecurityv1beta1.SchemeGroupVersion: {
 				"AuthorizationPolicy",

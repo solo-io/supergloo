@@ -11,6 +11,7 @@
 // * Gateways
 // * ServiceEntries
 // * VirtualServices
+// * Sidecars
 // * AuthorizationPolicies
 // read from a given cluster or set of clusters, across all namespaces.
 //
@@ -99,6 +100,11 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1alpha3",
 		Kind:    "VirtualService",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "Sidecar",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "security.istio.io",
@@ -128,6 +134,8 @@ type RemoteSnapshot interface {
 	ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	// return the set of input VirtualServices
 	VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	// return the set of input Sidecars
+	Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet
 
 	// return the set of input AuthorizationPolicies
 	AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
@@ -162,6 +170,8 @@ type RemoteSyncStatusOptions struct {
 	ServiceEntry bool
 	// sync status of VirtualService objects
 	VirtualService bool
+	// sync status of Sidecar objects
+	Sidecar bool
 
 	// sync status of AuthorizationPolicy objects
 	AuthorizationPolicy bool
@@ -180,6 +190,7 @@ type snapshotRemote struct {
 	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
 	serviceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 }
@@ -197,6 +208,7 @@ func NewRemoteSnapshot(
 	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
 	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
@@ -212,6 +224,7 @@ func NewRemoteSnapshot(
 		gateways:              gateways,
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
+		sidecars:              sidecars,
 		authorizationPolicies: authorizationPolicies,
 	}
 }
@@ -231,6 +244,7 @@ func NewRemoteSnapshotFromGeneric(
 	gatewaySet := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntrySet := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecarSet := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -310,6 +324,15 @@ func NewRemoteSnapshotFromGeneric(
 		for _, virtualService := range virtualServices {
 			virtualServiceSet.Insert(virtualService.(*networking_istio_io_v1alpha3_types.VirtualService))
 		}
+		sidecars := snapshot[schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
+		}]
+
+		for _, sidecar := range sidecars {
+			sidecarSet.Insert(sidecar.(*networking_istio_io_v1alpha3_types.Sidecar))
+		}
 
 		authorizationPolicies := snapshot[schema.GroupVersionKind{
 			Group:   "security.istio.io",
@@ -332,6 +355,7 @@ func NewRemoteSnapshotFromGeneric(
 		gatewaySet,
 		serviceEntrySet,
 		virtualServiceSet,
+		sidecarSet,
 		authorizationPolicySet,
 	)
 }
@@ -366,6 +390,10 @@ func (s snapshotRemote) ServiceEntries() networking_istio_io_v1alpha3_sets.Servi
 
 func (s snapshotRemote) VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
 	return s.virtualServices
+}
+
+func (s snapshotRemote) Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet {
+	return s.sidecars
 }
 
 func (s snapshotRemote) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
@@ -456,6 +484,7 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap["gateways"] = s.gateways.List()
 	snapshotMap["serviceEntries"] = s.serviceEntries.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
+	snapshotMap["sidecars"] = s.sidecars.List()
 	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
 	return json.Marshal(snapshotMap)
 }
@@ -486,6 +515,8 @@ type RemoteBuildOptions struct {
 	ServiceEntries ResourceRemoteBuildOptions
 	// List options for composing a snapshot from VirtualServices
 	VirtualServices ResourceRemoteBuildOptions
+	// List options for composing a snapshot from Sidecars
+	Sidecars ResourceRemoteBuildOptions
 
 	// List options for composing a snapshot from AuthorizationPolicies
 	AuthorizationPolicies ResourceRemoteBuildOptions
@@ -530,6 +561,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecars := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -561,6 +593,9 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertSidecarsFromCluster(ctx, cluster, sidecars, opts.Sidecars); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -578,6 +613,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		gateways,
 		serviceEntries,
 		virtualServices,
+		sidecars,
 		authorizationPolicies,
 	)
 
@@ -922,6 +958,48 @@ func (b *multiClusterRemoteBuilder) insertVirtualServicesFromCluster(ctx context
 
 	return nil
 }
+func (b *multiClusterRemoteBuilder) insertSidecarsFromCluster(ctx context.Context, cluster string, sidecars networking_istio_io_v1alpha3_sets.SidecarSet, opts ResourceRemoteBuildOptions) error {
+	sidecarClient, err := networking_istio_io_v1alpha3.NewMulticlusterSidecarClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	sidecarList, err := sidecarClient.ListSidecar(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range sidecarList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		sidecars.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx context.Context, cluster string, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
 	authorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
@@ -1003,6 +1081,7 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecars := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -1032,6 +1111,9 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertSidecars(ctx, sidecars, opts.Sidecars); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1047,6 +1129,7 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 		gateways,
 		serviceEntries,
 		virtualServices,
+		sidecars,
 		authorizationPolicies,
 	)
 
@@ -1319,6 +1402,39 @@ func (b *singleClusterRemoteBuilder) insertVirtualServices(ctx context.Context, 
 
 	return nil
 }
+func (b *singleClusterRemoteBuilder) insertSidecars(ctx context.Context, sidecars networking_istio_io_v1alpha3_sets.SidecarSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	sidecarList, err := networking_istio_io_v1alpha3.NewSidecarClient(b.mgr.GetClient()).ListSidecar(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range sidecarList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		sidecars.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *singleClusterRemoteBuilder) insertAuthorizationPolicies(ctx context.Context, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
 
@@ -1384,6 +1500,7 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecars := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -1413,6 +1530,9 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		// insert VirtualServices
 		case *networking_istio_io_v1alpha3_types.VirtualService:
 			virtualServices.Insert(obj)
+		// insert Sidecars
+		case *networking_istio_io_v1alpha3_types.Sidecar:
+			sidecars.Insert(obj)
 		// insert AuthorizationPolicies
 		case *security_istio_io_v1beta1_types.AuthorizationPolicy:
 			authorizationPolicies.Insert(obj)
@@ -1430,6 +1550,7 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		gateways,
 		serviceEntries,
 		virtualServices,
+		sidecars,
 		authorizationPolicies,
 	), nil
 }

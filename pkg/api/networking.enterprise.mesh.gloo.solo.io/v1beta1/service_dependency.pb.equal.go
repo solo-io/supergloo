@@ -119,38 +119,16 @@ func (m *ServiceDependencyStatus) Equal(that interface{}) bool {
 	if len(m.GetWorkloads()) != len(target.GetWorkloads()) {
 		return false
 	}
-	for idx, v := range m.GetWorkloads() {
+	for k, v := range m.GetWorkloads() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetWorkloads()[idx]) {
+			if !h.Equal(target.GetWorkloads()[k]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetWorkloads()[idx]) {
+			if !proto.Equal(v, target.GetWorkloads()[k]) {
 				return false
 			}
-		}
-
-	}
-
-	if len(m.GetErrors()) != len(target.GetErrors()) {
-		return false
-	}
-	for idx, v := range m.GetErrors() {
-
-		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
-			return false
-		}
-
-	}
-
-	if len(m.GetWorkloadWarnings()) != len(target.GetWorkloadWarnings()) {
-		return false
-	}
-	for k, v := range m.GetWorkloadWarnings() {
-
-		if strings.Compare(v, target.GetWorkloadWarnings()[k]) != 0 {
-			return false
 		}
 
 	}

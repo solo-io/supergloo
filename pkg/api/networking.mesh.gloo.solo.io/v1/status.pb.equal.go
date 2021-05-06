@@ -65,5 +65,16 @@ func (m *ApprovalStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetWarnings()) != len(target.GetWarnings()) {
+		return false
+	}
+	for idx, v := range m.GetWarnings() {
+
+		if strings.Compare(v, target.GetWarnings()[idx]) != 0 {
+			return false
+		}
+
+	}
+
 	return true
 }

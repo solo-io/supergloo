@@ -226,6 +226,7 @@ rules:
   - envoyfilters
   - serviceentries
   - gateways
+  - sidecars
   verbs:
   - '*'
 - apiGroups:

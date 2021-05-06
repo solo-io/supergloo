@@ -3,9 +3,9 @@ package networking.enterprise.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
-import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -33,12 +33,7 @@ message ServiceDependencyStatus {
     // applied to all exported to Meshes.
     .common.mesh.gloo.solo.io.ApprovalState state = 2;
 
-    // The Workloads that this ServiceDependency applies to.
-    repeated .core.skv2.solo.io.ClusterObjectRef workloads = 3;
-
-    // Any errors found while processing this generation of the resource.
-    repeated string errors = 4;
-
-    // Warnings for selected Workloads found while processing this generation of the resource.
-    map<string, string> workload_warnings = 5;
+    // The status of the ServiceDependency for each selected Workload.
+    // A ServiceDependency may have different statuses for each Workload it applies to.
+    map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> workloads = 3;
 }
