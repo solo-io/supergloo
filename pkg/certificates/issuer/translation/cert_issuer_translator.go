@@ -18,9 +18,13 @@ type Output struct {
 }
 
 //go:generate mockgen -source ./cert_issuer_translator.go -destination mocks/translator.go
-// the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
+
+// The cert issuer translator represents an entity which translates the input resources, into
+// the output resources as defined by the `Output` resource below.
+
 type Translator interface {
-	// errors reflect an internal translation error and should never happen
+	// Translate the input resources into the SignedCert and SigningRootCa
+	// If resource is not relevant to the translator being called, return nil, nil
 	Translate(
 		ctx context.Context,
 		certificateRequest *certificatesv1.CertificateRequest,

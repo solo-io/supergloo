@@ -42,7 +42,7 @@ func IssuedCertificateSecretType() corev1.SecretType {
 	return corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1.SchemeGroupVersion.Group))
 }
 
-// These functions coresponse to issued certiticate statuses
+// These functions correspond to issued certiticate statuses
 // PENDING
 // REQUESTED
 // ISSUED

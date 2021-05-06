@@ -174,7 +174,6 @@ message SharedTrust {
     // Configuration options for generated intermediate certs
     .common.mesh.gloo.solo.io.CommonCertOptions intermediate_cert_options = 3; 
 
-
 }
 
 message VirtualMeshStatus {
