@@ -49,7 +49,7 @@ func (s *secretTranslator) Translate(
 ) (*Output, error) {
 
 	// This translator only cares about CA with local secrets
-	if issuedCertificate.Spec.GetSigningCertificateSecret() == nil {
+	if issuedCertificate.Spec.GetGlooMeshCa().GetSigningCertificateSecret() == nil {
 		return nil, nil
 	}
 
@@ -66,7 +66,7 @@ func (s *secretTranslator) Translate(
 		certificateRequest.Spec.GetCertificateSigningRequest(),
 		signingCA.RootCert,
 		signingCA.PrivateKey,
-		issuedCertificate.Spec.CommonCertOptions.GetTtlDays(),
+		issuedCertificate.Spec.GetCommonCertOptions().GetTtlDays(),
 	)
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))

@@ -1757,10 +1757,18 @@ spec:
                                                 - generated
                                               - required:
                                                 - secret
+                                              - {}
                                           - required:
                                             - generated
                                           - required:
                                             - secret
+                                          - not:
+                                              anyOf:
+                                              - {}
+                                              - required:
+                                                - generated
+                                              - required:
+                                                - secret
                                       required:
                                       - rootCertificateAuthority
                                     - properties:
@@ -1809,10 +1817,18 @@ spec:
                                             - generated
                                           - required:
                                             - secret
+                                          - {}
                                       - required:
                                         - generated
                                       - required:
                                         - secret
+                                      - not:
+                                          anyOf:
+                                          - {}
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
                                   required:
                                   - rootCertificateAuthority
                                 - properties:
@@ -1870,10 +1886,18 @@ spec:
                                             - generated
                                           - required:
                                             - secret
+                                          - {}
                                       - required:
                                         - generated
                                       - required:
                                         - secret
+                                      - not:
+                                          anyOf:
+                                          - {}
+                                          - required:
+                                            - generated
+                                          - required:
+                                            - secret
                                   required:
                                   - rootCertificateAuthority
                                 - properties:
@@ -1922,10 +1946,18 @@ spec:
                                         - generated
                                       - required:
                                         - secret
+                                      - {}
                                   - required:
                                     - generated
                                   - required:
                                     - secret
+                                  - not:
+                                      anyOf:
+                                      - {}
+                                      - required:
+                                        - generated
+                                      - required:
+                                        - secret
                               required:
                               - rootCertificateAuthority
                             - properties:
@@ -2014,6 +2046,7 @@ spec:
                                 being used must be configured to generate the intermediate certificates.
                               properties:
                                 vault:
+                                  description: Use vault as the intermediate CA source
                                   properties:
                                     CaBundle:
                                       description: |-

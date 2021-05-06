@@ -91,12 +91,147 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	if h, ok := interface{}(m.GetSharedTrustModel()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSharedTrustModel()) {
+	if h, ok := interface{}(m.GetCertOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCertOptions()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetSharedTrustModel(), target.GetSharedTrustModel()) {
+		if !proto.Equal(m.GetCertOptions(), target.GetCertOptions()) {
+			return false
+		}
+	}
+
+	switch m.CertificateAuthority.(type) {
+
+	case *IssuedCertificateSpec_GlooMeshCa:
+		if _, ok := target.CertificateAuthority.(*IssuedCertificateSpec_GlooMeshCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetGlooMeshCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGlooMeshCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetGlooMeshCa(), target.GetGlooMeshCa()) {
+				return false
+			}
+		}
+
+	case *IssuedCertificateSpec_AgentCa:
+		if _, ok := target.CertificateAuthority.(*IssuedCertificateSpec_AgentCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetAgentCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAgentCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetAgentCa(), target.GetAgentCa()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.CertificateAuthority != target.CertificateAuthority {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *GlooMeshCA) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GlooMeshCA)
+	if !ok {
+		that2, ok := that.(GlooMeshCA)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.Signer.(type) {
+
+	case *GlooMeshCA_SigningCertificateSecret:
+		if _, ok := target.Signer.(*GlooMeshCA_SigningCertificateSecret); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetSigningCertificateSecret()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSigningCertificateSecret()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetSigningCertificateSecret(), target.GetSigningCertificateSecret()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Signer != target.Signer {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *AgentCA) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*AgentCA)
+	if !ok {
+		that2, ok := that.(AgentCA)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.Signer.(type) {
+
+	case *AgentCA_VaultCa:
+		if _, ok := target.Signer.(*AgentCA_VaultCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetVaultCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVaultCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetVaultCa(), target.GetVaultCa()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Signer != target.Signer {
 			return false
 		}
 	}

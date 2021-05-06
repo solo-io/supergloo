@@ -38,10 +38,10 @@ message IssuedCertificateSpec {
      */
     repeated string hosts = 1;
 
-    // Deprecated in favor of `trust_model.common_cert_options.org_name`
+    // Deprecated in favor of `common_cert_options.org_name`
     string org = 2;
 
-    // Deprecated in favor of `trust_model.root_certificate_authority.signing_certificate_secret`
+    // Deprecated in favor of `gloo_mesh_ca.signing_certificate_secret`
     // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
     .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
 
@@ -59,9 +59,36 @@ message IssuedCertificateSpec {
     // which share a data plane with the target mesh.
     .core.skv2.solo.io.ObjectRef pod_bounce_directive = 5;
 
-    // All settings for networking/agent/sidecar to fulfill issued certificate
-    .common.mesh.gloo.solo.io.SharedTrust shared_trust_model = 6;
+    // Set of options to configure the intermediate certificate being generated
+    .common.mesh.gloo.solo.io.CommonCertOptions cert_options = 6;
 
+    // The location of the certificate authority to sign this certificate
+    oneof certificate_authority {
+        // Gloo Mesh CA options
+        GlooMeshCA gloo_mesh_ca = 7;        
+        // Agent CA options
+        AgentCA agent_ca = 8;
+    }
+
+}
+
+// Set of options which represent the certificate authorities the management cluster can use
+// to sign the intermediate certs
+message GlooMeshCA {
+    // Signing method which gloo-mesh management will use to sign the intermediate cert
+    oneof signer {
+        .core.skv2.solo.io.ObjectRef signing_certificate_secret = 1;
+    }
+
+}
+
+// Set of options which represent the certificate authorities the remote cluster can use
+// to sign the intermediate certs
+message AgentCA {
+    // Signing method which pki-agent will use to sign the intermediate cert
+    oneof signer {
+        .common.mesh.gloo.solo.io.VaultCA vault_ca = 1;
+    }
 }
 
 // The IssuedCertificate status is written by the CertificateRequesting agent.

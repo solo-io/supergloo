@@ -201,12 +201,20 @@ func (t *translator) configureSharedTrust(
 		if err != nil {
 			return err
 		}
-		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
-			SigningCertificateSecret: rootCaSecret,
+		issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
+			GlooMeshCa: &certificatesv1.GlooMeshCA{
+				Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+					SigningCertificateSecret: rootCaSecret,
+				},
+			},
 		}
 	case *networkingv1.RootCertificateAuthority_Secret:
-		issuedCertificate.Spec.Signer = &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
-			SigningCertificateSecret: typedCaSource.Secret,
+		issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
+			GlooMeshCa: &certificatesv1.GlooMeshCA{
+				Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+					SigningCertificateSecret: typedCaSource.Secret,
+				},
+			},
 		}
 	default:
 		return eris.Errorf("No root ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
@@ -401,8 +409,7 @@ func getPodsToBounce(
 	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
 	// If the pki-sidecar is fulfilling the issued certificate request,
 	// then the control-plane should not be bounced.
-	storageMechanism := sharedTrust.GetIntermediateCertificateAuthority().GetStorageMechanism()
-	if storageMechanism != commonv1.StorageMechanism_FILE_SYSTEM {
+	if sharedTrust.GetRootCertificateAuthority() != nil {
 		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,

@@ -60,8 +60,12 @@ var _ = Describe("CertIssueTranslator", func() {
 
 		issuedCert := &certificatesv1.IssuedCertificate{
 			Spec: certificatesv1.IssuedCertificateSpec{
-				Signer: &certificatesv1.IssuedCertificateSpec_SigningCertificateSecret{
-					SigningCertificateSecret: ezkube.MakeObjectRef(secret),
+				CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
+					GlooMeshCa: &certificatesv1.GlooMeshCA{
+						Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+							SigningCertificateSecret: ezkube.MakeObjectRef(secret),
+						},
+					},
 				},
 			},
 		}
@@ -69,6 +73,7 @@ var _ = Describe("CertIssueTranslator", func() {
 		mockSecretClient.EXPECT().GetSecret(ctx, ezkube.MakeClientObjectKey(secret)).Return(secret, nil)
 
 		output, err := translator.Translate(ctx, certRequest, issuedCert)
+		Expect(err).NotTo(HaveOccurred())
 
 		translatedCertByt, _ := pem.Decode(output.SignedCertificate)
 		translatedCert, err := x509.ParseCertificate(translatedCertByt.Bytes)
