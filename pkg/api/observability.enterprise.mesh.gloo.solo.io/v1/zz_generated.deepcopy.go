@@ -5,65 +5,66 @@
 package v1
 
 import (
-	runtime "k8s.io/apimachinery/pkg/runtime"
+    runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // Generated Deepcopy methods for AccessLogRecord
 
 func (in *AccessLogRecord) DeepCopyInto(out *AccessLogRecord) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+    out.TypeMeta = in.TypeMeta
+    in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
-	// deepcopy spec
-	in.Spec.DeepCopyInto(&out.Spec)
-	// deepcopy status
-	in.Status.DeepCopyInto(&out.Status)
+    // deepcopy spec
+    in.Spec.DeepCopyInto(&out.Spec)
+    // deepcopy status
+    in.Status.DeepCopyInto(&out.Status)
 
-	return
+    return
 }
 
 func (in *AccessLogRecord) DeepCopy() *AccessLogRecord {
-	if in == nil {
-		return nil
-	}
-	out := new(AccessLogRecord)
-	in.DeepCopyInto(out)
-	return out
+    if in == nil {
+        return nil
+    }
+    out := new(AccessLogRecord)
+    in.DeepCopyInto(out)
+    return out
 }
 
 func (in *AccessLogRecord) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopy(); c != nil {
-		return c
-	}
-	return nil
+    if c := in.DeepCopy(); c != nil {
+        return c
+    }
+    return nil
 }
 
 func (in *AccessLogRecordList) DeepCopyInto(out *AccessLogRecordList) {
-	*out = *in
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	if in.Items != nil {
-		in, out := &in.Items, &out.Items
-		*out = make([]AccessLogRecord, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
-	return
+    *out = *in
+    out.TypeMeta = in.TypeMeta
+    in.ListMeta.DeepCopyInto(&out.ListMeta)
+    if in.Items != nil {
+        in, out := &in.Items, &out.Items
+        *out = make([]AccessLogRecord, len(*in))
+        for i := range *in {
+            (*in)[i].DeepCopyInto(&(*out)[i])
+        }
+    }
+    return
 }
 
 func (in *AccessLogRecordList) DeepCopy() *AccessLogRecordList {
-	if in == nil {
-		return nil
-	}
-	out := new(AccessLogRecordList)
-	in.DeepCopyInto(out)
-	return out
+    if in == nil {
+        return nil
+    }
+    out := new(AccessLogRecordList)
+    in.DeepCopyInto(out)
+    return out
 }
 
 func (in *AccessLogRecordList) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopy(); c != nil {
-		return c
-	}
-	return nil
+    if c := in.DeepCopy(); c != nil {
+        return c
+    }
+    return nil
 }
+

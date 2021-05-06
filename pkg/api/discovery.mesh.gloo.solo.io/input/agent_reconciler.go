@@ -2,6 +2,9 @@
 
 //go:generate mockgen -source ./agent_reconciler.go -destination mocks/agent_reconciler.go
 
+
+
+
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
 // * Settings
@@ -22,95 +25,102 @@
 package input
 
 import (
-	"context"
-	"time"
+    "context"
+    "time"
 
-	"github.com/solo-io/skv2/contrib/pkg/input"
-	sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/skv2/pkg/reconcile"
+    "github.com/solo-io/skv2/contrib/pkg/input"
+    sk_core_v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+    "github.com/solo-io/skv2/pkg/multicluster"
+    "github.com/solo-io/skv2/pkg/reconcile"
 
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
-	settings_mesh_gloo_solo_io_v1_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/controller"
 
-	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
-	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
+    settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+    settings_mesh_gloo_solo_io_v1_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/controller"
 
-	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
-	v1 "k8s.io/api/core/v1"
 
-	apps_v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
-	apps_v1 "k8s.io/api/apps/v1"
+    appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+    appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
+
+
+    v1 "k8s.io/api/core/v1"
+    v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+
+
+    apps_v1 "k8s.io/api/apps/v1"
+    apps_v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 )
 
 // the multiClusterAgentReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterAgentReconciler interface {
-	settings_mesh_gloo_solo_io_v1_controllers.MulticlusterSettingsReconciler
 
-	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
 
-	v1_controllers.MulticlusterConfigMapReconciler
-	v1_controllers.MulticlusterServiceReconciler
-	v1_controllers.MulticlusterPodReconciler
-	v1_controllers.MulticlusterEndpointsReconciler
-	v1_controllers.MulticlusterNodeReconciler
+    settings_mesh_gloo_solo_io_v1_controllers.MulticlusterSettingsReconciler
 
-	apps_v1_controllers.MulticlusterDeploymentReconciler
-	apps_v1_controllers.MulticlusterReplicaSetReconciler
-	apps_v1_controllers.MulticlusterDaemonSetReconciler
-	apps_v1_controllers.MulticlusterStatefulSetReconciler
+    appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
+
+    v1_controllers.MulticlusterConfigMapReconciler
+    v1_controllers.MulticlusterServiceReconciler
+    v1_controllers.MulticlusterPodReconciler
+    v1_controllers.MulticlusterEndpointsReconciler
+    v1_controllers.MulticlusterNodeReconciler
+
+    apps_v1_controllers.MulticlusterDeploymentReconciler
+    apps_v1_controllers.MulticlusterReplicaSetReconciler
+    apps_v1_controllers.MulticlusterDaemonSetReconciler
+    apps_v1_controllers.MulticlusterStatefulSetReconciler
 }
 
 var _ multiClusterAgentReconciler = &multiClusterAgentReconcilerImpl{}
 
 type multiClusterAgentReconcilerImpl struct {
-	base input.InputReconciler
+    base input.InputReconciler
 }
 
 // Options for reconciling a snapshot
 type AgentReconcileOptions struct {
 
-	// Options for reconciling Settings
-	Settings reconcile.Options
 
-	// Options for reconciling Meshes
-	Meshes reconcile.Options
+    // Options for reconciling Settings
+    Settings reconcile.Options
 
-	// Options for reconciling ConfigMaps
-	ConfigMaps reconcile.Options
-	// Options for reconciling Services
-	Services reconcile.Options
-	// Options for reconciling Pods
-	Pods reconcile.Options
-	// Options for reconciling Endpoints
-	Endpoints reconcile.Options
-	// Options for reconciling Nodes
-	Nodes reconcile.Options
+    // Options for reconciling Meshes
+    Meshes reconcile.Options
 
-	// Options for reconciling Deployments
-	Deployments reconcile.Options
-	// Options for reconciling ReplicaSets
-	ReplicaSets reconcile.Options
-	// Options for reconciling DaemonSets
-	DaemonSets reconcile.Options
-	// Options for reconciling StatefulSets
-	StatefulSets reconcile.Options
+    // Options for reconciling ConfigMaps
+    ConfigMaps reconcile.Options
+    // Options for reconciling Services
+    Services reconcile.Options
+    // Options for reconciling Pods
+    Pods reconcile.Options
+    // Options for reconciling Endpoints
+    Endpoints reconcile.Options
+    // Options for reconciling Nodes
+    Nodes reconcile.Options
+
+    // Options for reconciling Deployments
+    Deployments reconcile.Options
+    // Options for reconciling ReplicaSets
+    ReplicaSets reconcile.Options
+    // Options for reconciling DaemonSets
+    DaemonSets reconcile.Options
+    // Options for reconciling StatefulSets
+    StatefulSets reconcile.Options
 }
 
 // register the reconcile func with the cluster watcher
 // the reconcileInterval, if greater than 0, will limit the number of reconciles
 // to one per interval.
 func RegisterMultiClusterAgentReconciler(
-	ctx context.Context,
-	clusters multicluster.ClusterWatcher,
-	reconcileFunc input.MultiClusterReconcileFunc,
-	reconcileInterval time.Duration,
-	options AgentReconcileOptions,
-	predicates ...predicate.Predicate,
+        ctx context.Context,
+        clusters multicluster.ClusterWatcher,
+        reconcileFunc input.MultiClusterReconcileFunc,
+        reconcileInterval time.Duration,
+        options AgentReconcileOptions,
+        predicates ...predicate.Predicate,
 ) input.InputReconciler {
 
 	base := input.NewInputReconciler(
@@ -118,432 +128,454 @@ func RegisterMultiClusterAgentReconciler(
 		reconcileFunc,
 		nil,
 		reconcileInterval,
-	)
+    )
 
-	r := &multiClusterAgentReconcilerImpl{
-		base: base,
-	}
+    r := &multiClusterAgentReconcilerImpl{
+    	base: base,
+    }
 
-	// initialize reconcile loops
+// initialize reconcile loops
 
-	settings_mesh_gloo_solo_io_v1_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
 
-	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
+    settings_mesh_gloo_solo_io_v1_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Services).AddMulticlusterServiceReconciler(ctx, r, predicates...)
+    appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterEndpointsReconcileLoop("Endpoints", clusters, options.Endpoints).AddMulticlusterEndpointsReconciler(ctx, r, predicates...)
+    v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.Nodes).AddMulticlusterNodeReconciler(ctx, r, predicates...)
+    v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Services).AddMulticlusterServiceReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters, options.Deployments).AddMulticlusterDeploymentReconciler(ctx, r, predicates...)
+    v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters, options.ReplicaSets).AddMulticlusterReplicaSetReconciler(ctx, r, predicates...)
+    v1_controllers.NewMulticlusterEndpointsReconcileLoop("Endpoints", clusters, options.Endpoints).AddMulticlusterEndpointsReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
+    v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.Nodes).AddMulticlusterNodeReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
-	return r.base
+
+    apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters, options.Deployments).AddMulticlusterDeploymentReconciler(ctx, r, predicates...)
+
+    apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters, options.ReplicaSets).AddMulticlusterReplicaSetReconciler(ctx, r, predicates...)
+
+    apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
+
+    apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
+  return r.base
 }
 
+
+
 func (r *multiClusterAgentReconcilerImpl) ReconcileSettings(clusterName string, obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileSettingsDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
+
+
 func (r *multiClusterAgentReconcilerImpl) ReconcileMesh(clusterName string, obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileMeshDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
+
+
 func (r *multiClusterAgentReconcilerImpl) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileConfigMapDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileService(clusterName string, obj *v1.Service) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileServiceDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcilePodDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileEndpoints(clusterName string, obj *v1.Endpoints) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileEndpointsDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileNode(clusterName string, obj *v1.Node) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileNodeDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
+
+
 func (r *multiClusterAgentReconcilerImpl) ReconcileDeployment(clusterName string, obj *apps_v1.Deployment) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileDeploymentDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileReplicaSet(clusterName string, obj *apps_v1.ReplicaSet) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileReplicaSetDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileDaemonSet(clusterName string, obj *apps_v1.DaemonSet) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileDaemonSetDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileStatefulSet(clusterName string, obj *apps_v1.StatefulSet) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+    obj.ClusterName = clusterName
+    return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileStatefulSetDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
+    ref := &sk_core_v1.ClusterObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+        ClusterName:          clusterName,
+    }
+    _, err := r.base.ReconcileRemoteGeneric(ref)
+    return err
 }
+
 
 // the singleClusterAgentReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterAgentReconciler interface {
-	settings_mesh_gloo_solo_io_v1_controllers.SettingsReconciler
 
-	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
 
-	v1_controllers.ConfigMapReconciler
-	v1_controllers.ServiceReconciler
-	v1_controllers.PodReconciler
-	v1_controllers.EndpointsReconciler
-	v1_controllers.NodeReconciler
+    settings_mesh_gloo_solo_io_v1_controllers.SettingsReconciler
 
-	apps_v1_controllers.DeploymentReconciler
-	apps_v1_controllers.ReplicaSetReconciler
-	apps_v1_controllers.DaemonSetReconciler
-	apps_v1_controllers.StatefulSetReconciler
+    appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
+
+    v1_controllers.ConfigMapReconciler
+    v1_controllers.ServiceReconciler
+    v1_controllers.PodReconciler
+    v1_controllers.EndpointsReconciler
+    v1_controllers.NodeReconciler
+
+    apps_v1_controllers.DeploymentReconciler
+    apps_v1_controllers.ReplicaSetReconciler
+    apps_v1_controllers.DaemonSetReconciler
+    apps_v1_controllers.StatefulSetReconciler
 }
-
 var _ singleClusterAgentReconciler = &singleClusterAgentReconcilerImpl{}
 
 type singleClusterAgentReconcilerImpl struct {
-	base input.InputReconciler
+    base input.InputReconciler
 }
 
 // register the reconcile func with the manager
 // the reconcileInterval, if greater than 0, will limit the number of reconciles
 // to one per interval.
 func RegisterSingleClusterAgentReconciler(
-	ctx context.Context,
-	mgr manager.Manager,
-	reconcileFunc input.SingleClusterReconcileFunc,
-	reconcileInterval time.Duration,
-	options reconcile.Options,
-	predicates ...predicate.Predicate,
+        ctx context.Context,
+        mgr manager.Manager,
+        reconcileFunc input.SingleClusterReconcileFunc,
+        reconcileInterval time.Duration,
+        options reconcile.Options,
+        predicates ...predicate.Predicate,
 ) (input.InputReconciler, error) {
 
-	base := input.NewInputReconciler(
-		ctx,
-		nil,
-		reconcileFunc,
-		reconcileInterval,
-	)
+    base := input.NewInputReconciler(
+        ctx,
+        nil,
+        reconcileFunc,
+        reconcileInterval,
+    )
 
-	r := &singleClusterAgentReconcilerImpl{
-		base: base,
-	}
+    r := &singleClusterAgentReconcilerImpl{
+        base: base,
+    }
 
-	// initialize reconcile loops
+// initialize reconcile loops
 
-	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options).RunSettingsReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
+    if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options).RunSettingsReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
 
-	if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, options).RunMeshReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
+    if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, options).RunMeshReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
 
-	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, options).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := v1_controllers.NewServiceReconcileLoop("Service", mgr, options).RunServiceReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, options).RunPodReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := v1_controllers.NewEndpointsReconcileLoop("Endpoints", mgr, options).RunEndpointsReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, options).RunNodeReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
+    if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, options).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := v1_controllers.NewServiceReconcileLoop("Service", mgr, options).RunServiceReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, options).RunPodReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := v1_controllers.NewEndpointsReconcileLoop("Endpoints", mgr, options).RunEndpointsReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, options).RunNodeReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
 
-	if err := apps_v1_controllers.NewDeploymentReconcileLoop("Deployment", mgr, options).RunDeploymentReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := apps_v1_controllers.NewReplicaSetReconcileLoop("ReplicaSet", mgr, options).RunReplicaSetReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := apps_v1_controllers.NewDaemonSetReconcileLoop("DaemonSet", mgr, options).RunDaemonSetReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
-	if err := apps_v1_controllers.NewStatefulSetReconcileLoop("StatefulSet", mgr, options).RunStatefulSetReconciler(ctx, r, predicates...); err != nil {
-		return nil, err
-	}
+    if err := apps_v1_controllers.NewDeploymentReconcileLoop("Deployment", mgr, options).RunDeploymentReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := apps_v1_controllers.NewReplicaSetReconcileLoop("ReplicaSet", mgr, options).RunReplicaSetReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := apps_v1_controllers.NewDaemonSetReconcileLoop("DaemonSet", mgr, options).RunDaemonSetReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
+    if err := apps_v1_controllers.NewStatefulSetReconcileLoop("StatefulSet", mgr, options).RunStatefulSetReconciler(ctx, r, predicates...); err != nil {
+    	return nil, err
+    }
 
-	return r.base, nil
+    return r.base, nil
 }
 
+
+
 func (r *singleClusterAgentReconcilerImpl) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileSettingsDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
+
+
 func (r *singleClusterAgentReconcilerImpl) ReconcileMesh(obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileMeshDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
+
+
 func (r *singleClusterAgentReconcilerImpl) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileConfigMapDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileService(obj *v1.Service) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileServiceDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcilePod(obj *v1.Pod) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcilePodDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileEndpoints(obj *v1.Endpoints) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileEndpointsDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileNode(obj *v1.Node) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileNodeDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
+
+
 func (r *singleClusterAgentReconcilerImpl) ReconcileDeployment(obj *apps_v1.Deployment) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileDeploymentDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileReplicaSet(obj *apps_v1.ReplicaSet) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileReplicaSetDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileDaemonSet(obj *apps_v1.DaemonSet) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileDaemonSetDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileStatefulSet(obj *apps_v1.StatefulSet) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+    return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileStatefulSetDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
+    ref := &sk_core_v1.ObjectRef{
+        Name:                 obj.Name,
+        Namespace:            obj.Namespace,
+    }
+    _, err := r.base.ReconcileLocalGeneric(ref)
+    return err
 }

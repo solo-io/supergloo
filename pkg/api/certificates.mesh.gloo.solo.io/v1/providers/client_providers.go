@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,84 +21,84 @@ import (
 
 // Provider for IssuedCertificateClient from Clientset
 func IssuedCertificateClientFromClientsetProvider(clients certificates_mesh_gloo_solo_io_v1.Clientset) certificates_mesh_gloo_solo_io_v1.IssuedCertificateClient {
-	return clients.IssuedCertificates()
+    return clients.IssuedCertificates()
 }
 
 // Provider for IssuedCertificate Client from Client
 func IssuedCertificateClientProvider(client client.Client) certificates_mesh_gloo_solo_io_v1.IssuedCertificateClient {
-	return certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(client)
+    return certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(client)
 }
 
 type IssuedCertificateClientFactory func(client client.Client) certificates_mesh_gloo_solo_io_v1.IssuedCertificateClient
 
 func IssuedCertificateClientFactoryProvider() IssuedCertificateClientFactory {
-	return IssuedCertificateClientProvider
+    return IssuedCertificateClientProvider
 }
 
 type IssuedCertificateClientFromConfigFactory func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.IssuedCertificateClient, error)
 
 func IssuedCertificateClientFromConfigFactoryProvider() IssuedCertificateClientFromConfigFactory {
-	return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.IssuedCertificateClient, error) {
-		clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.IssuedCertificates(), nil
-	}
+    return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.IssuedCertificateClient, error) {
+        clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.IssuedCertificates(), nil
+    }
 }
 
 // Provider for CertificateRequestClient from Clientset
 func CertificateRequestClientFromClientsetProvider(clients certificates_mesh_gloo_solo_io_v1.Clientset) certificates_mesh_gloo_solo_io_v1.CertificateRequestClient {
-	return clients.CertificateRequests()
+    return clients.CertificateRequests()
 }
 
 // Provider for CertificateRequest Client from Client
 func CertificateRequestClientProvider(client client.Client) certificates_mesh_gloo_solo_io_v1.CertificateRequestClient {
-	return certificates_mesh_gloo_solo_io_v1.NewCertificateRequestClient(client)
+    return certificates_mesh_gloo_solo_io_v1.NewCertificateRequestClient(client)
 }
 
 type CertificateRequestClientFactory func(client client.Client) certificates_mesh_gloo_solo_io_v1.CertificateRequestClient
 
 func CertificateRequestClientFactoryProvider() CertificateRequestClientFactory {
-	return CertificateRequestClientProvider
+    return CertificateRequestClientProvider
 }
 
 type CertificateRequestClientFromConfigFactory func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.CertificateRequestClient, error)
 
 func CertificateRequestClientFromConfigFactoryProvider() CertificateRequestClientFromConfigFactory {
-	return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.CertificateRequestClient, error) {
-		clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.CertificateRequests(), nil
-	}
+    return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.CertificateRequestClient, error) {
+        clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.CertificateRequests(), nil
+    }
 }
 
 // Provider for PodBounceDirectiveClient from Clientset
 func PodBounceDirectiveClientFromClientsetProvider(clients certificates_mesh_gloo_solo_io_v1.Clientset) certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveClient {
-	return clients.PodBounceDirectives()
+    return clients.PodBounceDirectives()
 }
 
 // Provider for PodBounceDirective Client from Client
 func PodBounceDirectiveClientProvider(client client.Client) certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveClient {
-	return certificates_mesh_gloo_solo_io_v1.NewPodBounceDirectiveClient(client)
+    return certificates_mesh_gloo_solo_io_v1.NewPodBounceDirectiveClient(client)
 }
 
 type PodBounceDirectiveClientFactory func(client client.Client) certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveClient
 
 func PodBounceDirectiveClientFactoryProvider() PodBounceDirectiveClientFactory {
-	return PodBounceDirectiveClientProvider
+    return PodBounceDirectiveClientProvider
 }
 
 type PodBounceDirectiveClientFromConfigFactory func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveClient, error)
 
 func PodBounceDirectiveClientFromConfigFactoryProvider() PodBounceDirectiveClientFromConfigFactory {
-	return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveClient, error) {
-		clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.PodBounceDirectives(), nil
-	}
+    return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveClient, error) {
+        clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.PodBounceDirectives(), nil
+    }
 }

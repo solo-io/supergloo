@@ -7,15 +7,14 @@
 package v1beta1
 
 import (
-	reflect "reflect"
-	sync "sync"
-
 	any "github.com/golang/protobuf/ptypes/any"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (

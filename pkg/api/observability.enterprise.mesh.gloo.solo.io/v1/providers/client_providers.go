@@ -2,11 +2,13 @@
 
 package v1
 
-import (
-	observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,28 +21,28 @@ import (
 
 // Provider for AccessLogRecordClient from Clientset
 func AccessLogRecordClientFromClientsetProvider(clients observability_enterprise_mesh_gloo_solo_io_v1.Clientset) observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecordClient {
-	return clients.AccessLogRecords()
+    return clients.AccessLogRecords()
 }
 
 // Provider for AccessLogRecord Client from Client
 func AccessLogRecordClientProvider(client client.Client) observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecordClient {
-	return observability_enterprise_mesh_gloo_solo_io_v1.NewAccessLogRecordClient(client)
+    return observability_enterprise_mesh_gloo_solo_io_v1.NewAccessLogRecordClient(client)
 }
 
 type AccessLogRecordClientFactory func(client client.Client) observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecordClient
 
 func AccessLogRecordClientFactoryProvider() AccessLogRecordClientFactory {
-	return AccessLogRecordClientProvider
+    return AccessLogRecordClientProvider
 }
 
 type AccessLogRecordClientFromConfigFactory func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecordClient, error)
 
 func AccessLogRecordClientFromConfigFactoryProvider() AccessLogRecordClientFromConfigFactory {
-	return func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecordClient, error) {
-		clients, err := observability_enterprise_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.AccessLogRecords(), nil
-	}
+    return func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecordClient, error) {
+        clients, err := observability_enterprise_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.AccessLogRecords(), nil
+    }
 }
