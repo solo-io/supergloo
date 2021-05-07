@@ -1,4 +1,4 @@
-schangelog:
+changelog:
   - type: FIX
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1395
     description: >
