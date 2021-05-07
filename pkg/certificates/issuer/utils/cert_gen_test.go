@@ -1,6 +1,8 @@
 package utils_test
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -31,7 +33,10 @@ var _ = Describe("CertGen workflow", func() {
 			0,
 		)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(string(inetermediaryCert)).To(ContainSubstring("-----BEGIN CERTIFICATE-----"))
+		pemByt, _ := pem.Decode(inetermediaryCert)
+		cert, err := x509.ParseCertificate(pemByt.Bytes)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cert.IsCA).To(BeTrue())
 	}
 
 	It("generates a certificate using generated self signed cert, private key, and certificate signing request", func() {
