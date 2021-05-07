@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1517
+    description: Fix the API docs for reference based selectors to say that all fields are required. Remove the incorrect statement that omission means select all.
