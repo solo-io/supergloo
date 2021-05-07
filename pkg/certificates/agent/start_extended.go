@@ -3,19 +3,19 @@ package agent
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
 // Options for extending the functionality of the Networking controller
 type ExtensionOpts struct {
-	NetworkingReconciler CertAgentReconcilerExtensionOpts
+	CertAgentReconciler CertAgentReconcilerExtensionOpts
 }
 
 type MakeExtensionOpts func(ctx context.Context, parameters bootstrap.StartParameters) ExtensionOpts
 
 func (opts *ExtensionOpts) initDefaults(parameters bootstrap.StartParameters) {
-	opts.NetworkingReconciler.initDefaults(parameters)
+	opts.CertAgentReconciler.initDefaults(parameters)
 }
 
 // Options for overriding functionality of the Networking Reconciler

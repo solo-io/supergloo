@@ -18,25 +18,35 @@ import (
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx, StartFunc, opts, schemes.SchemeBuilder, true)
+	return bootstrap.Start(
+		ctx,
+		StartFuncExt(func(ctx context.Context, parameters bootstrap.StartParameters) ExtensionOpts {
+			return ExtensionOpts{}
+		}),
+		opts,
+		schemes.SchemeBuilder,
+		true,
+	)
 }
 
-// start the main reconcile loop
-func StartFunc(
-	ctx context.Context,
-	parameters bootstrap.StartParameters,
-) error {
+// Extended start function
+func StartFuncExt(makeExtensionOpts MakeExtensionOpts) bootstrap.StartFunc {
+	// start the main reconcile loop
+	return func(ctx context.Context, parameters bootstrap.StartParameters) error {
 
-	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
+		extOpts := makeExtensionOpts(ctx, parameters)
 
-	podCLient := corev1client.NewPodClient(parameters.MasterManager.GetClient())
-	podBouncer := pod_bouncer.NewPodBouncer(podCLient)
-	translator := translation.NewCertAgentTranslator(parameters.MasterManager.GetClient())
-	return reconciliation.Start(
-		ctx,
-		snapshotBuilder,
-		parameters.MasterManager,
-		podBouncer,
-		translator,
-	)
+		snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
+
+		podCLient := corev1client.NewPodClient(parameters.MasterManager.GetClient())
+		podBouncer := pod_bouncer.NewPodBouncer(podCLient)
+		translator := translation.NewCertAgentTranslator(parameters.MasterManager.GetClient())
+		return reconciliation.Start(
+			ctx,
+			snapshotBuilder,
+			parameters.MasterManager,
+			podBouncer,
+			extOpts.CertAgentReconciler.MakeTranslator(translator),
+		)
+	}
 }
