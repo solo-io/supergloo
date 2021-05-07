@@ -33,7 +33,7 @@ spec:
   # This value is required for Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
   # This value can be any Gloo Mesh Istio tag
-  tag: 1.8.5
+  tag: 1.9.2
   profile: minimal
   meshConfig:
     enableAutoMtls: true
