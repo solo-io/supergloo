@@ -50,6 +50,7 @@ spec:
   profile: minimal
   # Install Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
+  tag: 1.8.5
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -100,6 +101,7 @@ spec:
   profile: minimal
   # Install Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
+  tag: 1.8.5
   meshConfig:
     defaultConfig:
       envoyMetricsService:
