@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1523
+    description: Update the Gloo Mesh gloomesh-remote-access clusterrole in the docs.
