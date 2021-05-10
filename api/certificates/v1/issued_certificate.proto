@@ -73,7 +73,7 @@ message IssuedCertificateSpec {
 }
 
 // Set of options which represent the certificate authorities the management cluster can use
-// to sign the intermediate certs
+// to sign the intermediate certs.
 message GlooMeshCA {
     // Signing method which gloo-mesh management will use to sign the intermediate cert
     oneof signer {
