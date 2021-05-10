@@ -30,7 +30,13 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 //
-//TODO(harveyxia): Explain and motivate.
+//A ServiceDependency specifies explicit dependencies between traffic sources and destinations.
+//Depending on the underlying service mesh, explicitly describing dependencies can improve the performance
+//of the data plane by pruning away any unneeded networking configuration from the relevant proxies.
+//
+//The complete set of destination dependencies for a given traffic source is the aggregation of all
+//unique Destinations selected by any applicable ServiceDependencies. If a traffic source has no applied
+//ServiceDependencies, its destination dependency configuration defaults to the behavior of the underlying service mesh.
 type ServiceDependencySpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
