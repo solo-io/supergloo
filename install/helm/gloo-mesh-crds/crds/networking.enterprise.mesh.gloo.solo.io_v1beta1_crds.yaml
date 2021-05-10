@@ -856,6 +856,12 @@ spec:
           type: object
         status:
           properties:
+            errors:
+              description: Any errors found while processing this generation of the
+                resource.
+              items:
+                type: string
+              type: array
             observedGeneration:
               description: |-
                 The most recent generation observed in the the ServiceDependency metadata.

@@ -36,4 +36,7 @@ message ServiceDependencyStatus {
     // The status of the ServiceDependency for each selected Workload.
     // A ServiceDependency may have different statuses for each Workload it applies to.
     map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> workloads = 3;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 4;
 }

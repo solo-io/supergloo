@@ -133,5 +133,16 @@ func (m *ServiceDependencyStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetErrors()) != len(target.GetErrors()) {
+		return false
+	}
+	for idx, v := range m.GetErrors() {
+
+		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
+			return false
+		}
+
+	}
+
 	return true
 }
