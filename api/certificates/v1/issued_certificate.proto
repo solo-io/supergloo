@@ -46,7 +46,7 @@ message IssuedCertificateSpec {
     .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
 
     // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
-    // If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only)
+    // If nil, the sidecar agent stores the signing certificate in memory. (Enterprise only)
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 
     // A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
