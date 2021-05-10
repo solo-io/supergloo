@@ -3,6 +3,7 @@ package initpluginmanager
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -10,13 +11,13 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
+	pkgversion "github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
-
-const tempBinaryVersion = "v1.0.0-beta7"
 
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
@@ -59,6 +60,7 @@ Please see visit the Gloo Mesh website for more info:  https://www.solo.io/produ
 			return nil
 		},
 	}
+
 	opts.addToFlags(cmd.Flags())
 	cmd.SilenceUsage = true
 	return cmd
@@ -134,30 +136,23 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
 		return nil, eris.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
-	url := fmt.Sprintf(
-		"https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/plugin/%s/meshctl-plugin-%s-%s",
-		tempBinaryVersion, runtime.GOOS, runtime.GOARCH,
-	)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	bin, err := findLatestCompatibleBinary(ctx)
 	if err != nil {
 		return nil, err
 	}
-	res, err := http.DefaultClient.Do(req)
+	defer bin.Close()
+	f, err := os.Create(binPath)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
+	defer f.Close()
+	if _, err := io.Copy(f, bin); err != nil {
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		logrus.Debug(string(b))
-		return nil, eris.Errorf("could not download plugin manager binary: %d %s", res.StatusCode, res.Status)
-	}
-	if err := ioutil.WriteFile(binPath, b, 0755); err != nil {
+	if err := f.Chmod(0755); err != nil {
 		return nil, err
 	}
+
 	return &pluginBinary{path: binPath, home: home}, nil
 }
 
@@ -166,4 +161,62 @@ func (binary pluginBinary) run(args ...string) (string, error) {
 	cmd.Env = append(cmd.Env, "MESHCTL_HOME="+binary.home)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
+}
+
+// Attempts to find the latest plugin manager binary compatible with the current version of meshctl
+func findLatestCompatibleBinary(ctx context.Context) (io.ReadCloser, error) {
+	v, err := version.NewVersion(pkgversion.Version)
+	if err != nil {
+		return nil, eris.Wrap(err, "unable to parse version")
+	}
+	major, minor, patch := v.Segments()[0], v.Segments()[1], v.Segments()[2]
+	if v.Prerelease() != "" {
+		minor -= 1
+		patch = 20
+	}
+	for ; patch >= 0; patch-- {
+		tryVersion := fmt.Sprintf("v%d.%d.%d", major, minor, patch)
+		body, err := getBinary(ctx, tryVersion)
+		if err != nil {
+			return nil, err
+		}
+		if body != nil {
+			return body, nil
+		}
+	}
+
+	return nil, eris.Errorf("no compatible version found for meshctl %s:", pkgversion.Version)
+}
+
+// Attempts to download a plugin manager binary with the given version
+// Returns the following based on the response from google cloud storage:
+//   200: Return the body and a nil error
+//   404: Return a nil body and nil error
+//   Other: Return a nil body and an error with the unexpected status code
+func getBinary(ctx context.Context, version string) (io.ReadCloser, error) {
+	const urlFmt = "https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/plugin/%s/meshctl-plugin-%s-%s"
+	url := fmt.Sprintf(urlFmt, version, runtime.GOOS, runtime.GOARCH)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	} else if res.StatusCode == http.StatusNotFound {
+		defer res.Body.Close()
+		io.Copy(ioutil.Discard, res.Body)
+		return nil, nil
+	} else if res.StatusCode != http.StatusOK {
+		defer res.Body.Close()
+		if b, err := ioutil.ReadAll(res.Body); err == nil {
+			logrus.Debug(string(b))
+		} else {
+			logrus.Debugf("unable to read Google Cloud response body: %s", err.Error())
+		}
+
+		return nil, eris.Errorf("could not download plugin manager binary: %d %s", res.StatusCode, res.Status)
+	}
+
+	return res.Body, nil
 }
