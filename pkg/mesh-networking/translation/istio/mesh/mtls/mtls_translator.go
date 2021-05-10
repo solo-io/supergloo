@@ -169,14 +169,6 @@ func (t *translator) configureSharedTrust(
 	autoRestartPods bool,
 ) error {
 
-	// switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
-	// case *networkingv1.SharedTrust_IntermediateCertificateAuthority:
-	// case *networkingv1.SharedTrust_RootCertificateAuthority:
-	// default:
-	// 	return eris.Errorf("No ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
-	// }
-	rootCA := sharedTrust.GetRootCertificateAuthority()
-
 	agentInfo := mesh.Spec.AgentInfo
 	if agentInfo == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("cannot configure root certificates for mesh %v which has no cert-agent", sets.Key(mesh))
@@ -186,38 +178,56 @@ func (t *translator) configureSharedTrust(
 	// Construct the skeleton of the issuedCertificate
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
-		sharedTrust,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
+		sharedTrust.GetRootCertificateAuthority() != nil,
 	)
 
-	switch typedCaSource := rootCA.CaSource.(type) {
-	case *networkingv1.RootCertificateAuthority_Generated:
-		rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
-			typedCaSource.Generated,
-			virtualMeshRef,
-			localOutputs,
-		)
-		if err != nil {
-			return err
-		}
-		issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-			GlooMeshCa: &certificatesv1.GlooMeshCA{
-				Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
-					SigningCertificateSecret: rootCaSecret,
+	switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
+	case *networkingv1.SharedTrust_IntermediateCertificateAuthority:
+		switch typedCaSource := typedCa.IntermediateCertificateAuthority.GetCaSource().(type) {
+		case *networkingv1.IntermediateCertificateAuthority_Vault:
+			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_AgentCa{
+				AgentCa: &certificatesv1.AgentCA{
+					Signer: &certificatesv1.AgentCA_VaultCa{
+						VaultCa: typedCaSource.Vault,
+					},
 				},
-			},
+			}
+		default:
+			return eris.Errorf("No intermediate ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
 		}
-	case *networkingv1.RootCertificateAuthority_Secret:
-		issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-			GlooMeshCa: &certificatesv1.GlooMeshCA{
-				Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
-					SigningCertificateSecret: typedCaSource.Secret,
+	case *networkingv1.SharedTrust_RootCertificateAuthority:
+		switch typedCaSource := typedCa.RootCertificateAuthority.GetCaSource().(type) {
+		case *networkingv1.RootCertificateAuthority_Generated:
+			rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
+				typedCaSource.Generated,
+				virtualMeshRef,
+				localOutputs,
+			)
+			if err != nil {
+				return err
+			}
+			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
+				GlooMeshCa: &certificatesv1.GlooMeshCA{
+					Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+						SigningCertificateSecret: rootCaSecret,
+					},
 				},
-			},
+			}
+		case *networkingv1.RootCertificateAuthority_Secret:
+			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
+				GlooMeshCa: &certificatesv1.GlooMeshCA{
+					Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+						SigningCertificateSecret: typedCaSource.Secret,
+					},
+				},
+			}
+		default:
+			return eris.Errorf("No root ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
 		}
 	default:
-		return eris.Errorf("No root ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
+		return eris.Errorf("No ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
 	}
 
 	// Append the VirtualMesh as a parent to each output resource
@@ -281,9 +291,8 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 
 func (t *translator) constructIssuedCertificate(
 	mesh *discoveryv1.Mesh,
-	sharedTrust *networkingv1.SharedTrust,
 	agentNamespace string,
-	autoRestartPods bool,
+	autoRestartPods, restartIstiod bool,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
@@ -318,7 +327,7 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, sharedTrust, t.workloads, autoRestartPods)
+	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods, restartIstiod)
 	var (
 		podBounceDirective *certificatesv1.PodBounceDirective
 		podBounceRef       *skv2corev1.ObjectRef
@@ -393,9 +402,8 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
 func getPodsToBounce(
 	mesh *discoveryv1.Mesh,
-	sharedTrust *networkingv1.SharedTrust,
 	allWorkloads discoveryv1sets.WorkloadSet,
-	autoRestartPods bool,
+	autoRestartPods, restartIstiod bool,
 ) []*certificatesv1.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
@@ -409,7 +417,7 @@ func getPodsToBounce(
 	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
 	// If the pki-sidecar is fulfilling the issued certificate request,
 	// then the control-plane should not be bounced.
-	if sharedTrust.GetRootCertificateAuthority() != nil {
+	if restartIstiod {
 		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,
