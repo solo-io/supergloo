@@ -143,28 +143,36 @@ func copyHelmValuesDocsForComponent(
 	if err != nil {
 		return err
 	}
+	latestVersionSemver, err := semver.NewVersion(earliestVersion)
+	if err != nil {
+		return err
+	}
 
-	var tags []string
+	tags := make(map[string]string, 0)
 	for _, version := range versions {
-		tags = append(tags, version.Original())
+		tags[version.Original()] = fmt.Sprintf("%d.%d", version.Major(), version.Minor())
+		if version.GreaterThan(latestVersionSemver) {
+			latestVersionSemver = version
+		}
 		if version.LessThan(earliestVersionSemver) || version.Equal(earliestVersionSemver) {
 			break
 		}
 	}
+	tags[latestVersionSemver.Original()] = "latest"
 
-	for _, tag := range tags {
+	for tag, tagPath := range tags {
 		contextutils.LoggerFrom(context.Background()).Infof("copying Helm values docs from %s/%s for release %s", GithubOrg, repoName, tag)
 
-		if err := os.Mkdir(helmDocsDir+"/"+tag, os.ModePerm); err != nil {
+		if err := os.Mkdir(helmDocsDir+"/"+tagPath, os.ModePerm); err != nil {
 			return eris.Errorf("error creating Helm docs directories: %v", err)
 		}
 
-		if err := createFileIfNotExists(helmDocsDir+"/"+tag+"/"+"_index.md", fmt.Sprintf(helmValuesIndex, tag)); err != nil {
+		if err := createFileIfNotExists(helmDocsDir+"/"+tagPath+"/"+"_index.md", fmt.Sprintf(helmValuesIndex, tag)); err != nil {
 			return eris.Errorf("error creating Helm values index file: %v", err)
 		}
 
 		for src, dest := range fileMapping {
-			dest = fmt.Sprintf(dest, helmDocsDir, tag)
+			dest = fmt.Sprintf(dest, helmDocsDir, tagPath)
 			if err := copyHelmValuesDocs(client, GithubOrg, repoName, tag, src, dest); err != nil {
 				return err
 			}
