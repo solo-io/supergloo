@@ -41,7 +41,7 @@ message IssuedCertificateSpec {
     // DEPRECATED: in favor of `common_cert_options.org_name`
     string org = 2;
 
-    // Deprecated in favor of `gloo_mesh_ca.signing_certificate_secret`
+    // DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret`
     // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
     .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
 
