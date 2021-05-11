@@ -153,7 +153,9 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation: {
+    permissive: {}
+  }
   meshes:
   - name: istiod-istio-system-mgmt-cluster 
     namespace: gloo-mesh
