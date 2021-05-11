@@ -17,6 +17,8 @@ import (
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 )
 
+//go:generate mockgen -source ./pod_bouncer.go -destination mocks/pod_bouncer.go
+
 // bounce (delete) the listed pods
 // returns true if we need to wait before proceeding to process the podBounceDirective.
 // we must wait for the following conditions:

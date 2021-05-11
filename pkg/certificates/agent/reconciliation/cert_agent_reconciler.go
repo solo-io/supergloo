@@ -9,7 +9,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -28,7 +28,7 @@ var (
 	// secrets the agent doesn't own
 	agentLabels = func() map[string]string {
 		labels := map[string]string{
-			fmt.Sprintf("agent.%v", v1.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+			fmt.Sprintf("agent.%v", certificatesv1.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
 		}
 		if agentCluster := defaults.GetAgentCluster(); agentCluster != "" {
 			labels[metautils.AgentLabelKey] = agentCluster
@@ -36,6 +36,14 @@ var (
 		return labels
 	}
 )
+
+type Reconciler interface {
+	ReconcileIssuedCertificate(
+		issuedCertificate *certificatesv1.IssuedCertificate,
+		inputSnap input.Snapshot,
+		outputs certagent.Builder,
+	) error
+}
 
 type certAgentReconciler struct {
 	ctx         context.Context
@@ -59,9 +67,22 @@ func Start(
 		podBouncer:  podBouncer,
 		translator:  translator,
 	}
-
 	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{})
 	return err
+}
+
+// Exposed for testing
+func NewCertAgentReconciler(
+	ctx context.Context,
+	podBouncer pod_bouncer.PodBouncer,
+	translator translation.Translator,
+) Reconciler {
+
+	return &certAgentReconciler{
+		ctx:        ctx,
+		podBouncer: podBouncer,
+		translator: translator,
+	}
 }
 
 // reconcile global state
@@ -76,13 +97,13 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 	// process issued certificates
 	for _, issuedCertificate := range inputSnap.IssuedCertificates().List() {
-		if err := r.reconcileIssuedCertificate(
+		if err := r.ReconcileIssuedCertificate(
 			issuedCertificate,
 			inputSnap,
 			outputs,
 		); err != nil {
 			issuedCertificate.Status.Error = err.Error()
-			issuedCertificate.Status.State = v1.IssuedCertificateStatus_FAILED
+			issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_FAILED
 		}
 	}
 	outSnap, err := outputs.BuildSinglePartitionedSnapshot(agentLabels())
@@ -104,14 +125,15 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *certAgentReconciler) reconcileIssuedCertificate(
-	issuedCertificate *v1.IssuedCertificate,
+// Exposed for testing
+func (r *certAgentReconciler) ReconcileIssuedCertificate(
+	issuedCertificate *certificatesv1.IssuedCertificate,
 	inputSnap input.Snapshot,
 	outputs certagent.Builder,
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
-		issuedCertificate.Status.State = v1.IssuedCertificateStatus_PENDING
+		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_PENDING
 	}
 
 	// reset & update status
@@ -120,8 +142,12 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 	// state-machine style processor
 	switch issuedCertificate.Status.State {
-	case v1.IssuedCertificateStatus_FINISHED:
-		// TODO: add extension point
+	case certificatesv1.IssuedCertificateStatus_FINISHED:
+
+		// If issued cert secret is nil, simply return
+		if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
+			return nil
+		}
 		if issuedCertificateSecret, err := inputSnap.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// ensure issued cert secret exists, nothing to do for this issued certificate
 			// add secret output to prevent it from being GC'ed
@@ -130,10 +156,10 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 		// otherwise, restart the workflow from PENDING
 		fallthrough
-	case v1.IssuedCertificateStatus_FAILED:
+	case certificatesv1.IssuedCertificateStatus_FAILED:
 		// restart the workflow from PENDING
 		fallthrough
-	case v1.IssuedCertificateStatus_PENDING:
+	case certificatesv1.IssuedCertificateStatus_PENDING:
 
 		csrBytes, err := r.translator.IssuedCertiticatePending(r.ctx, issuedCertificate, inputSnap, outputs)
 		if err != nil {
@@ -147,21 +173,21 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 
 		// TODO: Figure out if we want to reuse the certificate request object
-		certificateRequest := &v1.CertificateRequest{
+		certificateRequest := &certificatesv1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
 				Namespace: issuedCertificate.Namespace,
 				Labels:    agentLabels(),
 			},
-			Spec: v1.CertificateRequestSpec{
+			Spec: certificatesv1.CertificateRequestSpec{
 				CertificateSigningRequest: csrBytes,
 			},
 		}
 		outputs.AddCertificateRequests(certificateRequest)
 
 		// set status to REQUESTED
-		issuedCertificate.Status.State = v1.IssuedCertificateStatus_REQUESTED
-	case v1.IssuedCertificateStatus_REQUESTED:
+		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_REQUESTED
+	case certificatesv1.IssuedCertificateStatus_REQUESTED:
 
 		// retrieve signed certificate
 		certificateRequest, err := inputSnap.CertificateRequests().Find(issuedCertificate)
@@ -179,15 +205,16 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		}
 
-		issuedCertificate.Status.State = v1.IssuedCertificateStatus_ISSUED
-	case v1.IssuedCertificateStatus_ISSUED:
-
-		if err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs); err != nil {
+		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_ISSUED
+	case certificatesv1.IssuedCertificateStatus_ISSUED:
+		
+		bouncePods, err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs)
+		if err != nil {
 			return err
 		}
 
 		// see if we need to bounce pods
-		if issuedCertificate.Spec.PodBounceDirective != nil {
+		if issuedCertificate.Spec.PodBounceDirective != nil && bouncePods {
 			podBounceDirective, err := inputSnap.PodBounceDirectives().Find(issuedCertificate.Spec.PodBounceDirective)
 			if err != nil {
 				return eris.Wrap(err, "failed to find specified pod bounce directive")
@@ -213,7 +240,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 
 		// mark issued certificate as finished
-		issuedCertificate.Status.State = v1.IssuedCertificateStatus_FINISHED
+		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_FINISHED
 	default:
 		return eris.Errorf("unknown issued certificate state: %v", issuedCertificate.Status.State)
 	}

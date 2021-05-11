@@ -3,14 +3,12 @@ package agent
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
-
 	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
-
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation"
 	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
