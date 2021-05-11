@@ -43,12 +43,7 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	dynamicClient, err := client.New(GetEnv().Management.Config, client.Options{})
 	Expect(err).NotTo(HaveOccurred())
 
-	FederateClusters(dynamicClient, false)
-}
-
-// exported for use in enterprise
-func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
-	VirtualMesh, err = data.SelfSignedVirtualMesh(
+	vm, err := data.SelfSignedVirtualMesh(
 		dynamicClient,
 		"bookinfo-federation",
 		BookinfoNamespace,
@@ -56,11 +51,16 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 			MgmtMesh,
 			RemoteMesh,
 		},
-		flatNetwork,
+		false,
 	)
 	Expect(err).NotTo(HaveOccurred())
+	FederateClusters(dynamicClient, vm)
+}
 
-	err = VirtualMeshManifest.AppendResources(VirtualMesh)
+// exported for use in enterprise
+func FederateClusters(dynamicClient client.Client, vm *networkingv1.VirtualMesh) {
+	VirtualMesh = vm
+	err = VirtualMeshManifest.AppendResources(vm)
 	Expect(err).NotTo(HaveOccurred())
 
 	Eventually(func() error {
