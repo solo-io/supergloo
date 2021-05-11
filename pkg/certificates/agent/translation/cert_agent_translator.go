@@ -42,10 +42,13 @@ func IssuedCertificateSecretType() corev1.SecretType {
 	return corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1.SchemeGroupVersion.Group))
 }
 
+//go:generate mockgen -source ./cert_agent_translator.go -destination mocks/translator.go
+
 // These functions correspond to issued certiticate statuses
 // PENDING
 // REQUESTED
 // ISSUED
+// FINISHED
 type Translator interface {
 	// This function is called when the IssuedCertiticate is first created, it is meant to create the CSR
 	// and return the bytes directly
@@ -72,12 +75,14 @@ type Translator interface {
 	// This function is called when the IssuedCertiticate has been ISSUED, this means that the
 	// CertificateRequest has been fulfilled by the relevant party. By this stage the intermediate
 	// cert should already have made it to it's destination.
+	// The bool return value determines whether or not the reconciler should bounce the designated workloads.
 	IssuedCertificateIssued(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
-	) error
+	) (bool, error)
+
 }
 
 func NewCertAgentTranslator(localClient client.Client) Translator {
@@ -199,21 +204,21 @@ func (c *certAgentTranslator) IssuedCertificateIssued(
 	issuedCertificate *v1.IssuedCertificate,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
-) error {
+) (bool, error) {
 
 	// If IssuedCertificateSecret is nil, it means the keypair isn't meant to be written to a secret
 	if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
-		return nil
+		return false, nil
 	}
 
 	// ensure issued cert secret exists, if not, return an error (restart the workflow)
 	if issuedCertificateSecret, err := inputs.Secrets().Find(
 		issuedCertificate.Spec.GetIssuedCertificateSecret(),
 	); err != nil {
-		return err
+		return false, err
 	} else {
 		// add secret output to prevent it from being GC'ed
 		outputs.AddSecrets(issuedCertificateSecret)
 	}
-	return nil
+	return true, nil
 }
