@@ -414,6 +414,17 @@ ratings-v1-7dc98c7588-qbmmh   2/2     Running   0          3m11s
 reviews-v3-7dbcdcbc56-w4kbf   2/2     Running   0          3m11s
 ```
 
+{{% notice note %}}
+If your bookinfo deployments are stuck in a pending state with the following error:
+```
+admission webhook "sidecar-injector.istio.io" denied the request: template:
+      inject:1: function "Template_Version_And_Istio_Version_Mismatched_Check_Installation"
+      not defined
+```
+This means that there is a mismatch with istioctl version and IstioOperator during
+install. Check that your `istioctl` version matches the version of istio running on the server.
+{{% /notice %}}
+
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
 
 {{< tabs >}}
