@@ -1561,8 +1561,11 @@ spec:
                         description: Will be populated if the LoadBalancer Address
                           is an IP
                         type: string
+                      name:
+                        description: The name of the Ingress Gateway Service
+                        type: string
                       namespace:
-                        description: the namespace in which the ingress gateway is
+                        description: The namespace in which the ingress gateway is
                           running.
                         type: string
                       tlsContainerPort:

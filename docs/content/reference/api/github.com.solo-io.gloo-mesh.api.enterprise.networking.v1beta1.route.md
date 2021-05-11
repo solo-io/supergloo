@@ -41,7 +41,6 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 | ----- | ---- | ----- | ----------- |
 | refs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Delegate to the Route Table resources with matching `name` and `namespace`. |
   | selector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | Delegate to the Route Tables that match the given selector. |
-  | passFullPath | bool |  | If set to true, `passFullPath` will send the full path for the delegated child route to match on. When false, the part of the path matched in this resource will be removed, and the delegated child resource will only match on the remainder of the path. Default value is false. {{/*TODO: hide from docs, not implemented */}} |
   
 
 

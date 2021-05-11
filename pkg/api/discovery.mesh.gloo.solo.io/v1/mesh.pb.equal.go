@@ -518,6 +518,10 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 		return false
 	}
 
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
 	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
 		return false
 	}

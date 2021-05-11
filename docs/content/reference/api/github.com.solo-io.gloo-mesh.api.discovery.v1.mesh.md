@@ -135,7 +135,8 @@ Describes the ingress gateway.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespace | string |  | the namespace in which the ingress gateway is running. |
+| name | string |  | The name of the Ingress Gateway Service |
+  | namespace | string |  | The namespace in which the ingress gateway is running. |
   | workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload backing the gateway. [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`. |
   | externalAddress | string |  | DEPRECATED: in favor of dns_name or external_ip |
   | dnsName | string |  | Will be populated if the LoadBalancer Address is a DNS name |
