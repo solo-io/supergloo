@@ -135,9 +135,15 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		fallthrough
 	case v1.IssuedCertificateStatus_PENDING:
 
-		csrBytes, err := r.translator.IssuedCertiticatePending(r.ctx, issuedCertificate, outputs)
+		csrBytes, err := r.translator.IssuedCertiticatePending(r.ctx, issuedCertificate, inputSnap, outputs)
 		if err != nil {
 			return err
+		}
+
+		// If translator does not return bytes or an error, it means the workflow should NOT
+		// continue any further
+		if csrBytes == nil {
+			return nil
 		}
 
 		// TODO: Figure out if we want to reuse the certificate request object

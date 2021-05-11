@@ -35,6 +35,7 @@ func StartFuncExt(makeExtensionOpts MakeExtensionOpts) bootstrap.StartFunc {
 	return func(ctx context.Context, parameters bootstrap.StartParameters) error {
 
 		extOpts := makeExtensionOpts(ctx, parameters)
+		extOpts.initDefaults(parameters)
 
 		snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 

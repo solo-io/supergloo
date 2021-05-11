@@ -35,7 +35,7 @@ var _ = Describe("CertIssueTranslator", func() {
 		ctrl.Finish()
 	})
 
-	FIt("will do nothing if no signing cert is present", func() {
+	XIt("will do nothing if no signing cert is present", func() {
 
 		translator := translation.NewTranslator(mockSecretClient)
 

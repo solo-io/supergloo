@@ -52,6 +52,7 @@ type Translator interface {
 	IssuedCertiticatePending(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
+		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) ([]byte, error)
 
@@ -92,6 +93,7 @@ type certAgentTranslator struct {
 func (c *certAgentTranslator) IssuedCertiticatePending(
 	ctx context.Context,
 	issuedCertificate *v1.IssuedCertificate,
+	inputs input.Snapshot,
 	outputs certagent.Builder,
 ) ([]byte, error) {
 

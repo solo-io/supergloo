@@ -2,6 +2,7 @@ package mtls_test
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -113,6 +114,10 @@ var _ = Describe("MtlsTranslator", func() {
 			// Make sure the name is the same, maybe decode the cert and check the data?
 			Expect(secret.GetName()).To(Equal(vm.GetRef().GetName() + "." + vm.GetRef().GetNamespace()))
 			Expect(mtls.IsSigningCert(secret)).To(BeTrue())
+			for k, v := range secret.Data {
+				fmt.Println(k)
+				fmt.Println(string(v))
+			}
 		})
 
 		mockIstioBuilder.EXPECT().
