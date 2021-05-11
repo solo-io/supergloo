@@ -4,8 +4,12 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/rotisserie/eris"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -90,34 +94,28 @@ func TranslateMirror(
 	mirrorconfig *v1.TrafficPolicySpec_Policy_Mirror,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	sourceCluster string,
-) (*istiov1alpha3.Destination, *istiov1alpha3.Percent) {
+	destinations v1sets.DestinationSet,
+) (*istiov1alpha3.Destination, *istiov1alpha3.Percent, error) {
 	if mirrorconfig == nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 
-	mirrorKube, _ := mirrorconfig.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
-	destinationHostname := clusterDomains.GetDestinationFQDN(
-		sourceCluster,
-		mirrorKube.KubeService,
-	)
-
+	percent := &istiov1alpha3.Percent{ Value: mirrorconfig.Percentage }
 	switch mirrorconfig.DestinationType.(type) {
 		case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
-			return &istiov1alpha3.Destination{
-				Port: &istiov1alpha3.PortSelector{
-					Number: mirrorconfig.Port,
-				},
-				Host: destinationHostname,
-			}, &istiov1alpha3.Percent{ Value: mirrorconfig.Percentage }
+			mirrorDest, _ := mirrorconfig.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
+			dest, err := MakeKubeDestinationMirror(mirrorDest, mirrorconfig.Port, sourceCluster, destinations, clusterDomains)
+			if err != nil {
+				return nil, nil, eris.Wrapf(err, "invalid mirror destination")
+			}
+			return dest, percent, nil
 		default:
 			return &istiov1alpha3.Destination{
 				Port: &istiov1alpha3.PortSelector{
 					Number: mirrorconfig.Port,
 				},
-			}, &istiov1alpha3.Percent{ Value: mirrorconfig.Percentage }
+			}, percent, nil
 	}
-
-	return &istiov1alpha3.Destination{}, &istiov1alpha3.Percent{}
 }
 
 func TranslateCorsPolicy(
@@ -127,7 +125,7 @@ func TranslateCorsPolicy(
 		return nil
 	}
 
-	allowedOrigins := []*istiov1alpha3.StringMatch{}
+	var allowedOrigins []*istiov1alpha3.StringMatch
 	for _, origin := range cors.AllowOrigins {
 		switch origin.MatchType.(type) {
 			case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
@@ -188,4 +186,45 @@ func translateBoolValue(
 	}
 
 	return &types.BoolValue{ Value: boolValue.Value }
+}
+
+func MakeKubeDestinationMirror(
+	mirrorDest *v1.TrafficPolicySpec_Policy_Mirror_KubeService,
+	port uint32,
+	sourceClusterName string,
+	destinations v1sets.DestinationSet,
+	clusterDomains hostutils.ClusterDomainRegistry,
+) (*networkingv1alpha3spec.Destination, error) {
+	destinationRef := mirrorDest.KubeService
+	mirrorService, err := destinationutils.FindDestinationForKubeService(destinations.List(), destinationRef)
+	if err != nil {
+		return nil, eris.Wrapf(err, "invalid mirror destination")
+	}
+	mirrorKubeService := mirrorService.Spec.GetKubeService()
+
+	// TODO: empty sourceClusterName?
+	destinationHostname := clusterDomains.GetDestinationFQDN(
+		sourceClusterName,
+		destinationRef,
+	)
+
+	translatedMirror := &networkingv1alpha3spec.Destination{
+		Host: destinationHostname,
+	}
+
+	if port != 0 {
+		if !ContainsPort(mirrorKubeService.Ports, port) {
+			return nil, eris.Errorf("specified port %d does not exist for mirror destination service %v", port, sets.Key(mirrorKubeService.Ref))
+		}
+		translatedMirror.Port = &networkingv1alpha3spec.PortSelector{
+			Number: port,
+		}
+	} else {
+		// validate that Destination only has one port
+		if numPorts := len(mirrorKubeService.GetPorts()); numPorts > 1 {
+			return nil, eris.Errorf("must provide port for mirror destination service %v with multiple ports (%v) defined", sets.Key(mirrorKubeService.GetRef()), numPorts)
+		}
+	}
+
+	return translatedMirror, nil
 }
