@@ -57,7 +57,9 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation: {
+    permissive: {}
+  }
   globalAccessPolicy: ENABLED
   meshes:
   - name: istiod-istio-system-mgmt-cluster
