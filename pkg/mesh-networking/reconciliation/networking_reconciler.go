@@ -141,6 +141,7 @@ func Start(
 		ServiceEntries:        remoteReconcileOptions,
 		VirtualServices:       remoteReconcileOptions,
 		AuthorizationPolicies: remoteReconcileOptions,
+		Sidecars:              remoteReconcileOptions,
 		Predicates: []predicate.Predicate{
 			skv2predicate.SimplePredicate{
 				Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredConfigMap),
