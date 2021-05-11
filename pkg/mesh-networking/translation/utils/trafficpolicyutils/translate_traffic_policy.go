@@ -5,6 +5,7 @@ import (
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -86,27 +87,34 @@ func TranslateFault(
 }
 
 func TranslateMirror(
-	mirror *v1.TrafficPolicySpec_Policy_Mirror,
+	mirrorconfig *v1.TrafficPolicySpec_Policy_Mirror,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	sourceCluster string,
 ) (*istiov1alpha3.Destination, *istiov1alpha3.Percent) {
-	if mirror == nil {
+	if mirrorconfig == nil {
 		return nil, nil
 	}
 
-	switch mirror.DestinationType.(type) {
+	mirrorKube, _ := mirrorconfig.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
+	destinationHostname := clusterDomains.GetDestinationFQDN(
+		sourceCluster,
+		mirrorKube.KubeService,
+	)
+
+	switch mirrorconfig.DestinationType.(type) {
 		case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
-			//mirrorKube, _ := mirror.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
-			// TODO: Host, Subset?
 			return &istiov1alpha3.Destination{
 				Port: &istiov1alpha3.PortSelector{
-					Number: mirror.Port,
+					Number: mirrorconfig.Port,
 				},
-			}, &istiov1alpha3.Percent{ Value: mirror.Percentage }
+				Host: destinationHostname,
+			}, &istiov1alpha3.Percent{ Value: mirrorconfig.Percentage }
 		default:
 			return &istiov1alpha3.Destination{
 				Port: &istiov1alpha3.PortSelector{
-					Number: mirror.Port,
+					Number: mirrorconfig.Port,
 				},
-			}, &istiov1alpha3.Percent{ Value: mirror.Percentage }
+			}, &istiov1alpha3.Percent{ Value: mirrorconfig.Percentage }
 	}
 
 	return &istiov1alpha3.Destination{}, &istiov1alpha3.Percent{}
