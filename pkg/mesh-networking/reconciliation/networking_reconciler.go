@@ -236,6 +236,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			ServiceEntries:        resourceBuildOptions,
 			VirtualServices:       resourceBuildOptions,
 			AuthorizationPolicies: resourceBuildOptions,
+			Sidecars:              resourceBuildOptions,
 		})
 		if err != nil {
 			// failed to read from cache; should never happen
