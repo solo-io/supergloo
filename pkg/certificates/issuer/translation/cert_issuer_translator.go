@@ -48,12 +48,21 @@ func (s *secretTranslator) Translate(
 	issuedCertificate *certificatesv1.IssuedCertificate,
 ) (*Output, error) {
 
+	//Handle deprecated field
+	if issuedCertificate.Spec.GetSigningCertificateSecret() != nil &&
+		issuedCertificate.Spec.GetGlooMeshCa().GetSigningCertificateSecret() == nil {
+		issuedCertificate.Spec.GetGlooMeshCa().Signer = &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+			SigningCertificateSecret: issuedCertificate.Spec.GetSigningCertificateSecret(),
+		}
+	}
+
+	signingCert := issuedCertificate.Spec.GetGlooMeshCa().GetSigningCertificateSecret()
 	// This translator only cares about CA with local secrets
-	if issuedCertificate.Spec.GetGlooMeshCa().GetSigningCertificateSecret() == nil {
+	if signingCert == nil {
 		return nil, nil
 	}
 
-	signingCertificateSecret, err := s.mgmtClusterSecretClient.GetSecret(ctx, ezkube.MakeClientObjectKey(issuedCertificate.Spec.GetSigningCertificateSecret()))
+	signingCertificateSecret, err := s.mgmtClusterSecretClient.GetSecret(ctx, ezkube.MakeClientObjectKey(signingCert))
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to find issuer's signing certificate matching issued request %v", sets.Key(issuedCertificate))
 	}
