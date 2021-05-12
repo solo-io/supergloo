@@ -2642,12 +2642,17 @@ spec:
               items:
                 properties:
                   cluster:
+                    description: the cluster where the gateway workload is running
                     type: string
                   externalUrl:
+                    description: the external URL by which the gateway can be accessed
+                      on the given workload, if it exists
                     type: string
                   name:
+                    description: the name of the gateway workload
                     type: string
                   namespace:
+                    description: the namespace where the gateway workload is running
                     type: string
                 type: object
               type: array
@@ -2667,11 +2672,11 @@ spec:
             selectedVirtualHosts:
               items:
                 properties:
-                  cluster:
-                    type: string
                   name:
+                    description: name of the resource being referenced
                     type: string
                   namespace:
+                    description: namespace of the resource being referenced
                     type: string
                 type: object
               type: array

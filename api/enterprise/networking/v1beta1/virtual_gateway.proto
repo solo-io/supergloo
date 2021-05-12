@@ -317,10 +317,9 @@ message VirtualGatewayStatus{
     // Any warnings found while processing this generation of the resource.
     repeated string warnings = 3;
 
-    repeated selectedGateway selected_gateways = 4;
+    repeated SelectedGatewayWorkload selected_gateways = 4;
 
-    repeated selectedVirtualHost selected_virtual_hosts = 5;
-
+    repeated .core.skv2.solo.io.ObjectRef selected_virtual_hosts = 5;
 
     // List of Delegated Route tables that this Route table delegates to
     repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 6;
@@ -344,20 +343,17 @@ message VirtualGatewayStatus{
     // - Should be able to get this from the discovery payload (From the mesh)
 }
 
-message selectedGateway {
+// a gateway workload (e.g. Deployment) where a virtual gateway will be served
+message SelectedGatewayWorkload {
+    // the name of the gateway workload
     string name = 1;
+    // the namespace where the gateway workload is running
     string namespace = 2;
+    // the cluster where the gateway workload is running
     string cluster = 3;
-    
+
+    // the external URL by which the gateway can be accessed on the given workload, if it exists
     string external_url = 4;
-}
-
-message selectedVirtualHost {
-    string name = 1;
-    string namespace = 2;
-    string cluster = 3;
-
-    // Maybe add path here?
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
