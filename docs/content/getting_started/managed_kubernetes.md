@@ -308,7 +308,9 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation: {
+    permissive: {}
+  }
   # Disable global access policy enforcement for demonstration purposes.
   globalAccessPolicy: DISABLED
   meshes:
