@@ -18,7 +18,7 @@ Before we get started, ensure that you have the following tools installed:
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) - Command line utility for Kubernetes
 - [meshctl]({{% versioned_link_path fromRoot="/getting_started" %}}) - Command line utility for Gloo Mesh
-- [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
+- [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8.
 
 Provision three Kubernetes clusters with contexts stored in the following environment variables:
 - `MGMT_CONTEXT` - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
@@ -50,6 +50,7 @@ spec:
   profile: minimal
   # Install Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
+  tag: 1.8.5
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -100,6 +101,7 @@ spec:
   profile: minimal
   # Install Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
+  tag: 1.8.5
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -411,6 +413,17 @@ NAME                          READY   STATUS    RESTARTS   AGE
 ratings-v1-7dc98c7588-qbmmh   2/2     Running   0          3m11s
 reviews-v3-7dbcdcbc56-w4kbf   2/2     Running   0          3m11s
 ```
+
+{{% notice note %}}
+If your bookinfo deployments are stuck in a pending state with the following error:
+```
+admission webhook "sidecar-injector.istio.io" denied the request: template:
+      inject:1: function "Template_Version_And_Istio_Version_Mismatched_Check_Installation"
+      not defined
+```
+This means that there is a mismatch with istioctl version and IstioOperator during
+install. Check that your `istioctl` version matches the version of istio running on the server.
+{{% /notice %}}
 
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
 
