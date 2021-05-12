@@ -195,7 +195,7 @@ func (i *glooMeshInstance) GetCluster() cluster.Cluster {
 
 // Close implements io.Closer.
 func (i *glooMeshInstance) Close() error {
-
+	// TODO need to clean up Solo CRDs
 	if i.instanceConfig.managementPlane {
 		kubeConfig := i.instanceConfig.managementPlaneKubeConfigPath
 		releaseName := fmt.Sprintf("%s-mp", i.instanceConfig.cluster.Name())

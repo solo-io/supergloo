@@ -205,3 +205,11 @@ func newEchoConfig(service string, ns namespace.Instance, cluster cluster.Cluste
 		Cluster:     cluster,
 	}
 }
+
+func GetEchoCACert() string {
+	echoCA, err := certFiles.ReadFile("certs/echo-ca.crt")
+	if err != nil {
+		scopes.Framework.Error(err)
+	}
+	return string(echoCA)
+}
