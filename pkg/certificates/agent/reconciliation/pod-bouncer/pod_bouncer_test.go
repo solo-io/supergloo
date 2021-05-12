@@ -32,7 +32,8 @@ var _ = Describe("PodBouncer", func() {
 	})
 
 	It("can signal that bounced pods are not ready", func() {
-		podBouncer := NewPodBouncer(podClientMock)
+		// Don't mock this dependency as we want to test together
+		podBouncer := NewPodBouncer(podClientMock, NewSecretRootCertMatcher())
 
 		pbd := &certificatesv1.PodBounceDirective{
 			Spec: certificatesv1.PodBounceDirectiveSpec{

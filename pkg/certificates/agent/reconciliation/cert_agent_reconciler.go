@@ -195,26 +195,32 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 			return err
 		}
 
-		if err := r.translator.IssuedCertificateRequested(
+		continueIterating, err := r.translator.IssuedCertificateRequested(
 			r.ctx,
 			issuedCertificate,
 			certificateRequest,
 			inputSnap,
 			outputs,
-		); err != nil {
+		)
+		if err != nil {
 			return err
+		} else if !continueIterating {
+			return nil
 		}
 
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_ISSUED
 	case certificatesv1.IssuedCertificateStatus_ISSUED:
 
-		bouncePods, err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs)
+		// TODO: add owner variable here to decide who runs the pod_bouncer
+		continueIterating, err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs)
 		if err != nil {
 			return err
+		} else if !continueIterating {
+			return nil
 		}
 
 		// see if we need to bounce pods
-		if issuedCertificate.Spec.PodBounceDirective != nil && bouncePods {
+		if issuedCertificate.Spec.PodBounceDirective != nil {
 			podBounceDirective, err := inputSnap.PodBounceDirectives().Find(issuedCertificate.Spec.PodBounceDirective)
 			if err != nil {
 				return eris.Wrap(err, "failed to find specified pod bounce directive")

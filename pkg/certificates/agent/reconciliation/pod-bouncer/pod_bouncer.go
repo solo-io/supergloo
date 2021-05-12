@@ -1,6 +1,7 @@
 package pod_bouncer
 
 import (
+	"bytes"
 	"context"
 	"time"
 
@@ -19,6 +20,15 @@ import (
 
 //go:generate mockgen -source ./pod_bouncer.go -destination mocks/pod_bouncer.go
 
+type RootCertMatcher interface {
+	MatchesRootCert(
+		ctx context.Context,
+		rootCert []byte,
+		selector *certificatesv1.PodBounceDirectiveSpec_PodSelector,
+		allSecrets corev1sets.SecretSet,
+	) (matches bool, err error)
+}
+
 // bounce (delete) the listed pods
 // returns true if we need to wait before proceeding to process the podBounceDirective.
 // we must wait for the following conditions:
@@ -35,14 +45,19 @@ type PodBouncer interface {
 	) (bool, error)
 }
 
-func NewPodBouncer(podClient corev1client.PodClient) PodBouncer {
+func NewPodBouncer(
+	podClient corev1client.PodClient,
+	rootCertMatcher RootCertMatcher,
+) PodBouncer {
 	return &podBouncer{
-		podClient: podClient,
+		podClient:       podClient,
+		rootCertMatcher: rootCertMatcher,
 	}
 }
 
 type podBouncer struct {
-	podClient corev1client.PodClient
+	podClient       corev1client.PodClient
+	rootCertMatcher RootCertMatcher
 }
 
 func (p *podBouncer) BouncePods(
@@ -92,12 +107,17 @@ func (p *podBouncer) BouncePods(
 				return true, err
 			}
 
-			secret, err := allSecrets.Find(selector.RootCertSync.SecretRef)
+			matches, err := p.rootCertMatcher.MatchesRootCert(
+				ctx,
+				[]byte(configMap.Data[selector.RootCertSync.ConfigMapKey]),
+				selector,
+				allSecrets,
+			)
 			if err != nil {
 				return true, err
 			}
 
-			if configMap.Data[selector.RootCertSync.ConfigMapKey] != string(secret.Data[selector.RootCertSync.SecretKey]) {
+			if !matches {
 				// the configmap's public key doesn't match the root cert CA's
 				// sleep to allow time for the cert to be distributed and retry
 				contextutils.LoggerFrom(ctx).Debugf("podBounceDirective %v: waiting for %v configmap update for selector %v", sets.Key(podBounceDirective), selector.RootCertSync.ConfigMapRef.Name, selector)
@@ -167,4 +187,25 @@ func replacementsReady(
 func isPodSelected(pod *corev1.Pod, podSelector *certificatesv1.PodBounceDirectiveSpec_PodSelector) bool {
 	return podSelector.Namespace == pod.Namespace &&
 		labels.SelectorFromSet(podSelector.Labels).Matches(labels.Set(pod.Labels))
+}
+
+func NewSecretRootCertMatcher() RootCertMatcher {
+	return &secretRootCertMatcher{}
+}
+
+type secretRootCertMatcher struct {
+}
+
+func (s *secretRootCertMatcher) MatchesRootCert(
+	ctx context.Context,
+	rootCert []byte,
+	selector *certificatesv1.PodBounceDirectiveSpec_PodSelector,
+	allSecrets corev1sets.SecretSet,
+) (matches bool, err error) {
+	secret, err := allSecrets.Find(selector.RootCertSync.SecretRef)
+	if err != nil {
+		return false, err
+	}
+
+	return bytes.Equal(secret.Data[selector.RootCertSync.SecretKey], rootCert), nil
 }

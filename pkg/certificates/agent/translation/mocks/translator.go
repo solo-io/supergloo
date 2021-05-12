@@ -6,12 +6,11 @@ package mock_translation
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -53,11 +52,12 @@ func (mr *MockTranslatorMockRecorder) IssuedCertiticatePending(ctx, issuedCertif
 }
 
 // IssuedCertificateRequested mocks base method
-func (m *MockTranslator) IssuedCertificateRequested(ctx context.Context, issuedCertificate *v1.IssuedCertificate, certificateRequest *v1.CertificateRequest, inputs input.Snapshot, outputs certagent.Builder) error {
+func (m *MockTranslator) IssuedCertificateRequested(ctx context.Context, issuedCertificate *v1.IssuedCertificate, certificateRequest *v1.CertificateRequest, inputs input.Snapshot, outputs certagent.Builder) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificateRequested", ctx, issuedCertificate, certificateRequest, inputs, outputs)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // IssuedCertificateRequested indicates an expected call of IssuedCertificateRequested
@@ -79,19 +79,4 @@ func (m *MockTranslator) IssuedCertificateIssued(ctx context.Context, issuedCert
 func (mr *MockTranslatorMockRecorder) IssuedCertificateIssued(ctx, issuedCertificate, inputs, outputs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificateIssued", reflect.TypeOf((*MockTranslator)(nil).IssuedCertificateIssued), ctx, issuedCertificate, inputs, outputs)
-}
-
-// IssuedCertificateFinished mocks base method
-func (m *MockTranslator) IssuedCertificateFinished(ctx context.Context, issuedCertificate *v1.IssuedCertificate, inputs input.Snapshot, outputs certagent.Builder) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IssuedCertificateFinished", ctx, issuedCertificate, inputs, outputs)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IssuedCertificateFinished indicates an expected call of IssuedCertificateFinished
-func (mr *MockTranslatorMockRecorder) IssuedCertificateFinished(ctx, issuedCertificate, inputs, outputs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificateFinished", reflect.TypeOf((*MockTranslator)(nil).IssuedCertificateFinished), ctx, issuedCertificate, inputs, outputs)
 }
