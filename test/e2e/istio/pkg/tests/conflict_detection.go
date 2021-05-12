@@ -151,27 +151,35 @@ func ConflictDetectionTest() {
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			remoteUserVirtualService, err := getVirtualService(remoteClient, ezkube.MakeObjectRef(userVirtualService))
-			Expect(err).NotTo(HaveOccurred())
 			// should preserve conflicting user VirtualService on remote cluster
-			Expect(proto.Equal(&remoteUserVirtualService.Spec, &userVirtualService.Spec)).To(BeTrue())
+			Eventually(func() bool {
+				remoteUserVirtualService, err := getVirtualService(remoteClient, ezkube.MakeObjectRef(userVirtualService))
+				if err != nil {
+					return false
+				}
+				return proto.Equal(&remoteUserVirtualService.Spec, &userVirtualService.Spec)
+			}, "10s", "1s").Should(BeTrue())
 
 			// output VS should not exist on remote cluster
-			_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
-				Name:      "reviews",
-				Namespace: BookinfoNamespace,
-			})
-			Expect(err).To(HaveOccurred())
+			Consistently(func() bool {
+				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
+					Name:      "reviews",
+					Namespace: BookinfoNamespace,
+				})
+				return err != nil
+			}, "5s", "1s").Should(BeTrue())
 
 			// output VS should exist on mgmt cluster
-			mgmtOutputVirtualService, err := getVirtualService(mgmtClient, &skv2corev1.ObjectRef{
-				Name:      "reviews",
-				Namespace: BookinfoNamespace,
-			})
-			Expect(err).ToNot(HaveOccurred())
-
-			// should output VirtualService on mgmt cluster
-			Expect(proto.Equal(&mgmtOutputVirtualService.Spec, &expectedOutputVirtualService.Spec)).To(BeTrue())
+			Eventually(func() bool {
+				mgmtOutputVirtualService, err := getVirtualService(mgmtClient, &skv2corev1.ObjectRef{
+					Name:      "reviews",
+					Namespace: BookinfoNamespace,
+				})
+				if err != nil {
+					return false
+				}
+				return proto.Equal(&mgmtOutputVirtualService.Spec, &expectedOutputVirtualService.Spec)
+			}, "10s", "1s").Should(BeTrue())
 		})
 
 		By("cleaning up the user VirtualService", func() {
