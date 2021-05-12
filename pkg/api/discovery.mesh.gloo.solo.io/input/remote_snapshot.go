@@ -27,8 +27,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/hashicorp/go-multierror"
@@ -1411,34 +1413,34 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 		switch obj := obj.(type) {
 		// insert Meshes
 		case *appmesh_k8s_aws_v1beta2_types.Mesh:
-			meshes.Insert(obj)
+			i.insertMesh(ctx, obj, meshes, opts)
 		// insert ConfigMaps
 		case *v1_types.ConfigMap:
-			configMaps.Insert(obj)
+			i.insertConfigMap(ctx, obj, configMaps, opts)
 		// insert Services
 		case *v1_types.Service:
-			services.Insert(obj)
+			i.insertService(ctx, obj, services, opts)
 		// insert Pods
 		case *v1_types.Pod:
-			pods.Insert(obj)
+			i.insertPod(ctx, obj, pods, opts)
 		// insert Endpoints
 		case *v1_types.Endpoints:
-			endpoints.Insert(obj)
+			i.insertEndpoints(ctx, obj, endpoints, opts)
 		// insert Nodes
 		case *v1_types.Node:
-			nodes.Insert(obj)
+			i.insertNode(ctx, obj, nodes, opts)
 		// insert Deployments
 		case *apps_v1_types.Deployment:
-			deployments.Insert(obj)
+			i.insertDeployment(ctx, obj, deployments, opts)
 		// insert ReplicaSets
 		case *apps_v1_types.ReplicaSet:
-			replicaSets.Insert(obj)
+			i.insertReplicaSet(ctx, obj, replicaSets, opts)
 		// insert DaemonSets
 		case *apps_v1_types.DaemonSet:
-			daemonSets.Insert(obj)
+			i.insertDaemonSet(ctx, obj, daemonSets, opts)
 		// insert StatefulSets
 		case *apps_v1_types.StatefulSet:
-			statefulSets.Insert(obj)
+			i.insertStatefulSet(ctx, obj, statefulSets, opts)
 		}
 	})
 
@@ -1456,4 +1458,297 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 		daemonSets,
 		statefulSets,
 	), nil
+}
+
+func (i *inMemoryDiscoveryInputBuilder) insertMesh(
+	ctx context.Context,
+	mesh *appmesh_k8s_aws_v1beta2_types.Mesh,
+	meshSet appmesh_k8s_aws_v1beta2_sets.MeshSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.Meshes.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = mesh.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(mesh.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		meshSet.Insert(mesh)
+	}
+}
+
+func (i *inMemoryDiscoveryInputBuilder) insertConfigMap(
+	ctx context.Context,
+	configMap *v1_types.ConfigMap,
+	configMapSet v1_sets.ConfigMapSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.ConfigMaps.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = configMap.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(configMap.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		configMapSet.Insert(configMap)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertService(
+	ctx context.Context,
+	service *v1_types.Service,
+	serviceSet v1_sets.ServiceSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.Services.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = service.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(service.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		serviceSet.Insert(service)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertPod(
+	ctx context.Context,
+	pod *v1_types.Pod,
+	podSet v1_sets.PodSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.Pods.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = pod.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(pod.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		podSet.Insert(pod)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertEndpoints(
+	ctx context.Context,
+	endpoints *v1_types.Endpoints,
+	endpointsSet v1_sets.EndpointsSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.Endpoints.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = endpoints.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(endpoints.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		endpointsSet.Insert(endpoints)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertNode(
+	ctx context.Context,
+	node *v1_types.Node,
+	nodeSet v1_sets.NodeSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.Nodes.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = node.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(node.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		nodeSet.Insert(node)
+	}
+}
+
+func (i *inMemoryDiscoveryInputBuilder) insertDeployment(
+	ctx context.Context,
+	deployment *apps_v1_types.Deployment,
+	deploymentSet apps_v1_sets.DeploymentSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.Deployments.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = deployment.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(deployment.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		deploymentSet.Insert(deployment)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertReplicaSet(
+	ctx context.Context,
+	replicaSet *apps_v1_types.ReplicaSet,
+	replicaSetSet apps_v1_sets.ReplicaSetSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.ReplicaSets.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = replicaSet.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(replicaSet.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		replicaSetSet.Insert(replicaSet)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertDaemonSet(
+	ctx context.Context,
+	daemonSet *apps_v1_types.DaemonSet,
+	daemonSetSet apps_v1_sets.DaemonSetSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.DaemonSets.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = daemonSet.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(daemonSet.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		daemonSetSet.Insert(daemonSet)
+	}
+}
+func (i *inMemoryDiscoveryInputBuilder) insertStatefulSet(
+	ctx context.Context,
+	statefulSet *apps_v1_types.StatefulSet,
+	statefulSetSet apps_v1_sets.StatefulSetSet,
+	buildOpts DiscoveryInputBuildOptions,
+) {
+
+	opts := buildOpts.StatefulSets.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = statefulSet.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(statefulSet.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		statefulSetSet.Insert(statefulSet)
+	}
 }
