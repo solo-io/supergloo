@@ -69,7 +69,7 @@ func (o *Options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ChartValuesFile, "chart-values-file", "", "File containing value overrides for the Gloo Mesh Helm chart")
 	flags.StringVar(&o.Version, "version", "", "Version to install.\nCommunity defaults to meshctl version, enterprise defaults to latest stable")
 	flags.StringArrayVar(&o.ExtraHelmValues, "set", []string{}, "Extra helm values for the Gloo Mesh chart.")
-	flags.BoolVarP(&o.Register, "register", "r", false, "Also Register the cluster")
+	flags.BoolVarP(&o.Register, "register", "r", false, "Also register the cluster")
 	flags.StringVar(&o.ClusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Gloo Mesh, only applies if --register is also set")
 	flags.StringVar(&o.ClusterDomain, "cluster-domain", defaults.DefaultClusterDomain, "The cluster domain used by the Kubernetes DNS Service in the registered cluster. \nRead more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
