@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"istio.io/istio/pkg/test/echo/common/scheme"
 	"net/http"
 	"os"
 	"testing"
+
+	"istio.io/istio/pkg/test/echo/common/scheme"
 
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	echo2 "github.com/solo-io/gloo-mesh/pkg/test/apps/echo"

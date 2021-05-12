@@ -250,7 +250,7 @@ func (o EnterpriseOptions) getInstaller() helm.Installer {
 
 	if o.IncludeRBAC {
 		ins.Values["rbac-webhook.enabled"] = "true"
-	}else {
+	} else {
 		ins.Values["rbac-webhook.enabled"] = "false"
 	}
 
