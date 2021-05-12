@@ -136,8 +136,8 @@ func copyHelmValuesDocsForComponent(
 		}
 		versions = append(versions, version)
 	}
-	sort.Reverse(semver.Collection(versions))
-	versions = getLatestPerMinorVersion(versions)
+	sort.Sort(sort.Reverse(semver.Collection(versions)))
+	latestPerMinorVersions := getLatestPerMinorVersion(versions)
 
 	earliestVersionSemver, err := semver.NewVersion(earliestVersion)
 	if err != nil {
@@ -149,7 +149,7 @@ func copyHelmValuesDocsForComponent(
 	}
 
 	tags := make(map[string]string, 0)
-	for _, version := range versions {
+	for _, version := range latestPerMinorVersions {
 		tags[version.Original()] = fmt.Sprintf("%d.%d", version.Major(), version.Minor())
 		if version.GreaterThan(latestVersionSemver) {
 			latestVersionSemver = version
