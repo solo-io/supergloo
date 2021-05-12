@@ -40,7 +40,7 @@ func TranslateTimeout(
 	}
 	return &types.Duration{
 		Seconds: timeout.Seconds,
-		Nanos: timeout.Nanos,
+		Nanos:   timeout.Nanos,
 	}
 }
 
@@ -52,7 +52,7 @@ func TranslateRetries(
 	}
 	return &istiov1alpha3.HTTPRetry{
 		PerTryTimeout: translateDuration(retries.PerTryTimeout),
-		Attempts: retries.Attempts,
+		Attempts:      retries.Attempts,
 	}
 }
 
@@ -64,27 +64,27 @@ func TranslateFault(
 	}
 
 	switch fault.FaultInjectionType.(type) {
-		case *v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay:
-			transformDelay, _ := fault.FaultInjectionType.(*v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay)
-			return &istiov1alpha3.HTTPFaultInjection{
-				Delay: &istiov1alpha3.HTTPFaultInjection_Delay{
-					HttpDelayType: &istiov1alpha3.HTTPFaultInjection_Delay_FixedDelay{
-						FixedDelay: translateDuration(transformDelay.FixedDelay),
-					},
-					Percentage: &istiov1alpha3.Percent{ Value: fault.Percentage },
+	case *v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay:
+		transformDelay, _ := fault.FaultInjectionType.(*v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay)
+		return &istiov1alpha3.HTTPFaultInjection{
+			Delay: &istiov1alpha3.HTTPFaultInjection_Delay{
+				HttpDelayType: &istiov1alpha3.HTTPFaultInjection_Delay_FixedDelay{
+					FixedDelay: translateDuration(transformDelay.FixedDelay),
 				},
-			}
+				Percentage: &istiov1alpha3.Percent{Value: fault.Percentage},
+			},
+		}
 
-		case *v1.TrafficPolicySpec_Policy_FaultInjection_Abort_:
-			transformAbort, _ := fault.FaultInjectionType.(*v1.TrafficPolicySpec_Policy_FaultInjection_Abort_)
-			return &istiov1alpha3.HTTPFaultInjection{
-				Abort: &istiov1alpha3.HTTPFaultInjection_Abort{
-					ErrorType: &istiov1alpha3.HTTPFaultInjection_Abort_HttpStatus{
-						HttpStatus: transformAbort.Abort.HttpStatus,
-					},
-					Percentage: &istiov1alpha3.Percent{ Value: fault.Percentage },
+	case *v1.TrafficPolicySpec_Policy_FaultInjection_Abort_:
+		transformAbort, _ := fault.FaultInjectionType.(*v1.TrafficPolicySpec_Policy_FaultInjection_Abort_)
+		return &istiov1alpha3.HTTPFaultInjection{
+			Abort: &istiov1alpha3.HTTPFaultInjection_Abort{
+				ErrorType: &istiov1alpha3.HTTPFaultInjection_Abort_HttpStatus{
+					HttpStatus: transformAbort.Abort.HttpStatus,
 				},
-			}
+				Percentage: &istiov1alpha3.Percent{Value: fault.Percentage},
+			},
+		}
 	default:
 		return &istiov1alpha3.HTTPFaultInjection{}
 	}
@@ -100,21 +100,21 @@ func TranslateMirror(
 		return nil, nil, nil
 	}
 
-	percent := &istiov1alpha3.Percent{ Value: mirrorconfig.Percentage }
+	percent := &istiov1alpha3.Percent{Value: mirrorconfig.Percentage}
 	switch mirrorconfig.DestinationType.(type) {
-		case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
-			mirrorDest, _ := mirrorconfig.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
-			dest, err := MakeKubeDestinationMirror(mirrorDest, mirrorconfig.Port, sourceCluster, destinations, clusterDomains)
-			if err != nil {
-				return nil, nil, eris.Wrapf(err, "invalid mirror destination")
-			}
-			return dest, percent, nil
-		default:
-			return &istiov1alpha3.Destination{
-				Port: &istiov1alpha3.PortSelector{
-					Number: mirrorconfig.Port,
-				},
-			}, percent, nil
+	case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
+		mirrorDest, _ := mirrorconfig.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
+		dest, err := MakeKubeDestinationMirror(mirrorDest, mirrorconfig.Port, sourceCluster, destinations, clusterDomains)
+		if err != nil {
+			return nil, nil, eris.Wrapf(err, "invalid mirror destination")
+		}
+		return dest, percent, nil
+	default:
+		return &istiov1alpha3.Destination{
+			Port: &istiov1alpha3.PortSelector{
+				Number: mirrorconfig.Port,
+			},
+		}, percent, nil
 	}
 }
 
@@ -128,39 +128,39 @@ func TranslateCorsPolicy(
 	var allowedOrigins []*istiov1alpha3.StringMatch
 	for _, origin := range cors.AllowOrigins {
 		switch origin.MatchType.(type) {
-			case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
-				matchExact, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact)
-				match := &istiov1alpha3.StringMatch{
-					MatchType: &istiov1alpha3.StringMatch_Exact{
-						Exact: matchExact.Exact,
-					},
-				}
-				allowedOrigins = append(allowedOrigins, match)
-			case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
-				matchPrefix, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix)
-				match := &istiov1alpha3.StringMatch{
-					MatchType: &istiov1alpha3.StringMatch_Prefix{
-						Prefix: matchPrefix.Prefix,
-					},
-				}
-				allowedOrigins = append(allowedOrigins, match)
-			case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
-				matchRegex, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex)
-				match := &istiov1alpha3.StringMatch{
-					MatchType: &istiov1alpha3.StringMatch_Regex{
-						Regex: matchRegex.Regex,
-					},
-				}
-				allowedOrigins = append(allowedOrigins, match)
+		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
+			matchExact, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact)
+			match := &istiov1alpha3.StringMatch{
+				MatchType: &istiov1alpha3.StringMatch_Exact{
+					Exact: matchExact.Exact,
+				},
+			}
+			allowedOrigins = append(allowedOrigins, match)
+		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
+			matchPrefix, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix)
+			match := &istiov1alpha3.StringMatch{
+				MatchType: &istiov1alpha3.StringMatch_Prefix{
+					Prefix: matchPrefix.Prefix,
+				},
+			}
+			allowedOrigins = append(allowedOrigins, match)
+		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
+			matchRegex, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex)
+			match := &istiov1alpha3.StringMatch{
+				MatchType: &istiov1alpha3.StringMatch_Regex{
+					Regex: matchRegex.Regex,
+				},
+			}
+			allowedOrigins = append(allowedOrigins, match)
 		}
 	}
 
 	return &istiov1alpha3.CorsPolicy{
-		AllowOrigins: allowedOrigins,
-		AllowMethods: cors.AllowMethods,
-		AllowHeaders: cors.AllowHeaders,
-		ExposeHeaders: cors.ExposeHeaders,
-		MaxAge: translateDuration(cors.MaxAge),
+		AllowOrigins:     allowedOrigins,
+		AllowMethods:     cors.AllowMethods,
+		AllowHeaders:     cors.AllowHeaders,
+		ExposeHeaders:    cors.ExposeHeaders,
+		MaxAge:           translateDuration(cors.MaxAge),
 		AllowCredentials: translateBoolValue(cors.AllowCredentials),
 	}
 }
@@ -174,18 +174,18 @@ func translateDuration(
 
 	return &types.Duration{
 		Seconds: duration.Seconds,
-		Nanos: duration.Nanos,
+		Nanos:   duration.Nanos,
 	}
 }
 
 func translateBoolValue(
-	boolValue  *wrappers.BoolValue,
+	boolValue *wrappers.BoolValue,
 ) *types.BoolValue {
 	if boolValue == nil {
 		return nil
 	}
 
-	return &types.BoolValue{ Value: boolValue.Value }
+	return &types.BoolValue{Value: boolValue.Value}
 }
 
 func MakeKubeDestinationMirror(
