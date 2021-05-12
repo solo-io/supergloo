@@ -37,7 +37,7 @@ weight: 2
 |watchOutputTypes|bool|false|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|0|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |verbose|bool|false|If true, enables verbose/debug logging.|
-|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"metrics":9091},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the certAgent deployment.|
+|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"metrics":9091},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"extraPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the certAgent deployment.|
 |certAgent.image|struct|{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |certAgent.image.tag|string| |Tag for the container.|
 |certAgent.image.repository|string|cert-agent|Image name (repository).|
@@ -50,3 +50,16 @@ weight: 2
 |certAgent.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
 |certAgent.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|certAgent.extraPodLabels|map[string, string]| |Extra labels for the pod|
+|certAgent.extraPodLabels.<MAP_KEY>|string| |Extra labels for the pod|
+|certAgent.extraPodAnnotations|map[string, string]| |Extra annotations for the pod|
+|certAgent.extraPodAnnotations.<MAP_KEY>|string| |Extra annotations for the pod|
+|certAgent.extraPodAnnotations.sidecar.istio.io/inject|string|"false"|Extra annotations for the pod|
+|certAgent.extraDeploymentLabels|map[string, string]| |Extra labels for the deployment|
+|certAgent.extraDeploymentLabels.<MAP_KEY>|string| |Extra labels for the deployment|
+|certAgent.extraDeploymentAnnotations|map[string, string]| |Extra annotations for the deployment|
+|certAgent.extraDeploymentAnnotations.<MAP_KEY>|string| |Extra annotations for the deployment|
+|certAgent.extraAnnotations|map[string, string]| |Extra labels for the service|
+|certAgent.extraAnnotations.<MAP_KEY>|string| |Extra labels for the service|
+|certAgent.extraAnnotations|map[string, string]| |Extra annotations for the service|
+|certAgent.extraAnnotations.<MAP_KEY>|string| |Extra annotations for the service|

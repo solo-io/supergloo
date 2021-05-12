@@ -171,7 +171,7 @@ func NetworkingOperator(name string) model.Operator {
 			ExtraPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("125m"),
+					v1.ResourceCPU:    resource.MustParse("126m"),
 					v1.ResourceMemory: resource.MustParse("256Mi"),
 				},
 			},

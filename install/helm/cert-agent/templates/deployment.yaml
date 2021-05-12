@@ -5,12 +5,25 @@
 # Deployment manifest for cert-agent
 {{- $certAgent := $.Values.certAgent}}
 {{- $certAgentImage := $certAgent.image }}
+{{- $certAgentExtraPodLabels := $certAgent.extraPodLabels -}}
+{{- $certAgentExtraPodAnnotations := $certAgent.extraPodAnnotations -}}
+{{- $certAgentExtraDeploymentLabels := $certAgent.extraDeploymentLabels -}}
+{{- $certAgentExtraDeploymentAnnotations := $certAgent.extraDeploymentAnnotations -}}
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: cert-agent
+    {{- range $key, $value := $certAgentExtraDeploymentLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- if $certAgentExtraDeploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := $certAgentExtraDeploymentAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}
   name: cert-agent
   namespace: {{ .Release.Namespace }}
 spec:
@@ -21,8 +34,13 @@ spec:
     metadata:
       labels:
         app: cert-agent
+        {{- range $key, $value := $certAgentExtraPodLabels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
       annotations:
-        sidecar.istio.io/inject: "false"
+        {{- range $key, $value := $certAgentExtraPodAnnotations }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
@@ -76,12 +94,23 @@ metadata:
 
 ---
 # Service for cert-agent
+{{- $certAgentExtraServiceLabels := $certAgent.extraLabels -}}
+{{- $certAgentExtraServiceAnnotations := $certAgent.extraAnnotations -}}
 
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: cert-agent
+    {{- range $key, $value := $certAgentExtraServiceLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- if $certAgentExtraServiceAnnotations }}
+  annotations:
+    {{- range $key, $value := $certAgentExtraServiceAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}
   name: cert-agent
   namespace: {{ $.Release.Namespace }}
 spec:

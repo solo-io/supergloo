@@ -5,12 +5,25 @@
 # Deployment manifest for discovery
 {{- $discovery := $.Values.discovery}}
 {{- $discoveryImage := $discovery.image }}
+{{- $discoveryExtraPodLabels := $discovery.extraPodLabels -}}
+{{- $discoveryExtraPodAnnotations := $discovery.extraPodAnnotations -}}
+{{- $discoveryExtraDeploymentLabels := $discovery.extraDeploymentLabels -}}
+{{- $discoveryExtraDeploymentAnnotations := $discovery.extraDeploymentAnnotations -}}
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: discovery
+    {{- range $key, $value := $discoveryExtraDeploymentLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- if $discoveryExtraDeploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := $discoveryExtraDeploymentAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}
   name: discovery
   namespace: {{ .Release.Namespace }}
 spec:
@@ -21,8 +34,13 @@ spec:
     metadata:
       labels:
         app: discovery
+        {{- range $key, $value := $discoveryExtraPodLabels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
       annotations:
-        sidecar.istio.io/inject: "false"
+        {{- range $key, $value := $discoveryExtraPodAnnotations }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
@@ -79,12 +97,23 @@ metadata:
 
 ---
 # Service for discovery
+{{- $discoveryExtraServiceLabels := $discovery.extraLabels -}}
+{{- $discoveryExtraServiceAnnotations := $discovery.extraAnnotations -}}
 
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: discovery
+    {{- range $key, $value := $discoveryExtraServiceLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- if $discoveryExtraServiceAnnotations }}
+  annotations:
+    {{- range $key, $value := $discoveryExtraServiceAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}
   name: discovery
   namespace: {{ $.Release.Namespace }}
 spec:
@@ -101,12 +130,25 @@ spec:
 # Deployment manifest for networking
 {{- $networking := $.Values.networking}}
 {{- $networkingImage := $networking.image }}
+{{- $networkingExtraPodLabels := $networking.extraPodLabels -}}
+{{- $networkingExtraPodAnnotations := $networking.extraPodAnnotations -}}
+{{- $networkingExtraDeploymentLabels := $networking.extraDeploymentLabels -}}
+{{- $networkingExtraDeploymentAnnotations := $networking.extraDeploymentAnnotations -}}
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: networking
+    {{- range $key, $value := $networkingExtraDeploymentLabels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- if $networkingExtraDeploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := $networkingExtraDeploymentAnnotations }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}
   name: networking
   namespace: {{ .Release.Namespace }}
 spec:
@@ -117,8 +159,13 @@ spec:
     metadata:
       labels:
         app: networking
+        {{- range $key, $value := $networkingExtraPodLabels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
       annotations:
-        sidecar.istio.io/inject: "false"
+        {{- range $key, $value := $networkingExtraPodAnnotations }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
