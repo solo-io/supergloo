@@ -41,25 +41,25 @@ type InstanceConfig struct {
 	cluster                           cluster.Cluster
 }
 
-func newInstance(ctx resource.Context, instanceConfig InstanceConfig, licenceKey string) (gloo_context.GlooMeshInstance, error) {
+func newInstance(ctx resource.Context, instanceConfig InstanceConfig, licenseKey string) (gloo_context.GlooMeshInstance, error) {
 	var err error
 	i := &glooMeshInstance{}
 	i.id = ctx.TrackResource(i)
 	i.instanceConfig = instanceConfig
 	if i.instanceConfig.managementPlane {
 		// deploy enterprise version
-		if err := i.deployManagementPlane(licenceKey); err != nil {
+		if err := i.deployManagementPlane(licenseKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := i.deployControlPlane(licenceKey); err != nil {
+		if err := i.deployControlPlane(licenseKey); err != nil {
 			return nil, err
 		}
 	}
 	return i, err
 }
 
-func (i *glooMeshInstance) deployManagementPlane(licenceKey string) error {
+func (i *glooMeshInstance) deployManagementPlane(licenseKey string) error {
 	options := &install.Options{
 		GlobalFlags:     &utils.GlobalFlags{Verbose: true},
 		DryRun:          false,
@@ -77,10 +77,10 @@ func (i *glooMeshInstance) deployManagementPlane(licenceKey string) error {
 		ClusterDomain:   "",
 	}
 
-	if licenceKey != "" {
+	if licenseKey != "" {
 		if err := install.InstallEnterprise(context.Background(), install.EnterpriseOptions{
 			Options:            options,
-			LicenseKey:         licenceKey,
+			LicenseKey:         licenseKey,
 			SkipUI:             false,
 			IncludeRBAC:        false,
 			RelayServerAddress: "",
@@ -100,7 +100,7 @@ func (i *glooMeshInstance) deployManagementPlane(licenceKey string) error {
 	return nil
 }
 
-func (i *glooMeshInstance) deployControlPlane(licenceKey string) error {
+func (i *glooMeshInstance) deployControlPlane(licenseKey string) error {
 
 	options := registration.Options{
 		KubeConfigPath:         i.instanceConfig.controlPlaneKubeConfigPath,
@@ -119,7 +119,7 @@ func (i *glooMeshInstance) deployControlPlane(licenceKey string) error {
 		Verbose:                false,
 	}
 
-	if licenceKey != "" {
+	if licenseKey != "" {
 		if err := enterprise.RegisterCluster(context.Background(), enterprise.RegistrationOptions{
 			Options:                   options,
 			AgentChartPathOverride:    "",

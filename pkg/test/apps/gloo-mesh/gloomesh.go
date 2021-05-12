@@ -16,7 +16,7 @@ type Config struct {
 
 const glooMeshVersion = "1.1.0-beta8"
 
-func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenceKey string) resource.SetupFn {
+func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey string) resource.SetupFn {
 	return func(ctx resource.Context) error {
 		if deploymentCtx == nil {
 			*deploymentCtx = context.DeploymentContext{}
@@ -34,14 +34,14 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenceKey st
 			clusterDomain:                 "",
 			cluster:                       ctx.Clusters()[0],
 		}
-		mpInstance, err := newInstance(ctx, mpcfg, licenceKey)
+		mpInstance, err := newInstance(ctx, mpcfg, licenseKey)
 		if err != nil {
 			return err
 		}
 		deploymentCtx.Meshes = append(deploymentCtx.Meshes, mpInstance)
 
 		var relayAddress string
-		if licenceKey != "" {
+		if licenseKey != "" {
 			if err := retry.UntilSuccess(func() error {
 				relayAddress, err = mpInstance.GetRelayServerAddress()
 				if err != nil {
@@ -71,7 +71,7 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenceKey st
 				managementPlaneRelayServerAddress: relayAddress,
 				clusterDomain:                     "",
 			}
-			i, err = newInstance(ctx, cpcfg, licenceKey)
+			i, err = newInstance(ctx, cpcfg, licenseKey)
 			if err != nil {
 				return err
 			}

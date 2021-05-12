@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 		fmt.Println("skipping E2E Integration tests")
 		return
 	}
-	licenceKey := os.Getenv("GLOO_MESH_LICENSE_KEY")
+	licenseKey := os.Getenv("GLOO_MESH_LICENSE_KEY")
 	// get kube settings from command line
 	config.Parse()
 	kubeSettings, _ := kube.NewSettingsFromCommandLine()
@@ -50,7 +50,7 @@ func TestMain(m *testing.M) {
 			ClusterKubeConfigs:                  clusterKubeConfigs,
 			DeployControlPlaneToManagementPlane: true,
 		},
-			licenceKey)).
+			licenseKey)).
 		Setup(echo2.DeployEchos(&deploymentCtx)).
 		Run()
 }
@@ -204,12 +204,12 @@ func testVirtualDestinationHTTP(ctx resource.Context, t *testing.T, deploymentCt
 func testVirtualDestinationHTTPS(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
 	// frontend calling backend in mesh using virtual destination in same cluster
 	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend"))
-	backendHost := "http-backend.solo.io"
+	backendHost := "https-backend.solo.io"
 
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
 			Protocol:    "https",
-			ServicePort: 8090,
+			ServicePort: 9443,
 			TLS:         true,
 		},
 		Scheme:    scheme.HTTPS,

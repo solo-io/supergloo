@@ -67,7 +67,7 @@ func (o *Options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Namespace, "namespace", defaults.DefaultPodNamespace, "Namespace in which to install Gloo Mesh")
 	flags.StringVar(&o.ChartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh.\nIf unset, this command will install Gloo Mesh from the publicly released Helm chart.")
 	flags.StringVar(&o.ChartValuesFile, "chart-values-file", "", "File containing value overrides for the Gloo Mesh Helm chart")
-	flags.StringVar(&o.Version, "version", "", "Version to install.\nCommunity defaults to meshctl Version, enterprise defaults to latest stable")
+	flags.StringVar(&o.Version, "version", "", "Version to install.\nCommunity defaults to meshctl version, enterprise defaults to latest stable")
 	flags.StringArrayVar(&o.ExtraHelmValues, "set", []string{}, "Extra helm values for the Gloo Mesh chart.")
 	flags.BoolVarP(&o.Register, "register", "r", false, "Also Register the cluster")
 	flags.StringVar(&o.ClusterName, "cluster-name", "mgmt-cluster",
@@ -243,7 +243,7 @@ func (o *EnterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 func (o EnterpriseOptions) getInstaller() helm.Installer {
 	ins := o.Options.getInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate)
 	ins.ReleaseName = o.ReleaseName
-	ins.Values["LicenseKey"] = o.LicenseKey
+	ins.Values["licenseKey"] = o.LicenseKey
 	if o.SkipUI {
 		ins.Values["gloo-mesh-ui.enabled"] = "false"
 	}
@@ -281,7 +281,7 @@ func InstallEnterprise(ctx context.Context, opts EnterpriseOptions) error {
 	if opts.Version == "" {
 		cliVersion, err := version.NewVersion(cliversion.Version)
 		if err != nil {
-			return eris.Wrapf(err, "invalid CLI Version: %s", cliversion.Version)
+			return eris.Wrapf(err, "invalid CLI version: %s", cliversion.Version)
 		}
 		stable := cliVersion.Prerelease() == "" // Get latest stable if not using a pre-release CLI
 		version, err := helm.GetLatestChartMinorVersion(
