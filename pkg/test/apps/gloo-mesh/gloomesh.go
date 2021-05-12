@@ -14,7 +14,7 @@ type Config struct {
 	DeployControlPlaneToManagementPlane bool
 }
 
-const glooMeshVersion = "1.1.0-beta5"
+const glooMeshVersion = "1.1.0-beta8"
 
 func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenceKey string) resource.SetupFn {
 	return func(ctx resource.Context) error {

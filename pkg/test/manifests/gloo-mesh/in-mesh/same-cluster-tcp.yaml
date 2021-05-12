@@ -4,14 +4,6 @@ metadata:
   name: virtual-mesh
   namespace: gloo-mesh
 spec:
-  mtlsConfig:
-    autoRestartPods: true
-    shared:
-      rootCertificateAuthority:
-        secret:
-          name: cacerts
-          namespace: istio-system
-  federation: {}
   meshes:
   - name: istiod-istio-system-cluster-0
     namespace: gloo-mesh
