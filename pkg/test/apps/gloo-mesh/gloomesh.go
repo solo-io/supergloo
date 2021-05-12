@@ -2,6 +2,7 @@ package gloo_mesh
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
@@ -24,6 +25,12 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey st
 		deploymentCtx.Meshes = []context.GlooMeshInstance{}
 		var i context.GlooMeshInstance
 		var err error
+
+
+		version := os.Getenv("GLOO_MESH_VERSION")
+		if version == "" {
+			version = glooMeshVersion
+		}
 		// install management plane
 		// we need the MP to always be installed and added to the instance list first because
 		// istio uninstalls in reverse order meaning control planes unregister first before uninstalling MP
