@@ -25,3 +25,6 @@ ci/gloo-mesh-temp/
 
 # mesctl generated debug snapshot json files
 *snapshot.json
+
+# JUnit test results
+results.xml

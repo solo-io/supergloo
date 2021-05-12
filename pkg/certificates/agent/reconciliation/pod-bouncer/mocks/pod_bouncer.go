@@ -6,10 +6,11 @@ package mock_pod_bouncer
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	reflect "reflect"
 )
 
 // MockPodBouncer is a mock of PodBouncer interface

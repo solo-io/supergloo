@@ -180,7 +180,7 @@ func (t *translator) configureSharedTrust(
 		mesh,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
-		sharedTrust.GetRootCertificateAuthority() != nil,
+		sharedTrust.GetIntermediateCertificateAuthority() != nil,
 	)
 
 	switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
@@ -215,6 +215,8 @@ func (t *translator) configureSharedTrust(
 					},
 				},
 			}
+			// Set deprecated field for backwards compatibility
+			issuedCertificate.Spec.SigningCertificateSecret = rootCaSecret
 		case *networkingv1.RootCertificateAuthority_Secret:
 			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
 				GlooMeshCa: &certificatesv1.GlooMeshCA{
@@ -223,6 +225,8 @@ func (t *translator) configureSharedTrust(
 					},
 				},
 			}
+			issuedCertificate.Spec.SigningCertificateSecret = typedCaSource.Secret
+			// Set deprecated field for backwards compatibility
 		default:
 			return eris.Errorf("No root ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
 		}
@@ -292,7 +296,7 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 func (t *translator) constructIssuedCertificate(
 	mesh *discoveryv1.Mesh,
 	agentNamespace string,
-	autoRestartPods, restartIstiod bool,
+	autoRestartPods, agentCa bool,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
@@ -311,9 +315,14 @@ func (t *translator) constructIssuedCertificate(
 
 	// the default location of the istio CA Certs secret
 	// the certificate workflow will produce a cert with this ref
-	istioCaCerts := &skv2corev1.ObjectRef{
-		Name:      istioCaSecretName,
-		Namespace: istioNamespace,
+	var istioCaCerts *skv2corev1.ObjectRef
+	// TODO: Cleanup this logic, make it more clear why we are not setting it
+	// Don't set issuedCertSecret
+	if !agentCa {
+		istioCaCerts = &skv2corev1.ObjectRef{
+			Name:      istioCaSecretName,
+			Namespace: istioNamespace,
+		}
 	}
 
 	clusterName := istioMesh.GetInstallation().GetCluster()
@@ -327,7 +336,7 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods, restartIstiod)
+	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods, agentCa)
 	var (
 		podBounceDirective *certificatesv1.PodBounceDirective
 		podBounceRef       *skv2corev1.ObjectRef
@@ -403,7 +412,7 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 func getPodsToBounce(
 	mesh *discoveryv1.Mesh,
 	allWorkloads discoveryv1sets.WorkloadSet,
-	autoRestartPods, restartIstiod bool,
+	autoRestartPods, agentCa bool,
 ) []*certificatesv1.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
@@ -417,7 +426,7 @@ func getPodsToBounce(
 	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
 	// If the pki-sidecar is fulfilling the issued certificate request,
 	// then the control-plane should not be bounced.
-	if restartIstiod {
+	if !agentCa {
 		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,

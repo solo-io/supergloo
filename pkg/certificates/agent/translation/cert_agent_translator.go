@@ -82,7 +82,6 @@ type Translator interface {
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) (bool, error)
-
 }
 
 func NewCertAgentTranslator(localClient client.Client) Translator {

@@ -207,7 +207,7 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_ISSUED
 	case certificatesv1.IssuedCertificateStatus_ISSUED:
-		
+
 		bouncePods, err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs)
 		if err != nil {
 			return err

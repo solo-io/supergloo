@@ -101,7 +101,7 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *c
 		// restart the workflow from PENDING
 		fallthrough
 	case certificatesv1.CertificateRequestStatus_PENDING:
-		// Break out of switch statement here to start
+		// Break out of switch statement here to start workflow
 	default:
 		return eris.Errorf("unknown certificate request state: %v", certificateRequest.Status.State)
 	}
@@ -111,9 +111,19 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *c
 		return eris.Wrapf(err, "failed to find issued certificate matching certificate request")
 	}
 
+	// If it is the agent cluster's responsibility to issue the cert, then ignore this request
+	if issuedCertificate.Spec.GetAgentCa() != nil {
+		return nil
+	}
+
 	output, err := r.translator.Translate(r.ctx, certificateRequest, issuedCertificate)
 	if err != nil {
 		return eris.Wrapf(err, "failed to translate certificate request + issued certificate")
+	}
+
+	// If translator returns nil, it means
+	if output == nil {
+		return nil
 	}
 
 	certificateRequest.Status = certificatesv1.CertificateRequestStatus{
