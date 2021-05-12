@@ -3,4 +3,8 @@ changelog:
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1395
     description: >
       Update the helm urls to refer to the major and minor version in the links,
-      and write the full version on the helm referenc page.
+      and write the full version on the helm reference page.
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1395
+    description: >
+      Sort the helm versions when doing docs helm generation.
