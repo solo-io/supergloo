@@ -195,6 +195,8 @@ func getIngressGateway(
 	// We can support multiple addresses per gateway for load balancing purposes in the future
 
 	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
+		Namespace:      svc.Namespace,
+		Name:           svc.Name,
 		WorkloadLabels: workloadLabels,
 	}
 
@@ -255,8 +257,6 @@ func getIngressGateway(
 		containerPort = tlsPort.Port
 	}
 	gatewayInfo.TlsContainerPort = uint32(containerPort)
-
-	gatewayInfo.Namespace = svc.Namespace
 
 	return gatewayInfo, nil
 }

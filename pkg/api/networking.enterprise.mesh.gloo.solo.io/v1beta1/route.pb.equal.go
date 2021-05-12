@@ -296,10 +296,6 @@ func (m *DelegateAction) Equal(that interface{}) bool {
 		}
 	}
 
-	if m.GetPassFullPath() != target.GetPassFullPath() {
-		return false
-	}
-
 	return true
 }
 

@@ -56,7 +56,10 @@ message MeshSpec {
 
         // Describes the ingress gateway.
         message IngressGatewayInfo {
-            // the namespace in which the ingress gateway is running.
+            // The name of the Ingress Gateway Service
+            string name = 8;
+
+            // The namespace in which the ingress gateway is running.
             string namespace = 7;
 
             // Labels matching the workload backing the gateway.

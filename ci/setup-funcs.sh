@@ -22,6 +22,9 @@ function create_kind_cluster() {
   # This value will be used to cordon off, and later join the different pod subnets of the multiple clusters.
   ((net=$port%32000+1))
 
+  # Set ingress port to be 10 higher than the passed port, ie 32010 or 32011
+  ((ingressPort=$2+10))
+
   echo "creating cluster ${cluster} with ingress port ${port}"
 
   K="kubectl --context=kind-${cluster}"
@@ -49,6 +52,9 @@ nodes:
     hostPort: ${net}000
   - containerPort: ${port}
     hostPort: ${port}
+    protocol: TCP
+  - containerPort: ${ingressPort}
+    hostPort: ${ingressPort}
     protocol: TCP
   kubeadmConfigPatches:
   - |
@@ -486,6 +492,10 @@ spec:
             - port: 443
               targetPort: 8443
               name: https
+            - port: ${ingressPort}
+              nodePort: ${ingressPort}
+              targetPort: 8081
+              name: ingress-gateway-port
             - port: 15443
               targetPort: 15443
               name: tls
