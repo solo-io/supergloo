@@ -1772,11 +1772,37 @@ spec:
                                                         anyOf:
                                                         - required:
                                                           - tokenSecretRef
-                                                        - required:
+                                                        - properties:
+                                                            kubernetesAuth:
+                                                              oneOf:
+                                                              - not:
+                                                                  anyOf:
+                                                                  - required:
+                                                                    - serviceAccountRef
+                                                                  - required:
+                                                                    - mountedSaPath
+                                                              - required:
+                                                                - serviceAccountRef
+                                                              - required:
+                                                                - mountedSaPath
+                                                          required:
                                                           - kubernetesAuth
                                                     - required:
                                                       - tokenSecretRef
-                                                    - required:
+                                                    - properties:
+                                                        kubernetesAuth:
+                                                          oneOf:
+                                                          - not:
+                                                              anyOf:
+                                                              - required:
+                                                                - serviceAccountRef
+                                                              - required:
+                                                                - mountedSaPath
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      required:
                                                       - kubernetesAuth
                                                 required:
                                                 - vault
@@ -1787,11 +1813,37 @@ spec:
                                                     anyOf:
                                                     - required:
                                                       - tokenSecretRef
-                                                    - required:
+                                                    - properties:
+                                                        kubernetesAuth:
+                                                          oneOf:
+                                                          - not:
+                                                              anyOf:
+                                                              - required:
+                                                                - serviceAccountRef
+                                                              - required:
+                                                                - mountedSaPath
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      required:
                                                       - kubernetesAuth
                                                 - required:
                                                   - tokenSecretRef
-                                                - required:
+                                                - properties:
+                                                    kubernetesAuth:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  required:
                                                   - kubernetesAuth
                                             required:
                                             - vault
@@ -1824,11 +1876,37 @@ spec:
                                                     anyOf:
                                                     - required:
                                                       - tokenSecretRef
-                                                    - required:
+                                                    - properties:
+                                                        kubernetesAuth:
+                                                          oneOf:
+                                                          - not:
+                                                              anyOf:
+                                                              - required:
+                                                                - serviceAccountRef
+                                                              - required:
+                                                                - mountedSaPath
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      required:
                                                       - kubernetesAuth
                                                 - required:
                                                   - tokenSecretRef
-                                                - required:
+                                                - properties:
+                                                    kubernetesAuth:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  required:
                                                   - kubernetesAuth
                                             required:
                                             - vault
@@ -1839,11 +1917,37 @@ spec:
                                                 anyOf:
                                                 - required:
                                                   - tokenSecretRef
-                                                - required:
+                                                - properties:
+                                                    kubernetesAuth:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  required:
                                                   - kubernetesAuth
                                             - required:
                                               - tokenSecretRef
-                                            - required:
+                                            - properties:
+                                                kubernetesAuth:
+                                                  oneOf:
+                                                  - not:
+                                                      anyOf:
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  - required:
+                                                    - serviceAccountRef
+                                                  - required:
+                                                    - mountedSaPath
+                                              required:
                                               - kubernetesAuth
                                         required:
                                         - vault
@@ -1885,11 +1989,37 @@ spec:
                                                     anyOf:
                                                     - required:
                                                       - tokenSecretRef
-                                                    - required:
+                                                    - properties:
+                                                        kubernetesAuth:
+                                                          oneOf:
+                                                          - not:
+                                                              anyOf:
+                                                              - required:
+                                                                - serviceAccountRef
+                                                              - required:
+                                                                - mountedSaPath
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      required:
                                                       - kubernetesAuth
                                                 - required:
                                                   - tokenSecretRef
-                                                - required:
+                                                - properties:
+                                                    kubernetesAuth:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  required:
                                                   - kubernetesAuth
                                             required:
                                             - vault
@@ -1900,11 +2030,37 @@ spec:
                                                 anyOf:
                                                 - required:
                                                   - tokenSecretRef
-                                                - required:
+                                                - properties:
+                                                    kubernetesAuth:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  required:
                                                   - kubernetesAuth
                                             - required:
                                               - tokenSecretRef
-                                            - required:
+                                            - properties:
+                                                kubernetesAuth:
+                                                  oneOf:
+                                                  - not:
+                                                      anyOf:
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  - required:
+                                                    - serviceAccountRef
+                                                  - required:
+                                                    - mountedSaPath
+                                              required:
                                               - kubernetesAuth
                                         required:
                                         - vault
@@ -1937,11 +2093,37 @@ spec:
                                                 anyOf:
                                                 - required:
                                                   - tokenSecretRef
-                                                - required:
+                                                - properties:
+                                                    kubernetesAuth:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - serviceAccountRef
+                                                          - required:
+                                                            - mountedSaPath
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  required:
                                                   - kubernetesAuth
                                             - required:
                                               - tokenSecretRef
-                                            - required:
+                                            - properties:
+                                                kubernetesAuth:
+                                                  oneOf:
+                                                  - not:
+                                                      anyOf:
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  - required:
+                                                    - serviceAccountRef
+                                                  - required:
+                                                    - mountedSaPath
+                                              required:
                                               - kubernetesAuth
                                         required:
                                         - vault
@@ -1952,11 +2134,37 @@ spec:
                                             anyOf:
                                             - required:
                                               - tokenSecretRef
-                                            - required:
+                                            - properties:
+                                                kubernetesAuth:
+                                                  oneOf:
+                                                  - not:
+                                                      anyOf:
+                                                      - required:
+                                                        - serviceAccountRef
+                                                      - required:
+                                                        - mountedSaPath
+                                                  - required:
+                                                    - serviceAccountRef
+                                                  - required:
+                                                    - mountedSaPath
+                                              required:
                                               - kubernetesAuth
                                         - required:
                                           - tokenSecretRef
-                                        - required:
+                                        - properties:
+                                            kubernetesAuth:
+                                              oneOf:
+                                              - not:
+                                                  anyOf:
+                                                  - required:
+                                                    - serviceAccountRef
+                                                  - required:
+                                                    - mountedSaPath
+                                              - required:
+                                                - serviceAccountRef
+                                              - required:
+                                                - mountedSaPath
+                                          required:
                                           - kubernetesAuth
                                     required:
                                     - vault
@@ -2037,6 +2245,11 @@ spec:
                                         Kubernetes authenticates with Vault by passing the ServiceAccount
                                         token stored in the named Secret resource to the Vault server.
                                       properties:
+                                        mountedSaPath:
+                                          description: |-
+                                            File System path to grab the service account token from.
+                                            Defaults to /var/run/secrets/kubernetes.io/serviceaccount
+                                          type: string
                                         path:
                                           description: |-
                                             The Vault mountPath here is the mount path to use when authenticating with
@@ -2049,8 +2262,15 @@ spec:
                                             A required field containing the Vault Role to assume. A Role binds a
                                             Kubernetes ServiceAccount with a set of Vault policies.
                                           type: string
-                                        saRef:
-                                          description: Reference to a service account
+                                        secretTokenKey:
+                                          description: |-
+                                            Key in the token to search for the sa_token
+                                            Default to "token"
+                                          type: string
+                                        serviceAccountRef:
+                                          description: Reference to service account,
+                                            other than the one mounted to the current
+                                            pod.
                                           properties:
                                             name:
                                               description: name of the resource being
@@ -2061,11 +2281,6 @@ spec:
                                                 being referenced
                                               type: string
                                           type: object
-                                        secretTokenKey:
-                                          description: |-
-                                            Key in the token to search for the sa_token
-                                            Default to "token"
-                                          type: string
                                       type: object
                                     namespace:
                                       description: |-

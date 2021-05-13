@@ -109,6 +109,75 @@ func (m *VaultCA) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *VaultKubernetesAuth) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VaultKubernetesAuth)
+	if !ok {
+		that2, ok := that.(VaultKubernetesAuth)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetPath(), target.GetPath()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetRole(), target.GetRole()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetSecretTokenKey(), target.GetSecretTokenKey()) != 0 {
+		return false
+	}
+
+	switch m.ServiceAccountLocation.(type) {
+
+	case *VaultKubernetesAuth_ServiceAccountRef:
+		if _, ok := target.ServiceAccountLocation.(*VaultKubernetesAuth_ServiceAccountRef); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetServiceAccountRef()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetServiceAccountRef()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetServiceAccountRef(), target.GetServiceAccountRef()) {
+				return false
+			}
+		}
+
+	case *VaultKubernetesAuth_MountedSaPath:
+		if _, ok := target.ServiceAccountLocation.(*VaultKubernetesAuth_MountedSaPath); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetMountedSaPath(), target.GetMountedSaPath()) != 0 {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.ServiceAccountLocation != target.ServiceAccountLocation {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *CommonCertOptions) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -138,52 +207,6 @@ func (m *CommonCertOptions) Equal(that interface{}) bool {
 	}
 
 	if strings.Compare(m.GetOrgName(), target.GetOrgName()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VaultCA_Kubernetes) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VaultCA_Kubernetes)
-	if !ok {
-		that2, ok := that.(VaultCA_Kubernetes)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetPath(), target.GetPath()) != 0 {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetSaRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSaRef()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSaRef(), target.GetSaRef()) {
-			return false
-		}
-	}
-
-	if strings.Compare(m.GetSecretTokenKey(), target.GetSecretTokenKey()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetRole(), target.GetRole()) != 0 {
 		return false
 	}
 
