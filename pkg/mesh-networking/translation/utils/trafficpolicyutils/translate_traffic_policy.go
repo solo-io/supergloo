@@ -3,11 +3,11 @@ package trafficpolicyutils
 import (
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/protobuf/ptypes/duration"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/rotisserie/eris"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
@@ -38,10 +38,7 @@ func TranslateTimeout(
 	if timeout == nil {
 		return nil
 	}
-	return &types.Duration{
-		Seconds: timeout.Seconds,
-		Nanos:   timeout.Nanos,
-	}
+	return gogoutils.DurationProtoToGogo(timeout)
 }
 
 func TranslateRetries(
@@ -50,150 +47,121 @@ func TranslateRetries(
 	if retries == nil {
 		return nil
 	}
-	return &istiov1alpha3.HTTPRetry{
-		PerTryTimeout: translateDuration(retries.PerTryTimeout),
-		Attempts:      retries.Attempts,
+	return &networkingv1alpha3spec.HTTPRetry{
+		Attempts:      retries.GetAttempts(),
+		PerTryTimeout: gogoutils.DurationProtoToGogo(retries.GetPerTryTimeout()),
 	}
 }
 
-func TranslateFault(
-	fault *v1.TrafficPolicySpec_Policy_FaultInjection,
-) *istiov1alpha3.HTTPFaultInjection {
-	if fault == nil {
-		return nil
+func TranslateFault(faultInjection *v1.TrafficPolicySpec_Policy_FaultInjection) (*networkingv1alpha3spec.HTTPFaultInjection, error) {
+	if faultInjection == nil {
+		return nil, nil
 	}
-
-	switch fault.FaultInjectionType.(type) {
-	case *v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay:
-		transformDelay, _ := fault.FaultInjectionType.(*v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay)
-		return &istiov1alpha3.HTTPFaultInjection{
-			Delay: &istiov1alpha3.HTTPFaultInjection_Delay{
-				HttpDelayType: &istiov1alpha3.HTTPFaultInjection_Delay_FixedDelay{
-					FixedDelay: translateDuration(transformDelay.FixedDelay),
-				},
-				Percentage: &istiov1alpha3.Percent{Value: fault.Percentage},
-			},
-		}
-
+	if faultInjection.GetFaultInjectionType() == nil {
+		return nil, eris.New("FaultInjection type must be specified.")
+	}
+	var translatedFaultInjection *networkingv1alpha3spec.HTTPFaultInjection
+	switch injectionType := faultInjection.GetFaultInjectionType().(type) {
 	case *v1.TrafficPolicySpec_Policy_FaultInjection_Abort_:
-		transformAbort, _ := fault.FaultInjectionType.(*v1.TrafficPolicySpec_Policy_FaultInjection_Abort_)
-		return &istiov1alpha3.HTTPFaultInjection{
-			Abort: &istiov1alpha3.HTTPFaultInjection_Abort{
-				ErrorType: &istiov1alpha3.HTTPFaultInjection_Abort_HttpStatus{
-					HttpStatus: transformAbort.Abort.HttpStatus,
+		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
+			Abort: &networkingv1alpha3spec.HTTPFaultInjection_Abort{
+				ErrorType: &networkingv1alpha3spec.HTTPFaultInjection_Abort_HttpStatus{
+					HttpStatus: faultInjection.GetAbort().GetHttpStatus(),
 				},
-				Percentage: &istiov1alpha3.Percent{Value: fault.Percentage},
+				Percentage: &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
+			},
+		}
+	case *v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay:
+		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
+			Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
+				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_FixedDelay{
+					FixedDelay: gogoutils.DurationProtoToGogo(faultInjection.GetFixedDelay()),
+				},
+				Percentage: &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
 			},
 		}
 	default:
-		return &istiov1alpha3.HTTPFaultInjection{}
+		return nil, eris.Errorf("FaultInjection.FaultInjectionType has unexpected type %T", injectionType)
 	}
-}
-
-func TranslateMirror(
-	mirrorconfig *v1.TrafficPolicySpec_Policy_Mirror,
-	clusterDomains hostutils.ClusterDomainRegistry,
-	sourceCluster string,
-	destinations v1sets.DestinationSet,
-) (*istiov1alpha3.Destination, *istiov1alpha3.Percent, error) {
-	if mirrorconfig == nil {
-		return nil, nil, nil
-	}
-
-	percent := &istiov1alpha3.Percent{Value: mirrorconfig.Percentage}
-	switch mirrorconfig.DestinationType.(type) {
-	case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
-		mirrorDest, _ := mirrorconfig.DestinationType.(*v1.TrafficPolicySpec_Policy_Mirror_KubeService)
-		dest, err := MakeKubeDestinationMirror(mirrorDest, mirrorconfig.Port, sourceCluster, destinations, clusterDomains)
-		if err != nil {
-			return nil, nil, eris.Wrapf(err, "invalid mirror destination")
-		}
-		return dest, percent, nil
-	default:
-		return &istiov1alpha3.Destination{
-			Port: &istiov1alpha3.PortSelector{
-				Number: mirrorconfig.Port,
-			},
-		}, percent, nil
-	}
+	return translatedFaultInjection, nil
 }
 
 func TranslateCorsPolicy(
-	cors *v1.TrafficPolicySpec_Policy_CorsPolicy,
-) *istiov1alpha3.CorsPolicy {
-	if cors == nil {
-		return nil
+	corsPolicy *v1.TrafficPolicySpec_Policy_CorsPolicy,
+) (*istiov1alpha3.CorsPolicy, error) {
+	if corsPolicy == nil {
+		return nil, nil
+	}
+	var allowOrigins []*networkingv1alpha3spec.StringMatch
+	for i, allowOrigin := range corsPolicy.GetAllowOrigins() {
+		var stringMatch *networkingv1alpha3spec.StringMatch
+		switch matchType := allowOrigin.GetMatchType().(type) {
+		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
+			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: allowOrigin.GetExact()}}
+		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
+			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: allowOrigin.GetPrefix()}}
+		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
+			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: allowOrigin.GetRegex()}}
+		default:
+			return nil, eris.Errorf("AllowOrigins[%d].MatchType has unexpected type %T", i, matchType)
+		}
+		allowOrigins = append(allowOrigins, stringMatch)
+	}
+	translatedCorsPolicy := &networkingv1alpha3spec.CorsPolicy{
+		AllowOrigins:     allowOrigins,
+		AllowMethods:     corsPolicy.GetAllowMethods(),
+		AllowHeaders:     corsPolicy.GetAllowHeaders(),
+		ExposeHeaders:    corsPolicy.GetExposeHeaders(),
+		MaxAge:           gogoutils.DurationProtoToGogo(corsPolicy.GetMaxAge()),
+		AllowCredentials: gogoutils.BoolProtoToGogo(corsPolicy.GetAllowCredentials()),
 	}
 
-	var allowedOrigins []*istiov1alpha3.StringMatch
-	for _, origin := range cors.AllowOrigins {
-		switch origin.MatchType.(type) {
-		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
-			matchExact, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact)
-			match := &istiov1alpha3.StringMatch{
-				MatchType: &istiov1alpha3.StringMatch_Exact{
-					Exact: matchExact.Exact,
-				},
-			}
-			allowedOrigins = append(allowedOrigins, match)
-		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
-			matchPrefix, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix)
-			match := &istiov1alpha3.StringMatch{
-				MatchType: &istiov1alpha3.StringMatch_Prefix{
-					Prefix: matchPrefix.Prefix,
-				},
-			}
-			allowedOrigins = append(allowedOrigins, match)
-		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
-			matchRegex, _ := origin.MatchType.(*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex)
-			match := &istiov1alpha3.StringMatch{
-				MatchType: &istiov1alpha3.StringMatch_Regex{
-					Regex: matchRegex.Regex,
-				},
-			}
-			allowedOrigins = append(allowedOrigins, match)
+	return translatedCorsPolicy, nil
+}
+
+// If federatedClusterName is non-empty, it indicates translation for a federated VirtualService, so use it as the source cluster name.
+func TranslateMirror(
+	mirror *v1.TrafficPolicySpec_Policy_Mirror,
+	sourceClusterName string,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	destinations v1sets.DestinationSet,
+) (*networkingv1alpha3spec.Destination, *networkingv1alpha3spec.Percent, error) {
+	if mirror == nil {
+		return nil, nil, nil
+	}
+	if mirror.DestinationType == nil {
+		return nil, nil, eris.Errorf("must provide mirror destination")
+	}
+
+	var translatedMirror *networkingv1alpha3spec.Destination
+	switch destinationType := mirror.DestinationType.(type) {
+	case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
+		var err error
+		translatedMirror, err = makeKubeDestinationMirror(
+			destinationType,
+			mirror.Port,
+			sourceClusterName,
+			clusterDomains,
+			destinations,
+		)
+		if err != nil {
+			return nil, nil, err
 		}
 	}
 
-	return &istiov1alpha3.CorsPolicy{
-		AllowOrigins:     allowedOrigins,
-		AllowMethods:     cors.AllowMethods,
-		AllowHeaders:     cors.AllowHeaders,
-		ExposeHeaders:    cors.ExposeHeaders,
-		MaxAge:           translateDuration(cors.MaxAge),
-		AllowCredentials: translateBoolValue(cors.AllowCredentials),
+	mirrorPercentage := &networkingv1alpha3spec.Percent{
+		Value: mirror.GetPercentage(),
 	}
+
+	return translatedMirror, mirrorPercentage, nil
 }
 
-func translateDuration(
-	duration *duration.Duration,
-) *types.Duration {
-	if duration == nil {
-		return nil
-	}
-
-	return &types.Duration{
-		Seconds: duration.Seconds,
-		Nanos:   duration.Nanos,
-	}
-}
-
-func translateBoolValue(
-	boolValue *wrappers.BoolValue,
-) *types.BoolValue {
-	if boolValue == nil {
-		return nil
-	}
-
-	return &types.BoolValue{Value: boolValue.Value}
-}
-
-func MakeKubeDestinationMirror(
+func makeKubeDestinationMirror(
 	mirrorDest *v1.TrafficPolicySpec_Policy_Mirror_KubeService,
 	port uint32,
 	sourceClusterName string,
-	destinations v1sets.DestinationSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
+	destinations v1sets.DestinationSet,
 ) (*networkingv1alpha3spec.Destination, error) {
 	destinationRef := mirrorDest.KubeService
 	mirrorService, err := destinationutils.FindDestinationForKubeService(destinations.List(), destinationRef)
@@ -202,7 +170,8 @@ func MakeKubeDestinationMirror(
 	}
 	mirrorKubeService := mirrorService.Spec.GetKubeService()
 
-	// TODO: empty sourceClusterName?
+	// TODO(ilackarms): support other types of Destination destinations, e.g. via ServiceEntries
+
 	destinationHostname := clusterDomains.GetDestinationFQDN(
 		sourceClusterName,
 		destinationRef,

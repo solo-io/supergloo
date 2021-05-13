@@ -1,11 +1,10 @@
 package cors
 
 import (
-	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -58,32 +57,5 @@ func (d *corsDecorator) translateCors(
 	trafficPolicy *v1.TrafficPolicySpec,
 ) (*networkingv1alpha3spec.CorsPolicy, error) {
 	corsPolicy := trafficPolicy.GetPolicy().GetCorsPolicy()
-	if corsPolicy == nil {
-		return nil, nil
-	}
-	var allowOrigins []*networkingv1alpha3spec.StringMatch
-	for i, allowOrigin := range corsPolicy.GetAllowOrigins() {
-		var stringMatch *networkingv1alpha3spec.StringMatch
-		switch matchType := allowOrigin.GetMatchType().(type) {
-		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
-			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: allowOrigin.GetExact()}}
-		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
-			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: allowOrigin.GetPrefix()}}
-		case *v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
-			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: allowOrigin.GetRegex()}}
-		default:
-			return nil, eris.Errorf("AllowOrigins[%d].MatchType has unexpected type %T", i, matchType)
-		}
-		allowOrigins = append(allowOrigins, stringMatch)
-	}
-	translatedCorsPolicy := &networkingv1alpha3spec.CorsPolicy{
-		AllowOrigins:     allowOrigins,
-		AllowMethods:     corsPolicy.GetAllowMethods(),
-		AllowHeaders:     corsPolicy.GetAllowHeaders(),
-		ExposeHeaders:    corsPolicy.GetExposeHeaders(),
-		MaxAge:           gogoutils.DurationProtoToGogo(corsPolicy.GetMaxAge()),
-		AllowCredentials: gogoutils.BoolProtoToGogo(corsPolicy.GetAllowCredentials()),
-	}
-
-	return translatedCorsPolicy, nil
+	return trafficpolicyutils.TranslateCorsPolicy(corsPolicy)
 }
