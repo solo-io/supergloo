@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Respect the list options in the inMemorySnapshotBuilder.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/502
+    resolvesIssue: false
