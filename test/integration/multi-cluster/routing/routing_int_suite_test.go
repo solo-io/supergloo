@@ -87,6 +87,30 @@ func TestInMesh(t *testing.T) {
 							FileName:    "virtual-destination-tcp.yaml",
 							Folder:      "gloo-mesh/in-mesh",
 						},
+						{
+							Name:        "different-cluster-http",
+							Description: "Testing http routing from different cluster",
+							Test:        testSingleClusterVirtualDestinationHTTP,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "virtual-destination-single-cluster-http.yaml",
+							Folder:      "gloo-mesh/in-mesh",
+						},
+						{
+							Name:        "different-cluster-https",
+							Description: "Testing https routing in different cluster",
+							Test:        testSingleClusterVirtualDestinationHTTPS,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "virtual-destination-single-cluster-https.yaml",
+							Folder:      "gloo-mesh/in-mesh",
+						},
+						{
+							Name:        "different-cluster-tcp",
+							Description: "Testing tcp routing in different cluster",
+							Test:        testSingleClusterVirtualDestinationTCP,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "virtual-destination-single-cluster-tcp.yaml",
+							Folder:      "gloo-mesh/in-mesh",
+						},
 					},
 				},
 			}
@@ -209,5 +233,120 @@ func testGlobalVirtualDestinationTCP(ctx resource.Context, t *testing.T, deploym
 		Address:   backendHost,
 		Count:     5,
 		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
+	})
+}
+
+// testSingleClusterVirtualDestinationHTTP making http requests for a virtual destination that only exists in 1 cluster
+func testSingleClusterVirtualDestinationHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	clientCluster := ctx.Clusters()[0]
+	expectedCluster := ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in different cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(clientCluster)))
+	backendHost := "http-backend.solo.io"
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
+	})
+	// cluster 2 test
+	clientCluster = ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(clientCluster)))
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
+	})
+}
+
+// testSingleClusterVirtualDestinationHTTPS making https requests for a virtual destination that only exists in 1 cluster
+func testSingleClusterVirtualDestinationHTTPS(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	clientCluster := ctx.Clusters()[0]
+	expectedCluster := ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in different cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(clientCluster)))
+	backendHost := "https-backend.solo.io"
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "https",
+			ServicePort: 9443,
+			TLS:         true,
+		},
+		Scheme:    scheme.HTTPS,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
+		CaCert:    echo2.GetEchoCACert(),
+	})
+
+	clientCluster = ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(clientCluster)))
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "https",
+			ServicePort: 9443,
+			TLS:         true,
+		},
+		Scheme:    scheme.HTTPS,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
+		CaCert:    echo2.GetEchoCACert(),
+	})
+}
+
+// testSingleClusterVirtualDestinationTCP making tcp requests for a virtual destination that only exists in 1 cluster
+func testSingleClusterVirtualDestinationTCP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	clientCluster := ctx.Clusters()[0]
+	expectedCluster := ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in different cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(clientCluster)))
+	backendHost := "tcp-backend.solo.io"
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "tcp",
+			ServicePort: 9000,
+		},
+		Scheme:    scheme.TCP,
+		Address:   backendHost,
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
+	})
+
+	clientCluster = ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(clientCluster)))
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "tcp",
+			ServicePort: 9000,
+		},
+		Scheme:    scheme.TCP,
+		Address:   backendHost,
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
 	})
 }
