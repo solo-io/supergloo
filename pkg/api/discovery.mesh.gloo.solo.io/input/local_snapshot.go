@@ -18,8 +18,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/hashicorp/go-multierror"
@@ -362,7 +364,7 @@ func (i *inMemorySettingsBuilder) BuildSnapshot(ctx context.Context, name string
 		switch obj := obj.(type) {
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1_types.Settings:
-			settings.Insert(obj)
+			i.insertSettings(ctx, obj, settings, opts)
 		}
 	})
 
@@ -371,4 +373,34 @@ func (i *inMemorySettingsBuilder) BuildSnapshot(ctx context.Context, name string
 
 		settings,
 	), nil
+}
+
+func (i *inMemorySettingsBuilder) insertSettings(
+	ctx context.Context,
+	settings *settings_mesh_gloo_solo_io_v1_types.Settings,
+	settingsSet settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
+	buildOpts SettingsBuildOptions,
+) {
+
+	opts := buildOpts.Settings.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = settings.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(settings.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		settingsSet.Insert(settings)
+	}
 }
