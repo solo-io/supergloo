@@ -66,25 +66,25 @@ func TestInMesh(t *testing.T) {
 						{
 							Name:        "same-cluster-http",
 							Description: "Testing http routing in same cluster",
-							Test:        testVirtualDestinationHTTP,
+							Test:        testGlobalVirtualDestinationHTTP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "same-cluster-http.yaml",
+							FileName:    "virtual-destination-http.yaml",
 							Folder:      "gloo-mesh/in-mesh",
 						},
 						{
 							Name:        "same-cluster-https",
 							Description: "Testing https routing in same cluster",
-							Test:        testVirtualDestinationHTTPS,
+							Test:        testGlobalVirtualDestinationHTTPS,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "same-cluster-https.yaml",
+							FileName:    "virtual-destination-https.yaml",
 							Folder:      "gloo-mesh/in-mesh",
 						},
 						{
 							Name:        "same-cluster-tcp",
 							Description: "Testing tcp routing in same cluster",
-							Test:        testVirtualDestinationTCP,
+							Test:        testGlobalVirtualDestinationTCP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "same-cluster-tcp.yaml",
+							FileName:    "virtual-destination-tcp.yaml",
 							Folder:      "gloo-mesh/in-mesh",
 						},
 					},
@@ -97,92 +97,12 @@ func TestInMesh(t *testing.T) {
 
 }
 
-// Run the API tests
-func TestRouting(t *testing.T) {
-	framework.
-		NewTest(t).
-		Run(func(ctx framework.TestContext) {
-
-			tgs := []common.TestGroup{
-				{
-					Name: "routing",
-					Cases: []common.TestCase{
-						{
-							Name:        "prefix-1",
-							Description: "HTTP/HTTPS prefix based routing",
-							Test:        testPrefixMatch,
-							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "prefix-1.yaml",
-							Folder:      "traffic",
-						},
-						{
-							Name:        "traffic-policy-timeout",
-							Description: "Timeout of 1s using Gloo Mesh traffic policy",
-							Test:        testTimeoutTrafficPolicy,
-							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "timeout.yaml",
-							Folder:      "gloo-mesh",
-						},
-					},
-				},
-			}
-			for _, tg := range tgs {
-				tg.Run(ctx, t, &deploymentCtx)
-			}
-		})
-}
-
-// testPrefixMatch makes a call from frontend to backend application
-func testPrefixMatch(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
-	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend"))
-
-	backendHost := "backend." + deploymentCtx.EchoContext.AppNamespace.Name() + ".svc.cluster.local"
-
-	src.CallOrFail(t, echo.CallOptions{
-		Port: &echo.Port{
-			Protocol:    "http",
-			ServicePort: 8090,
-		},
-		Scheme:    "http",
-		Address:   backendHost,
-		Method:    http.MethodGet,
-		Path:      "/route1",
-		Count:     1,
-		Validator: echo.ExpectOK(),
-	})
-
-	src.CallOrFail(t, echo.CallOptions{
-		Port: &echo.Port{
-			Protocol:    "http",
-			ServicePort: 8090,
-		},
-		Scheme:    "http",
-		Address:   backendHost,
-		Method:    http.MethodGet,
-		Path:      "/route2",
-		Count:     1,
-		Validator: echo.ExpectOK(),
-	})
-
-	src.CallOrFail(t, echo.CallOptions{
-		Port: &echo.Port{
-			Protocol:    "http",
-			ServicePort: 8090,
-		},
-		Scheme:    "http",
-		Address:   backendHost,
-		Method:    http.MethodGet,
-		Path:      "/bad-route",
-		Count:     1,
-		Validator: echo.ExpectCode("404"),
-	})
-}
-
-// testVirtualDestinationHTTP making http requests for a virtual destination
-func testVirtualDestinationHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
-
+// testGlobalVirtualDestinationHTTP making http requests for a virtual destination
+// because of locality priority routing, we should see routing to local cluster first always
+func testGlobalVirtualDestinationHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
 	// frontend calling backend in mesh using virtual destination in same cluster
-	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend"))
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
 	backendHost := "http-backend.solo.io"
 
 	src.CallOrFail(t, echo.CallOptions{
@@ -195,15 +115,32 @@ func testVirtualDestinationHTTP(ctx resource.Context, t *testing.T, deploymentCt
 		Method:    http.MethodGet,
 		Path:      "",
 		Count:     5,
-		Validator: echo.ExpectOK(),
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
 	})
-
+	// cluster 2 test
+	cluster = ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
+	})
 }
 
-// testVirtualDestinationHTTPS making https requests for a virtual destination
-func testVirtualDestinationHTTPS(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+// testGlobalVirtualDestinationHTTPS making https requests for a virtual destination
+// because of locality priority routing, we should see routing to local cluster first always
+func testGlobalVirtualDestinationHTTPS(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
 	// frontend calling backend in mesh using virtual destination in same cluster
-	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend"))
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
 	backendHost := "https-backend.solo.io"
 
 	src.CallOrFail(t, echo.CallOptions{
@@ -217,16 +154,37 @@ func testVirtualDestinationHTTPS(ctx resource.Context, t *testing.T, deploymentC
 		Method:    http.MethodGet,
 		Path:      "",
 		Count:     5,
-		Validator: echo.ExpectOK(),
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
+		CaCert:    echo2.GetEchoCACert(),
+	})
+
+	cluster = ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "https",
+			ServicePort: 9443,
+			TLS:         true,
+		},
+		Scheme:    scheme.HTTPS,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
 		CaCert:    echo2.GetEchoCACert(),
 	})
 }
 
-// testVirtualDestinationTCP making tcp requests for a virtual destination
-func testVirtualDestinationTCP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+// testGlobalVirtualDestinationTCP making tcp requests for a virtual destination
+// because of locality priority routing, we should see routing to local cluster first always
+func testGlobalVirtualDestinationTCP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
 	// frontend calling backend in mesh using virtual destination in same cluster
-	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend"))
-	backendHost := "http-backend.solo.io"
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+	backendHost := "tcp-backend.solo.io"
 
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
@@ -236,38 +194,20 @@ func testVirtualDestinationTCP(ctx resource.Context, t *testing.T, deploymentCtx
 		Scheme:    scheme.TCP,
 		Address:   backendHost,
 		Count:     5,
-		Validator: echo.ExpectOK(),
-	})
-}
-
-// testTimeoutTrafficPolicy calling frontend applications to test timeout
-func testTimeoutTrafficPolicy(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
-	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("backend"))
-	frontendHost := "frontend." + deploymentCtx.EchoContext.AppNamespace.Name() + ".svc.cluster.local"
-
-	src.CallOrFail(t, echo.CallOptions{
-		Port: &echo.Port{
-			Protocol:    "http",
-			ServicePort: 8090,
-		},
-		Scheme:    scheme.HTTP,
-		Address:   frontendHost,
-		Method:    http.MethodGet,
-		Path:      "",
-		Count:     5,
-		Validator: echo.ExpectOK(),
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
 	})
 
+	cluster = ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
-			Protocol:    "http",
-			ServicePort: 8090,
+			Protocol:    "tcp",
+			ServicePort: 9000,
 		},
-		Scheme:    scheme.HTTP,
-		Address:   frontendHost,
-		Method:    http.MethodGet,
-		Path:      "/?delay=4s",
+		Scheme:    scheme.TCP,
+		Address:   backendHost,
 		Count:     5,
-		Validator: echo.ExpectCode("408"),
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(cluster.Name())),
 	})
 }

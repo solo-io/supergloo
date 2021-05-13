@@ -16,7 +16,7 @@ metadata:
   name: backend
   namespace: gloo-mesh
 spec:
-  hostname: http-backend.solo.io
+  hostname: tcp-backend.solo.io
   port:
     number: 9000
     protocol: tcp
