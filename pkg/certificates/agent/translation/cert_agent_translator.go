@@ -118,6 +118,11 @@ func (c *certAgentTranslator) IssuedCertiticatePending(
 		Type: PrivateKeySecretType(),
 	})
 
+	// Use deprecated field if present
+	if issuedCertificate.Spec.GetCertOptions().GetOrgName() != "" {
+		issuedCertificate.Spec.Org = issuedCertificate.Spec.GetCertOptions().GetOrgName()
+	}
+
 	// create certificate request for private key
 	csrBytes, err := utils.GenerateCertificateSigningRequest(
 		issuedCertificate.Spec.Hosts,
