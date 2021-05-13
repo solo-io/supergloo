@@ -54,7 +54,7 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | caPath | string |  | ca_path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name". |
-  | csrPath | string |  | ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g: "my_pki_mount/intermediate/generate/exported". exported is necessary here as istio needs access to the private key |
+  | csrPath | string |  | ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g: "my_pki_mount/intermediate/generate/exported". "exported" is necessary here as istio needs access to the private key |
   | server | string |  | Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200". |
   | caBundle | bytes |  | PEM encoded CA bundle used to validate Vault server certificate. Only used if the Server URL is using HTTPS protocol. This parameter is ignored for plain HTTP protocol connection. If not set the system root certificates are used to validate the TLS connection. |
   | namespace | string |  | Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces |

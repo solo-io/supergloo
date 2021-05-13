@@ -15,7 +15,7 @@ message VaultCA {
 
 	// ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g:
 	// "my_pki_mount/intermediate/generate/exported".
-  // exported is necessary here as istio needs access to the private key
+  // "exported" is necessary here as istio needs access to the private key
   string csr_path = 2;
 
   // Server is the connection address for the Vault server, e.g: "https://vault.example.com:8200".
@@ -60,7 +60,6 @@ message VaultCA {
     // A required field containing the Vault Role to assume. A Role binds a
   	// Kubernetes ServiceAccount with a set of Vault policies.
     string role = 4;
-
   }
 
 }

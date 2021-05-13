@@ -48,7 +48,7 @@ Set of options which represent the certificate authorities the remote cluster ca
 <a name="certificates.mesh.gloo.solo.io.GlooMeshCA"></a>
 
 ### GlooMeshCA
-Set of options which represent the certificate authorities the management cluster can use to sign the intermediate certs
+Set of options which represent the certificate authorities the management cluster can use to sign the intermediate certs.
 
 
 | Field | Type | Label | Description |
@@ -69,9 +69,9 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | hosts | []string | repeated | A list of hostnames and IPs to generate a certificate for. This can also be set to the identity running the workload, e.g. a Kubernetes service account.<br>Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.<br>"cluster.local" may be replaced by the root of trust domain for the mesh. |
-  | org | string |  | Deprecated in favor of `common_cert_options.org_name` |
-  | signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Deprecated in favor of `gloo_mesh_ca.signing_certificate_secret` The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster). |
-  | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster). If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only) |
+  | org | string |  | DEPRECATED: in favor of `common_cert_options.org_name` |
+  | signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret` The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster). |
+  | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster). If nil, the sidecar agent stores the signing certificate in memory. (Enterprise only) |
   | podBounceDirective | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce (delete and cause a restart) when the certificate is issued.<br>Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate due to [this issue](https://github.com/istio/istio/issues/22993).<br>This will include the control plane pods as well as any Pods which share a data plane with the target mesh. |
   | certOptions | [common.mesh.gloo.solo.io.CommonCertOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.certificates#common.mesh.gloo.solo.io.CommonCertOptions" >}}) |  | Set of options to configure the intermediate certificate being generated |
   | glooMeshCa | [certificates.mesh.gloo.solo.io.GlooMeshCA]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.GlooMeshCA" >}}) |  | Gloo Mesh CA options |

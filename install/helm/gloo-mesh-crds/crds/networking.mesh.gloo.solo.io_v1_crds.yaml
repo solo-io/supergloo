@@ -1006,18 +1006,10 @@ spec:
                                         - generated
                                       - required:
                                         - secret
-                                      - {}
                                   - required:
                                     - generated
                                   - required:
                                     - secret
-                                  - not:
-                                      anyOf:
-                                      - {}
-                                      - required:
-                                        - generated
-                                      - required:
-                                        - secret
                               required:
                               - rootCertificateAuthority
                             - properties:
@@ -1066,18 +1058,10 @@ spec:
                                     - generated
                                   - required:
                                     - secret
-                                  - {}
                               - required:
                                 - generated
                               - required:
                                 - secret
-                              - not:
-                                  anyOf:
-                                  - {}
-                                  - required:
-                                    - generated
-                                  - required:
-                                    - secret
                           required:
                           - rootCertificateAuthority
                         - properties:
@@ -1135,18 +1119,10 @@ spec:
                                     - generated
                                   - required:
                                     - secret
-                                  - {}
                               - required:
                                 - generated
                               - required:
                                 - secret
-                              - not:
-                                  anyOf:
-                                  - {}
-                                  - required:
-                                    - generated
-                                  - required:
-                                    - secret
                           required:
                           - rootCertificateAuthority
                         - properties:
@@ -1195,18 +1171,10 @@ spec:
                                 - generated
                               - required:
                                 - secret
-                              - {}
                           - required:
                             - generated
                           - required:
                             - secret
-                          - not:
-                              anyOf:
-                              - {}
-                              - required:
-                                - generated
-                              - required:
-                                - secret
                       required:
                       - rootCertificateAuthority
                     - properties:
@@ -1296,7 +1264,7 @@ spec:
                         vault:
                           description: Use vault as the intermediate CA source
                           properties:
-                            CaBundle:
+                            caBundle:
                               description: |-
                                 PEM encoded CA bundle used to validate Vault server certificate. Only used
                                 if the Server URL is using HTTPS protocol. This parameter is ignored for
