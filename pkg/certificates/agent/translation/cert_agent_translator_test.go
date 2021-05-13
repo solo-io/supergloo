@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -36,6 +37,7 @@ var _ = Describe("CertAgentTranslator", func() {
 	AfterEach(func() {
 		ctrl.Finish()
 	})
+
 	Context("IssuedCertiticatePending", func() {
 
 		It("will do nothing if no IssuedCertSecret is not present", func() {
@@ -51,10 +53,8 @@ var _ = Describe("CertAgentTranslator", func() {
 			Expect(csrBytes).To(BeNil())
 		})
 
-		It("Will create the provate key secret, and return CSR bytes", func() {
+		It("Will create the private key secret, and return CSR bytes", func() {
 			translator := translation.NewCertAgentTranslator()
-
-			// Cannot match secret, and CSR directly as private key and CSR bytes are not idempotent
 
 			issuedCertiticate := &certificatesv1.IssuedCertificate{
 				ObjectMeta: metav1.ObjectMeta{
@@ -99,7 +99,7 @@ var _ = Describe("CertAgentTranslator", func() {
 
 	})
 
-	FContext("IssuedCertiticateRequested", func() {
+	Context("IssuedCertiticateRequested", func() {
 
 		It("will do nothing if no IssuedCertSecret is not present", func() {
 
@@ -198,6 +198,53 @@ var _ = Describe("CertAgentTranslator", func() {
 	})
 
 	Context("IssuedCertiticateIssued", func() {
+
+		It("will do nothing if no IssuedCertSecret is not present", func() {
+
+			translator := translation.NewCertAgentTranslator()
+
+			issuedCertiticate := &certificatesv1.IssuedCertificate{}
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				Build()
+
+			continueIterating, err := translator.IssuedCertificateIssued(ctx, issuedCertiticate, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(continueIterating).To(BeFalse())
+		})
+
+		It("Will create the provate key secret, and return CSR bytes", func() {
+			translator := translation.NewCertAgentTranslator()
+
+			issuedCertSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "issued",
+					Namespace: "cert",
+				},
+			}
+
+			issuedCertiticate := &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "name",
+					Namespace: "namespace",
+				},
+				Spec: certificatesv1.IssuedCertificateSpec{
+					IssuedCertificateSecret: ezkube.MakeObjectRef(issuedCertSecret),
+					CertOptions: &v1.CommonCertOptions{
+						OrgName: "istio",
+					},
+				},
+			}
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddSecrets([]*corev1.Secret{issuedCertSecret}).
+				Build()
+
+			mockOutput.EXPECT().
+				AddSecrets(issuedCertSecret)
+
+			continueIterating, err := translator.IssuedCertificateIssued(ctx, issuedCertiticate, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(continueIterating).To(BeTrue())
+		})
 
 	})
 })
