@@ -17,22 +17,21 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 /*
-    VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
-    A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
+    VirtualGateway is the top-level object for configuring ingress into a Mesh or VirtualMesh.
+    A single VirtualGateway can apply to multiple deployed ingress pods and sidecars across meshes and clusters contained within a VirtualMesh.
     VirtualGateways can route traffic to destination services which live in a specific cluster or mesh.
-    This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to
+    This allows VirtualGateways to route traffic from an ingress or sidecar in one mesh to a service in another. In order to
     perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
 */
 message VirtualGatewaySpec {
 
-    // The bind address the gateway should serve traffic on
-    // This maps to the Envoy Listener address.
-    // Defaults to "::" or "0.0.0.0".
-    string bind_address = 1;
+    // deploy this VirtualGateway to one or more Ingress Gateway workloads
+    // {{/* TODO: evaluate supporting multiple ingress gateway deployments per VG */}}
+    DeployToIngressGateway deploy_to_ingress_gateways = 1;
 
-    // The bind port where the gateway workload will listen for connections.
-    // This maps to the Envoy Listener port.
-    uint32 bind_port = 2;
+    // deploy this VirtualGateway to one or more workload sidecars
+    // {{/* NOTE: unimplemented */}}
+    repeated .common.mesh.gloo.solo.io.WorkloadSelector deploy_to_sidecars = 2;
 
     // Each Gateway must implement one or more ConnectionHandlers.
     // A ConnectionHandler instructs the gateway how to handle clients 
@@ -43,16 +42,29 @@ message VirtualGatewaySpec {
     // on the same Gateway, e.g. one for TCP and one for HTTP traffic.
     repeated ConnectionHandler connection_handlers = 3;
 
-    // Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to.
-    // Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services
-    // being routed to.
-    repeated .common.mesh.gloo.solo.io.WorkloadSelector gateway_workloads = 4;
-
-
     // Options applied to all clients who connect to this gateway
     GatewayOptions gateway_options = 5;
 
-    // Each ConnnectionHandler specifies a `connectionMatch` (required if using multiple ConnectionHandlers) and 
+    // Options for deploying the VirtualGateway to an Istio Ingress Gateway
+    message DeployToIngressGateway {
+
+        // The bind address the gateway should serve traffic on
+        // This maps to the Envoy Listener address.
+        // Defaults to "::" or "0.0.0.0".
+        string bind_address = 1;
+
+        // The bind port where the gateway workload will listen for connections.
+        // This maps to the Envoy Listener port.
+        uint32 bind_port = 2;
+
+        // Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to.
+        // Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services
+        // being routed to.
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector gateway_workloads = 3;
+
+    }
+
+    // Each ConnnectionHandler specifies a `connectionMatch` (required if using multiple ConnectionHandlers) and
     // a set of (HTTP or TCP) routes to serve matched connections.
     message ConnectionHandler {
         // Additional options for matching a connection to a specific gateway.
