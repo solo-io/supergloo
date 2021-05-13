@@ -96,6 +96,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSecret(clusterName, o
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileSecret), clusterName, obj)
 }
 
+// ReconcileServiceAccount mocks base method
+func (m *MockmultiClusterReconciler) ReconcileServiceAccount(clusterName string, obj *v10.ServiceAccount) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileServiceAccount", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileServiceAccount indicates an expected call of ReconcileServiceAccount
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileServiceAccount(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceAccount", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileServiceAccount), clusterName, obj)
+}
+
 // ReconcileConfigMap mocks base method
 func (m *MockmultiClusterReconciler) ReconcileConfigMap(clusterName string, obj *v10.ConfigMap) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -207,6 +222,21 @@ func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v10.Secret) (reconcil
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSecret(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileSecret), obj)
+}
+
+// ReconcileServiceAccount mocks base method
+func (m *MocksingleClusterReconciler) ReconcileServiceAccount(obj *v10.ServiceAccount) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileServiceAccount", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileServiceAccount indicates an expected call of ReconcileServiceAccount
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileServiceAccount(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceAccount", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileServiceAccount), obj)
 }
 
 // ReconcileConfigMap mocks base method

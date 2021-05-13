@@ -30,6 +30,7 @@ var (
 			"Secret",
 			"Pod",
 			"ConfigMap",
+			"ServiceAccount",
 		},
 	}
 
