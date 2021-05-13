@@ -8,7 +8,6 @@ import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -51,7 +50,7 @@ var (
 	// used when the user provides a nil root cert
 	defaultSelfSignedRootCa = &networkingv1.RootCertificateAuthority{
 		CaSource: &networkingv1.RootCertificateAuthority_Generated{
-			Generated: &commonv1.CommonCertOptions{
+			Generated: &certificatesv1.CommonCertOptions{
 				TtlDays:         defaultRootCertTTLDays,
 				RsaKeySizeBytes: defaultRootCertRsaKeySize,
 				OrgName:         defaultOrgName,
@@ -320,7 +319,7 @@ const (
 )
 
 func generateSelfSignedCert(
-	builtinCA *commonv1.CommonCertOptions,
+	builtinCA *certificatesv1.CommonCertOptions,
 ) (*secrets.RootCAData, error) {
 	org := defaultOrgName
 	if builtinCA.GetOrgName() != "" {
