@@ -278,6 +278,7 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							Namespace:      "namespace",
+							Name:           "ingress-svc",
 							WorkloadLabels: workloadLabels,
 							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 								Ip: "12.34.56.78",
