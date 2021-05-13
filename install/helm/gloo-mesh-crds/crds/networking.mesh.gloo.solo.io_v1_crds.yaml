@@ -1281,7 +1281,7 @@ spec:
                               description: |-
                                 ca_path is the mount path of the Vault PKI backend's `generate` endpoint, e.g:
                                 "my_pki_mount/intermediate/generate/exported".
-                                exported is necessary here as istio needs access to the private key
+                                "exported" is necessary here as istio needs access to the private key
                               type: string
                             kubernetesAuth:
                               description: |-
