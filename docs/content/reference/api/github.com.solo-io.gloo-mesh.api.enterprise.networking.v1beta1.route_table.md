@@ -18,11 +18,28 @@ title: "route_table.proto"
 
 
 ## Table of Contents
+  - [Matcher](#networking.enterprise.mesh.gloo.solo.io.Matcher)
   - [RouteTableSpec](#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec)
   - [RouteTableStatus](#networking.enterprise.mesh.gloo.solo.io.RouteTableStatus)
   - [SelectedBy](#networking.enterprise.mesh.gloo.solo.io.SelectedBy)
 
 
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.Matcher"></a>
+
+### Matcher
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| type | string |  | Matcher type. Can be Exact, Prefix, or Regex |
+  | path | string |  | The (combined) path so far in the delegation chain leading to this RouteTable |
+  
 
 
 
@@ -73,6 +90,7 @@ RouteTable is a resource which can be referenced either from the top level Virtu
 | name | string |  | Name of resource selecting this RouteTable |
   | namespace | string |  | Namespace of resource selecting this RouteTable |
   | type | string |  | Type of resource selecting this RouteTable. Can be VirtualGateway, VirtualHost, or RouteTable. |
+  | matchers | [][networking.enterprise.mesh.gloo.solo.io.Matcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.Matcher" >}}) | repeated | The path from the parent which selected this RouteTable |
   
 
 

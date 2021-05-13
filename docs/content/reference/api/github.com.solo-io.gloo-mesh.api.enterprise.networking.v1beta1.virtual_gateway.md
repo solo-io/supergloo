@@ -21,6 +21,7 @@ title: "virtual_gateway.proto"
   - [SDSConfig](#networking.enterprise.mesh.gloo.solo.io.SDSConfig)
   - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
   - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
+  - [SelectedGatewayWorkload](#networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload)
   - [VirtualGatewaySpec](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec)
   - [VirtualGatewaySpec.ConnectionHandler](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler)
   - [VirtualGatewaySpec.ConnectionHandler.ConnectionMatch](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch)
@@ -38,11 +39,10 @@ title: "virtual_gateway.proto"
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions)
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings)
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig)
+  - [VirtualGatewaySpec.DeployToIngressGateway](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway)
   - [VirtualGatewaySpec.GatewayOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions)
   - [VirtualGatewayStatus](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus)
   - [VirtualGatewayStatus.CreatedIstioGatewaysEntry](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry)
-  - [selectedGateway](#networking.enterprise.mesh.gloo.solo.io.selectedGateway)
-  - [selectedVirtualHost](#networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost)
 
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion)
 
@@ -101,18 +101,35 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload"></a>
 
-### VirtualGatewaySpec
-VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh. A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh. VirtualGateways can route traffic to destination services which live in a specific cluster or mesh. This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
+### SelectedGatewayWorkload
+a gateway workload (e.g. Deployment) where a virtual gateway will be served
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| bindAddress | string |  | The bind address the gateway should serve traffic on This maps to the Envoy Listener address. Defaults to "::" or "0.0.0.0". |
-  | bindPort | uint32 |  | The bind port where the gateway workload will listen for connections. This maps to the Envoy Listener port. |
+| name | string |  | the name of the gateway workload |
+  | namespace | string |  | the namespace where the gateway workload is running |
+  | cluster | string |  | the cluster where the gateway workload is running |
+  | externalUrl | string |  | the external URL by which the gateway can be accessed on the given workload, if it exists |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec"></a>
+
+### VirtualGatewaySpec
+VirtualGateway is the top-level object for configuring ingress into a Mesh or VirtualMesh. A single VirtualGateway can apply to multiple deployed ingress pods and sidecars across meshes and clusters contained within a VirtualMesh. VirtualGateways can route traffic to destination services which live in a specific cluster or mesh. This allows VirtualGateways to route traffic from an ingress or sidecar in one mesh to a service in another. In order to perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| deployToIngressGateways | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway" >}}) |  | deploy this VirtualGateway to one or more Ingress Gateway workloads {{/* TODO: evaluate supporting multiple ingress gateway deployments per VG */}} |
+  | deployToSidecars | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | deploy this VirtualGateway to one or more workload sidecars {{/* NOTE: unimplemented */}} |
   | connectionHandlers | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler" >}}) | repeated | Each Gateway must implement one or more ConnectionHandlers. A ConnectionHandler instructs the gateway how to handle clients  which have connected to the specified bind address. Typically `connectionHandlers` will consist of a single `http` handler which serves HTTP Routes defined in a set of VirtualHosts. Multiple `connectionHandlers` can be specified to provide different behavior on the same Gateway, e.g. one for TCP and one for HTTP traffic. |
-  | gatewayWorkloads | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to. Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services being routed to. |
   | gatewayOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions" >}}) |  | Options applied to all clients who connect to this gateway |
   
 
@@ -123,7 +140,7 @@ VirtualGateway is the top-level object for configuring ingress from a Mesh or Vi
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler"></a>
 
 ### VirtualGatewaySpec.ConnectionHandler
-Each ConnnectionHandler specifies a `connectionMatch` (required if using multiple ConnectionHandlers) and  a set of (HTTP or TCP) routes to serve matched connections.
+Each ConnnectionHandler specifies a `connectionMatch` (required if using multiple ConnectionHandlers) and a set of (HTTP or TCP) routes to serve matched connections.
 
 
 | Field | Type | Label | Description |
@@ -383,6 +400,23 @@ Configuration for tunneling TCP over other transports or application layers.
 
 
 
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway"></a>
+
+### VirtualGatewaySpec.DeployToIngressGateway
+Options for deploying the VirtualGateway to an Istio Ingress Gateway
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| bindAddress | string |  | The bind address the gateway should serve traffic on This maps to the Envoy Listener address. Defaults to "::" or "0.0.0.0". |
+  | bindPort | uint32 |  | The bind port where the gateway workload will listen for connections. This maps to the Envoy Listener port. |
+  | gatewayWorkloads | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to. Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services being routed to. |
+  
+
+
+
+
+
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions"></a>
 
 ### VirtualGatewaySpec.GatewayOptions
@@ -410,8 +444,8 @@ TODO: Fill in more options<br>route-level options (inherited by route)
 | observedGeneration | int64 |  | The most recent generation observed in the the VirtualGateway metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
-  | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.selectedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.selectedGateway" >}}) | repeated |  |
-  | selectedVirtualHosts | [][networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost" >}}) | repeated |  |
+  | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload" >}}) | repeated |  |
+  | selectedVirtualHosts | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated |  |
   | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
   | createdIstioGateways | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry" >}}) | repeated | List of Istio Gateway CRs created by this VirtualGateway in each cluster |
   
@@ -430,41 +464,6 @@ TODO: Fill in more options<br>route-level options (inherited by route)
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
   | value | [common.mesh.gloo.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.refs#common.mesh.gloo.solo.io.ObjectRefList" >}}) |  |  |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.selectedGateway"></a>
-
-### selectedGateway
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  |  |
-  | namespace | string |  |  |
-  | cluster | string |  |  |
-  | externalUrl | string |  |  |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.selectedVirtualHost"></a>
-
-### selectedVirtualHost
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  |  |
-  | namespace | string |  |  |
-  | cluster | string |  |  |
   
 
 

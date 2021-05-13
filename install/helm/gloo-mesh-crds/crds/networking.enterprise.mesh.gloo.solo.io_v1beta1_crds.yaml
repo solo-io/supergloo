@@ -4490,6 +4490,20 @@ spec:
                 Can be VirtualHosts or other RouteTables
               items:
                 properties:
+                  matchers:
+                    description: The path from the parent which selected this RouteTable
+                    items:
+                      properties:
+                        path:
+                          description: |-
+                            The (combined) path so far in the delegation chain
+                            leading to this RouteTable
+                          type: string
+                        type:
+                          description: Matcher type. Can be Exact, Prefix, or Regex
+                          type: string
+                      type: object
+                    type: array
                   name:
                     description: Name of resource selecting this RouteTable
                     type: string

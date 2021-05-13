@@ -183,5 +183,54 @@ func (m *SelectedBy) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetMatchers()) != len(target.GetMatchers()) {
+		return false
+	}
+	for idx, v := range m.GetMatchers() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetMatchers()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetMatchers()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *Matcher) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*Matcher)
+	if !ok {
+		that2, ok := that.(Matcher)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetType(), target.GetType()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetPath(), target.GetPath()) != 0 {
+		return false
+	}
+
 	return true
 }

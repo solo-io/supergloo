@@ -53,5 +53,15 @@ message SelectedBy {
     // VirtualGateway, VirtualHost, or RouteTable.
     string type = 3;
     
-    // TODO: Path selected upon?
+    // The path from the parent which selected this RouteTable
+    repeated Matcher matchers = 4;
+}
+
+message Matcher {
+    // Matcher type. Can be Exact, Prefix, or Regex
+    string type = 1;
+    
+    // The (combined) path so far in the delegation chain
+    // leading to this RouteTable
+    string path = 2;
 }
