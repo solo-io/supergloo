@@ -75,7 +75,7 @@ message IssuedCertificateSpec {
 // Set of options which represent the certificate authorities the management cluster can use
 // to sign the intermediate certs
 message GlooMeshCA {
-    // Signing method which gloo-mesh management will use to sign the intermediate cert
+    // Certificate authority which gloo-mesh management will use to sign the intermediate cert
     oneof signer {
         .core.skv2.solo.io.ObjectRef signing_certificate_secret = 1;
     }
@@ -85,7 +85,7 @@ message GlooMeshCA {
 // Set of options which represent the certificate authorities the remote cluster can use
 // to sign the intermediate certs
 message AgentCA {
-    // Signing method which pki-agent will use to sign the intermediate cert
+    // Certificate authority which pki-agent will use to sign the intermediate cert
     oneof signer {
         .common.mesh.gloo.solo.io.VaultCA vault_ca = 1;
     }

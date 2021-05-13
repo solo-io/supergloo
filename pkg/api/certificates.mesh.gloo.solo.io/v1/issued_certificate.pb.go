@@ -273,7 +273,7 @@ type GlooMeshCA struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Signing method which gloo-mesh management will use to sign the intermediate cert
+	// Certificate authority which gloo-mesh management will use to sign the intermediate cert
 	//
 	// Types that are assignable to Signer:
 	//	*GlooMeshCA_SigningCertificateSecret
@@ -343,7 +343,7 @@ type AgentCA struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Signing method which pki-agent will use to sign the intermediate cert
+	// Certificate authority which pki-agent will use to sign the intermediate cert
 	//
 	// Types that are assignable to Signer:
 	//	*AgentCA_VaultCa

@@ -145,7 +145,6 @@ message RootCertificateAuthority {
         // Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
         .core.skv2.solo.io.ObjectRef secret = 2;
 
-        // .common.mesh.gloo.solo.io.VaultCA vault = 3;
     }    
 }
 
