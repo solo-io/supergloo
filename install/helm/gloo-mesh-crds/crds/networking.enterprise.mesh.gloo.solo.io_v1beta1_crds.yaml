@@ -813,25 +813,12 @@ spec:
       properties:
         spec:
           description: |-
-            VirtualGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
-               A single VirtualGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
+            VirtualGateway is the top-level object for configuring ingress into a Mesh or VirtualMesh.
+               A single VirtualGateway can apply to multiple deployed ingress pods and sidecars across meshes and clusters contained within a VirtualMesh.
                VirtualGateways can route traffic to destination services which live in a specific cluster or mesh.
-               This allows VirtualGateways to route traffic from an ingress in one mesh to a service in another. In order to
+               This allows VirtualGateways to route traffic from an ingress or sidecar in one mesh to a service in another. In order to
                perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
           properties:
-            bindAddress:
-              description: |-
-                The bind address the gateway should serve traffic on
-                This maps to the Envoy Listener address.
-                Defaults to "::" or "0.0.0.0".
-              type: string
-            bindPort:
-              description: |-
-                The bind port where the gateway workload will listen for connections.
-                This maps to the Envoy Listener port.
-              maximum: 4294967295
-              minimum: 0
-              type: integer
             connectionHandlers:
               description: |-
                 Each Gateway must implement one or more ConnectionHandlers.
@@ -2174,6 +2161,100 @@ spec:
                     type: object
                 type: object
               type: array
+            deployToIngressGateways:
+              description: |-
+                deploy this VirtualGateway to one or more Ingress Gateway workloads
+                {{/* TODO: evaluate supporting multiple ingress gateway deployments per VG */}}
+              properties:
+                bindAddress:
+                  description: |-
+                    The bind address the gateway should serve traffic on
+                    This maps to the Envoy Listener address.
+                    Defaults to "::" or "0.0.0.0".
+                  type: string
+                bindPort:
+                  description: |-
+                    The bind port where the gateway workload will listen for connections.
+                    This maps to the Envoy Listener port.
+                  maximum: 4294967295
+                  minimum: 0
+                  type: integer
+                gatewayWorkloads:
+                  description: |-
+                    Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to.
+                    Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services
+                    being routed to.
+                  items:
+                    properties:
+                      kubeWorkloadMatcher:
+                        description: Match Kubernetes workloads by their labels, namespaces,
+                          and/or clusters.
+                        properties:
+                          clusters:
+                            description: |-
+                              If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+                                         When used in a networking policy, omission matches any cluster.
+                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                            items:
+                              type: string
+                            type: array
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: |-
+                              If specified, all labels must exist on Kubernetes workload.
+                                     When used in a networking policy, omission matches any labels.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                            type: object
+                          namespaces:
+                            description: |-
+                              If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+                                         When used in a networking policy, omission matches any namespace.
+                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  type: array
+              type: object
+            deployToSidecars:
+              description: |-
+                deploy this VirtualGateway to one or more workload sidecars
+                {{/* NOTE: unimplemented */}}
+              items:
+                properties:
+                  kubeWorkloadMatcher:
+                    description: Match Kubernetes workloads by their labels, namespaces,
+                      and/or clusters.
+                    properties:
+                      clusters:
+                        description: |-
+                          If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+                                     When used in a networking policy, omission matches any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                        items:
+                          type: string
+                        type: array
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          If specified, all labels must exist on Kubernetes workload.
+                                 When used in a networking policy, omission matches any labels.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                        type: object
+                      namespaces:
+                        description: |-
+                          If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+                                     When used in a networking policy, omission matches any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                type: object
+              type: array
             gatewayOptions:
               description: Options applied to all clients who connect to this gateway
               properties:
@@ -2566,44 +2647,6 @@ spec:
                       type: object
                   type: object
               type: object
-            gatewayWorkloads:
-              description: |-
-                Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to.
-                Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services
-                being routed to.
-              items:
-                properties:
-                  kubeWorkloadMatcher:
-                    description: Match Kubernetes workloads by their labels, namespaces,
-                      and/or clusters.
-                    properties:
-                      clusters:
-                        description: |-
-                          If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                                     When used in a networking policy, omission matches any cluster.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
-                        items:
-                          type: string
-                        type: array
-                      labels:
-                        additionalProperties:
-                          type: string
-                        description: |-
-                          If specified, all labels must exist on Kubernetes workload.
-                                 When used in a networking policy, omission matches any labels.
-                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
-                        type: object
-                      namespaces:
-                        description: |-
-                          If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                                     When used in a networking policy, omission matches any namespace.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
-                        items:
-                          type: string
-                        type: array
-                    type: object
-                type: object
-              type: array
           type: object
         status:
           properties:
@@ -2642,12 +2685,17 @@ spec:
               items:
                 properties:
                   cluster:
+                    description: the cluster where the gateway workload is running
                     type: string
                   externalUrl:
+                    description: the external URL by which the gateway can be accessed
+                      on the given workload, if it exists
                     type: string
                   name:
+                    description: the name of the gateway workload
                     type: string
                   namespace:
+                    description: the namespace where the gateway workload is running
                     type: string
                 type: object
               type: array
@@ -2667,11 +2715,11 @@ spec:
             selectedVirtualHosts:
               items:
                 properties:
-                  cluster:
-                    type: string
                   name:
+                    description: name of the resource being referenced
                     type: string
                   namespace:
+                    description: namespace of the resource being referenced
                     type: string
                 type: object
               type: array
