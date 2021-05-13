@@ -23,8 +23,13 @@ type Output struct {
 // the output resources as defined by the `Output` resource below.
 
 type Translator interface {
+	// Determines whether or not the reconciler should process the 
+	ShouldProcess(
+		ctx context.Context,
+		issuedCertificate *certificatesv1.IssuedCertificate,
+	) bool
+
 	// Translate the input resources into the SignedCert and SigningRootCa
-	// If resource is not relevant to the translator being called, return nil, nil
 	Translate(
 		ctx context.Context,
 		certificateRequest *certificatesv1.CertificateRequest,

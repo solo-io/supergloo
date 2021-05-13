@@ -131,6 +131,12 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 	inputSnap input.Snapshot,
 	outputs certagent.Builder,
 ) error {
+
+	// If this translator doesn't own the resource, return early
+	if !r.translator.ShouldProcess(r.ctx, issuedCertificate) {
+		return nil
+	}
+
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_PENDING
@@ -148,7 +154,7 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 		if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
 			return nil
 		}
-		
+
 		if issuedCertificateSecret, err := inputSnap.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// ensure issued cert secret exists, nothing to do for this issued certificate
 			// add secret output to prevent it from being GC'ed
@@ -196,28 +202,21 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 			return err
 		}
 
-		continueIterating, err := r.translator.IssuedCertificateRequested(
+		if err := r.translator.IssuedCertificateRequested(
 			r.ctx,
 			issuedCertificate,
 			certificateRequest,
 			inputSnap,
 			outputs,
-		)
-		if err != nil {
+		); err != nil {
 			return err
-		} else if !continueIterating {
-			return nil
 		}
 
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_ISSUED
 	case certificatesv1.IssuedCertificateStatus_ISSUED:
 
-		// TODO: add owner variable here to decide who runs the pod_bouncer
-		continueIterating, err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs)
-		if err != nil {
+		if err := r.translator.IssuedCertificateIssued(r.ctx, issuedCertificate, inputSnap, outputs); err != nil {
 			return err
-		} else if !continueIterating {
-			return nil
 		}
 
 		// see if we need to bounce pods

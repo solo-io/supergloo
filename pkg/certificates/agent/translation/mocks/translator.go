@@ -6,12 +6,11 @@ package mock_translation
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -37,6 +36,20 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
+// ShouldProcess mocks base method
+func (m *MockTranslator) ShouldProcess(ctx context.Context, issuedCertificate *v1.IssuedCertificate) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ShouldProcess", ctx, issuedCertificate)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ShouldProcess indicates an expected call of ShouldProcess
+func (mr *MockTranslatorMockRecorder) ShouldProcess(ctx, issuedCertificate interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldProcess", reflect.TypeOf((*MockTranslator)(nil).ShouldProcess), ctx, issuedCertificate)
+}
+
 // IssuedCertiticatePending mocks base method
 func (m *MockTranslator) IssuedCertiticatePending(ctx context.Context, issuedCertificate *v1.IssuedCertificate, inputs input.Snapshot, outputs certagent.Builder) ([]byte, error) {
 	m.ctrl.T.Helper()
@@ -53,12 +66,11 @@ func (mr *MockTranslatorMockRecorder) IssuedCertiticatePending(ctx, issuedCertif
 }
 
 // IssuedCertificateRequested mocks base method
-func (m *MockTranslator) IssuedCertificateRequested(ctx context.Context, issuedCertificate *v1.IssuedCertificate, certificateRequest *v1.CertificateRequest, inputs input.Snapshot, outputs certagent.Builder) (bool, error) {
+func (m *MockTranslator) IssuedCertificateRequested(ctx context.Context, issuedCertificate *v1.IssuedCertificate, certificateRequest *v1.CertificateRequest, inputs input.Snapshot, outputs certagent.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificateRequested", ctx, issuedCertificate, certificateRequest, inputs, outputs)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // IssuedCertificateRequested indicates an expected call of IssuedCertificateRequested
@@ -68,12 +80,11 @@ func (mr *MockTranslatorMockRecorder) IssuedCertificateRequested(ctx, issuedCert
 }
 
 // IssuedCertificateIssued mocks base method
-func (m *MockTranslator) IssuedCertificateIssued(ctx context.Context, issuedCertificate *v1.IssuedCertificate, inputs input.Snapshot, outputs certagent.Builder) (bool, error) {
+func (m *MockTranslator) IssuedCertificateIssued(ctx context.Context, issuedCertificate *v1.IssuedCertificate, inputs input.Snapshot, outputs certagent.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificateIssued", ctx, issuedCertificate, inputs, outputs)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // IssuedCertificateIssued indicates an expected call of IssuedCertificateIssued

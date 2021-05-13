@@ -49,6 +49,9 @@ func IssuedCertificateSecretType() corev1.SecretType {
 // ISSUED
 // FINISHED
 type Translator interface {
+
+	// Should the reconciler process this resource
+	ShouldProcess(ctx context.Context, issuedCertificate *certificatesv1.IssuedCertificate) bool
 	// This function is called when the IssuedCertiticate is first created, it is meant to create the CSR
 	// and return the bytes directly
 	// If both return values are nil, it signals to the reconciler to ignore this resource.
@@ -71,18 +74,17 @@ type Translator interface {
 		certificateRequest *certificatesv1.CertificateRequest,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
-	) (continueIterating bool, err error)
+	) error
 
 	// This function is called when the IssuedCertiticate has been ISSUED, this means that the
 	// CertificateRequest has been fulfilled by the relevant party. By this stage the intermediate
 	// cert should already have made it to it's destination.
-	// If err == nil, and continueIterating == false it signals to the reconciler to ignore this resource.
 	IssuedCertificateIssued(
 		ctx context.Context,
 		issuedCertificate *certificatesv1.IssuedCertificate,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
-	) (continueIterating bool, err error)
+	) error
 }
 
 func NewCertAgentTranslator() Translator {
@@ -91,17 +93,16 @@ func NewCertAgentTranslator() Translator {
 
 type certAgentTranslator struct{}
 
+func (c *certAgentTranslator) ShouldProcess(ctx context.Context, issuedCertificate *certificatesv1.IssuedCertificate) bool {
+	return issuedCertificate.Spec.GetIssuedCertificateSecret() != nil
+}
+
 func (c *certAgentTranslator) IssuedCertiticatePending(
 	ctx context.Context,
 	issuedCertificate *certificatesv1.IssuedCertificate,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
 ) ([]byte, error) {
-
-	// If IssuedCertificateSecret is nil, it means the keypair isn't meant to be written to a secret
-	if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
-		return nil, nil
-	}
 
 	// create a new private key
 	privateKey, err := utils.GeneratePrivateKey()
@@ -141,22 +142,17 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 	certificateRequest *certificatesv1.CertificateRequest,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
-) (continueIterating bool, err error) {
-
-	// If IssuedCertificateSecret is nil, it means the keypair isn't meant to be written to a secret
-	if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
-		return false, nil
-	}
+) error {
 
 	// retrieve private key
 	privateKeySecret, err := inputs.Secrets().Find(issuedCertificate)
 	if err != nil {
-		return true, err
+		return err
 	}
 	privateKey := privateKeySecret.Data[privateKeySecretKey]
 
 	if len(privateKey) == 0 {
-		return true, eris.Errorf("invalid private key found, no data provided")
+		return eris.Errorf("invalid private key found, no data provided")
 	}
 
 	switch certificateRequest.Status.State {
@@ -169,9 +165,9 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 
 		// if the certificate signing request has not been
 		// fulfilled, return and wait for the next reconcile
-		return true, nil
+		return nil
 	case certificatesv1.CertificateRequestStatus_FAILED:
-		return true, eris.Errorf("certificate request %v failed to be signed by Issuer: %v", sets.Key(certificateRequest), certificateRequest.Status.Error)
+		return eris.Errorf("certificate request %v failed to be signed by Issuer: %v", sets.Key(certificateRequest), certificateRequest.Status.Error)
 	}
 
 	signedCert := certificateRequest.Status.SignedCertificate
@@ -197,7 +193,7 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 		Type: IssuedCertificateSecretType(),
 	}
 	outputs.AddSecrets(issuedCertificateSecret)
-	return true, nil
+	return nil
 }
 
 func (c *certAgentTranslator) IssuedCertificateIssued(
@@ -205,21 +201,16 @@ func (c *certAgentTranslator) IssuedCertificateIssued(
 	issuedCertificate *certificatesv1.IssuedCertificate,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
-) (continueIterating bool, err error) {
-
-	// If IssuedCertificateSecret is nil, it means the keypair isn't meant to be written to a secret
-	if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
-		return false, nil
-	}
+) error {
 
 	// ensure issued cert secret exists, if not, return an error (restart the workflow)
 	if issuedCertificateSecret, err := inputs.Secrets().Find(
 		issuedCertificate.Spec.GetIssuedCertificateSecret(),
 	); err != nil {
-		return true, err
+		return err
 	} else {
 		// add secret output to prevent it from being GC'ed
 		outputs.AddSecrets(issuedCertificateSecret)
 	}
-	return true, nil
+	return nil
 }
