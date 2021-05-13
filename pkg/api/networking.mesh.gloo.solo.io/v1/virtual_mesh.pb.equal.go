@@ -91,54 +91,6 @@ func (m *VirtualMeshSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *IntermediateCertificateAuthority) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*IntermediateCertificateAuthority)
-	if !ok {
-		that2, ok := that.(IntermediateCertificateAuthority)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.CaSource.(type) {
-
-	case *IntermediateCertificateAuthority_Vault:
-		if _, ok := target.CaSource.(*IntermediateCertificateAuthority_Vault); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetVault()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetVault()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetVault(), target.GetVault()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.CaSource != target.CaSource {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *RootCertificateAuthority) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
