@@ -355,7 +355,11 @@ func (t *translator) constructIssuedCertificate(
 	return &certificatesv1.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
-			Hosts:                   []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
+			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
+			CertOptions: &commonv1.CommonCertOptions{
+				OrgName: defaultIstioOrg,
+			},
+			// Set deprecated field for backwards compatibility
 			Org:                     defaultIstioOrg,
 			IssuedCertificateSecret: istioCaCerts,
 			PodBounceDirective:      podBounceRef,

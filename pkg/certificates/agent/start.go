@@ -35,7 +35,7 @@ func StartFuncExt(makeExtensionOpts MakeExtensionOpts) bootstrap.StartFunc {
 
 		snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 
-		translator := translation.NewCertAgentTranslator(parameters.MasterManager.GetClient())
+		translator := translation.NewCertAgentTranslator()
 		return reconciliation.Start(
 			ctx,
 			snapshotBuilder,
