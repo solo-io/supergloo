@@ -88,11 +88,6 @@ func (o options) getHome() (string, error) {
 	return filepath.Join(userHome, ".gloo-mesh"), nil
 }
 
-type pluginBinary struct {
-	path string
-	home string
-}
-
 func checkExisting(home string, force bool) error {
 	pluginDirs := []string{"index", "receipts", "store"}
 	dirty := false
@@ -113,6 +108,13 @@ func checkExisting(home string, force bool) error {
 	for _, dir := range pluginDirs {
 		os.RemoveAll(filepath.Join(home, dir))
 	}
+
+	if _, err := os.Stat(filepath.Join(home, "bin")); os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
 	binFiles, err := ioutil.ReadDir(filepath.Join(home, "bin"))
 	if err != nil {
 		return err
@@ -122,7 +124,13 @@ func checkExisting(home string, force bool) error {
 			os.Remove(filepath.Join(home, "bin", file.Name()))
 		}
 	}
+
 	return nil
+}
+
+type pluginBinary struct {
+	path string
+	home string
 }
 
 func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error) {
@@ -141,7 +149,6 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("bin url: %s\n", binURL)
 	binData, err := get(ctx, binURL)
 	if err != nil {
 		return nil, err
@@ -164,7 +171,7 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 
 func (binary pluginBinary) run(args ...string) (string, error) {
 	cmd := exec.Command(binary.path, args...)
-	cmd.Env = append(cmd.Env, "MESHCTL_HOME="+binary.home)
+	cmd.Env = append(os.Environ(), "MESHCTL_HOME="+binary.home)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
