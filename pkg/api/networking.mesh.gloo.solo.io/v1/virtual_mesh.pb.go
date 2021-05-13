@@ -444,7 +444,7 @@ type VirtualMeshSpec_Federation struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Selectively federate Destinations to specific external meshes.
-	// If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+	// If omitted, no Destinations will be federated.
 	Selectors []*VirtualMeshSpec_Federation_FederationSelector `protobuf:"bytes,4,rep,name=selectors,proto3" json:"selectors,omitempty"`
 	// DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
 	// The "mode" in which to federate Destinations within this VirtualMesh.
@@ -535,7 +535,7 @@ type isVirtualMeshSpec_Federation_Mode interface {
 }
 
 type VirtualMeshSpec_Federation_Permissive struct {
-	// DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
+	// DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics.
 	// Expose all Destinations to all Workloads in this VirtualMesh.
 	Permissive *empty.Empty `protobuf:"bytes,1,opt,name=permissive,proto3,oneof"`
 }
