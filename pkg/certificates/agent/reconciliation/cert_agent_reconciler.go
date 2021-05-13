@@ -148,6 +148,7 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 		if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
 			return nil
 		}
+		
 		if issuedCertificateSecret, err := inputSnap.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// ensure issued cert secret exists, nothing to do for this issued certificate
 			// add secret output to prevent it from being GC'ed

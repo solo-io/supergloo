@@ -1,0 +1,20 @@
+syntax = "proto3";
+package common.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+// Configuration for generating a self-signed root certificate.
+// Uses the X.509 format, RFC5280.
+message CommonCertOptions {
+
+  // Number of days before root cert expires. Defaults to 365.
+  uint32 ttl_days = 1;
+
+  // Size in bytes of the root cert's private key. Defaults to 4096.
+  uint32 rsa_key_size_bytes = 2;
+
+  // Root cert organization name. Defaults to "gloo-mesh".
+  string org_name = 3;
+}

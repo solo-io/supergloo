@@ -79,7 +79,6 @@ message GlooMeshCA {
     oneof signer {
         .core.skv2.solo.io.ObjectRef signing_certificate_secret = 1;
     }
-
 }
 
 // Set of options which represent the certificate authorities the remote cluster can use

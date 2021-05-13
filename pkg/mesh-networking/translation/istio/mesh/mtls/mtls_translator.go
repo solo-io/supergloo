@@ -187,6 +187,7 @@ func (t *translator) configureSharedTrust(
 	case *networkingv1.SharedTrust_IntermediateCertificateAuthority:
 		switch typedCaSource := typedCa.IntermediateCertificateAuthority.GetCaSource().(type) {
 		case *networkingv1.IntermediateCertificateAuthority_Vault:
+			// Pass through vault config
 			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_AgentCa{
 				AgentCa: &certificatesv1.AgentCA{
 					Signer: &certificatesv1.AgentCA_VaultCa{
@@ -200,6 +201,8 @@ func (t *translator) configureSharedTrust(
 	case *networkingv1.SharedTrust_RootCertificateAuthority:
 		switch typedCaSource := typedCa.RootCertificateAuthority.GetCaSource().(type) {
 		case *networkingv1.RootCertificateAuthority_Generated:
+			// Generated CA cert secret. 
+			// Check if it exists
 			rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
 				typedCaSource.Generated,
 				virtualMeshRef,
