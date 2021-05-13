@@ -26,7 +26,6 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey st
 		var i context.GlooMeshInstance
 		var err error
 
-
 		version := os.Getenv("GLOO_MESH_VERSION")
 		if version == "" {
 			version = glooMeshVersion
