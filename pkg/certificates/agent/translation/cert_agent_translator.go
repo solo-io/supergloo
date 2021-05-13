@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/utils"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -16,7 +16,6 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -26,7 +25,7 @@ const (
 
 func agentLabels() map[string]string {
 	labels := map[string]string{
-		fmt.Sprintf("agent.%v", v1.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+		fmt.Sprintf("agent.%v", certificatesv1.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
 	}
 	if agentCluster := defaults.GetAgentCluster(); agentCluster != "" {
 		labels[metautils.AgentLabelKey] = agentCluster
@@ -35,11 +34,11 @@ func agentLabels() map[string]string {
 }
 
 func PrivateKeySecretType() corev1.SecretType {
-	return corev1.SecretType(fmt.Sprintf("%s/generated_private_key", v1.SchemeGroupVersion.Group))
+	return corev1.SecretType(fmt.Sprintf("%s/generated_private_key", certificatesv1.SchemeGroupVersion.Group))
 }
 
 func IssuedCertificateSecretType() corev1.SecretType {
-	return corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1.SchemeGroupVersion.Group))
+	return corev1.SecretType(fmt.Sprintf("%s/issued_certificate", certificatesv1.SchemeGroupVersion.Group))
 }
 
 //go:generate mockgen -source ./cert_agent_translator.go -destination mocks/translator.go
@@ -55,7 +54,7 @@ type Translator interface {
 	// If both return values are nil, it signals to the reconciler to ignore this resource.
 	IssuedCertiticatePending(
 		ctx context.Context,
-		issuedCertificate *v1.IssuedCertificate,
+		issuedCertificate *certificatesv1.IssuedCertificate,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) ([]byte, error)
@@ -68,8 +67,8 @@ type Translator interface {
 	// If err == nil, and continueIterating == false it signals to the reconciler to ignore this resource.
 	IssuedCertificateRequested(
 		ctx context.Context,
-		issuedCertificate *v1.IssuedCertificate,
-		certificateRequest *v1.CertificateRequest,
+		issuedCertificate *certificatesv1.IssuedCertificate,
+		certificateRequest *certificatesv1.CertificateRequest,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) (continueIterating bool, err error)
@@ -80,25 +79,21 @@ type Translator interface {
 	// If err == nil, and continueIterating == false it signals to the reconciler to ignore this resource.
 	IssuedCertificateIssued(
 		ctx context.Context,
-		issuedCertificate *v1.IssuedCertificate,
+		issuedCertificate *certificatesv1.IssuedCertificate,
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) (continueIterating bool, err error)
 }
 
-func NewCertAgentTranslator(localClient client.Client) Translator {
-	return &certAgentTranslator{
-		localClient: localClient,
-	}
+func NewCertAgentTranslator() Translator {
+	return &certAgentTranslator{}
 }
 
-type certAgentTranslator struct {
-	localClient client.Client
-}
+type certAgentTranslator struct{}
 
 func (c *certAgentTranslator) IssuedCertiticatePending(
 	ctx context.Context,
-	issuedCertificate *v1.IssuedCertificate,
+	issuedCertificate *certificatesv1.IssuedCertificate,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
 ) ([]byte, error) {
@@ -137,8 +132,8 @@ func (c *certAgentTranslator) IssuedCertiticatePending(
 
 func (c *certAgentTranslator) IssuedCertificateRequested(
 	ctx context.Context,
-	issuedCertificate *v1.IssuedCertificate,
-	certificateRequest *v1.CertificateRequest,
+	issuedCertificate *certificatesv1.IssuedCertificate,
+	certificateRequest *certificatesv1.CertificateRequest,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
 ) (continueIterating bool, err error) {
@@ -160,7 +155,7 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 	}
 
 	switch certificateRequest.Status.State {
-	case v1.CertificateRequestStatus_PENDING:
+	case certificatesv1.CertificateRequestStatus_PENDING:
 		contextutils.LoggerFrom(ctx).Infof("waiting for certificate request %v to be signed by Issuer", sets.Key(certificateRequest))
 
 		// add secret and certrequest to output to prevent them from being GC'ed
@@ -170,7 +165,7 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 		// if the certificate signing request has not been
 		// fulfilled, return and wait for the next reconcile
 		return true, nil
-	case v1.CertificateRequestStatus_FAILED:
+	case certificatesv1.CertificateRequestStatus_FAILED:
 		return true, eris.Errorf("certificate request %v failed to be signed by Issuer: %v", sets.Key(certificateRequest), certificateRequest.Status.Error)
 	}
 
@@ -202,7 +197,7 @@ func (c *certAgentTranslator) IssuedCertificateRequested(
 
 func (c *certAgentTranslator) IssuedCertificateIssued(
 	ctx context.Context,
-	issuedCertificate *v1.IssuedCertificate,
+	issuedCertificate *certificatesv1.IssuedCertificate,
 	inputs input.Snapshot,
 	outputs certagent.Builder,
 ) (continueIterating bool, err error) {
