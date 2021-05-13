@@ -20,16 +20,16 @@ var _ = Describe("Cors", func() {
 
 	It("should set cors policy", func() {
 		corsPolicy := &v1.TrafficPolicySpec_Policy_CorsPolicy{
-						AllowOrigins: []*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch{
-							{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact{Exact: "exact"}},
-							{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix{Prefix: "prefix"}},
-							{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex{Regex: "regex"}},
-						},
-						AllowMethods:     []string{"GET", "POST"},
-						AllowHeaders:     []string{"Header1", "Header2"},
-						ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
-						MaxAge:           &duration.Duration{Seconds: 1},
-						AllowCredentials: &wrappers.BoolValue{Value: false},
+			AllowOrigins: []*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch{
+				{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact{Exact: "exact"}},
+				{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix{Prefix: "prefix"}},
+				{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex{Regex: "regex"}},
+			},
+			AllowMethods:     []string{"GET", "POST"},
+			AllowHeaders:     []string{"Header1", "Header2"},
+			ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
+			MaxAge:           &duration.Duration{Seconds: 1},
+			AllowCredentials: &wrappers.BoolValue{Value: false},
 		}
 		expectedCorsPolicy := &v1alpha3.CorsPolicy{
 			AllowOrigins: []*v1alpha3.StringMatch{
@@ -53,13 +53,13 @@ var _ = Describe("FaultInjection", func() {
 
 	It("should set fault injection of type abort", func() {
 
-		faultPolicy :=  &v1.TrafficPolicySpec_Policy_FaultInjection{
-						FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_Abort_{
-							Abort: &v1.TrafficPolicySpec_Policy_FaultInjection_Abort{
-								HttpStatus: 404,
-							},
-						},
-						Percentage: 50,
+		faultPolicy := &v1.TrafficPolicySpec_Policy_FaultInjection{
+			FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_Abort_{
+				Abort: &v1.TrafficPolicySpec_Policy_FaultInjection_Abort{
+					HttpStatus: 404,
+				},
+			},
+			Percentage: 50,
 		}
 		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
 			Abort: &v1alpha3.HTTPFaultInjection_Abort{
@@ -74,10 +74,10 @@ var _ = Describe("FaultInjection", func() {
 
 	It("should set fault injection of type fixed delay", func() {
 		faultPolicy := &v1.TrafficPolicySpec_Policy_FaultInjection{
-						FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay{
-							FixedDelay: &duration.Duration{Seconds: 2},
-						},
-						Percentage: 50,
+			FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay{
+				FixedDelay: &duration.Duration{Seconds: 2},
+			},
+			Percentage: 50,
 		}
 		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
 			Delay: &v1alpha3.HTTPFaultInjection_Delay{
@@ -91,8 +91,8 @@ var _ = Describe("FaultInjection", func() {
 	})
 
 	It("should return error if fault injection type not specified", func() {
-		faultPolicy :=  &v1.TrafficPolicySpec_Policy_FaultInjection{
-						Percentage: 50,
+		faultPolicy := &v1.TrafficPolicySpec_Policy_FaultInjection{
+			Percentage: 50,
 		}
 		faultResult, err := TranslateFault(faultPolicy)
 		Expect(err.Error()).To(ContainSubstring("FaultInjection type must be specified"))
@@ -103,11 +103,11 @@ var _ = Describe("FaultInjection", func() {
 var _ = Describe("HeaderManipulation", func() {
 
 	It("should set headers", func() {
-		headerManipulationPolicy :=  &v1.HeaderManipulation{
-						AppendRequestHeaders:  map[string]string{"a": "b"},
-						RemoveRequestHeaders:  []string{"3", "4"},
-						AppendResponseHeaders: map[string]string{"foo": "bar"},
-						RemoveResponseHeaders: []string{"1", "2"},
+		headerManipulationPolicy := &v1.HeaderManipulation{
+			AppendRequestHeaders:  map[string]string{"a": "b"},
+			RemoveRequestHeaders:  []string{"3", "4"},
+			AppendResponseHeaders: map[string]string{"foo": "bar"},
+			RemoveResponseHeaders: []string{"1", "2"},
 		}
 		expectedHeaderManipulation := &v1alpha3.Headers{
 			Request: &v1alpha3.Headers_HeaderOperations{
@@ -169,15 +169,15 @@ var _ = Describe("Mirror", func() {
 			},
 		}
 		mirrorPolicy := &v1.TrafficPolicySpec_Policy_Mirror{
-						DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
-							KubeService: &skv2corev1.ClusterObjectRef{
-								Name:        "mirror",
-								Namespace:   "namespace",
-								ClusterName: "local-cluster",
-							},
-						},
-						Percentage: 50,
-						// Not specifying port should default to the single port on the Mirror destination
+			DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
+				KubeService: &skv2corev1.ClusterObjectRef{
+					Name:        "mirror",
+					Namespace:   "namespace",
+					ClusterName: "local-cluster",
+				},
+			},
+			Percentage: 50,
+			// Not specifying port should default to the single port on the Mirror destination
 		}
 
 		localHostname := "name.namespace.svc.cluster.local"
@@ -232,15 +232,15 @@ var _ = Describe("Mirror", func() {
 			},
 		}
 		mirrorPolicy := &v1.TrafficPolicySpec_Policy_Mirror{
-						DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
-							KubeService: &skv2corev1.ClusterObjectRef{
-								Name:        "mirror",
-								Namespace:   "namespace",
-								ClusterName: "local-cluster",
-							},
-						},
-						Percentage: 50,
-						// Not specifying port should default to the single port on the Mirror destination
+			DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
+				KubeService: &skv2corev1.ClusterObjectRef{
+					Name:        "mirror",
+					Namespace:   "namespace",
+					ClusterName: "local-cluster",
+				},
+			},
+			Percentage: 50,
+			// Not specifying port should default to the single port on the Mirror destination
 		}
 
 		globalHostname := "name.namespace.svc.local-cluster.global"
@@ -302,26 +302,26 @@ var _ = Describe("Mirror", func() {
 			},
 		}
 		mirrorPolicyMissingPort := &v1.TrafficPolicySpec_Policy_Mirror{
-						DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
-							KubeService: &skv2corev1.ClusterObjectRef{
-								Name:        "mirror",
-								Namespace:   "namespace",
-								ClusterName: "local-cluster",
-							},
-						},
-						Percentage: 50,
-						// Not specifying port should result in error
+			DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
+				KubeService: &skv2corev1.ClusterObjectRef{
+					Name:        "mirror",
+					Namespace:   "namespace",
+					ClusterName: "local-cluster",
+				},
+			},
+			Percentage: 50,
+			// Not specifying port should result in error
 		}
 		mirrorPolicyNonexistentPort := &v1.TrafficPolicySpec_Policy_Mirror{
-						DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
-							KubeService: &skv2corev1.ClusterObjectRef{
-								Name:        "mirror",
-								Namespace:   "namespace",
-								ClusterName: "local-cluster",
-							},
-						},
-						Percentage: 50,
-						Port:       1,
+			DestinationType: &v1.TrafficPolicySpec_Policy_Mirror_KubeService{
+				KubeService: &skv2corev1.ClusterObjectRef{
+					Name:        "mirror",
+					Namespace:   "namespace",
+					ClusterName: "local-cluster",
+				},
+			},
+			Percentage: 50,
+			Port:       1,
 		}
 
 		localHostname := "name.namespace.svc.cluster.local"
@@ -330,7 +330,6 @@ var _ = Describe("Mirror", func() {
 			GetDestinationFQDN(originalService.ClusterName, mirrorPolicyMissingPort.GetKubeService()).
 			Return(localHostname).
 			Times(2)
-
 
 		_, _, err := TranslateMirror(mirrorPolicyMissingPort, originalService.ClusterName, mockClusterDomainRegistry, destinations)
 		Expect(err.Error()).To(ContainSubstring("must provide port for mirror destination service"))
@@ -343,8 +342,8 @@ var _ = Describe("Mirror", func() {
 	var _ = Describe("Retries", func() {
 		It("should set retries", func() {
 			retriesPolicy := &v1.TrafficPolicySpec_Policy_RetryPolicy{
-							Attempts:      5,
-							PerTryTimeout: &duration.Duration{Seconds: 2},
+				Attempts:      5,
+				PerTryTimeout: &duration.Duration{Seconds: 2},
 			}
 			expectedRetries := &v1alpha3.HTTPRetry{
 				Attempts:      5,
@@ -358,12 +357,11 @@ var _ = Describe("Mirror", func() {
 
 	var _ = Describe("Timeout", func() {
 		It("should set retries", func() {
-			timeoutPolicy :=  &duration.Duration{Seconds: 5}
+			timeoutPolicy := &duration.Duration{Seconds: 5}
 			expectedTimeout := &types.Duration{Seconds: 5}
 			timeoutResult := TranslateTimeout(timeoutPolicy)
 			Expect(timeoutResult).To(Equal(expectedTimeout))
 		})
 	})
-
 
 })
