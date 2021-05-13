@@ -52,6 +52,7 @@ func IssuedCertificateSecretType() corev1.SecretType {
 type Translator interface {
 	// This function is called when the IssuedCertiticate is first created, it is meant to create the CSR
 	// and return the bytes directly
+	// If both return values are nil, it signals to the reconciler to ignore this resource.
 	IssuedCertiticatePending(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
@@ -64,6 +65,7 @@ type Translator interface {
 	// IssuedCertificate
 	// This function may be called multiple times in a row, as long as the IssuedCertificate is in a
 	// REQUESTED state
+	// If err == nil, and continueIterating == false it signals to the reconciler to ignore this resource.
 	IssuedCertificateRequested(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,
@@ -75,7 +77,7 @@ type Translator interface {
 	// This function is called when the IssuedCertiticate has been ISSUED, this means that the
 	// CertificateRequest has been fulfilled by the relevant party. By this stage the intermediate
 	// cert should already have made it to it's destination.
-	// The bool return value determines whether or not the reconciler should bounce the designated workloads.
+	// If err == nil, and continueIterating == false it signals to the reconciler to ignore this resource.
 	IssuedCertificateIssued(
 		ctx context.Context,
 		issuedCertificate *v1.IssuedCertificate,

@@ -78,145 +78,230 @@ var _ = Describe("CertAgentReconciler", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("Create CSR if translator Pending func returns properly", func() {
+	Context("IssuedCertificatePending", func() {
+		var (
+			issuedCert *certificatesv1.IssuedCertificate
+			csr        *certificatesv1.CertificateRequest
+			csrBytes   []byte
+		)
+		BeforeEach(func() {
 
-		reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
-
-		issuedCert := &certificatesv1.IssuedCertificate{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:       "hello",
-				Namespace:  "world",
-				Generation: 3,
-			},
-			Spec: certificatesv1.IssuedCertificateSpec{},
-			Status: certificatesv1.IssuedCertificateStatus{
-				State:              certificatesv1.IssuedCertificateStatus_FINISHED,
-				ObservedGeneration: 2,
-			},
-		}
-
-		csrBytes := []byte("I'm a CSR")
-
-		csr := &certificatesv1.CertificateRequest{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      issuedCert.GetName(),
-				Namespace: issuedCert.GetNamespace(),
-				Labels: map[string]string{
-					"agent.certificates.mesh.gloo.solo.io": "gloo-mesh",
+			issuedCert = &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "hello",
+					Namespace:  "world",
+					Generation: 3,
 				},
-			},
-			Spec: certificatesv1.CertificateRequestSpec{
-				CertificateSigningRequest: csrBytes,
-			},
-		}
+				Spec: certificatesv1.IssuedCertificateSpec{},
+				Status: certificatesv1.IssuedCertificateStatus{
+					State:              certificatesv1.IssuedCertificateStatus_FINISHED,
+					ObservedGeneration: 2,
+				},
+			}
 
-		inputSnap := input.NewInputSnapshotManualBuilder("hello").
-			Build()
+			csrBytes = []byte("I'm a CSR")
 
-		mockTranslator.EXPECT().
-			IssuedCertiticatePending(gomock.Any(), issuedCert, inputSnap, mockOutput).
-			Return(csrBytes, nil)
+			csr = &certificatesv1.CertificateRequest{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      issuedCert.GetName(),
+					Namespace: issuedCert.GetNamespace(),
+					Labels: map[string]string{
+						"agent.certificates.mesh.gloo.solo.io": "gloo-mesh",
+					},
+				},
+				Spec: certificatesv1.CertificateRequestSpec{
+					CertificateSigningRequest: csrBytes,
+				},
+			}
 
-		mockOutput.EXPECT().AddCertificateRequests(csr)
+		})
 
-		err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
+		It("Create CSR if translator Pending func returns properly", func() {
+
+			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				Build()
+
+			mockTranslator.EXPECT().
+				IssuedCertiticatePending(gomock.Any(), issuedCert, inputSnap, mockOutput).
+				Return(csrBytes, nil)
+
+			mockOutput.EXPECT().AddCertificateRequests(csr)
+
+			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
+		})
+
+		It("Will do nothing if bytes are nil", func() {
+
+			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				Build()
+
+			mockTranslator.EXPECT().
+				IssuedCertiticatePending(gomock.Any(), issuedCert, inputSnap, mockOutput).
+				Return(nil, nil)
+
+			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_PENDING))
+		})
+
 	})
 
-	It("Find CSR and pass into translator when cert is requested", func() {
-
-		reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
-
-		issuedCert := &certificatesv1.IssuedCertificate{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:       "hello",
-				Namespace:  "world",
-				Generation: 2,
-			},
-			Spec: certificatesv1.IssuedCertificateSpec{},
-			Status: certificatesv1.IssuedCertificateStatus{
-				State:              certificatesv1.IssuedCertificateStatus_REQUESTED,
-				ObservedGeneration: 2,
-			},
-		}
-
-		csrBytes := []byte("I'm a CSR")
-
-		csr := &certificatesv1.CertificateRequest{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      issuedCert.GetName(),
-				Namespace: issuedCert.GetNamespace(),
-				Labels: map[string]string{
-					"agent.certificates.mesh.gloo.solo.io": "gloo-mesh",
+	Context("IssuedCertificateRequested", func() {
+		var (
+			issuedCert *certificatesv1.IssuedCertificate
+			csr        *certificatesv1.CertificateRequest
+			csrBytes   []byte
+		)
+		BeforeEach(func() {
+			issuedCert = &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "hello",
+					Namespace:  "world",
+					Generation: 2,
 				},
-			},
-			Spec: certificatesv1.CertificateRequestSpec{
-				CertificateSigningRequest: csrBytes,
-			},
-		}
+				Spec: certificatesv1.IssuedCertificateSpec{},
+				Status: certificatesv1.IssuedCertificateStatus{
+					State:              certificatesv1.IssuedCertificateStatus_REQUESTED,
+					ObservedGeneration: 2,
+				},
+			}
 
-		inputSnap := input.NewInputSnapshotManualBuilder("hello").
-			AddCertificateRequests([]*certificatesv1.CertificateRequest{csr}).
-			Build()
+			csrBytes = []byte("I'm a CSR")
 
-		mockTranslator.EXPECT().
-			IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
-			Return(nil)
+			csr = &certificatesv1.CertificateRequest{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      issuedCert.GetName(),
+					Namespace: issuedCert.GetNamespace(),
+					Labels: map[string]string{
+						"agent.certificates.mesh.gloo.solo.io": "gloo-mesh",
+					},
+				},
+				Spec: certificatesv1.CertificateRequestSpec{
+					CertificateSigningRequest: csrBytes,
+				},
+			}
+		})
 
-		err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
+		It("Find CSR and pass into translator when cert is requested", func() {
+
+			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddCertificateRequests([]*certificatesv1.CertificateRequest{csr}).
+				Build()
+
+			mockTranslator.EXPECT().
+				IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
+				Return(true, nil)
+
+			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
+		})
+
+		It("Will not update status when continueIterating == false", func() {
+
+			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddCertificateRequests([]*certificatesv1.CertificateRequest{csr}).
+				Build()
+
+			mockTranslator.EXPECT().
+				IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
+				Return(false, nil)
+
+			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
+		})
 	})
 
-	It("Will delete pods when cert has been issued", func() {
+	Context("IssuedCertificateIssued", func() {
+		var (
+			issuedCert *certificatesv1.IssuedCertificate
+			pbd        *certificatesv1.PodBounceDirective
+		)
 
-		reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+		BeforeEach(func() {
+			pbd = &certificatesv1.PodBounceDirective{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "hello",
+					Namespace: "world",
+				},
+				Spec: certificatesv1.PodBounceDirectiveSpec{},
+			}
 
-		pbd := &certificatesv1.PodBounceDirective{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "hello",
-				Namespace: "world",
-			},
-			Spec: certificatesv1.PodBounceDirectiveSpec{},
-		}
+			issuedCert = &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "hello",
+					Namespace:  "world",
+					Generation: 2,
+				},
+				Spec: certificatesv1.IssuedCertificateSpec{
+					PodBounceDirective: ezkube.MakeObjectRef(pbd),
+				},
+				Status: certificatesv1.IssuedCertificateStatus{
+					State:              certificatesv1.IssuedCertificateStatus_ISSUED,
+					ObservedGeneration: 2,
+				},
+			}
+		})
 
-		issuedCert := &certificatesv1.IssuedCertificate{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:       "hello",
-				Namespace:  "world",
-				Generation: 2,
-			},
-			Spec: certificatesv1.IssuedCertificateSpec{
-				PodBounceDirective: ezkube.MakeObjectRef(pbd),
-			},
-			Status: certificatesv1.IssuedCertificateStatus{
-				State:              certificatesv1.IssuedCertificateStatus_ISSUED,
-				ObservedGeneration: 2,
-			},
-		}
+		It("Will delete pods when cert has been issued", func() {
 
-		pods := v1sets.NewPodSet(&corev1.Pod{})
-		configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
-		secrets := v1sets.NewSecretSet(&corev1.Secret{})
+			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
 
-		inputSnap := input.NewInputSnapshotManualBuilder("hello").
-			AddPodBounceDirectives([]*certificatesv1.PodBounceDirective{pbd}).
-			AddPods(pods.List()).
-			AddSecrets(secrets.List()).
-			AddConfigMaps(configMaps.List()).
-			Build()
+			pods := v1sets.NewPodSet(&corev1.Pod{})
+			configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
+			secrets := v1sets.NewSecretSet(&corev1.Secret{})
 
-		mockTranslator.EXPECT().
-			IssuedCertificateIssued(gomock.Any(), issuedCert, inputSnap, mockOutput).
-			Return(true, nil)
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddPodBounceDirectives([]*certificatesv1.PodBounceDirective{pbd}).
+				AddPods(pods.List()).
+				AddSecrets(secrets.List()).
+				AddConfigMaps(configMaps.List()).
+				Build()
 
-		mockPodBouncer.EXPECT().
-			BouncePods(gomock.Any(), pbd, pods, configMaps, secrets).
-			Return(false, nil)
+			mockTranslator.EXPECT().
+				IssuedCertificateIssued(gomock.Any(), issuedCert, inputSnap, mockOutput).
+				Return(true, nil)
 
-		err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
+			mockPodBouncer.EXPECT().
+				BouncePods(gomock.Any(), pbd, pods, configMaps, secrets).
+				Return(false, nil)
+
+			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
+		})
+
+		It("Will not delete pods when continueIterating==false", func() {
+
+			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+
+			pods := v1sets.NewPodSet(&corev1.Pod{})
+			configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
+			secrets := v1sets.NewSecretSet(&corev1.Secret{})
+
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddPodBounceDirectives([]*certificatesv1.PodBounceDirective{pbd}).
+				AddPods(pods.List()).
+				AddSecrets(secrets.List()).
+				AddConfigMaps(configMaps.List()).
+				Build()
+
+			mockTranslator.EXPECT().
+				IssuedCertificateIssued(gomock.Any(), issuedCert, inputSnap, mockOutput).
+				Return(false, nil)
+
+			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
+		})
 	})
 })
