@@ -30,13 +30,18 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 //
-//A ServiceDependency specifies explicit dependencies between traffic sources and destinations.
+//A ServiceDependency specifies explicit dependencies between traffic sources and destinations in a service graph.
 //Depending on the underlying service mesh, explicitly describing dependencies can improve the performance
 //of the data plane by pruning away any unneeded networking configuration from the relevant proxies.
 //
-//The complete set of destination dependencies for a given traffic source is the aggregation of all
+//The complete set of service dependencies for a given traffic source is the aggregation of all
 //unique Destinations selected by any applicable ServiceDependencies. If a traffic source has no applied
-//ServiceDependencies, its destination dependency configuration defaults to the behavior of the underlying service mesh.
+//ServiceDependencies, its service dependency configuration defaults to the behavior of the underlying service mesh.
+//
+//Note that in order to block communication between sources and destinations not explicitly declared
+//in a ServiceDependency, additional configuration on the underlying service mesh may be required.
+//For instance, Istio must be configured with `outboundTrafficPolicy.Mode` set to `REGISTRY_ONLY` (see [here](https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-OutboundTrafficPolicy))
+//to enforce this behavior.
 type ServiceDependencySpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

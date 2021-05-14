@@ -152,12 +152,12 @@ func (m *WorkloadStatus) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetDestinationDependencies()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetDestinationDependencies()) {
+	if h, ok := interface{}(m.GetServiceDependencies()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetServiceDependencies()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetDestinationDependencies(), target.GetDestinationDependencies()) {
+		if !proto.Equal(m.GetServiceDependencies(), target.GetServiceDependencies()) {
 			return false
 		}
 	}
@@ -390,14 +390,14 @@ func (m *WorkloadStatus_AppliedWasmDeployment) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *WorkloadStatus_DestinationDependencies) Equal(that interface{}) bool {
+func (m *WorkloadStatus_ServiceDependencies) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*WorkloadStatus_DestinationDependencies)
+	target, ok := that.(*WorkloadStatus_ServiceDependencies)
 	if !ok {
-		that2, ok := that.(WorkloadStatus_DestinationDependencies)
+		that2, ok := that.(WorkloadStatus_ServiceDependencies)
 		if ok {
 			target = &that2
 		} else {
@@ -442,14 +442,14 @@ func (m *WorkloadStatus_DestinationDependencies) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *WorkloadStatus_DestinationDependencies_AppliedServiceDependency) Equal(that interface{}) bool {
+func (m *WorkloadStatus_ServiceDependencies_AppliedServiceDependency) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*WorkloadStatus_DestinationDependencies_AppliedServiceDependency)
+	target, ok := that.(*WorkloadStatus_ServiceDependencies_AppliedServiceDependency)
 	if !ok {
-		that2, ok := that.(WorkloadStatus_DestinationDependencies_AppliedServiceDependency)
+		that2, ok := that.(WorkloadStatus_ServiceDependencies_AppliedServiceDependency)
 		if ok {
 			target = &that2
 		} else {

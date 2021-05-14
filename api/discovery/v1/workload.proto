@@ -70,7 +70,7 @@ message WorkloadStatus {
 
     // Specifies the [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}})
     // that apply to this Workload, and the resulting Destination hostnames that this Workload can send traffic to.
-    DestinationDependencies destination_dependencies = 4;
+    ServiceDependencies service_dependencies = 4;
 
     // Describes an [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging/" >}}) that applies to this Workload.
     message AppliedAccessLogRecord {
@@ -98,7 +98,7 @@ message WorkloadStatus {
         repeated string errors = 3;
     }
 
-    message DestinationDependencies {
+    message ServiceDependencies {
 
         // The set of [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}}) that have been applied to this Workload.
         repeated AppliedServiceDependency applied_service_dependencies = 1;
