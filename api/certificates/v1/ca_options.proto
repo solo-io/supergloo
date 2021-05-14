@@ -1,8 +1,9 @@
 syntax = "proto3";
-package common.mesh.gloo.solo.io;
+package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
 
 import "extproto/ext.proto";
+import "github.com/solo-io/gloo-mesh/api/certificates/v1/vault_ca.proto";
 option (extproto.equal_all) = true;
 
 // Configuration for generating a self-signed root certificate.
@@ -17,4 +18,15 @@ message CommonCertOptions {
 
   // Root cert organization name. Defaults to "gloo-mesh".
   string org_name = 3;
+}
+
+// Specify parameters for configuring the root certificate authority for a VirtualMesh.
+message IntermediateCertificateAuthority  {
+
+  // Specify the source of the Root CA data which Gloo Mesh will use for the VirtualMesh.
+  oneof ca_source {
+      // Use vault as the intermediate CA source
+      VaultCA vault = 1;
+  }
+  
 }

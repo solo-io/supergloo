@@ -57,7 +57,7 @@ spec:
                     - not:
                         anyOf:
                         - properties:
-                            vaultCa:
+                            vault:
                               oneOf:
                               - not:
                                   anyOf:
@@ -96,9 +96,9 @@ spec:
                                 required:
                                 - kubernetesAuth
                           required:
-                          - vaultCa
+                          - vault
                     - properties:
-                        vaultCa:
+                        vault:
                           oneOf:
                           - not:
                               anyOf:
@@ -137,7 +137,7 @@ spec:
                             required:
                             - kubernetesAuth
                       required:
-                      - vaultCa
+                      - vault
                 required:
                 - agentCa
           - properties:
@@ -157,7 +157,7 @@ spec:
                 - not:
                     anyOf:
                     - properties:
-                        vaultCa:
+                        vault:
                           oneOf:
                           - not:
                               anyOf:
@@ -196,9 +196,9 @@ spec:
                             required:
                             - kubernetesAuth
                       required:
-                      - vaultCa
+                      - vault
                 - properties:
-                    vaultCa:
+                    vault:
                       oneOf:
                       - not:
                           anyOf:
@@ -237,14 +237,15 @@ spec:
                         required:
                         - kubernetesAuth
                   required:
-                  - vaultCa
+                  - vault
             required:
             - agentCa
           properties:
             agentCa:
               description: Agent CA options
               properties:
-                vaultCa:
+                vault:
+                  description: Use vault as the intermediate CA source
                   properties:
                     CaBundle:
                       description: |-
@@ -289,7 +290,7 @@ spec:
                           type: string
                         secretTokenKey:
                           description: |-
-                            Key in the token to search for the sa_token
+                            Key to search for the sa_token
                             Default to "token"
                           type: string
                         serviceAccountRef:

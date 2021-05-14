@@ -6,7 +6,7 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/certificates.proto";
+import "github.com/solo-io/gloo-mesh/api/certificates/v1/ca_options.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -70,14 +70,14 @@ message VirtualMeshSpec {
     message Federation {
 
         // Selectively federate Destinations to specific external meshes.
-        // If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+        // If omitted, no Destinations will be federated.
         repeated FederationSelector selectors = 4;
 
         // DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
         // The "mode" in which to federate Destinations within this VirtualMesh.
         oneof mode {
 
-            // DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
+            // DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics.
             // Expose all Destinations to all Workloads in this VirtualMesh.
             .google.protobuf.Empty permissive = 1;
         };
@@ -122,24 +122,13 @@ message VirtualMeshSpec {
 }
 
 // Specify parameters for configuring the root certificate authority for a VirtualMesh.
-message IntermediateCertificateAuthority  {
-
-    // Specify the source of the Root CA data which Gloo Mesh will use for the VirtualMesh.
-    oneof ca_source {
-        // Use vault as the intermediate CA source
-        .common.mesh.gloo.solo.io.VaultCA vault = 1;
-    }
-    
-}
-
-// Specify parameters for configuring the root certificate authority for a VirtualMesh.
 message RootCertificateAuthority {
 
     // Specify the source of the Root CA data which Gloo Mesh will use for the VirtualMesh.
     oneof ca_source {
 
         // Generate a self-signed root certificate with the given options.
-        .common.mesh.gloo.solo.io.CommonCertOptions generated = 1;
+        .certificates.mesh.gloo.solo.io.CommonCertOptions generated = 1;
 
         // Reference to a Kubernetes Secret containing the root certificate authority.
         // Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
@@ -161,11 +150,11 @@ message SharedTrust {
         // Configures an Intermediate Certificiate Authority which remote clusters will use to generate intermediate 
         // certificates. In order for this to properly mesh all of the traffic across the different meshes, the CA 
         // being used must be configured to generate the intermediate certificates.
-        IntermediateCertificateAuthority intermediate_certificate_authority = 2;   
+        .certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority intermediate_certificate_authority = 2;   
     }
 
     // Configuration options for generated intermediate certs
-    .common.mesh.gloo.solo.io.CommonCertOptions intermediate_cert_options = 3; 
+    .certificates.mesh.gloo.solo.io.CommonCertOptions intermediate_cert_options = 3; 
 
 }
 

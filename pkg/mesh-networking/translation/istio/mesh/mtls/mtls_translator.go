@@ -6,32 +6,26 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	"github.com/solo-io/gloo-mesh/pkg/common/version"
-	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-
-	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
-	"github.com/solo-io/skv2/pkg/ezkube"
-
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-
-	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
-	"istio.io/istio/pkg/spiffe"
-	"istio.io/istio/security/pkg/pki/util"
-	corev1 "k8s.io/api/core/v1"
-
-	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
-	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	"istio.io/istio/pkg/spiffe"
+	"istio.io/istio/security/pkg/pki/util"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 //go:generate mockgen -source ./mtls_translator.go -destination mocks/mtls_translator.go
@@ -58,7 +52,7 @@ var (
 	// used when the user provides a nil root cert
 	defaultSelfSignedRootCa = &networkingv1.RootCertificateAuthority{
 		CaSource: &networkingv1.RootCertificateAuthority_Generated{
-			Generated: &commonv1.CommonCertOptions{
+			Generated: &certificatesv1.CommonCertOptions{
 				TtlDays:         defaultRootCertTTLDays,
 				RsaKeySizeBytes: defaultRootCertRsaKeySize,
 				OrgName:         defaultOrgName,
@@ -185,23 +179,14 @@ func (t *translator) configureSharedTrust(
 
 	switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
 	case *networkingv1.SharedTrust_IntermediateCertificateAuthority:
-		switch typedCaSource := typedCa.IntermediateCertificateAuthority.GetCaSource().(type) {
-		case *networkingv1.IntermediateCertificateAuthority_Vault:
-			// Pass through vault config
-			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_AgentCa{
-				AgentCa: &certificatesv1.AgentCA{
-					Signer: &certificatesv1.AgentCA_VaultCa{
-						VaultCa: typedCaSource.Vault,
-					},
-				},
-			}
-		default:
-			return eris.Errorf("No intermediate ca source specified for Virtual Mesh (%s)", sets.Key(virtualMeshRef))
+		// Copy intermediate CA data to IssuedCertificate
+		issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_AgentCa{
+			AgentCa: typedCa.IntermediateCertificateAuthority,
 		}
 	case *networkingv1.SharedTrust_RootCertificateAuthority:
 		switch typedCaSource := typedCa.RootCertificateAuthority.GetCaSource().(type) {
 		case *networkingv1.RootCertificateAuthority_Generated:
-			// Generated CA cert secret. 
+			// Generated CA cert secret.
 			// Check if it exists
 			rootCaSecret, err := t.getOrCreateGeneratedCaSecret(
 				typedCaSource.Generated,
@@ -212,8 +197,8 @@ func (t *translator) configureSharedTrust(
 				return err
 			}
 			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-				GlooMeshCa: &certificatesv1.GlooMeshCA{
-					Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+				GlooMeshCa: &certificatesv1.RootCertificateAuthority{
+					CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
 						SigningCertificateSecret: rootCaSecret,
 					},
 				},
@@ -222,8 +207,8 @@ func (t *translator) configureSharedTrust(
 			issuedCertificate.Spec.SigningCertificateSecret = rootCaSecret
 		case *networkingv1.RootCertificateAuthority_Secret:
 			issuedCertificate.Spec.CertificateAuthority = &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-				GlooMeshCa: &certificatesv1.GlooMeshCA{
-					Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+				GlooMeshCa: &certificatesv1.RootCertificateAuthority{
+					CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
 						SigningCertificateSecret: typedCaSource.Secret,
 					},
 				},
@@ -249,7 +234,7 @@ func (t *translator) configureSharedTrust(
 // will create the secret if it is self-signed,
 // otherwise will return the user-provided secret ref in the mtls config
 func (t *translator) getOrCreateGeneratedCaSecret(
-	generatedRootCa *commonv1.CommonCertOptions,
+	generatedRootCa *certificatesv1.CommonCertOptions,
 	virtualMeshRef *skv2corev1.ObjectRef,
 	localOutputs local.Builder,
 ) (*skv2corev1.ObjectRef, error) {
@@ -359,7 +344,7 @@ func (t *translator) constructIssuedCertificate(
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
 			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
-			CertOptions: &commonv1.CommonCertOptions{
+			CertOptions: &certificatesv1.CommonCertOptions{
 				OrgName: defaultIstioOrg,
 			},
 			// Set deprecated field for backwards compatibility
@@ -378,7 +363,7 @@ const (
 )
 
 func generateSelfSignedCert(
-	builtinCA *commonv1.CommonCertOptions,
+	builtinCA *certificatesv1.CommonCertOptions,
 ) (*secrets.RootCAData, error) {
 	org := defaultOrgName
 	if builtinCA.GetOrgName() != "" {

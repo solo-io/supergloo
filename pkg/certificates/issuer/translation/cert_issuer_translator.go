@@ -23,7 +23,7 @@ type Output struct {
 // the output resources as defined by the `Output` resource below.
 
 type Translator interface {
-	// Determines whether or not the reconciler should process the 
+	// Determines whether or not the reconciler should process the
 	ShouldProcess(
 		ctx context.Context,
 		issuedCertificate *certificatesv1.IssuedCertificate,

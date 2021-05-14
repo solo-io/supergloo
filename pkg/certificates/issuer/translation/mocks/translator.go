@@ -36,6 +36,20 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
+// ShouldProcess mocks base method
+func (m *MockTranslator) ShouldProcess(ctx context.Context, issuedCertificate *v1.IssuedCertificate) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ShouldProcess", ctx, issuedCertificate)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ShouldProcess indicates an expected call of ShouldProcess
+func (mr *MockTranslatorMockRecorder) ShouldProcess(ctx, issuedCertificate interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldProcess", reflect.TypeOf((*MockTranslator)(nil).ShouldProcess), ctx, issuedCertificate)
+}
+
 // Translate mocks base method
 func (m *MockTranslator) Translate(ctx context.Context, certificateRequest *v1.CertificateRequest, issuedCertificate *v1.IssuedCertificate) (*translation.Output, error) {
 	m.ctrl.T.Helper()

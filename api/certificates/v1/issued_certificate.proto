@@ -2,7 +2,7 @@ syntax = "proto3";
 package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
 
-import "github.com/solo-io/gloo-mesh/api/common/v1/certificates.proto";
+import "github.com/solo-io/gloo-mesh/api/certificates/v1/ca_options.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -60,33 +60,24 @@ message IssuedCertificateSpec {
     .core.skv2.solo.io.ObjectRef pod_bounce_directive = 5;
 
     // Set of options to configure the intermediate certificate being generated
-    .common.mesh.gloo.solo.io.CommonCertOptions cert_options = 6;
+    CommonCertOptions cert_options = 6;
 
     // The location of the certificate authority to sign this certificate
     oneof certificate_authority {
         // Gloo Mesh CA options
-        GlooMeshCA gloo_mesh_ca = 7;        
+        RootCertificateAuthority gloo_mesh_ca = 7;        
         // Agent CA options
-        AgentCA agent_ca = 8;
+        IntermediateCertificateAuthority agent_ca = 8;
     }
 
 }
 
 // Set of options which represent the certificate authorities the management cluster can use
 // to sign the intermediate certs
-message GlooMeshCA {
+message RootCertificateAuthority {
     // Certificate authority which gloo-mesh management will use to sign the intermediate cert
-    oneof signer {
+    oneof certificate_authority {
         .core.skv2.solo.io.ObjectRef signing_certificate_secret = 1;
-    }
-}
-
-// Set of options which represent the certificate authorities the remote cluster can use
-// to sign the intermediate certs
-message AgentCA {
-    // Certificate authority which pki-agent will use to sign the intermediate cert
-    oneof signer {
-        .common.mesh.gloo.solo.io.VaultCA vault_ca = 1;
     }
 }
 
