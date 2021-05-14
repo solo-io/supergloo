@@ -65,7 +65,7 @@ message IssuedCertificateSpec {
     // The location of the certificate authority to sign this certificate
     oneof certificate_authority {
         // Gloo Mesh CA options
-        GlooMeshCA gloo_mesh_ca = 7;        
+        RootCertificateAuthority gloo_mesh_ca = 7;        
         // Agent CA options
         IntermediateCertificateAuthority agent_ca = 8;
     }
@@ -74,7 +74,7 @@ message IssuedCertificateSpec {
 
 // Set of options which represent the certificate authorities the management cluster can use
 // to sign the intermediate certs
-message GlooMeshCA {
+message RootCertificateAuthority {
     // Certificate authority which gloo-mesh management will use to sign the intermediate cert
     oneof certificate_authority {
         .core.skv2.solo.io.ObjectRef signing_certificate_secret = 1;

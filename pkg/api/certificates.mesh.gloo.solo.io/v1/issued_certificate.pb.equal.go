@@ -144,14 +144,14 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *GlooMeshCA) Equal(that interface{}) bool {
+func (m *RootCertificateAuthority) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*GlooMeshCA)
+	target, ok := that.(*RootCertificateAuthority)
 	if !ok {
-		that2, ok := that.(GlooMeshCA)
+		that2, ok := that.(RootCertificateAuthority)
 		if ok {
 			target = &that2
 		} else {
@@ -166,8 +166,8 @@ func (m *GlooMeshCA) Equal(that interface{}) bool {
 
 	switch m.CertificateAuthority.(type) {
 
-	case *GlooMeshCA_SigningCertificateSecret:
-		if _, ok := target.CertificateAuthority.(*GlooMeshCA_SigningCertificateSecret); !ok {
+	case *RootCertificateAuthority_SigningCertificateSecret:
+		if _, ok := target.CertificateAuthority.(*RootCertificateAuthority_SigningCertificateSecret); !ok {
 			return false
 		}
 

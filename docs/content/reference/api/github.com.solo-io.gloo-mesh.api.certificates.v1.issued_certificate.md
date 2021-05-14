@@ -18,27 +18,12 @@ title: "issued_certificate.proto"
 
 
 ## Table of Contents
-  - [GlooMeshCA](#certificates.mesh.gloo.solo.io.GlooMeshCA)
   - [IssuedCertificateSpec](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec)
   - [IssuedCertificateStatus](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus)
+  - [RootCertificateAuthority](#certificates.mesh.gloo.solo.io.RootCertificateAuthority)
 
   - [IssuedCertificateStatus.State](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State)
 
-
-
-
-
-
-<a name="certificates.mesh.gloo.solo.io.GlooMeshCA"></a>
-
-### GlooMeshCA
-Set of options which represent the certificate authorities the management cluster can use to sign the intermediate certs
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
-  
 
 
 
@@ -58,7 +43,7 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
   | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster). If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only) |
   | podBounceDirective | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce (delete and cause a restart) when the certificate is issued.<br>Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate due to [this issue](https://github.com/istio/istio/issues/22993).<br>This will include the control plane pods as well as any Pods which share a data plane with the target mesh. |
   | certOptions | [certificates.mesh.gloo.solo.io.CommonCertOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CommonCertOptions" >}}) |  | Set of options to configure the intermediate certificate being generated |
-  | glooMeshCa | [certificates.mesh.gloo.solo.io.GlooMeshCA]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.GlooMeshCA" >}}) |  | Gloo Mesh CA options |
+  | glooMeshCa | [certificates.mesh.gloo.solo.io.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.RootCertificateAuthority" >}}) |  | Gloo Mesh CA options |
   | agentCa | [certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority" >}}) |  | Agent CA options |
   
 
@@ -77,6 +62,21 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 | observedGeneration | int64 |  | The most recent generation observed in the the IssuedCertificate metadata. If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most recent version of this IssuedCertificate. |
   | error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
   | state | [certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State" >}}) |  | The current state of the IssuedCertificate workflow, reported by the agent. |
+  
+
+
+
+
+
+<a name="certificates.mesh.gloo.solo.io.RootCertificateAuthority"></a>
+
+### RootCertificateAuthority
+Set of options which represent the certificate authorities the management cluster can use to sign the intermediate certs
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
   
 
 
