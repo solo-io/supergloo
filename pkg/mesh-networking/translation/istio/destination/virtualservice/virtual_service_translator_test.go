@@ -103,9 +103,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*commonv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
+									PathSpecifier: &commonv1.HttpMatcher_Exact{
 										Exact: "path",
 									},
 									Method: "GET",
@@ -143,9 +143,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*commonv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
+									PathSpecifier: &commonv1.HttpMatcher_Exact{
 										Exact: "path",
 									},
 									Method: "GET",
@@ -527,9 +527,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*commonv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
+									PathSpecifier: &commonv1.HttpMatcher_Exact{
 										Exact: "path",
 									},
 									Method: "GET",
@@ -1130,7 +1130,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*commonv1.HttpMatcher{
 								{
 									Headers: []*commonv1.HeaderMatcher{
 										{
