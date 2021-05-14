@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"istio.io/istio/pkg/test/framework/components/cluster"
 	"net/http"
 	"os"
 	"testing"
+
+	"istio.io/istio/pkg/test/framework/components/cluster"
 
 	"istio.io/istio/pkg/test/echo/common/scheme"
 
@@ -401,7 +402,6 @@ func testSingleClusterVirtualDestinationTCP(ctx resource.Context, t *testing.T, 
 	})
 }
 
-
 // testFailoverHTTP testing failover incase of error
 // because of locality priority routing, we should see routing to local cluster first always
 // TODO there is a bug where if someone creates a standalone pod in mesh and tries to make http calls. the calls are succecssful but do not respect regionality
@@ -424,7 +424,7 @@ func testFailoverHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context
 		Method:    http.MethodGet,
 		Path:      "?codes=500:1", // returns 500
 		Count:     15,
-		Validator: echo.And(echo.ExpectCode("500"),echo.ExpectCluster(westCluster.Name())),
+		Validator: echo.And(echo.ExpectCode("500"), echo.ExpectCluster(westCluster.Name())),
 	})
 	// should only get east cluster calls for 30s
 	src.CallOrFail(t, echo.CallOptions{

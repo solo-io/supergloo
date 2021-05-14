@@ -1488,6 +1488,7 @@ func (i *inMemoryDiscoveryInputBuilder) insertMesh(
 	if !filteredOut {
 		meshSet.Insert(mesh)
 	}
+}
 
 func (i *inMemoryDiscoveryInputBuilder) insertConfigMap(
 	ctx context.Context,
