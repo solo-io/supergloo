@@ -375,7 +375,7 @@ spec:
             issuedCertificateSecret:
               description: |-
                 The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
-                If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only)
+                If nil, the sidecar agent stores the signing certificate in memory. (Enterprise only)
               properties:
                 name:
                   description: name of the resource being referenced
@@ -385,7 +385,7 @@ spec:
                   type: string
               type: object
             org:
-              description: Deprecated in favor of `common_cert_options.org_name`
+              description: 'DEPRECATED: in favor of `common_cert_options.org_name`'
               type: string
             podBounceDirective:
               description: |-
@@ -407,7 +407,7 @@ spec:
               type: object
             signingCertificateSecret:
               description: |-
-                Deprecated in favor of `gloo_mesh_ca.signing_certificate_secret`
+                DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret`
                 The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
               properties:
                 name:

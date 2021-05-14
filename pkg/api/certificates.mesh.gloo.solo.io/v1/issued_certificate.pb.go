@@ -125,13 +125,13 @@ type IssuedCertificateSpec struct {
 	//
 	//"cluster.local" may be replaced by the root of trust domain for the mesh.
 	Hosts []string `protobuf:"bytes,1,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	// Deprecated in favor of `common_cert_options.org_name`
+	// DEPRECATED: in favor of `common_cert_options.org_name`
 	Org string `protobuf:"bytes,2,opt,name=org,proto3" json:"org,omitempty"`
-	// Deprecated in favor of `gloo_mesh_ca.signing_certificate_secret`
+	// DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret`
 	// The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
 	SigningCertificateSecret *v1.ObjectRef `protobuf:"bytes,3,opt,name=signing_certificate_secret,json=signingCertificateSecret,proto3" json:"signing_certificate_secret,omitempty"`
 	// The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
-	// If this value is nil, it means it is the responsibility of the sidecar agent to write the data to memory (Enterprise only)
+	// If nil, the sidecar agent stores the signing certificate in memory. (Enterprise only)
 	IssuedCertificateSecret *v1.ObjectRef `protobuf:"bytes,4,opt,name=issued_certificate_secret,json=issuedCertificateSecret,proto3" json:"issued_certificate_secret,omitempty"`
 	// A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
 	// (delete and cause a restart) when the certificate is issued.
