@@ -46,12 +46,31 @@ func (m *VirtualGatewaySpec) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetBindAddress(), target.GetBindAddress()) != 0 {
-		return false
+	if h, ok := interface{}(m.GetDeployToIngressGateways()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDeployToIngressGateways()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDeployToIngressGateways(), target.GetDeployToIngressGateways()) {
+			return false
+		}
 	}
 
-	if m.GetBindPort() != target.GetBindPort() {
+	if len(m.GetDeployToSidecars()) != len(target.GetDeployToSidecars()) {
 		return false
+	}
+	for idx, v := range m.GetDeployToSidecars() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetDeployToSidecars()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetDeployToSidecars()[idx]) {
+				return false
+			}
+		}
+
 	}
 
 	if len(m.GetConnectionHandlers()) != len(target.GetConnectionHandlers()) {
@@ -65,23 +84,6 @@ func (m *VirtualGatewaySpec) Equal(that interface{}) bool {
 			}
 		} else {
 			if !proto.Equal(v, target.GetConnectionHandlers()[idx]) {
-				return false
-			}
-		}
-
-	}
-
-	if len(m.GetGatewayWorkloads()) != len(target.GetGatewayWorkloads()) {
-		return false
-	}
-	for idx, v := range m.GetGatewayWorkloads() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetGatewayWorkloads()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetGatewayWorkloads()[idx]) {
 				return false
 			}
 		}
@@ -220,14 +222,14 @@ func (m *VirtualGatewayStatus) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *SelectedGateway) Equal(that interface{}) bool {
+func (m *SelectedGatewayWorkload) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*SelectedGateway)
+	target, ok := that.(*SelectedGatewayWorkload)
 	if !ok {
-		that2, ok := that.(SelectedGateway)
+		that2, ok := that.(SelectedGatewayWorkload)
 		if ok {
 			target = &that2
 		} else {
@@ -253,42 +255,6 @@ func (m *SelectedGateway) Equal(that interface{}) bool {
 	}
 
 	if strings.Compare(m.GetExternalUrl(), target.GetExternalUrl()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *SelectedVirtualHost) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*SelectedVirtualHost)
-	if !ok {
-		that2, ok := that.(SelectedVirtualHost)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
 		return false
 	}
 
@@ -359,6 +325,55 @@ func (m *SDSConfig) Equal(that interface{}) bool {
 		if m.SdsBuilder != target.SdsBuilder {
 			return false
 		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualGatewaySpec_DeployToIngressGateway) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualGatewaySpec_DeployToIngressGateway)
+	if !ok {
+		that2, ok := that.(VirtualGatewaySpec_DeployToIngressGateway)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetBindAddress(), target.GetBindAddress()) != 0 {
+		return false
+	}
+
+	if m.GetBindPort() != target.GetBindPort() {
+		return false
+	}
+
+	if len(m.GetGatewayWorkloads()) != len(target.GetGatewayWorkloads()) {
+		return false
+	}
+	for idx, v := range m.GetGatewayWorkloads() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGatewayWorkloads()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetGatewayWorkloads()[idx]) {
+				return false
+			}
+		}
+
 	}
 
 	return true
