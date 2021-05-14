@@ -266,7 +266,7 @@ func (*IssuedCertificateSpec_GlooMeshCa) isIssuedCertificateSpec_CertificateAuth
 func (*IssuedCertificateSpec_AgentCa) isIssuedCertificateSpec_CertificateAuthority() {}
 
 // Set of options which represent the certificate authorities the management cluster can use
-// to sign the intermediate certs
+// to sign the intermediate certs.
 type RootCertificateAuthority struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

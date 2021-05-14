@@ -129,7 +129,7 @@ func (m *VaultKubernetesAuth) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetPath(), target.GetPath()) != 0 {
+	if strings.Compare(m.GetMountPath(), target.GetMountPath()) != 0 {
 		return false
 	}
 

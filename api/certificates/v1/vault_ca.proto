@@ -8,7 +8,6 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 message VaultCA {
-
 	// `ca_path` is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
 	// "my_pki_mount/sign/my-role-name".
   string ca_path = 1;
@@ -32,9 +31,7 @@ message VaultCA {
 	// More about namespaces can be found [here](https://www.vaultproject.io/docs/enterprise/namespaces)
   string namespace = 5;
 
-  // CommonCertOptions cert_options = 5;
   oneof auth_type {
-
     // TokenSecretRef authenticates with Vault by presenting a token.
     .core.skv2.solo.io.ObjectRef token_secret_ref = 6;
 

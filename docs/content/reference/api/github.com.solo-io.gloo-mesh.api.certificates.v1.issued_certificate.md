@@ -71,7 +71,7 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 <a name="certificates.mesh.gloo.solo.io.RootCertificateAuthority"></a>
 
 ### RootCertificateAuthority
-Set of options which represent the certificate authorities the management cluster can use to sign the intermediate certs
+Set of options which represent the certificate authorities the management cluster can use to sign the intermediate certs.
 
 
 | Field | Type | Label | Description |
