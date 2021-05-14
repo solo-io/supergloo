@@ -8,7 +8,7 @@ weight: 10
 The following YAML shows the ClusterRole created on a target cluster when it is registered with Gloo Mesh.
 
 {{< notice note >}}
-This document is current as of version 0.10.3.
+This document is current as of Gloo Mesh OSS version 1.0.5.
 {{< /notice >}}
 
 ```yaml
@@ -24,6 +24,7 @@ rules:
   - services
   - configmaps
   - nodes
+  - endpoints
   verbs:
   - get
   - list
@@ -77,9 +78,15 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - xds.agent.enterprise.mesh.gloo.solo.io
+  resources:
+  - xdsconfigs
+  verbs:
+  - '*'
+- apiGroups:
   - access.smi-spec.io
   resources:
-  - destinations
+  - traffictargets
   verbs:
   - '*'
 - apiGroups:

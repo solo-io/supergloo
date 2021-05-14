@@ -424,8 +424,7 @@ type DestinationSelector_KubeServiceRefs struct {
 	unknownFields protoimpl.UnknownFields
 
 	//
-	//Match Kubernetes Services by direct reference.
-	//When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+	//Match Kubernetes Services by direct reference. All fields are required.
 	//When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
 	Services []*v1.ClusterObjectRef `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 }

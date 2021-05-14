@@ -3,6 +3,7 @@ package initpluginmanager
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -10,13 +11,14 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
+	pkgversion "github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"gopkg.in/yaml.v2"
 )
-
-const tempBinaryVersion = "v1.0.0-beta7"
 
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
@@ -59,6 +61,7 @@ Please see visit the Gloo Mesh website for more info:  https://www.solo.io/produ
 			return nil
 		},
 	}
+
 	opts.addToFlags(cmd.Flags())
 	cmd.SilenceUsage = true
 	return cmd
@@ -85,11 +88,6 @@ func (o options) getHome() (string, error) {
 	return filepath.Join(userHome, ".gloo-mesh"), nil
 }
 
-type pluginBinary struct {
-	path string
-	home string
-}
-
 func checkExisting(home string, force bool) error {
 	pluginDirs := []string{"index", "receipts", "store"}
 	dirty := false
@@ -110,6 +108,13 @@ func checkExisting(home string, force bool) error {
 	for _, dir := range pluginDirs {
 		os.RemoveAll(filepath.Join(home, dir))
 	}
+
+	if _, err := os.Stat(filepath.Join(home, "bin")); os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
 	binFiles, err := ioutil.ReadDir(filepath.Join(home, "bin"))
 	if err != nil {
 		return err
@@ -119,7 +124,13 @@ func checkExisting(home string, force bool) error {
 			os.Remove(filepath.Join(home, "bin", file.Name()))
 		}
 	}
+
 	return nil
+}
+
+type pluginBinary struct {
+	path string
+	home string
 }
 
 func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error) {
@@ -134,10 +145,89 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
 		return nil, eris.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
-	url := fmt.Sprintf(
-		"https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/plugin/%s/meshctl-plugin-%s-%s",
-		tempBinaryVersion, runtime.GOOS, runtime.GOARCH,
-	)
+	binURL, err := getBinaryURL(ctx)
+	if err != nil {
+		return nil, err
+	}
+	binData, err := get(ctx, binURL)
+	if err != nil {
+		return nil, err
+	}
+	defer binData.Close()
+	f, err := os.Create(binPath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	if _, err := io.Copy(f, binData); err != nil {
+		return nil, err
+	}
+	if err := f.Chmod(0755); err != nil {
+		return nil, err
+	}
+
+	return &pluginBinary{path: binPath, home: home}, nil
+}
+
+func (binary pluginBinary) run(args ...string) (string, error) {
+	cmd := exec.Command(binary.path, args...)
+	cmd.Env = append(os.Environ(), "MESHCTL_HOME="+binary.home)
+	out, err := cmd.CombinedOutput()
+	return string(out), err
+}
+
+type manifest struct {
+	Versions []struct {
+		Tag       string `json:"tag"`
+		Platforms []struct {
+			OS   string `json:"os"`
+			Arch string `json:"arch"`
+			URI  string `json:"uri"`
+		} `json:"platforms"`
+	} `json:"versions"`
+}
+
+func getBinaryURL(ctx context.Context) (string, error) {
+	const manifestURL = "https://raw.githubusercontent.com/solo-io/meshctl-plugin-index/main/plugins/plugin.yaml"
+	body, err := get(ctx, manifestURL)
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		io.Copy(ioutil.Discard, body)
+		body.Close()
+	}()
+	var mfst manifest
+	if err := yaml.NewDecoder(body).Decode(&mfst); err != nil {
+		return "", err
+	}
+
+	v, err := version.NewVersion(pkgversion.Version)
+	if err != nil {
+		return "", err
+	}
+	major, minor := v.Segments()[0], v.Segments()[1]
+	for _, release := range mfst.Versions {
+		v, err := version.NewVersion(release.Tag)
+		if err != nil {
+			logrus.Debugf("invalid semver: %s", release.Tag)
+			continue
+		}
+		if major == v.Segments()[0] && minor == v.Segments()[1] {
+			for _, platform := range release.Platforms {
+				if platform.OS == runtime.GOOS && platform.Arch == runtime.GOARCH {
+					return platform.URI, nil
+				}
+			}
+
+			return "", eris.New("no compatible plugin manager binary found")
+		}
+	}
+
+	return "", eris.New("no compatible plugin manager version found")
+}
+
+func get(ctx context.Context, url string) (io.ReadCloser, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -145,25 +235,16 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
-	}
-	defer res.Body.Close()
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	if res.StatusCode != http.StatusOK {
-		logrus.Debug(string(b))
-		return nil, eris.Errorf("could not download plugin manager binary: %d %s", res.StatusCode, res.Status)
-	}
-	if err := ioutil.WriteFile(binPath, b, 0755); err != nil {
-		return nil, err
-	}
-	return &pluginBinary{path: binPath, home: home}, nil
-}
+	} else if res.StatusCode != http.StatusOK {
+		defer res.Body.Close()
+		if b, err := ioutil.ReadAll(res.Body); err == nil {
+			logrus.Debug(string(b))
+		} else {
+			logrus.Debugf("unable to read response body: %s", err.Error())
+		}
 
-func (binary pluginBinary) run(args ...string) (string, error) {
-	cmd := exec.Command(binary.path, args...)
-	cmd.Env = append(cmd.Env, "MESHCTL_HOME="+binary.home)
-	out, err := cmd.CombinedOutput()
-	return string(out), err
+		return nil, eris.Errorf("unexpected HTTP response: %d %s", res.StatusCode, res.Status)
+	}
+
+	return res.Body, nil
 }

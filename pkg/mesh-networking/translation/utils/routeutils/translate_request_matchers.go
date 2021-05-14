@@ -33,12 +33,13 @@ func TranslateRequestMatchers(
 			}
 		}
 	}
+	if requestMatchers == nil {
+		return sourceMatchers
+	}
+
 	// If SourceSelector is nil, generate an HttpMatchRequest without SourceSelector match criteria
 	if len(sourceMatchers) == 0 {
 		sourceMatchers = append(sourceMatchers, &networkingv1alpha3spec.HTTPMatchRequest{})
-	}
-	if requestMatchers == nil {
-		return sourceMatchers
 	}
 
 	// If HttpRequestMatchers exist, generate cartesian product of sourceMatchers and httpRequestMatchers.
