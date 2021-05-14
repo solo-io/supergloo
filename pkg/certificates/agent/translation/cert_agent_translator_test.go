@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	mock_certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent/mocks"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -45,12 +44,8 @@ var _ = Describe("CertAgentTranslator", func() {
 			translator := translation.NewCertAgentTranslator()
 
 			issuedCertiticate := &certificatesv1.IssuedCertificate{}
-			inputSnap := input.NewInputSnapshotManualBuilder("hello").
-				Build()
 
-			csrBytes, err := translator.IssuedCertiticatePending(ctx, issuedCertiticate, inputSnap, mockOutput)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(csrBytes).To(BeNil())
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeFalse())
 		})
 
 		It("Will create the private key secret, and return CSR bytes", func() {
@@ -63,7 +58,7 @@ var _ = Describe("CertAgentTranslator", func() {
 				},
 				Spec: certificatesv1.IssuedCertificateSpec{
 					IssuedCertificateSecret: &skv2corev1.ObjectRef{},
-					CertOptions: &v1.CommonCertOptions{
+					CertOptions: &certificatesv1.CommonCertOptions{
 						OrgName: "istio",
 					},
 				},
@@ -106,13 +101,8 @@ var _ = Describe("CertAgentTranslator", func() {
 			translator := translation.NewCertAgentTranslator()
 
 			issuedCertiticate := &certificatesv1.IssuedCertificate{}
-			csr := &certificatesv1.CertificateRequest{}
-			inputSnap := input.NewInputSnapshotManualBuilder("hello").
-				Build()
 
-			continueIterating, err := translator.IssuedCertificateRequested(ctx, issuedCertiticate, csr, inputSnap, mockOutput)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(continueIterating).To(BeFalse())
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeFalse())
 		})
 
 		var (
@@ -153,9 +143,10 @@ var _ = Describe("CertAgentTranslator", func() {
 			mockOutput.EXPECT().AddSecrets(privateKeySecret)
 			mockOutput.EXPECT().AddCertificateRequests(csr)
 
-			continueIterating, err := translator.IssuedCertificateRequested(ctx, issuedCertiticate, csr, inputSnap, mockOutput)
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeTrue())
+
+			err := translator.IssuedCertificateRequested(ctx, issuedCertiticate, csr, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(continueIterating).To(BeTrue())
 		})
 
 		It("will save certs to issued cert if csr is finished", func() {
@@ -190,9 +181,10 @@ var _ = Describe("CertAgentTranslator", func() {
 					Expect(intCaData.CaCert).To(Equal([]byte("I'm a signing cert")))
 				})
 
-			continueIterating, err := translator.IssuedCertificateRequested(ctx, issuedCertiticate, csr, inputSnap, mockOutput)
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeTrue())
+
+			err := translator.IssuedCertificateRequested(ctx, issuedCertiticate, csr, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(continueIterating).To(BeTrue())
 		})
 
 	})
@@ -204,12 +196,8 @@ var _ = Describe("CertAgentTranslator", func() {
 			translator := translation.NewCertAgentTranslator()
 
 			issuedCertiticate := &certificatesv1.IssuedCertificate{}
-			inputSnap := input.NewInputSnapshotManualBuilder("hello").
-				Build()
 
-			continueIterating, err := translator.IssuedCertificateIssued(ctx, issuedCertiticate, inputSnap, mockOutput)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(continueIterating).To(BeFalse())
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeFalse())
 		})
 
 		It("Will create the provate key secret, and return CSR bytes", func() {
@@ -229,7 +217,7 @@ var _ = Describe("CertAgentTranslator", func() {
 				},
 				Spec: certificatesv1.IssuedCertificateSpec{
 					IssuedCertificateSecret: ezkube.MakeObjectRef(issuedCertSecret),
-					CertOptions: &v1.CommonCertOptions{
+					CertOptions: &certificatesv1.CommonCertOptions{
 						OrgName: "istio",
 					},
 				},
@@ -241,9 +229,9 @@ var _ = Describe("CertAgentTranslator", func() {
 			mockOutput.EXPECT().
 				AddSecrets(issuedCertSecret)
 
-			continueIterating, err := translator.IssuedCertificateIssued(ctx, issuedCertiticate, inputSnap, mockOutput)
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeTrue())
+			err := translator.IssuedCertificateIssued(ctx, issuedCertiticate, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(continueIterating).To(BeTrue())
 		})
 
 	})

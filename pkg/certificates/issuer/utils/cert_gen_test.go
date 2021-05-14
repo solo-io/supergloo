@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("CertGen workflow", func() {
 	assertCsrWorks := func(signingRoot, signingKey []byte) {
-		privateKey, err := utils.GeneratePrivateKey()
+		privateKey, err := utils.GeneratePrivateKey(4096)
 		Expect(err).NotTo(HaveOccurred())
 
 		hosts := []string{"spiffe://custom-domain/ns/istio-system/sa/istio-pilot-service-account"}

@@ -2,7 +2,6 @@ package mtls_test
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -113,10 +112,10 @@ var _ = Describe("MtlsTranslator", func() {
 			// Make sure the name is the same, maybe decode the cert and check the data?
 			Expect(secret.GetName()).To(Equal(vm.GetRef().GetName() + "." + vm.GetRef().GetNamespace()))
 			Expect(mtls.IsSigningCert(secret)).To(BeTrue())
-			for k, v := range secret.Data {
-				fmt.Println(k)
-				fmt.Println(string(v))
-			}
+			// for k, v := range secret.Data {
+			// 	fmt.Println(k)
+			// 	fmt.Println(string(v))
+			// }
 		})
 
 		mockIstioBuilder.EXPECT().
@@ -127,6 +126,15 @@ var _ = Describe("MtlsTranslator", func() {
 					Spec: certificatesv1.IssuedCertificateSpec{
 						Hosts: []string{"spiffe://cluster.not-local/ns/istio-system-2/sa/istiod-not-standard"},
 						Org:   "Istio",
+						CertOptions: &certificatesv1.CommonCertOptions{
+							TtlDays:         365,
+							RsaKeySizeBytes: 4096,
+							OrgName:         "Istio",
+						},
+						SigningCertificateSecret: &skv2corev1.ObjectRef{
+							Name:      vm.GetRef().GetName() + "." + vm.GetRef().GetNamespace(),
+							Namespace: "gloo-mesh",
+						},
 						CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
 							GlooMeshCa: &certificatesv1.RootCertificateAuthority{
 								CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
@@ -196,6 +204,15 @@ var _ = Describe("MtlsTranslator", func() {
 					Spec: certificatesv1.IssuedCertificateSpec{
 						Hosts: []string{"spiffe://cluster.not-local/ns/istio-system-2/sa/istiod-not-standard"},
 						Org:   "Istio",
+						SigningCertificateSecret: &skv2corev1.ObjectRef{
+							Name:      generatedSecret.GetName(),
+							Namespace: generatedSecret.GetNamespace(),
+						},
+						CertOptions: &certificatesv1.CommonCertOptions{
+							TtlDays:         365,
+							RsaKeySizeBytes: 4096,
+							OrgName:         "Istio",
+						},
 						CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
 							GlooMeshCa: &certificatesv1.RootCertificateAuthority{
 								CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{

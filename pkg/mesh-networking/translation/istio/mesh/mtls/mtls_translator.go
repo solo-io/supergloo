@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
@@ -172,6 +173,7 @@ func (t *translator) configureSharedTrust(
 	// Construct the skeleton of the issuedCertificate
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
+		sharedTrust.GetIntermediateCertOptions(),
 		agentInfo.AgentNamespace,
 		autoRestartPods,
 		sharedTrust.GetIntermediateCertificateAuthority() != nil,
@@ -283,6 +285,7 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 
 func (t *translator) constructIssuedCertificate(
 	mesh *discoveryv1.Mesh,
+	options *certificatesv1.CommonCertOptions,
 	agentNamespace string,
 	autoRestartPods, agentCa bool,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
@@ -343,16 +346,31 @@ func (t *translator) constructIssuedCertificate(
 	return &certificatesv1.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
-			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
-			CertOptions: &certificatesv1.CommonCertOptions{
-				OrgName: defaultIstioOrg,
-			},
+			Hosts:       []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
+			CertOptions: buildDefaultCertOptions(options),
 			// Set deprecated field for backwards compatibility
 			Org:                     defaultIstioOrg,
 			IssuedCertificateSecret: istioCaCerts,
 			PodBounceDirective:      podBounceRef,
 		},
 	}, podBounceDirective
+}
+
+func buildDefaultCertOptions(options *certificatesv1.CommonCertOptions) *certificatesv1.CommonCertOptions {
+	result := proto.Clone(options).(*certificatesv1.CommonCertOptions)
+	if result == nil {
+		result = &certificatesv1.CommonCertOptions{}
+	}
+	if result.GetOrgName() == "" {
+		result.OrgName = defaultIstioOrg
+	}
+	if result.GetTtlDays() == 0 {
+		result.TtlDays = defaultRootCertTTLDays
+	}
+	if result.GetRsaKeySizeBytes() == 0 {
+		result.RsaKeySizeBytes = defaultRootCertRsaKeySize
+	}
+	return result
 }
 
 const (
