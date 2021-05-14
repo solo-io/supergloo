@@ -161,6 +161,14 @@ func ConflictDetectionTest() {
 			}, "10s", "1s").Should(BeTrue())
 
 			// output VS should not exist on remote cluster
+			Eventually(func() bool {
+				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
+					Name:      "reviews",
+					Namespace: BookinfoNamespace,
+				})
+				return err != nil
+			}, "5s", "1s").Should(BeTrue())
+			// output VS should not exist on remote cluster
 			Consistently(func() bool {
 				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
