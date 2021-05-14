@@ -52,6 +52,7 @@ type Translator interface {
 
 	// Should the reconciler process this resource
 	ShouldProcess(ctx context.Context, issuedCertificate *certificatesv1.IssuedCertificate) bool
+
 	// This function is called when the IssuedCertiticate is first created, it is meant to create the CSR
 	// and return the bytes directly
 	// If both return values are nil, it signals to the reconciler to ignore this resource.

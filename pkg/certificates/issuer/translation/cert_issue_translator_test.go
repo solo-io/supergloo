@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 
 	corev1clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
@@ -35,59 +36,95 @@ var _ = Describe("CertIssueTranslator", func() {
 		ctrl.Finish()
 	})
 
-	It("will do nothing if no signing cert is present", func() {
-
+	It("will not process an issuedCert with no signing cert", func() {
 		translator := translation.NewTranslator(mockSecretClient)
-
-		rootCaData := &secrets.RootCAData{
-			PrivateKey: []byte(rootKey),
-			RootCert:   []byte(rootCert),
-		}
-
-		secret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "i'm a",
-				Namespace: "secret",
-			},
-			Data: rootCaData.ToSecretData(),
-		}
-
-		certRequest := &certificatesv1.CertificateRequest{
-			Spec: certificatesv1.CertificateRequestSpec{
-				CertificateSigningRequest: []byte(csr),
-			},
-		}
 
 		issuedCert := &certificatesv1.IssuedCertificate{
 			Spec: certificatesv1.IssuedCertificateSpec{
 				CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-					GlooMeshCa: &certificatesv1.GlooMeshCA{
-						Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
-							SigningCertificateSecret: ezkube.MakeObjectRef(secret),
+					GlooMeshCa: &certificatesv1.RootCertificateAuthority{
+						CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
+							SigningCertificateSecret: nil,
 						},
 					},
 				},
 			},
 		}
 
-		mockSecretClient.EXPECT().GetSecret(ctx, ezkube.MakeClientObjectKey(secret)).Return(secret, nil)
+		Expect(translator.ShouldProcess(ctx, issuedCert)).To(BeFalse())
 
-		output, err := translator.Translate(ctx, certRequest, issuedCert)
-		Expect(err).NotTo(HaveOccurred())
-
-		translatedCertByt, _ := pem.Decode(output.SignedCertificate)
-		translatedCert, err := x509.ParseCertificate(translatedCertByt.Bytes)
-		Expect(err).NotTo(HaveOccurred())
-
-		precomputedCertByt, _ := pem.Decode([]byte(outputCert))
-		precomputedCert, err := x509.ParseCertificate(precomputedCertByt.Bytes)
-		Expect(err).NotTo(HaveOccurred())
-
-		Expect(precomputedCert.Extensions).To(Equal(translatedCert.Extensions))
-		Expect(precomputedCert.Issuer).To(Equal(translatedCert.Issuer))
-		Expect(precomputedCert.Subject).To(Equal(translatedCert.Subject))
-		Expect(err).NotTo(HaveOccurred())
+		_, err := translator.Translate(ctx, nil, issuedCert)
+		Expect(err).To(HaveOccurred())
 	})
+
+	DescribeTable(
+		"It will sign a CSR when signing cert is present",
+		func(issuedCertFactory func(secret *corev1.Secret) *certificatesv1.IssuedCertificate) {
+
+			translator := translation.NewTranslator(mockSecretClient)
+
+			rootCaData := &secrets.RootCAData{
+				PrivateKey: []byte(rootKey),
+				RootCert:   []byte(rootCert),
+			}
+
+			secret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "i'm a",
+					Namespace: "secret",
+				},
+				Data: rootCaData.ToSecretData(),
+			}
+
+			certRequest := &certificatesv1.CertificateRequest{
+				Spec: certificatesv1.CertificateRequestSpec{
+					CertificateSigningRequest: []byte(csr),
+				},
+			}
+
+			issuedCert := issuedCertFactory(secret)
+
+			mockSecretClient.EXPECT().GetSecret(ctx, ezkube.MakeClientObjectKey(secret)).Return(secret, nil)
+
+			Expect(translator.ShouldProcess(ctx, issuedCert)).To(BeTrue())
+
+			output, err := translator.Translate(ctx, certRequest, issuedCert)
+			Expect(err).NotTo(HaveOccurred())
+
+			translatedCertByt, _ := pem.Decode(output.SignedCertificate)
+			translatedCert, err := x509.ParseCertificate(translatedCertByt.Bytes)
+			Expect(err).NotTo(HaveOccurred())
+
+			precomputedCertByt, _ := pem.Decode([]byte(outputCert))
+			precomputedCert, err := x509.ParseCertificate(precomputedCertByt.Bytes)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(precomputedCert.Extensions).To(Equal(translatedCert.Extensions))
+			Expect(precomputedCert.Issuer).To(Equal(translatedCert.Issuer))
+			Expect(precomputedCert.Subject).To(Equal(translatedCert.Subject))
+			Expect(err).NotTo(HaveOccurred())
+		},
+		Entry("Standard Config", func(secret *corev1.Secret) *certificatesv1.IssuedCertificate {
+			return &certificatesv1.IssuedCertificate{
+				Spec: certificatesv1.IssuedCertificateSpec{
+					CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
+						GlooMeshCa: &certificatesv1.RootCertificateAuthority{
+							CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
+								SigningCertificateSecret: ezkube.MakeObjectRef(secret),
+							},
+						},
+					},
+				},
+			}
+		}),
+		Entry("Deprecated Config", func(secret *corev1.Secret) *certificatesv1.IssuedCertificate {
+			return &certificatesv1.IssuedCertificate{
+				Spec: certificatesv1.IssuedCertificateSpec{
+					SigningCertificateSecret: ezkube.MakeObjectRef(secret),
+				},
+			}
+		}),
+	)
 })
 
 const (

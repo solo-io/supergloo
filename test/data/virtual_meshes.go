@@ -3,7 +3,7 @@ package data
 import (
 	"context"
 
-	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -38,7 +38,7 @@ func SelfSignedVirtualMesh(
 						CertificateAuthority: &networkingv1.SharedTrust_RootCertificateAuthority{
 							RootCertificateAuthority: &networkingv1.RootCertificateAuthority{
 								CaSource: &networkingv1.RootCertificateAuthority_Generated{
-									Generated: &commonv1.CommonCertOptions{},
+									Generated: &certificatesv1.CommonCertOptions{},
 								},
 							},
 						},

@@ -80,6 +80,7 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 }
 
 func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *certificatesv1.CertificateRequest, issuedCertificates v1sets.IssuedCertificateSet) error {
+
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if certificateRequest.Status.ObservedGeneration != certificateRequest.Generation {
 		certificateRequest.Status.State = certificatesv1.CertificateRequestStatus_PENDING
@@ -111,19 +112,15 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *c
 		return eris.Wrapf(err, "failed to find issued certificate matching certificate request")
 	}
 
-	// If it is the agent cluster's responsibility to issue the cert, then ignore this request
-	if issuedCertificate.Spec.GetAgentCa() != nil {
+	// Check if it is the translators responsibility to handle this request
+	// If not return nil
+	if !r.translator.ShouldProcess(r.ctx, issuedCertificate) {
 		return nil
 	}
 
 	output, err := r.translator.Translate(r.ctx, certificateRequest, issuedCertificate)
 	if err != nil {
 		return eris.Wrapf(err, "failed to translate certificate request + issued certificate")
-	}
-
-	// If translator returns nil, it means
-	if output == nil {
-		return nil
 	}
 
 	certificateRequest.Status = certificatesv1.CertificateRequestStatus{

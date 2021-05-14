@@ -6,11 +6,10 @@ package mock_translation
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	translation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface

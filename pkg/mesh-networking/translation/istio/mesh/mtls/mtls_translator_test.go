@@ -9,7 +9,6 @@ import (
 	. "github.com/onsi/gomega"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	mock_istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
 	mock_local "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local/mocks"
@@ -83,7 +82,7 @@ var _ = Describe("MtlsTranslator", func() {
 	})
 
 	It("generated root CA", func() {
-		certSettings := &commonv1.CommonCertOptions{
+		certSettings := &certificatesv1.CommonCertOptions{
 			OrgName: "my-org",
 		}
 
@@ -129,8 +128,8 @@ var _ = Describe("MtlsTranslator", func() {
 						Hosts: []string{"spiffe://cluster.not-local/ns/istio-system-2/sa/istiod-not-standard"},
 						Org:   "Istio",
 						CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-							GlooMeshCa: &certificatesv1.GlooMeshCA{
-								Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+							GlooMeshCa: &certificatesv1.RootCertificateAuthority{
+								CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
 									SigningCertificateSecret: &skv2corev1.ObjectRef{
 										Name:      vm.GetRef().GetName() + "." + vm.GetRef().GetNamespace(),
 										Namespace: "gloo-mesh",
@@ -198,8 +197,8 @@ var _ = Describe("MtlsTranslator", func() {
 						Hosts: []string{"spiffe://cluster.not-local/ns/istio-system-2/sa/istiod-not-standard"},
 						Org:   "Istio",
 						CertificateAuthority: &certificatesv1.IssuedCertificateSpec_GlooMeshCa{
-							GlooMeshCa: &certificatesv1.GlooMeshCA{
-								Signer: &certificatesv1.GlooMeshCA_SigningCertificateSecret{
+							GlooMeshCa: &certificatesv1.RootCertificateAuthority{
+								CertificateAuthority: &certificatesv1.RootCertificateAuthority_SigningCertificateSecret{
 									SigningCertificateSecret: &skv2corev1.ObjectRef{
 										Name:      generatedSecret.GetName(),
 										Namespace: generatedSecret.GetNamespace(),

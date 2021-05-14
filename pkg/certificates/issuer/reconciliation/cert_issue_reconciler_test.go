@@ -73,6 +73,54 @@ var _ = Describe("CertIssueReconciler", func() {
 
 	})
 
+	It("will do nothing if translator.ShouldProcess returns false", func() {
+		reconcileFunc := reconciliation.NewCertificateRequestReconciler(
+			ctx,
+			mockBuilder,
+			func(ctx context.Context, snapshot input.Snapshot) error {
+				return nil
+			},
+			mockTranslator,
+		)
+
+		certRequest := &certificatesv1.CertificateRequest{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:       "issued-cert",
+				Namespace:  "ns",
+				Generation: 2,
+			},
+			Spec: certificatesv1.CertificateRequestSpec{
+				CertificateSigningRequest: []byte("hello"),
+			},
+			Status: certificatesv1.CertificateRequestStatus{
+				ObservedGeneration: 2,
+			},
+		}
+
+		issuedCert := &certificatesv1.IssuedCertificate{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "issued-cert",
+				Namespace: "ns",
+			},
+		}
+
+		mockBuilder.EXPECT().
+			BuildSnapshot(gomock.Any(), "cert-issuer", input.BuildOptions{}).
+			Return(input.NewSnapshot(
+				"hello",
+				v1sets.NewIssuedCertificateSet(issuedCert),
+				v1sets.NewCertificateRequestSet(certRequest),
+			), nil)
+
+		mockTranslator.EXPECT().
+			ShouldProcess(gomock.Any(), issuedCert).
+			Return(false)
+
+		_, err := reconcileFunc(nil)
+		Expect(err).NotTo(HaveOccurred())
+
+	})
+
 	It("will set csr output from translator to CertificateRequest status", func() {
 		reconcileFunc := reconciliation.NewCertificateRequestReconciler(
 			ctx,
@@ -117,6 +165,10 @@ var _ = Describe("CertIssueReconciler", func() {
 		expectedCertRequest := certRequest.DeepCopy()
 		expectedCertRequest.Status.State = certificatesv1.CertificateRequestStatus_PENDING
 		expectedCertRequest.Status.ObservedGeneration = 2
+
+		mockTranslator.EXPECT().
+			ShouldProcess(gomock.Any(), issuedCert).
+			Return(true)
 
 		mockTranslator.EXPECT().
 			Translate(
@@ -180,6 +232,10 @@ var _ = Describe("CertIssueReconciler", func() {
 		expectedCertRequest := certRequest.DeepCopy()
 		expectedCertRequest.Status.State = certificatesv1.CertificateRequestStatus_PENDING
 		expectedCertRequest.Status.ObservedGeneration = 2
+
+		mockTranslator.EXPECT().
+			ShouldProcess(gomock.Any(), issuedCert).
+			Return(true)
 
 		mockTranslator.EXPECT().
 			Translate(
