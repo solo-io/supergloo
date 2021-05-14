@@ -178,7 +178,7 @@ type VaultKubernetesAuth struct {
 	// A required field containing the Vault Role to assume. A Role binds a
 	// Kubernetes ServiceAccount with a set of Vault policies.
 	Role string `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
-	// Key in the token to search for the sa_token
+	// Key to search for the sa_token
 	// Default to "token"
 	SecretTokenKey string `protobuf:"bytes,3,opt,name=secret_token_key,json=secretTokenKey,proto3" json:"secret_token_key,omitempty"`
 	// The method by which to get the service account token.

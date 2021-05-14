@@ -58,7 +58,7 @@ title: "vault_ca.proto"
 | ----- | ---- | ----- | ----------- |
 | path | string |  | The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used. |
   | role | string |  | A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies. |
-  | secretTokenKey | string |  | Key in the token to search for the sa_token Default to "token" |
+  | secretTokenKey | string |  | Key to search for the sa_token Default to "token" |
   | serviceAccountRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to service account, other than the one mounted to the current pod. |
   | mountedSaPath | string |  | File System path to grab the service account token from. Defaults to /var/run/secrets/kubernetes.io/serviceaccount |
   

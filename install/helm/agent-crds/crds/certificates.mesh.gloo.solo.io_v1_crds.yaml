@@ -290,7 +290,7 @@ spec:
                           type: string
                         secretTokenKey:
                           description: |-
-                            Key in the token to search for the sa_token
+                            Key to search for the sa_token
                             Default to "token"
                           type: string
                         serviceAccountRef:

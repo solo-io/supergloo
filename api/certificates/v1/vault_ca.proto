@@ -56,7 +56,7 @@ message VaultKubernetesAuth {
   // Kubernetes ServiceAccount with a set of Vault policies.
   string role = 2;
 
-  // Key in the token to search for the sa_token
+  // Key to search for the sa_token
   // Default to "token"
   string secret_token_key = 3;
   
