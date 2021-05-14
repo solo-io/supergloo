@@ -11,6 +11,7 @@ import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -30,49 +31,10 @@ message TrafficPolicySpec {
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
     // Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
     // Omit to apply to any HTTP request.
-    repeated HttpMatcher http_request_matchers = 3;
+    repeated .common.mesh.gloo.solo.io.HttpMatcher http_request_matchers = 3;
 
     // Specify L7 routing and post-routing configuration.
     Policy policy = 4;
-
-    // Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
-    message HttpMatcher {
-
-        // Specify match criteria against the targeted path.
-        oneof path_specifier {
-
-            // If specified, the targeted path must begin with the prefix.
-            string prefix = 1;
-
-            // If specified, the targeted path must exactly match the value.
-            string exact = 2;
-
-            // If specified, the targeted path must match the regex.
-            string regex = 3;
-        }
-
-        // Specify a set of headers which requests must match in entirety (all headers must match).
-        repeated .common.mesh.gloo.solo.io.HeaderMatcher headers = 4;
-
-        // Specify a set of URL query parameters which requests must match in entirety (all query params must match).
-        repeated QueryParameterMatcher query_parameters = 5;
-
-        // Specify an HTTP method to match against.
-        string method = 6;
-
-        // Specify match criteria against the target URL's query parameters.
-        message QueryParameterMatcher {
-
-            // Specify the name of a key that must be present in the requested path's query string.
-            string name = 1;
-
-            // Specify the value of the query parameter keyed on `name`.
-            string value = 2;
-
-            // If true, treat `value` as a regular expression.
-            bool regex = 3;
-        }
-    }
 
     // Specify L7 routing and post-routing configuration.
     message Policy {
@@ -101,9 +63,11 @@ message TrafficPolicySpec {
 
         // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
         // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
+        // DEPRECATED: use DestinationPolicy to configure Outlier Detection
         OutlierDetection outlier_detection = 11;
 
         // Configure mTLS settings. If specified will override global default defined in Settings.
+        // DEPRECATED: use DestinationPolicy to configure MTLS
         MTLS mtls = 12;
 
         // Specify retries for failed requests.
@@ -122,55 +86,6 @@ message TrafficPolicySpec {
             // Specify weighted traffic shift destinations.
             repeated WeightedDestination destinations = 1;
 
-            // Specify a traffic shift destination along with a weight.
-            message WeightedDestination {
-
-                // Specify the proportion of traffic to be forwarded to this destination.
-                // Weights across all of the `destinations` must sum to 100.
-                uint32 weight = 1;
-
-                // Platform specific destinations.
-                oneof destination_type {
-
-                    // Specify a Kubernetes Service.
-                    KubeDestination kube_service = 2;
-
-                    // Specify a VirtualDestination.
-                    VirtualDestinationReference virtual_destination = 3;
-                }
-
-                // A Kubernetes destination.
-                message KubeDestination {
-
-                    // The name of the service.
-                    string name = 1;
-
-                    // The namespace of the service.
-                    string namespace = 2;
-
-                    // The Gloo Mesh cluster name (registration name) of the service.
-                    string cluster_name = 3;
-
-                    // Specify, by labels, a subset of service instances to route to.
-                    map<string, string> subset = 4;
-
-                    // Port on the service to receive traffic. Required if the service exposes more than one port.
-                    uint32 port = 5;
-                }
-
-                // Specify a VirtualDestination traffic shift destination.
-                message VirtualDestinationReference {
-
-                    // The name of the VirtualDestination object.
-                    string name = 1;
-
-                    // The namespace of the VirtualDestination object.
-                    string namespace = 2;
-
-                    // Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
-                    map<string, string> subset = 3;
-                }
-            }
         }
 
         // Specify one or more faults to inject for the selected network edge.
@@ -199,22 +114,6 @@ message TrafficPolicySpec {
 
             // Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
             double percentage = 4;
-        }
-
-        // Specify modifications to request and response headers.
-        message HeaderManipulation {
-
-            // HTTP headers to remove before returning a response to the caller.
-            repeated string remove_response_headers = 1;
-
-            // Additional HTTP headers to add before returning a response to the caller.
-            map<string, string> append_response_headers = 2;
-
-            // HTTP headers to remove before forwarding a request to the destination service.
-            repeated string remove_request_headers = 3;
-
-            // Additional HTTP headers to add before forwarding a request to the destination service.
-            map<string, string> append_request_headers = 4;
         }
 
         // Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
@@ -282,6 +181,7 @@ message TrafficPolicySpec {
 
         // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
         // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
+        // DEPRECATED: use DestinationPolicy to configure Outlier Detection
         message OutlierDetection {
 
             // The number of errors before a host is ejected from the connection pool. A default will be used if not set.
@@ -299,6 +199,7 @@ message TrafficPolicySpec {
         }
 
         // Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
+        // DEPRECATED: use DestinationPolicy to configure MTLS
         message MTLS {
 
             // Istio TLS settings.

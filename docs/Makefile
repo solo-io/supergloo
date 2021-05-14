@@ -30,6 +30,9 @@ site-common: clean
 	if [ ! -d themes/hugo-theme-soloio ]; then git clone https://github.com/solo-io/hugo-theme-soloio themes/hugo-theme-soloio; fi
 	# style updates for putting docs in the dev-portal repo, see details here https://github.com/solo-io/hugo-theme-soloio/commit/e0c50784a92fb7f61c635ff9a6e3a010f636f550
 	git -C themes/hugo-theme-soloio checkout $(SOLO_HUGO_THEME)
+
+.PHONY: generated-docs
+generated-docs:
 	# Don't regenerate the CLI and API when building the site
 	# Should already be version controlled
 	ONLY_CHANGELOG=true go run cmd/docsgen.go
@@ -39,7 +42,7 @@ site-test: site-common
 	hugo --config docs.toml
 
 .PHONY: site-release
-site-release: site-common
+site-release: site-common generated-docs
 	HUGO_PARAMS_Version=$(VERSION) hugo --config docs.toml
 	mv site site-latest
 

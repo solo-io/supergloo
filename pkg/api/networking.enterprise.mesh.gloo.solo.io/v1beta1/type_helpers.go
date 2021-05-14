@@ -8,3 +8,12 @@ type WasmDeploymentSlice []*WasmDeployment
 
 // VirtualDestinationSlice represents a slice of *VirtualDestination
 type VirtualDestinationSlice []*VirtualDestination
+
+// VirtualGatewaySlice represents a slice of *VirtualGateway
+type VirtualGatewaySlice []*VirtualGateway
+
+// VirtualHostSlice represents a slice of *VirtualHost
+type VirtualHostSlice []*VirtualHost
+
+// RouteTableSlice represents a slice of *RouteTable
+type RouteTableSlice []*RouteTable

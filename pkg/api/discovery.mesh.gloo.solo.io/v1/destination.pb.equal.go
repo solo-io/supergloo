@@ -171,6 +171,23 @@ func (m *DestinationStatus) Equal(that interface{}) bool {
 		}
 	}
 
+	if len(m.GetRequiredSubsets()) != len(target.GetRequiredSubsets()) {
+		return false
+	}
+	for idx, v := range m.GetRequiredSubsets() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRequiredSubsets()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetRequiredSubsets()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -873,6 +890,54 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 		}
 	} else {
 		if !proto.Equal(m.GetVirtualMeshRef(), target.GetVirtualMeshRef()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DestinationStatus_RequiredSubsets) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DestinationStatus_RequiredSubsets)
+	if !ok {
+		that2, ok := that.(DestinationStatus_RequiredSubsets)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTrafficPolicyRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTrafficPolicyRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTrafficPolicyRef(), target.GetTrafficPolicyRef()) {
+			return false
+		}
+	}
+
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTrafficShift()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTrafficShift()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTrafficShift(), target.GetTrafficShift()) {
 			return false
 		}
 	}

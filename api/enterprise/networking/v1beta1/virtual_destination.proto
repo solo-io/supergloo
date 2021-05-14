@@ -4,6 +4,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1/destination.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
@@ -166,6 +167,9 @@ message VirtualDestinationStatus {
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
+
+    // The set of TrafficPolicies that reference subsets on this VirtualDestination as a traffic shift.
+    repeated discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets required_subsets = 6;
 
     message SelectedDestinations {
 

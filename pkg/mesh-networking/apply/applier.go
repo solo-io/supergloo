@@ -11,6 +11,7 @@ import (
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -123,6 +124,7 @@ func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 		destination.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), destination)
 		destination.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), destination)
 		destination.Status.AppliedFederation = getAppliedFederation(input.VirtualMeshes().List(), destination)
+		destination.Status.RequiredSubsets = getRequiredSubsets(input.TrafficPolicies().List(), destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -143,6 +145,7 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 		destination.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, destination)
 		destination.Status.AppliedAccessPolicies = validateAndReturnApprovedAccessPolicies(ctx, input, reporter, destination)
 		destination.Status.AppliedFederation = validateAndReturnApprovedFederation(ctx, input, reporter, destination)
+		destination.Status.RequiredSubsets = validateAndReturnRequiredSubsets(ctx, input, destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -317,6 +320,9 @@ func validateAndReturnApprovedFederation(
 	reporter *applyReporter,
 	destination *discoveryv1.Destination,
 ) *discoveryv1.DestinationStatus_AppliedFederation {
+	if destination.Status.AppliedFederation == nil {
+		return nil
+	}
 
 	virtualMeshRef := destination.Status.AppliedFederation.GetVirtualMeshRef()
 	errsForFederation := reporter.getFederationsErrors(destination, virtualMeshRef)
@@ -345,6 +351,35 @@ func validateAndReturnApprovedFederation(
 		virtualMesh.Status.State = commonv1.ApprovalState_INVALID
 		return nil
 	}
+}
+
+func validateAndReturnRequiredSubsets(
+	ctx context.Context,
+	input input.LocalSnapshot,
+	destination *discoveryv1.Destination,
+) []*discoveryv1.DestinationStatus_RequiredSubsets {
+	var requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets
+
+	for _, requiredSubset := range destination.Status.RequiredSubsets {
+
+		trafficPolicy, err := input.TrafficPolicies().Find(requiredSubset.TrafficPolicyRef)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).DPanicf(
+				"could not find TrafficPolicy referenced in required subset: %s",
+				sets.Key(requiredSubset.TrafficPolicyRef),
+			)
+			continue
+		}
+
+		// don't require subsets from invalid TrafficPolicies
+		if trafficPolicy.Status.State != commonv1.ApprovalState_ACCEPTED {
+			continue
+		}
+
+		requiredSubsets = append(requiredSubsets, requiredSubset)
+	}
+
+	return requiredSubsets
 }
 
 func validateAndReturnVirtualMesh(
@@ -513,7 +548,7 @@ func getAppliedTrafficPolicies(
 		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
 			continue
 		}
-		if selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, destination) {
+		if selectorutils.SelectorMatchesDestination(policy.Spec.DestinationSelector, destination) {
 			matchingTrafficPolicies = append(matchingTrafficPolicies, policy)
 		}
 	}
@@ -593,7 +628,7 @@ func getAppliedAccessPolicies(
 		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
 			continue
 		}
-		if !selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, destination) {
+		if !selectorutils.SelectorMatchesDestination(policy.Spec.DestinationSelector, destination) {
 			continue
 		}
 		appliedPolicies = append(appliedPolicies, &discoveryv1.DestinationStatus_AppliedAccessPolicy{
@@ -641,13 +676,10 @@ func getAppliedFederation(
 		&parentVirtualMesh.Spec,
 	)
 
-	var federatedToMeshes []*v1.ObjectRef
-	for _, groupedMeshRef := range parentVirtualMesh.Spec.GetMeshes() {
-		// only translate output resources for client meshes
-		if ezkube.RefsMatch(parentMesh, groupedMeshRef) {
-			continue
-		}
-		federatedToMeshes = append(federatedToMeshes, groupedMeshRef)
+	federatedToMeshes := getFederatedToMeshes(destination, parentMesh, parentVirtualMesh)
+	// this Destination is not selected for federation to any external mesh
+	if len(federatedToMeshes) < 1 {
+		return nil
 	}
 
 	return &discoveryv1.DestinationStatus_AppliedFederation{
@@ -656,6 +688,46 @@ func getAppliedFederation(
 		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       parentVirtualMesh.Spec.GetFederation().GetFlatNetwork(),
 	}
+}
+
+// return all TrafficPolicies that reference the Destination's subset(s) in a traffic shift
+func getRequiredSubsets(
+	trafficPolicies networkingv1.TrafficPolicySlice,
+	destination *discoveryv1.Destination,
+) []*discoveryv1.DestinationStatus_RequiredSubsets {
+	var matchingTrafficPolicies networkingv1.TrafficPolicySlice
+	for _, policy := range trafficPolicies {
+		if referencedByTrafficShiftSubset(destination, policy) {
+			matchingTrafficPolicies = append(matchingTrafficPolicies, policy)
+		}
+	}
+
+	var requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets
+	for _, policy := range matchingTrafficPolicies {
+		policy := policy // pike
+		requiredSubsets = append(requiredSubsets, &discoveryv1.DestinationStatus_RequiredSubsets{
+			TrafficPolicyRef:   ezkube.MakeObjectRef(policy),
+			ObservedGeneration: policy.Generation,
+			TrafficShift:       policy.Spec.Policy.TrafficShift,
+		})
+	}
+	return requiredSubsets
+}
+
+// return true if TrafficPolicy references this Destination as a TrafficShift and specifies subsets
+func referencedByTrafficShiftSubset(destination *discoveryv1.Destination, trafficPolicy *networkingv1.TrafficPolicy) bool {
+	referenced := false
+
+	trafficShiftDestinations := trafficPolicy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
+	for _, trafficShiftDestination := range trafficShiftDestinations {
+		kubeService := trafficShiftDestination.GetKubeService()
+		if len(kubeService.GetSubset()) > 0 && destinationutils.IsDestinationForKubeService(destination, kubeService) {
+			referenced = true
+			break
+		}
+	}
+
+	return referenced
 }
 
 func getAppliedVirtualMesh(
@@ -678,6 +750,58 @@ func getAppliedVirtualMesh(
 		}
 	}
 	return nil
+}
+
+// return the Meshes that the Destination is federated to, ignoring the Destination's parent Mesh
+func getFederatedToMeshes(
+	destination *discoveryv1.Destination,
+	parentMesh *v1.ObjectRef,
+	virtualMesh *networkingv1.VirtualMesh,
+) []*v1.ObjectRef {
+	federatedToMeshes := sets.NewResourceSet()
+
+	// respect deprecated `mode` field only if new federation selectors are not specified
+	if len(virtualMesh.Spec.GetFederation().GetSelectors()) < 1 {
+		switch virtualMesh.Spec.GetFederation().GetMode().(type) {
+		case *networkingv1.VirtualMeshSpec_Federation_Permissive:
+			// permissive federation exposes the Destination to all Meshes in the VirtualMesh
+			for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+				federatedToMeshes.Insert(groupedMeshRef)
+			}
+		}
+	}
+
+	for _, federationSelector := range virtualMesh.Spec.GetFederation().GetSelectors() {
+		if !selectorutils.SelectorMatchesDestination(federationSelector.GetDestinationSelectors(), destination) {
+			continue
+		}
+		// if mesh refs are omitted, federate to all Meshes in VirtualMesh
+		if len(federationSelector.GetMeshes()) == 0 {
+			for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+				federatedToMeshes.Insert(groupedMeshRef)
+			}
+			// no need to process any other selectors
+			break
+		}
+		// federate to specified Meshes
+		for _, meshRef := range federationSelector.GetMeshes() {
+			federatedToMeshes.Insert(meshRef)
+		}
+	}
+
+	var meshRefs []*v1.ObjectRef
+	federatedToMeshes.List(func(id ezkube.ResourceId) (_ bool) {
+		// ignore Destination's parent mesh
+		if ezkube.RefsMatch(parentMesh, id) {
+			return
+		}
+		meshRefs = append(meshRefs, &v1.ObjectRef{
+			Name:      id.GetName(),
+			Namespace: id.GetNamespace(),
+		})
+		return
+	})
+	return meshRefs
 }
 
 // Get all the meshes and corresponding VirtualMeshes of the given Destinations.

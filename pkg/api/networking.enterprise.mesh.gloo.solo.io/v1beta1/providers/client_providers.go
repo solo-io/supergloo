@@ -72,3 +72,87 @@ func VirtualDestinationClientFromConfigFactoryProvider() VirtualDestinationClien
 		return clients.VirtualDestinations(), nil
 	}
 }
+
+// Provider for VirtualGatewayClient from Clientset
+func VirtualGatewayClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient {
+	return clients.VirtualGateways()
+}
+
+// Provider for VirtualGateway Client from Client
+func VirtualGatewayClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewVirtualGatewayClient(client)
+}
+
+type VirtualGatewayClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient
+
+func VirtualGatewayClientFactoryProvider() VirtualGatewayClientFactory {
+	return VirtualGatewayClientProvider
+}
+
+type VirtualGatewayClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient, error)
+
+func VirtualGatewayClientFromConfigFactoryProvider() VirtualGatewayClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGatewayClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.VirtualGateways(), nil
+	}
+}
+
+// Provider for VirtualHostClient from Clientset
+func VirtualHostClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient {
+	return clients.VirtualHosts()
+}
+
+// Provider for VirtualHost Client from Client
+func VirtualHostClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewVirtualHostClient(client)
+}
+
+type VirtualHostClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient
+
+func VirtualHostClientFactoryProvider() VirtualHostClientFactory {
+	return VirtualHostClientProvider
+}
+
+type VirtualHostClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient, error)
+
+func VirtualHostClientFromConfigFactoryProvider() VirtualHostClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHostClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.VirtualHosts(), nil
+	}
+}
+
+// Provider for RouteTableClient from Clientset
+func RouteTableClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient {
+	return clients.RouteTables()
+}
+
+// Provider for RouteTable Client from Client
+func RouteTableClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRouteTableClient(client)
+}
+
+type RouteTableClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient
+
+func RouteTableClientFactoryProvider() RouteTableClientFactory {
+	return RouteTableClientProvider
+}
+
+type RouteTableClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient, error)
+
+func RouteTableClientFromConfigFactoryProvider() RouteTableClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.RouteTables(), nil
+	}
+}

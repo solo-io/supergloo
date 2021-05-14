@@ -58,6 +58,9 @@ import (
 // * VirtualMeshes
 // * WasmDeployments
 // * VirtualDestinations
+// * VirtualGateways
+// * VirtualHosts
+// * RouteTables
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -153,6 +156,18 @@ func RegisterInputReconciler(
 	}
 	// initialize VirtualDestinations reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualDestinationReconcileLoop("VirtualDestination", mgr, options.Local.VirtualDestinations).RunVirtualDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize VirtualGateways reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualGatewayReconcileLoop("VirtualGateway", mgr, options.Local.VirtualGateways).RunVirtualGatewayReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize VirtualHosts reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualHostReconcileLoop("VirtualHost", mgr, options.Local.VirtualHosts).RunVirtualHostReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize RouteTables reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewRouteTableReconcileLoop("RouteTable", mgr, options.Local.RouteTables).RunRouteTableReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -366,6 +381,12 @@ type LocalReconcileOptions struct {
 	WasmDeployments reconcile.Options
 	// Options for reconciling VirtualDestinations
 	VirtualDestinations reconcile.Options
+	// Options for reconciling VirtualGateways
+	VirtualGateways reconcile.Options
+	// Options for reconciling VirtualHosts
+	VirtualHosts reconcile.Options
+	// Options for reconciling RouteTables
+	RouteTables reconcile.Options
 
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
@@ -493,6 +514,45 @@ func (r *localInputReconciler) ReconcileVirtualDestination(obj *networking_enter
 }
 
 func (r *localInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileVirtualGatewayDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileVirtualHostDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileRouteTableDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

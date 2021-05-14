@@ -43,6 +43,9 @@ var (
 		}: {
 			"WasmDeployment",
 			"VirtualDestination",
+			"VirtualGateway",
+			"VirtualHost",
+			"RouteTable",
 		},
 		schema.GroupVersion{
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,

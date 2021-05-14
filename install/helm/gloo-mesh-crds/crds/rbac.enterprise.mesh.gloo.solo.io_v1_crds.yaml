@@ -31,7 +31,8 @@ spec:
                the permission granularity is defined at the field level or at the object level.
           properties:
             accessLogRecordScopes:
-              description: A set of AccessLogRecord configuration permissions. Permission granularity is defined at the object level.
+              description: A set of AccessLogRecord configuration permissions. Permission
+                granularity is defined at the object level.
               items:
                 properties:
                   workloadSelectors:
@@ -39,7 +40,8 @@ spec:
                     items:
                       properties:
                         kubeWorkloadMatcher:
-                          description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes workloads by their labels,
+                            namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
@@ -71,7 +73,8 @@ spec:
                 type: object
               type: array
             accessPolicyScopes:
-              description: A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level.
+              description: A set of AccessPolicy configuration permissions. Permission
+                granularity is defined at the object level.
               items:
                 properties:
                   destinationSelectors:
@@ -79,7 +82,8 @@ spec:
                     items:
                       properties:
                         kubeServiceMatcher:
-                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes Services by their labels,
+                            namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
@@ -111,13 +115,13 @@ spec:
                           properties:
                             services:
                               description: |-
-                                Match Kubernetes Services by direct reference.
-                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                Match Kubernetes Services by direct reference. All fields are required.
                                            When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
-                                    description: name of the cluster in which the resource exists
+                                    description: name of the cluster in which the
+                                      resource exists
                                     type: string
                                   name:
                                     description: name of the resource being referenced
@@ -135,7 +139,8 @@ spec:
                     items:
                       properties:
                         kubeIdentityMatcher:
-                          description: Match request identities based on the Kubernetes namespace and cluster.
+                          description: Match request identities based on the Kubernetes
+                            namespace and cluster.
                           properties:
                             clusters:
                               description: |-
@@ -155,7 +160,8 @@ spec:
                               type: array
                           type: object
                         kubeServiceAccountRefs:
-                          description: Match request identities based on the Kubernetes service account of the request.
+                          description: Match request identities based on the Kubernetes
+                            service account of the request.
                           properties:
                             serviceAccounts:
                               description: |-
@@ -165,7 +171,8 @@ spec:
                               items:
                                 properties:
                                   clusterName:
-                                    description: name of the cluster in which the resource exists
+                                    description: name of the cluster in which the
+                                      resource exists
                                     type: string
                                   name:
                                     description: name of the resource being referenced
@@ -181,7 +188,8 @@ spec:
                 type: object
               type: array
             trafficPolicyScopes:
-              description: A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
+              description: A set of TrafficPolicy configuration permissions. Permission
+                granularity is defined at the field level.
               items:
                 properties:
                   destinationSelectors:
@@ -189,7 +197,8 @@ spec:
                     items:
                       properties:
                         kubeServiceMatcher:
-                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes Services by their labels,
+                            namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
@@ -221,13 +230,13 @@ spec:
                           properties:
                             services:
                               description: |-
-                                Match Kubernetes Services by direct reference.
-                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                Match Kubernetes Services by direct reference. All fields are required.
                                            When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
-                                    description: name of the cluster in which the resource exists
+                                    description: name of the cluster in which the
+                                      resource exists
                                     type: string
                                   name:
                                     description: name of the resource being referenced
@@ -262,7 +271,8 @@ spec:
                     items:
                       properties:
                         kubeWorkloadMatcher:
-                          description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes workloads by their labels,
+                            namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
@@ -294,7 +304,8 @@ spec:
                 type: object
               type: array
             virtualDestinationScopes:
-              description: A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level.
+              description: A set of VirtualDestination configuration permissions.
+                Permission granularity is defined at the object level.
               items:
                 properties:
                   destinationSelectors:
@@ -302,7 +313,8 @@ spec:
                     items:
                       properties:
                         kubeServiceMatcher:
-                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes Services by their labels,
+                            namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
@@ -334,13 +346,13 @@ spec:
                           properties:
                             services:
                               description: |-
-                                Match Kubernetes Services by direct reference.
-                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                Match Kubernetes Services by direct reference. All fields are required.
                                            When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
-                                    description: name of the cluster in which the resource exists
+                                    description: name of the cluster in which the
+                                      resource exists
                                     type: string
                                   name:
                                     description: name of the resource being referenced
@@ -368,7 +380,8 @@ spec:
                           description: Reference to a Kubernetes Service.
                           properties:
                             clusterName:
-                              description: name of the cluster in which the resource exists
+                              description: name of the cluster in which the resource
+                                exists
                               type: string
                             name:
                               description: name of the resource being referenced
@@ -406,7 +419,8 @@ spec:
                 type: object
               type: array
             virtualMeshScopes:
-              description: A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level.
+              description: A set of VirtualMesh configuration permissions. Permission
+                granularity is defined at the field level.
               items:
                 properties:
                   meshRefs:
@@ -435,7 +449,8 @@ spec:
                 type: object
               type: array
             wasmDeploymentScopes:
-              description: A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level.
+              description: A set of WasmDeployment configuration permissions. Permission
+                granularity is defined at the object level.
               items:
                 properties:
                   workloadSelectors:
@@ -443,7 +458,8 @@ spec:
                     items:
                       properties:
                         kubeWorkloadMatcher:
-                          description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes workloads by their labels,
+                            namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
@@ -529,7 +545,8 @@ spec:
                   type: string
               type: object
             subjects:
-              description: Specify by reference the Kubernetes Users or Groups the Role should apply to.
+              description: Specify by reference the Kubernetes Users or Groups the
+                Role should apply to.
               items:
                 properties:
                   apiGroup:

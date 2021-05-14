@@ -10,9 +10,8 @@ Gloo Mesh Enterprise is required for this feature. Open source users and users w
 provided by Gloo Mesh Istio can use Gloo Mesh with an upstream Istio release and should refer to our guide on [installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}).
 {{% /notice %}}
 
-Gloo Mesh Istio consists of custom builds of both the Istio control plane and Istio data plane. These builds are available to
-enterprise users and contain fixes, features, and compliance characteristics not available in the corresponding upstream
-Istio builds.
+Gloo Mesh Istio consists of upstream builds of both the Istio control plane and Istio data plane. These builds are available to
+enterprise users and can contain patches, security back-ports and other fixes. For example, a Gloo Mesh Istio build of 1.7.5 (out of support from community) can contain security back-ports for CVEs found in 1.8/1.9 (current community support) or feature backports for newer versions. Any back-ported functionality is all available in the upstream in some version -- there are no proprietary features or forked capabilities from upstream. It's all based on upstream in the support of our enterprise users. 
 
 To install Gloo Mesh Istio, simply override the `tag` and `hub` parameters on the [Istio Operator](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/)
 resource at install time. The `hub` value must equal `gcr.io/istio-enterprise` and the `tag` value should equal the
@@ -80,7 +79,7 @@ spec:
   # This value is required for Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
   # This value can be any Gloo Mesh Istio tag
-  tag: 1.8.4
+  tag: 1.8.5
   profile: minimal
   meshConfig:
     enableAutoMtls: true

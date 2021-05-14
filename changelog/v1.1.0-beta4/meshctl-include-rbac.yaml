@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1464
+    description: Deprecate the `skip-rbac` flag and add the `include-rbac` flag.

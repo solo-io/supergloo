@@ -78,7 +78,115 @@ type VirtualDestinationList struct {
 	Items           []VirtualDestination `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for VirtualGateway
+var VirtualGatewayGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "VirtualGateway",
+}
+
+// VirtualGateway is the Schema for the virtualGateway API
+type VirtualGateway struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   VirtualGatewaySpec   `json:"spec,omitempty"`
+	Status VirtualGatewayStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (VirtualGateway) GVK() schema.GroupVersionKind {
+	return VirtualGatewayGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VirtualGatewayList contains a list of VirtualGateway
+type VirtualGatewayList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualGateway `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for VirtualHost
+var VirtualHostGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "VirtualHost",
+}
+
+// VirtualHost is the Schema for the virtualHost API
+type VirtualHost struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   VirtualHostSpec   `json:"spec,omitempty"`
+	Status VirtualHostStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (VirtualHost) GVK() schema.GroupVersionKind {
+	return VirtualHostGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VirtualHostList contains a list of VirtualHost
+type VirtualHostList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualHost `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for RouteTable
+var RouteTableGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "RouteTable",
+}
+
+// RouteTable is the Schema for the routeTable API
+type RouteTable struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   RouteTableSpec   `json:"spec,omitempty"`
+	Status RouteTableStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (RouteTable) GVK() schema.GroupVersionKind {
+	return RouteTableGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// RouteTableList contains a list of RouteTable
+type RouteTableList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []RouteTable `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
+	SchemeBuilder.Register(&VirtualGateway{}, &VirtualGatewayList{})
+	SchemeBuilder.Register(&VirtualHost{}, &VirtualHostList{})
+	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
 }

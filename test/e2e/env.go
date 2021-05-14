@@ -76,6 +76,7 @@ type KubeContext struct {
 	VirtualMeshClient     networkingv1.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
 	VirtualServiceClient  istionetworkingv1alpha3.VirtualServiceClient
+	ServiceEntryClient    istionetworkingv1alpha3.ServiceEntryClient
 	AccessLogRecordClient observabilityv1.AccessLogRecordClient
 }
 
@@ -118,6 +119,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
 		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
+		ServiceEntryClient:    istioNetworkingClientset.ServiceEntries(),
 		AccessLogRecordClient: observabilityClientset.AccessLogRecords(),
 	}
 }

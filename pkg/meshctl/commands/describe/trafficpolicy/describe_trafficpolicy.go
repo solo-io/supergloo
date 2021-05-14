@@ -106,7 +106,7 @@ func formattedWorkloadSelectors(sels []*commonv1.WorkloadSelector) string {
 	return s.String()
 }
 
-func formattedHttpMatchers(sels []*networkingv1.TrafficPolicySpec_HttpMatcher) string {
+func formattedHttpMatchers(sels []*commonv1.HttpMatcher) string {
 	if len(sels) < 1 {
 		return ""
 	}
@@ -143,7 +143,7 @@ type trafficPolicyDescription struct {
 	Metadata            *v1.ClusterObjectRef
 	SourceWorkloads     []*commonv1.WorkloadSelector
 	DestinationServices []*v1.ClusterObjectRef
-	HttpMatchers        []*networkingv1.TrafficPolicySpec_HttpMatcher
+	HttpMatchers        []*commonv1.HttpMatcher
 }
 
 func matchTrafficPolicy(trafficPolicy networkingv1.TrafficPolicy, searchTerms []string) bool {

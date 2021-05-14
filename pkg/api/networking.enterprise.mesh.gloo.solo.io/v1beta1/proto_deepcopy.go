@@ -31,3 +31,39 @@ func (in *VirtualDestinationStatus) DeepCopyInto(out *VirtualDestinationStatus) 
 	p := proto.Clone(in).(*VirtualDestinationStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the VirtualGateway.Spec
+func (in *VirtualGatewaySpec) DeepCopyInto(out *VirtualGatewaySpec) {
+	p := proto.Clone(in).(*VirtualGatewaySpec)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualGateway.Status
+func (in *VirtualGatewayStatus) DeepCopyInto(out *VirtualGatewayStatus) {
+	p := proto.Clone(in).(*VirtualGatewayStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualHost.Spec
+func (in *VirtualHostSpec) DeepCopyInto(out *VirtualHostSpec) {
+	p := proto.Clone(in).(*VirtualHostSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualHost.Status
+func (in *VirtualHostStatus) DeepCopyInto(out *VirtualHostStatus) {
+	p := proto.Clone(in).(*VirtualHostStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the RouteTable.Spec
+func (in *RouteTableSpec) DeepCopyInto(out *RouteTableSpec) {
+	p := proto.Clone(in).(*RouteTableSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the RouteTable.Status
+func (in *RouteTableStatus) DeepCopyInto(out *RouteTableStatus) {
+	p := proto.Clone(in).(*RouteTableStatus)
+	*out = *p
+}

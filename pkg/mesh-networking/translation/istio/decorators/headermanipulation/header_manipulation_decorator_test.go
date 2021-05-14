@@ -30,7 +30,7 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
-					HeaderManipulation: &v1.TrafficPolicySpec_Policy_HeaderManipulation{
+					HeaderManipulation: &v1.HeaderManipulation{
 						AppendRequestHeaders:  map[string]string{"a": "b"},
 						RemoveRequestHeaders:  []string{"3", "4"},
 						AppendResponseHeaders: map[string]string{"foo": "bar"},
@@ -62,7 +62,7 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
-					HeaderManipulation: &v1.TrafficPolicySpec_Policy_HeaderManipulation{},
+					HeaderManipulation: &v1.HeaderManipulation{},
 				},
 			},
 		}

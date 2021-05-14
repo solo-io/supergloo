@@ -33,9 +33,9 @@ func LocalTrafficShiftPolicy(
 			},
 			Policy: &v1.TrafficPolicySpec_Policy{
 				TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-					Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{{
-						DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-							KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+					Destinations: []*v1.WeightedDestination{{
+						DestinationType: &v1.WeightedDestination_KubeService{
+							KubeService: &v1.WeightedDestination_KubeDestination{
 								Namespace:   destinationService.GetNamespace(),
 								Name:        destinationService.GetName(),
 								ClusterName: destinationService.GetClusterName(),
@@ -77,9 +77,9 @@ func RemoteTrafficShiftPolicy(
 			},
 			Policy: &v1.TrafficPolicySpec_Policy{
 				TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-					Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{{
-						DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-							KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+					Destinations: []*v1.WeightedDestination{{
+						DestinationType: &v1.WeightedDestination_KubeService{
+							KubeService: &v1.WeightedDestination_KubeDestination{
 								Namespace:   destinationService.GetNamespace(),
 								Name:        destinationService.GetName(),
 								ClusterName: subsetCluster,

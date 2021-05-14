@@ -19,25 +19,15 @@ title: "traffic_policy.proto"
 
 ## Table of Contents
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
-  - [TrafficPolicySpec.HttpMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher)
-  - [TrafficPolicySpec.HttpMatcher.QueryParameterMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
   - [TrafficPolicySpec.Policy.CorsPolicy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch)
   - [TrafficPolicySpec.Policy.FaultInjection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection)
   - [TrafficPolicySpec.Policy.FaultInjection.Abort](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.Abort)
-  - [TrafficPolicySpec.Policy.HeaderManipulation](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation)
-  - [TrafficPolicySpec.Policy.HeaderManipulation.AppendRequestHeadersEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendRequestHeadersEntry)
-  - [TrafficPolicySpec.Policy.HeaderManipulation.AppendResponseHeadersEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendResponseHeadersEntry)
   - [TrafficPolicySpec.Policy.MTLS](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS)
   - [TrafficPolicySpec.Policy.MTLS.Istio](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio)
   - [TrafficPolicySpec.Policy.Mirror](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror)
   - [TrafficPolicySpec.Policy.MultiDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry)
   - [TrafficPolicySpec.Policy.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection)
   - [TrafficPolicySpec.Policy.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
@@ -60,45 +50,8 @@ Applies L7 routing and post-routing configuration on selected network edges.
 | ----- | ---- | ----- | ----------- |
 | sourceSelector | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Specify the Workloads (traffic sources) this TrafficPolicy applies to. Omit to apply to all Workloads. |
   | destinationSelector | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Specify the Destinations (destinations) this TrafficPolicy applies to. Omit to apply to all Destinations. |
-  | httpRequestMatchers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
+  | httpRequestMatchers | [][common.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
   | policy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Specify L7 routing and post-routing configuration. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher"></a>
-
-### TrafficPolicySpec.HttpMatcher
-Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| prefix | string |  | If specified, the targeted path must begin with the prefix. |
-  | exact | string |  | If specified, the targeted path must exactly match the value. |
-  | regex | string |  | If specified, the targeted path must match the regex. |
-  | headers | [][common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) | repeated | Specify a set of headers which requests must match in entirety (all headers must match). |
-  | queryParameters | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher" >}}) | repeated | Specify a set of URL query parameters which requests must match in entirety (all query params must match). |
-  | method | string |  | Specify an HTTP method to match against. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher"></a>
-
-### TrafficPolicySpec.HttpMatcher.QueryParameterMatcher
-Specify match criteria against the target URL's query parameters.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  | Specify the name of a key that must be present in the requested path's query string. |
-  | value | string |  | Specify the value of the query parameter keyed on `name`. |
-  | regex | bool |  | If true, treat `value` as a regular expression. |
   
 
 
@@ -119,9 +72,9 @@ Specify L7 routing and post-routing configuration.
   | retries | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy" >}}) |  | Set a retry policy on requests. |
   | corsPolicy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy" >}}) |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for further details about cross origin resource sharing. |
   | mirror | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror" >}}) |  | Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations). |
-  | headerManipulation | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
-  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. |
-  | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. |
+  | headerManipulation | [networking.mesh.gloo.solo.io.HeaderManipulation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
+  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. DEPRECATED: use DestinationPolicy to configure Outlier Detection |
+  | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. DEPRECATED: use DestinationPolicy to configure MTLS |
   
 
 
@@ -197,60 +150,10 @@ Abort the request and return the specified error code back to traffic source.
 
 
 
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation"></a>
-
-### TrafficPolicySpec.Policy.HeaderManipulation
-Specify modifications to request and response headers.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| removeResponseHeaders | []string | repeated | HTTP headers to remove before returning a response to the caller. |
-  | appendResponseHeaders | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendResponseHeadersEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendResponseHeadersEntry" >}}) | repeated | Additional HTTP headers to add before returning a response to the caller. |
-  | removeRequestHeaders | []string | repeated | HTTP headers to remove before forwarding a request to the destination service. |
-  | appendRequestHeaders | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendRequestHeadersEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendRequestHeadersEntry" >}}) | repeated | Additional HTTP headers to add before forwarding a request to the destination service. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendRequestHeadersEntry"></a>
-
-### TrafficPolicySpec.Policy.HeaderManipulation.AppendRequestHeadersEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.HeaderManipulation.AppendResponseHeadersEntry"></a>
-
-### TrafficPolicySpec.Policy.HeaderManipulation.AppendResponseHeadersEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
-  
-
-
-
-
-
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS"></a>
 
 ### TrafficPolicySpec.Policy.MTLS
-Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
+Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings. DEPRECATED: use DestinationPolicy to configure MTLS
 
 
 | Field | Type | Label | Description |
@@ -302,92 +205,7 @@ Specify a traffic shift destination.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinations | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination" >}}) | repeated | Specify weighted traffic shift destinations. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination
-Specify a traffic shift destination along with a weight.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| weight | uint32 |  | Specify the proportion of traffic to be forwarded to this destination. Weights across all of the `destinations` must sum to 100. |
-  | kubeService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination" >}}) |  | Specify a Kubernetes Service. |
-  | virtualDestination | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference" >}}) |  | Specify a VirtualDestination. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination
-A Kubernetes destination.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  | The name of the service. |
-  | namespace | string |  | The namespace of the service. |
-  | clusterName | string |  | The Gloo Mesh cluster name (registration name) of the service. |
-  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry" >}}) | repeated | Specify, by labels, a subset of service instances to route to. |
-  | port | uint32 |  | Port on the service to receive traffic. Required if the service exposes more than one port. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference
-Specify a VirtualDestination traffic shift destination.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  | The name of the VirtualDestination object. |
-  | namespace | string |  | The namespace of the VirtualDestination object. |
-  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry" >}}) | repeated | Specify, by labels, a subset of service instances backing the VirtualDestination to route to. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
+| destinations | [][networking.mesh.gloo.solo.io.WeightedDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.WeightedDestination" >}}) | repeated | Specify weighted traffic shift destinations. |
   
 
 
@@ -397,7 +215,7 @@ Specify a VirtualDestination traffic shift destination.
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection"></a>
 
 ### TrafficPolicySpec.Policy.OutlierDetection
-Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic.
+Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. DEPRECATED: use DestinationPolicy to configure Outlier Detection
 
 
 | Field | Type | Label | Description |

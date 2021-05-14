@@ -43,6 +43,9 @@ type InputLocalSnapshotManualBuilder struct {
 
 	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	virtualGateways     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
+	virtualHosts        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
+	routeTables         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -67,6 +70,9 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 
 		wasmDeployments:     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet(),
 		virtualDestinations: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet(),
+		virtualGateways:     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet(),
+		virtualHosts:        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet(),
+		routeTables:         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet(),
 
 		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet(),
 
@@ -92,6 +98,9 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 
 		i.wasmDeployments,
 		i.virtualDestinations,
+		i.virtualGateways,
+		i.virtualHosts,
+		i.routeTables,
 
 		i.accessLogRecords,
 
@@ -134,6 +143,18 @@ func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*
 }
 func (i *InputLocalSnapshotManualBuilder) AddVirtualDestinations(virtualDestinations []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) *InputLocalSnapshotManualBuilder {
 	i.virtualDestinations.Insert(virtualDestinations...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddVirtualGateways(virtualGateways []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) *InputLocalSnapshotManualBuilder {
+	i.virtualGateways.Insert(virtualGateways...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddVirtualHosts(virtualHosts []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) *InputLocalSnapshotManualBuilder {
+	i.virtualHosts.Insert(virtualHosts...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddRouteTables(routeTables []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) *InputLocalSnapshotManualBuilder {
+	i.routeTables.Insert(routeTables...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) *InputLocalSnapshotManualBuilder {

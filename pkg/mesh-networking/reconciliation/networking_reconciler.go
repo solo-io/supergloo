@@ -266,6 +266,9 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		WasmDeployment:     true,
 		AccessLogRecord:    true,
 		VirtualDestination: true,
+		VirtualGateway:     true,
+		VirtualHost:        true,
+		RouteTable:         true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}

@@ -18,7 +18,7 @@ Before we get started, ensure that you have the following tools installed:
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) - Command line utility for Kubernetes
 - [meshctl]({{% versioned_link_path fromRoot="/getting_started" %}}) - Command line utility for Gloo Mesh
-- [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
+- [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8.
 
 Provision three Kubernetes clusters with contexts stored in the following environment variables:
 - `MGMT_CONTEXT` - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
@@ -50,6 +50,7 @@ spec:
   profile: minimal
   # Install Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
+  tag: 1.8.5
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -100,6 +101,7 @@ spec:
   profile: minimal
   # Install Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
+  tag: 1.8.5
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -153,13 +155,13 @@ application workloads on the management cluster, but we will not for the purpose
 installation options for Gloo Mesh Enterprise, including how to deploy Gloo Mesh via helm, review the [Gloo Mesh Enterprise install guide]({{% versioned_link_path fromRoot="/setup/installation/enterprise_installation/" %}}).
 
 To get you up and running as quickly as possible, we will not install the Gloo Mesh Enterprise component responsible
-for enforcing the [role-based API]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) by including the
-`--skip-rbac` flag. If you wish to enable it, simply invoke the install command without this flag. 
+for enforcing the [role-based API]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}). This is the
+case by default. If you wish to install it, simply invoke the install command with the `--include-rbac` flag. 
 
-Note that if you exclude the `--skip-rbac` flag, operations like creating a virtual mesh, later in this guide, will fail with permission errors. In that case, you will need to [understand]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) and [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities to proceed.
+Note that if you have the `--include-rbac` flag, operations like creating a virtual mesh, later in this guide, will fail with permission errors. In that case, you will need to [understand]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) and [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities to proceed.
 
 ```shell
-meshctl install enterprise --kubecontext=$MGMT_CONTEXT --license $GLOO_MESH_LICENSE_KEY --skip-rbac
+meshctl install enterprise --kubecontext=$MGMT_CONTEXT --license $GLOO_MESH_LICENSE_KEY
 ```
 
 You should see the following output from the command:
@@ -306,7 +308,10 @@ spec:
     shared:
       rootCertificateAuthority:
         generated: {}
-  federation: {}
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
   # Disable global access policy enforcement for demonstration purposes.
   globalAccessPolicy: DISABLED
   meshes:
@@ -326,7 +331,7 @@ To verify that the Virtual Mesh has taken effect, run the following:
 kubectl get virtualmesh -n gloo-mesh virtual-mesh -oyaml
 ```
 
-Note that if the Virtual Mesh creation fails with a permissions error, then you likely did not install the mesh using the `--skip-rbac` option described earlier.  In that case, you will need to [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities properly.
+Note that if the Virtual Mesh creation fails with a permissions error, then you likely installed the mesh using the `--include-rbac` option.  In that case, you will need to [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities properly.
 
 If there are no errors, then after a few moments the Virtual Mesh status will be "Accepted", indicating your meshes are configured for multicluster traffic.
 
@@ -408,6 +413,17 @@ NAME                          READY   STATUS    RESTARTS   AGE
 ratings-v1-7dc98c7588-qbmmh   2/2     Running   0          3m11s
 reviews-v3-7dbcdcbc56-w4kbf   2/2     Running   0          3m11s
 ```
+
+{{% notice note %}}
+If your bookinfo deployments are stuck in a pending state with the following error:
+```
+admission webhook "sidecar-injector.istio.io" denied the request: template:
+      inject:1: function "Template_Version_And_Istio_Version_Mismatched_Check_Installation"
+      not defined
+```
+This means that there is a mismatch with istioctl version and IstioOperator during
+install. Check that your `istioctl` version matches the version of istio running on the server.
+{{% /notice %}}
 
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
 

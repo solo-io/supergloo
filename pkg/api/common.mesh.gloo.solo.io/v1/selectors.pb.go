@@ -29,6 +29,83 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+// Object Selector expression operator, while the set-based syntax differs from Kubernetes (kubernetes: `key: !mylabel`, gloo: `key: mylabel, operator: "!"` | kubernetes: `key: mylabel`, gloo: `key: mylabel, operator: exists`), the functionality remains the same.
+type ObjectSelector_Expression_Operator int32
+
+const (
+	// =
+	ObjectSelector_Expression_Equals ObjectSelector_Expression_Operator = 0
+	// ==
+	ObjectSelector_Expression_DoubleEquals ObjectSelector_Expression_Operator = 1
+	// !=
+	ObjectSelector_Expression_NotEquals ObjectSelector_Expression_Operator = 2
+	// in
+	ObjectSelector_Expression_In ObjectSelector_Expression_Operator = 3
+	// notin
+	ObjectSelector_Expression_NotIn ObjectSelector_Expression_Operator = 4
+	// exists
+	ObjectSelector_Expression_Exists ObjectSelector_Expression_Operator = 5
+	// !
+	ObjectSelector_Expression_DoesNotExist ObjectSelector_Expression_Operator = 6
+	// gt
+	ObjectSelector_Expression_GreaterThan ObjectSelector_Expression_Operator = 7
+	// lt
+	ObjectSelector_Expression_LessThan ObjectSelector_Expression_Operator = 8
+)
+
+// Enum value maps for ObjectSelector_Expression_Operator.
+var (
+	ObjectSelector_Expression_Operator_name = map[int32]string{
+		0: "Equals",
+		1: "DoubleEquals",
+		2: "NotEquals",
+		3: "In",
+		4: "NotIn",
+		5: "Exists",
+		6: "DoesNotExist",
+		7: "GreaterThan",
+		8: "LessThan",
+	}
+	ObjectSelector_Expression_Operator_value = map[string]int32{
+		"Equals":       0,
+		"DoubleEquals": 1,
+		"NotEquals":    2,
+		"In":           3,
+		"NotIn":        4,
+		"Exists":       5,
+		"DoesNotExist": 6,
+		"GreaterThan":  7,
+		"LessThan":     8,
+	}
+)
+
+func (x ObjectSelector_Expression_Operator) Enum() *ObjectSelector_Expression_Operator {
+	p := new(ObjectSelector_Expression_Operator)
+	*p = x
+	return p
+}
+
+func (x ObjectSelector_Expression_Operator) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ObjectSelector_Expression_Operator) Descriptor() protoreflect.EnumDescriptor {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_enumTypes[0].Descriptor()
+}
+
+func (ObjectSelector_Expression_Operator) Type() protoreflect.EnumType {
+	return &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_enumTypes[0]
+}
+
+func (x ObjectSelector_Expression_Operator) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ObjectSelector_Expression_Operator.Descriptor instead.
+func (ObjectSelector_Expression_Operator) EnumDescriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDescGZIP(), []int{3, 1, 0}
+}
+
 // Select Destinations using one or more platform-specific selectors.
 type DestinationSelector struct {
 	state         protoimpl.MessageState
@@ -194,6 +271,76 @@ func (x *IdentitySelector) GetKubeServiceAccountRefs() *IdentitySelector_KubeSer
 	return nil
 }
 
+// Select K8s Objects by namespace, labels, or both.
+type ObjectSelector struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace
+	// as the parent resource (e.g. VirtualGateway) that owns this selector.
+	// The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh.
+	Namespaces []string `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	// Select objects whose labels match the ones specified here.
+	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+	Expressions []*ObjectSelector_Expression `protobuf:"bytes,3,rep,name=expressions,proto3" json:"expressions,omitempty"`
+}
+
+func (x *ObjectSelector) Reset() {
+	*x = ObjectSelector{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ObjectSelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ObjectSelector) ProtoMessage() {}
+
+func (x *ObjectSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ObjectSelector.ProtoReflect.Descriptor instead.
+func (*ObjectSelector) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ObjectSelector) GetNamespaces() []string {
+	if x != nil {
+		return x.Namespaces
+	}
+	return nil
+}
+
+func (x *ObjectSelector) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *ObjectSelector) GetExpressions() []*ObjectSelector_Expression {
+	if x != nil {
+		return x.Expressions
+	}
+	return nil
+}
+
 // Match Kubernetes Services by their labels, namespaces, and/or clusters.
 type DestinationSelector_KubeServiceMatcher struct {
 	state         protoimpl.MessageState
@@ -220,7 +367,7 @@ type DestinationSelector_KubeServiceMatcher struct {
 func (x *DestinationSelector_KubeServiceMatcher) Reset() {
 	*x = DestinationSelector_KubeServiceMatcher{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[3]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -233,7 +380,7 @@ func (x *DestinationSelector_KubeServiceMatcher) String() string {
 func (*DestinationSelector_KubeServiceMatcher) ProtoMessage() {}
 
 func (x *DestinationSelector_KubeServiceMatcher) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[3]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -277,8 +424,7 @@ type DestinationSelector_KubeServiceRefs struct {
 	unknownFields protoimpl.UnknownFields
 
 	//
-	//Match Kubernetes Services by direct reference.
-	//When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+	//Match Kubernetes Services by direct reference. All fields are required.
 	//When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
 	Services []*v1.ClusterObjectRef `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 }
@@ -286,7 +432,7 @@ type DestinationSelector_KubeServiceRefs struct {
 func (x *DestinationSelector_KubeServiceRefs) Reset() {
 	*x = DestinationSelector_KubeServiceRefs{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[4]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -299,7 +445,7 @@ func (x *DestinationSelector_KubeServiceRefs) String() string {
 func (*DestinationSelector_KubeServiceRefs) ProtoMessage() {}
 
 func (x *DestinationSelector_KubeServiceRefs) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[4]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,7 +494,7 @@ type WorkloadSelector_KubeWorkloadMatcher struct {
 func (x *WorkloadSelector_KubeWorkloadMatcher) Reset() {
 	*x = WorkloadSelector_KubeWorkloadMatcher{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[6]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -361,7 +507,7 @@ func (x *WorkloadSelector_KubeWorkloadMatcher) String() string {
 func (*WorkloadSelector_KubeWorkloadMatcher) ProtoMessage() {}
 
 func (x *WorkloadSelector_KubeWorkloadMatcher) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[6]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -418,7 +564,7 @@ type IdentitySelector_KubeIdentityMatcher struct {
 func (x *IdentitySelector_KubeIdentityMatcher) Reset() {
 	*x = IdentitySelector_KubeIdentityMatcher{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[8]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -431,7 +577,7 @@ func (x *IdentitySelector_KubeIdentityMatcher) String() string {
 func (*IdentitySelector_KubeIdentityMatcher) ProtoMessage() {}
 
 func (x *IdentitySelector_KubeIdentityMatcher) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[8]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -476,7 +622,7 @@ type IdentitySelector_KubeServiceAccountRefs struct {
 func (x *IdentitySelector_KubeServiceAccountRefs) Reset() {
 	*x = IdentitySelector_KubeServiceAccountRefs{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[9]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -489,7 +635,7 @@ func (x *IdentitySelector_KubeServiceAccountRefs) String() string {
 func (*IdentitySelector_KubeServiceAccountRefs) ProtoMessage() {}
 
 func (x *IdentitySelector_KubeServiceAccountRefs) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[9]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -508,6 +654,72 @@ func (*IdentitySelector_KubeServiceAccountRefs) Descriptor() ([]byte, []int) {
 func (x *IdentitySelector_KubeServiceAccountRefs) GetServiceAccounts() []*v1.ClusterObjectRef {
 	if x != nil {
 		return x.ServiceAccounts
+	}
+	return nil
+}
+
+type ObjectSelector_Expression struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Kubernetes label key, must conform to Kubernetes syntax requirements
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+	Operator ObjectSelector_Expression_Operator `protobuf:"varint,2,opt,name=operator,proto3,enum=common.mesh.gloo.solo.io.ObjectSelector_Expression_Operator" json:"operator,omitempty"`
+	Values   []string                           `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+}
+
+func (x *ObjectSelector_Expression) Reset() {
+	*x = ObjectSelector_Expression{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ObjectSelector_Expression) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ObjectSelector_Expression) ProtoMessage() {}
+
+func (x *ObjectSelector_Expression) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ObjectSelector_Expression.ProtoReflect.Descriptor instead.
+func (*ObjectSelector_Expression) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDescGZIP(), []int{3, 1}
+}
+
+func (x *ObjectSelector_Expression) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *ObjectSelector_Expression) GetOperator() ObjectSelector_Expression_Operator {
+	if x != nil {
+		return x.Operator
+	}
+	return ObjectSelector_Expression_Equals
+}
+
+func (x *ObjectSelector_Expression) GetValues() []string {
+	if x != nil {
+		return x.Values
 	}
 	return nil
 }
@@ -614,7 +826,42 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDesc = []
 	0x03, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e,
 	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4f,
 	0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x0f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x42, 0x46, 0x5a, 0x40, 0x67, 0x69, 0x74,
+	0x65, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x22, 0xad, 0x04, 0x0a, 0x0e, 0x4f, 0x62,
+	0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0a,
+	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09,
+	0x52, 0x0a, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x12, 0x4c, 0x0a, 0x06,
+	0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x34, 0x2e, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65,
+	0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2e, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x12, 0x55, 0x0a, 0x0b, 0x65, 0x78,
+	0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x33, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
+	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2e, 0x45, 0x78, 0x70, 0x72, 0x65, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x1a, 0x39, 0x0a, 0x0b, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79,
+	0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b,
+	0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x1a, 0x9a, 0x02, 0x0a,
+	0x0a, 0x45, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x10, 0x0a, 0x03, 0x6b,
+	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x58, 0x0a,
+	0x08, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32,
+	0x3c, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
+	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2e, 0x45, 0x78, 0x70, 0x72, 0x65, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x2e, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x08, 0x6f,
+	0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22,
+	0x87, 0x01, 0x0a, 0x08, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x0a, 0x0a, 0x06,
+	0x45, 0x71, 0x75, 0x61, 0x6c, 0x73, 0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x44, 0x6f, 0x75, 0x62,
+	0x6c, 0x65, 0x45, 0x71, 0x75, 0x61, 0x6c, 0x73, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x4e, 0x6f,
+	0x74, 0x45, 0x71, 0x75, 0x61, 0x6c, 0x73, 0x10, 0x02, 0x12, 0x06, 0x0a, 0x02, 0x49, 0x6e, 0x10,
+	0x03, 0x12, 0x09, 0x0a, 0x05, 0x4e, 0x6f, 0x74, 0x49, 0x6e, 0x10, 0x04, 0x12, 0x0a, 0x0a, 0x06,
+	0x45, 0x78, 0x69, 0x73, 0x74, 0x73, 0x10, 0x05, 0x12, 0x10, 0x0a, 0x0c, 0x44, 0x6f, 0x65, 0x73,
+	0x4e, 0x6f, 0x74, 0x45, 0x78, 0x69, 0x73, 0x74, 0x10, 0x06, 0x12, 0x0f, 0x0a, 0x0b, 0x47, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x72, 0x54, 0x68, 0x61, 0x6e, 0x10, 0x07, 0x12, 0x0c, 0x0a, 0x08, 0x4c,
+	0x65, 0x73, 0x73, 0x54, 0x68, 0x61, 0x6e, 0x10, 0x08, 0x42, 0x46, 0x5a, 0x40, 0x67, 0x69, 0x74,
 	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f,
 	0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70,
 	0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
@@ -634,35 +881,43 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDescGZIP
 	return file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_goTypes = []interface{}{
-	(*DestinationSelector)(nil),                    // 0: common.mesh.gloo.solo.io.DestinationSelector
-	(*WorkloadSelector)(nil),                       // 1: common.mesh.gloo.solo.io.WorkloadSelector
-	(*IdentitySelector)(nil),                       // 2: common.mesh.gloo.solo.io.IdentitySelector
-	(*DestinationSelector_KubeServiceMatcher)(nil), // 3: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher
-	(*DestinationSelector_KubeServiceRefs)(nil),    // 4: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs
-	nil, // 5: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher.LabelsEntry
-	(*WorkloadSelector_KubeWorkloadMatcher)(nil), // 6: common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher
-	nil, // 7: common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry
-	(*IdentitySelector_KubeIdentityMatcher)(nil),    // 8: common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher
-	(*IdentitySelector_KubeServiceAccountRefs)(nil), // 9: common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs
-	(*v1.ClusterObjectRef)(nil),                     // 10: core.skv2.solo.io.ClusterObjectRef
+	(ObjectSelector_Expression_Operator)(0),        // 0: common.mesh.gloo.solo.io.ObjectSelector.Expression.Operator
+	(*DestinationSelector)(nil),                    // 1: common.mesh.gloo.solo.io.DestinationSelector
+	(*WorkloadSelector)(nil),                       // 2: common.mesh.gloo.solo.io.WorkloadSelector
+	(*IdentitySelector)(nil),                       // 3: common.mesh.gloo.solo.io.IdentitySelector
+	(*ObjectSelector)(nil),                         // 4: common.mesh.gloo.solo.io.ObjectSelector
+	(*DestinationSelector_KubeServiceMatcher)(nil), // 5: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher
+	(*DestinationSelector_KubeServiceRefs)(nil),    // 6: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs
+	nil, // 7: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher.LabelsEntry
+	(*WorkloadSelector_KubeWorkloadMatcher)(nil), // 8: common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher
+	nil, // 9: common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry
+	(*IdentitySelector_KubeIdentityMatcher)(nil),    // 10: common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher
+	(*IdentitySelector_KubeServiceAccountRefs)(nil), // 11: common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs
+	nil,                               // 12: common.mesh.gloo.solo.io.ObjectSelector.LabelsEntry
+	(*ObjectSelector_Expression)(nil), // 13: common.mesh.gloo.solo.io.ObjectSelector.Expression
+	(*v1.ClusterObjectRef)(nil),       // 14: core.skv2.solo.io.ClusterObjectRef
 }
 var file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_depIdxs = []int32{
-	3,  // 0: common.mesh.gloo.solo.io.DestinationSelector.kube_service_matcher:type_name -> common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher
-	4,  // 1: common.mesh.gloo.solo.io.DestinationSelector.kube_service_refs:type_name -> common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs
-	6,  // 2: common.mesh.gloo.solo.io.WorkloadSelector.kube_workload_matcher:type_name -> common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher
-	8,  // 3: common.mesh.gloo.solo.io.IdentitySelector.kube_identity_matcher:type_name -> common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher
-	9,  // 4: common.mesh.gloo.solo.io.IdentitySelector.kube_service_account_refs:type_name -> common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs
-	5,  // 5: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher.labels:type_name -> common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher.LabelsEntry
-	10, // 6: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs.services:type_name -> core.skv2.solo.io.ClusterObjectRef
-	7,  // 7: common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.labels:type_name -> common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry
-	10, // 8: common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs.service_accounts:type_name -> core.skv2.solo.io.ClusterObjectRef
-	9,  // [9:9] is the sub-list for method output_type
-	9,  // [9:9] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	5,  // 0: common.mesh.gloo.solo.io.DestinationSelector.kube_service_matcher:type_name -> common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher
+	6,  // 1: common.mesh.gloo.solo.io.DestinationSelector.kube_service_refs:type_name -> common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs
+	8,  // 2: common.mesh.gloo.solo.io.WorkloadSelector.kube_workload_matcher:type_name -> common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher
+	10, // 3: common.mesh.gloo.solo.io.IdentitySelector.kube_identity_matcher:type_name -> common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher
+	11, // 4: common.mesh.gloo.solo.io.IdentitySelector.kube_service_account_refs:type_name -> common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs
+	12, // 5: common.mesh.gloo.solo.io.ObjectSelector.labels:type_name -> common.mesh.gloo.solo.io.ObjectSelector.LabelsEntry
+	13, // 6: common.mesh.gloo.solo.io.ObjectSelector.expressions:type_name -> common.mesh.gloo.solo.io.ObjectSelector.Expression
+	7,  // 7: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher.labels:type_name -> common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher.LabelsEntry
+	14, // 8: common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs.services:type_name -> core.skv2.solo.io.ClusterObjectRef
+	9,  // 9: common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.labels:type_name -> common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry
+	14, // 10: common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs.service_accounts:type_name -> core.skv2.solo.io.ClusterObjectRef
+	0,  // 11: common.mesh.gloo.solo.io.ObjectSelector.Expression.operator:type_name -> common.mesh.gloo.solo.io.ObjectSelector.Expression.Operator
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() }
@@ -708,7 +963,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() {
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DestinationSelector_KubeServiceMatcher); i {
+			switch v := v.(*ObjectSelector); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -720,6 +975,18 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() {
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DestinationSelector_KubeServiceMatcher); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSelector_KubeServiceRefs); i {
 			case 0:
 				return &v.state
@@ -731,7 +998,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() {
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WorkloadSelector_KubeWorkloadMatcher); i {
 			case 0:
 				return &v.state
@@ -743,7 +1010,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() {
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IdentitySelector_KubeIdentityMatcher); i {
 			case 0:
 				return &v.state
@@ -755,8 +1022,20 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() {
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IdentitySelector_KubeServiceAccountRefs); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ObjectSelector_Expression); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -773,13 +1052,14 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   10,
+			NumEnums:      1,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_goTypes,
 		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_depIdxs,
+		EnumInfos:         file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_enumTypes,
 		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto_msgTypes,
 	}.Build()
 	File_github_com_solo_io_gloo_mesh_api_common_v1_selectors_proto = out.File
