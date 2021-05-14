@@ -1,5 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/750
-    description: Introduce the new ServiceDependency API.
-    resolvesIssue: false
