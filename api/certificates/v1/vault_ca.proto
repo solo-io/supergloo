@@ -9,7 +9,7 @@ option (extproto.equal_all) = true;
 
 message VaultCA {
 
-	// ca_path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
+	// `ca_path` is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
 	// "my_pki_mount/sign/my-role-name".
   string ca_path = 1;
 
