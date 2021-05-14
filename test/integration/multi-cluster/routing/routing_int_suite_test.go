@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"istio.io/istio/pkg/test/framework/components/cluster"
 	"net/http"
 	"os"
 	"testing"
@@ -112,29 +113,54 @@ func TestInMesh(t *testing.T) {
 							Folder:      "gloo-mesh/in-mesh",
 						},
 						{
-							Name:        "different-cluster-http-flat-network",
-							Description: "Testing http routing from different cluster using a flat network",
-							Test:        testSingleClusterVirtualDestinationHTTP,
+							Name:        "failover-http",
+							Description: "Testing http failover to different cluster",
+							Test:        testFailoverHTTP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "virtual-destination-single-cluster-http-flat-network.yaml",
+							FileName:    "virtual-destination-http.yaml",
 							Folder:      "gloo-mesh/in-mesh",
 						},
-						{
-							Name:        "different-cluster-https-flat-network",
-							Description: "Testing https routing in different cluster using a flat network",
-							Test:        testSingleClusterVirtualDestinationHTTPS,
-							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "virtual-destination-single-cluster-https-flat-network.yaml",
-							Folder:      "gloo-mesh/in-mesh",
-						},
-						{
-							Name:        "different-cluster-tcp-flat-network",
-							Description: "Testing tcp routing in different cluster using a flat network",
-							Test:        testSingleClusterVirtualDestinationTCP,
-							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
-							FileName:    "virtual-destination-single-cluster-tcp-flat-network.yaml",
-							Folder:      "gloo-mesh/in-mesh",
-						},
+						// {
+						// 	Name:        "failover-https",
+						// 	Description: "Testing https failover to different cluster",
+						// 	Test:        testSingleClusterVirtualDestinationHTTPS,
+						// 	Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+						// 	FileName:    "failover-https.yaml",
+						// 	Folder:      "gloo-mesh/in-mesh",
+						// },
+						// {
+						// 	Name:        "failover-tcp",
+						// 	Description: "Testing tcp failover to different cluster",
+						// 	Test:        testSingleClusterVirtualDestinationTCP,
+						// 	Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+						// 	FileName:    "failover-tcp.yaml",
+						// 	Folder:      "gloo-mesh/in-mesh",
+						// },
+						// flat network not supported in k3d
+						// {
+						// 	Name:        "different-cluster-http-flat-network",
+						// 	Description: "Testing http routing from different cluster using a flat network",
+						// 	Test:        testSingleClusterVirtualDestinationHTTP,
+						// 	Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+						// 	FileName:    "virtual-destination-single-cluster-http-flat-network.yaml",
+						// 	Folder:      "gloo-mesh/in-mesh",
+						// },
+						// {
+						// 	Name:        "different-cluster-https-flat-network",
+						// 	Description: "Testing https routing in different cluster using a flat network",
+						// 	Test:        testSingleClusterVirtualDestinationHTTPS,
+						// 	Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+						// 	FileName:    "virtual-destination-single-cluster-https-flat-network.yaml",
+						// 	Folder:      "gloo-mesh/in-mesh",
+						// },
+						// {
+						// 	Name:        "different-cluster-tcp-flat-network",
+						// 	Description: "Testing tcp routing in different cluster using a flat network",
+						// 	Test:        testSingleClusterVirtualDestinationTCP,
+						// 	Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+						// 	FileName:    "virtual-destination-single-cluster-tcp-flat-network.yaml",
+						// 	Folder:      "gloo-mesh/in-mesh",
+						// },
 					},
 				},
 			}
@@ -372,5 +398,44 @@ func testSingleClusterVirtualDestinationTCP(ctx resource.Context, t *testing.T, 
 		Address:   backendHost,
 		Count:     5,
 		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(expectedCluster.Name())),
+	})
+}
+
+
+// testFailoverHTTP testing failover incase of error
+// because of locality priority routing, we should see routing to local cluster first always
+func testFailoverHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	westCluster := ctx.Clusters()[0]
+	eastCluster := ctx.Clusters()[1]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(westCluster)))
+	backendHost := "http-backend.solo.io"
+
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "?codes=500:1,200:1", // returns 500 1/2 times and 200 1/2 times
+		Count:     5,
+		Validator: echo.ExpectReachedClusters(cluster.Clusters{westCluster,eastCluster}),
+	})
+	// cluster 2 test
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(eastCluster)))
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "",
+		Count:     5,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectReachedClusters(cluster.Clusters{westCluster,eastCluster})),
 	})
 }

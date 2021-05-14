@@ -4,6 +4,10 @@ metadata:
   name: virtual-mesh
   namespace: gloo-mesh
 spec:
+  federation:
+    hostnameSuffix: solo.io
+    selectors:
+      - { }
   meshes:
   - name: istiod-istio-system-cluster-0
     namespace: gloo-mesh
@@ -31,3 +35,22 @@ spec:
   virtualMesh:
     name: virtual-mesh
     namespace: gloo-mesh
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: backend-failover
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+    - kubeServiceMatcher:
+        clusters:
+          - cluster-1
+        labels:
+          app: backend
+  policy:
+    trafficShift:
+      destinations:
+        - virtualDestination:
+            name: backend
+            namespace: gloo-mesh

@@ -14,6 +14,9 @@ meshConfig:
       ISTIO_META_DNS_AUTO_ALLOCATE: "true"
 components:
   # Istio Gateway feature
+  egressGateways:
+  - name: istio-egressgateway
+    enabled: false
   ingressGateways:
   - name: istio-ingressgateway
     enabled: true
