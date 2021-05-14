@@ -72,6 +72,7 @@ var _ = Describe("CertAgentReconciler", func() {
 			AddSecrets([]*corev1.Secret{writtenSecret}).
 			Build()
 
+		mockTranslator.EXPECT().ShouldProcess(gomock.Any(), issuedCert).Return(true)
 		mockOutput.EXPECT().AddSecrets(writtenSecret)
 
 		err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
@@ -128,24 +129,28 @@ var _ = Describe("CertAgentReconciler", func() {
 
 			mockOutput.EXPECT().AddCertificateRequests(csr)
 
+			mockTranslator.EXPECT().
+				ShouldProcess(ctx, issuedCert).
+				Return(true)
+
 			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
 		})
 
-		It("Will do nothing if bytes are nil", func() {
+		It("Will do nothing if should Process is false", func() {
 
 			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
 			inputSnap := input.NewInputSnapshotManualBuilder("hello").
 				Build()
 
 			mockTranslator.EXPECT().
-				IssuedCertiticatePending(gomock.Any(), issuedCert, inputSnap, mockOutput).
-				Return(nil, nil)
+				ShouldProcess(ctx, issuedCert).
+				Return(false)
 
 			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_PENDING))
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
 		})
 
 	})
@@ -195,15 +200,19 @@ var _ = Describe("CertAgentReconciler", func() {
 				Build()
 
 			mockTranslator.EXPECT().
+				ShouldProcess(gomock.Any(), issuedCert).
+				Return(true)
+
+			mockTranslator.EXPECT().
 				IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
-				Return(true, nil)
+				Return(nil)
 
 			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
 		})
 
-		It("Will not update status when continueIterating == false", func() {
+		It("Will not update status when translator.ShouldProcess == false", func() {
 
 			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
 
@@ -212,8 +221,8 @@ var _ = Describe("CertAgentReconciler", func() {
 				Build()
 
 			mockTranslator.EXPECT().
-				IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
-				Return(false, nil)
+				ShouldProcess(gomock.Any(), issuedCert).
+				Return(false)
 
 			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
@@ -268,8 +277,12 @@ var _ = Describe("CertAgentReconciler", func() {
 				Build()
 
 			mockTranslator.EXPECT().
+				ShouldProcess(gomock.Any(), issuedCert).
+				Return(true)
+
+			mockTranslator.EXPECT().
 				IssuedCertificateIssued(gomock.Any(), issuedCert, inputSnap, mockOutput).
-				Return(true, nil)
+				Return(nil)
 
 			mockPodBouncer.EXPECT().
 				BouncePods(gomock.Any(), pbd, pods, configMaps, secrets).
@@ -280,7 +293,7 @@ var _ = Describe("CertAgentReconciler", func() {
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
 		})
 
-		It("Will not delete pods when continueIterating==false", func() {
+		It("Will not delete pods when translator.ShouldProcess==false", func() {
 
 			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
 
@@ -296,8 +309,8 @@ var _ = Describe("CertAgentReconciler", func() {
 				Build()
 
 			mockTranslator.EXPECT().
-				IssuedCertificateIssued(gomock.Any(), issuedCert, inputSnap, mockOutput).
-				Return(false, nil)
+				ShouldProcess(gomock.Any(), issuedCert).
+				Return(false)
 
 			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
