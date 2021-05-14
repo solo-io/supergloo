@@ -11,10 +11,10 @@ spec:
     selectors:
       - { }
   meshes:
-  - name: istiod-istio-system-cluster-0
-    namespace: gloo-mesh
-  - name: istiod-istio-system-cluster-1
-    namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-0
+      namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-1
+      namespace: gloo-mesh
 ---
 apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: VirtualDestination
@@ -29,11 +29,11 @@ spec:
     targetNumber: 9443
   localized:
     destinationSelectors:
-    - kubeServiceMatcher:
-        clusters:
-          - cluster-1
-        labels:
-          app: backend
+      - kubeServiceMatcher:
+          clusters:
+            - cluster-1
+          labels:
+            app: backend
   virtualMesh:
     name: virtual-mesh
     namespace: gloo-mesh

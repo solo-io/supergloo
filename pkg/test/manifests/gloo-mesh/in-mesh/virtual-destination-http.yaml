@@ -9,10 +9,10 @@ spec:
     selectors:
       - { }
   meshes:
-  - name: istiod-istio-system-cluster-0
-    namespace: gloo-mesh
-  - name: istiod-istio-system-cluster-1
-    namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-0
+      namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-1
+      namespace: gloo-mesh
 ---
 apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: VirtualDestination
@@ -26,10 +26,24 @@ spec:
     protocol: http
     targetNumber: 8090
   localized:
+    failoverDirectives:
+      - from:
+          region: us-east-1
+        to:
+          - region: us-west-1
+      - from:
+          region: us-west-1
+        to:
+          - region: us-east-1
+    outlierDetection:
+      consecutiveErrors: 1
+      maxEjectionPercent: 100
+      interval: 5s
+      baseEjectionTime: 30s
     destinationSelectors:
-    - kubeServiceMatcher:
-        labels:
-          app: backend
+      - kubeServiceMatcher:
+          labels:
+            app: backend
   virtualMesh:
     name: virtual-mesh
     namespace: gloo-mesh

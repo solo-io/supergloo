@@ -404,6 +404,8 @@ func testSingleClusterVirtualDestinationTCP(ctx resource.Context, t *testing.T, 
 
 // testFailoverHTTP testing failover incase of error
 // because of locality priority routing, we should see routing to local cluster first always
+// TODO there is a bug where if someone creates a standalone pod in mesh and tries to make http calls. the calls are succecssful but do not respect regionality
+// its like istio does not know what region they are in even though that comes from the node.
 func testFailoverHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
 	westCluster := ctx.Clusters()[0]
 	eastCluster := ctx.Clusters()[1]
@@ -411,6 +413,7 @@ func testFailoverHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context
 	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(westCluster)))
 	backendHost := "http-backend.solo.io"
 
+	// submit a 500 error to kick the west cluster
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
 			Protocol:    "http",
@@ -419,13 +422,11 @@ func testFailoverHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "?codes=500:1,200:1", // returns 500 1/2 times and 200 1/2 times
-		Count:     5,
-		Validator: echo.ExpectReachedClusters(cluster.Clusters{westCluster,eastCluster}),
+		Path:      "?codes=500:1", // returns 500
+		Count:     15,
+		Validator: echo.And(echo.ExpectCode("500"),echo.ExpectCluster(westCluster.Name())),
 	})
-	// cluster 2 test
-	// frontend calling backend in mesh using virtual destination in same cluster
-	src = deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(eastCluster)))
+	// should only get east cluster calls for 30s
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
 			Protocol:    "http",
@@ -434,8 +435,8 @@ func testFailoverHTTP(ctx resource.Context, t *testing.T, deploymentCtx *context
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "",
+		Path:      "?codes=200:1", // returns 200
 		Count:     5,
-		Validator: echo.And(echo.ExpectOK(), echo.ExpectReachedClusters(cluster.Clusters{westCluster,eastCluster})),
+		Validator: echo.ExpectReachedClusters(cluster.Clusters{eastCluster}),
 	})
 }
