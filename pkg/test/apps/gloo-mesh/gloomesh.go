@@ -54,7 +54,7 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey st
 					return err
 				}
 				return nil
-			}, retry.Timeout(30*time.Second), retry.Delay(2*time.Second)); err != nil {
+			}, retry.Timeout(3*time.Minute), retry.Delay(15*time.Second)); err != nil {
 				return fmt.Errorf("failed to find relay server address %s", err.Error())
 			}
 		}
