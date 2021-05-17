@@ -25,13 +25,13 @@ const (
 )
 
 func GenCertForCSR(
-	hosts []string, csrPem, signingCert, privateKey []byte, ttl_days uint32,
+	hosts []string, csrPem, signingCert, privateKey []byte, ttlDays uint32,
 ) ([]byte, error) {
 
 	// Default to 1 year
 	ttl := time.Until(time.Now().AddDate(1, 0, 0))
-	if ttl_days != 0 {
-		ttl = time.Hour * 24 * time.Duration(ttl_days)
+	if ttlDays > 0 {
+		ttl = time.Hour * 24 * time.Duration(ttlDays)
 	}
 
 	// The following three function calls allow the input byte arrays to be PEM encoded, so that the caller does not

@@ -43,6 +43,8 @@ type Clientset interface {
 	WasmDeployments() WasmDeploymentClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualDestinations() VirtualDestinationClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	ServiceDependencies() ServiceDependencyClient
 }
 
 type clientSet struct {
@@ -75,6 +77,11 @@ func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
 	return NewVirtualDestinationClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) ServiceDependencies() ServiceDependencyClient {
+	return NewServiceDependencyClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
@@ -359,4 +366,146 @@ func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualD
 		return nil, err
 	}
 	return NewVirtualDestinationClient(client), nil
+}
+
+// Reader knows how to read and list ServiceDependencys.
+type ServiceDependencyReader interface {
+	// Get retrieves a ServiceDependency for the given object key
+	GetServiceDependency(ctx context.Context, key client.ObjectKey) (*ServiceDependency, error)
+
+	// List retrieves list of ServiceDependencys for a given namespace and list options.
+	ListServiceDependency(ctx context.Context, opts ...client.ListOption) (*ServiceDependencyList, error)
+}
+
+// ServiceDependencyTransitionFunction instructs the ServiceDependencyWriter how to transition between an existing
+// ServiceDependency object and a desired on an Upsert
+type ServiceDependencyTransitionFunction func(existing, desired *ServiceDependency) error
+
+// Writer knows how to create, delete, and update ServiceDependencys.
+type ServiceDependencyWriter interface {
+	// Create saves the ServiceDependency object.
+	CreateServiceDependency(ctx context.Context, obj *ServiceDependency, opts ...client.CreateOption) error
+
+	// Delete deletes the ServiceDependency object.
+	DeleteServiceDependency(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given ServiceDependency object.
+	UpdateServiceDependency(ctx context.Context, obj *ServiceDependency, opts ...client.UpdateOption) error
+
+	// Patch patches the given ServiceDependency object.
+	PatchServiceDependency(ctx context.Context, obj *ServiceDependency, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all ServiceDependency objects matching the given options.
+	DeleteAllOfServiceDependency(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ServiceDependency object.
+	UpsertServiceDependency(ctx context.Context, obj *ServiceDependency, transitionFuncs ...ServiceDependencyTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a ServiceDependency object.
+type ServiceDependencyStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given ServiceDependency object.
+	UpdateServiceDependencyStatus(ctx context.Context, obj *ServiceDependency, opts ...client.UpdateOption) error
+
+	// Patch patches the given ServiceDependency object's subresource.
+	PatchServiceDependencyStatus(ctx context.Context, obj *ServiceDependency, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on ServiceDependencys.
+type ServiceDependencyClient interface {
+	ServiceDependencyReader
+	ServiceDependencyWriter
+	ServiceDependencyStatusWriter
+}
+
+type serviceDependencyClient struct {
+	client client.Client
+}
+
+func NewServiceDependencyClient(client client.Client) *serviceDependencyClient {
+	return &serviceDependencyClient{client: client}
+}
+
+func (c *serviceDependencyClient) GetServiceDependency(ctx context.Context, key client.ObjectKey) (*ServiceDependency, error) {
+	obj := &ServiceDependency{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *serviceDependencyClient) ListServiceDependency(ctx context.Context, opts ...client.ListOption) (*ServiceDependencyList, error) {
+	list := &ServiceDependencyList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *serviceDependencyClient) CreateServiceDependency(ctx context.Context, obj *ServiceDependency, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *serviceDependencyClient) DeleteServiceDependency(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &ServiceDependency{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *serviceDependencyClient) UpdateServiceDependency(ctx context.Context, obj *ServiceDependency, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *serviceDependencyClient) PatchServiceDependency(ctx context.Context, obj *ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *serviceDependencyClient) DeleteAllOfServiceDependency(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &ServiceDependency{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *serviceDependencyClient) UpsertServiceDependency(ctx context.Context, obj *ServiceDependency, transitionFuncs ...ServiceDependencyTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ServiceDependency), desired.(*ServiceDependency)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *serviceDependencyClient) UpdateServiceDependencyStatus(ctx context.Context, obj *ServiceDependency, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *serviceDependencyClient) PatchServiceDependencyStatus(ctx context.Context, obj *ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides ServiceDependencyClients for multiple clusters.
+type MulticlusterServiceDependencyClient interface {
+	// Cluster returns a ServiceDependencyClient for the given cluster
+	Cluster(cluster string) (ServiceDependencyClient, error)
+}
+
+type multiclusterServiceDependencyClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterServiceDependencyClient(client multicluster.Client) MulticlusterServiceDependencyClient {
+	return &multiclusterServiceDependencyClient{client: client}
+}
+
+func (m *multiclusterServiceDependencyClient) Cluster(cluster string) (ServiceDependencyClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewServiceDependencyClient(client), nil
 }

@@ -544,6 +544,11 @@ spec:
                     - INVALID
                     - FAILED
                     type: string
+                  warnings:
+                    description: Any warnings observed while processing the resource.
+                    items:
+                      type: string
+                    type: array
                 type: object
               description: |-
                 The status of the TrafficPolicy for each selected Destination.
@@ -788,6 +793,11 @@ spec:
                     - INVALID
                     - FAILED
                     type: string
+                  warnings:
+                    description: Any warnings observed while processing the resource.
+                    items:
+                      type: string
+                    type: array
                 type: object
               description: |-
                 The status of the AccessPolicy for each Destination to which it has been applied.
@@ -1627,6 +1637,11 @@ spec:
                     - INVALID
                     - FAILED
                     type: string
+                  warnings:
+                    description: Any warnings observed while processing the resource.
+                    items:
+                      type: string
+                    type: array
                 type: object
               description: |-
                 The status of the VirtualMesh for each Destination to which it has been applied.
@@ -1667,6 +1682,11 @@ spec:
                     - INVALID
                     - FAILED
                     type: string
+                  warnings:
+                    description: Any warnings observed while processing the resource.
+                    items:
+                      type: string
+                    type: array
                 type: object
               description: |-
                 The status of the VirtualMesh for each Mesh to which it has been applied.

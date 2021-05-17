@@ -1,0 +1,53 @@
+syntax = "proto3";
+package networking.enterprise.mesh.gloo.solo.io;
+
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+/*
+    A ServiceDependency specifies explicit dependencies between traffic sources and destinations in a service graph.
+    Depending on the underlying service mesh, explicitly describing dependencies can improve the performance
+    of the data plane by pruning away any unneeded networking configuration from the relevant proxies.
+
+    The complete set of service dependencies for a given traffic source is the aggregation of all
+    unique Destinations selected by any applicable ServiceDependencies. If a traffic source has no applied
+    ServiceDependencies, its service dependency configuration defaults to the behavior of the underlying service mesh.
+
+    Note that in order to block communication between sources and destinations not explicitly declared
+    in a ServiceDependency, additional configuration on the underlying service mesh may be required.
+    For instance, Istio must be configured with `outboundTrafficPolicy.Mode` set to `REGISTRY_ONLY` (see [here](https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-OutboundTrafficPolicy))
+    to enforce this behavior.
+*/
+message ServiceDependencySpec {
+
+    // Select the traffic sources (i.e. Workloads) for this network ServiceDependency. If omitted, selects all Workloads.
+    repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selectors = 1;
+
+    // Select the traffic targets (i.e. Destination) for this network ServiceDependency. If omitted, selects all Destinations.
+    repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
+}
+
+message ServiceDependencyStatus {
+
+    // The most recent generation observed in the the ServiceDependency metadata.
+    // If the observedGeneration does not match `metadata.generation`, Gloo Mesh has not processed the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
+    // The state of the overall resource, will only show accepted if it has been successfully
+    // applied to all exported to Meshes.
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
+
+    // The status of the ServiceDependency for each selected Workload.
+    // A ServiceDependency may have different statuses for each Workload it applies to.
+    map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> workloads = 3;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 4;
+}
