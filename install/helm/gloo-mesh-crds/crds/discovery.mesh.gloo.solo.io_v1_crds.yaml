@@ -1263,6 +1263,40 @@ spec:
                 has processed the latest version of the Workload.
               format: int64
               type: integer
+            serviceDependencies:
+              description: |-
+                Specifies the [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}})
+                that apply to this Workload, and the resulting Destination hostnames that this Workload can send traffic to.
+              properties:
+                appliedServiceDependencies:
+                  description: The set of [ServiceDependencies]({{< versioned_link_path
+                    fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/"
+                    >}}) that have been applied to this Workload.
+                  items:
+                    properties:
+                      observedGeneration:
+                        description: The observed generation of the ServiceDependency.
+                        format: int64
+                        type: integer
+                      serviceDependencyRef:
+                        description: Reference to the ServiceDependency object.
+                        properties:
+                          name:
+                            description: name of the resource being referenced
+                            type: string
+                          namespace:
+                            description: namespace of the resource being referenced
+                            type: string
+                        type: object
+                    type: object
+                  type: array
+                destinationHostnames:
+                  description: The set of Destination hostnames that this Workload
+                    depends on.
+                  items:
+                    type: string
+                  type: array
+              type: object
           type: object
       type: object
   versions:
