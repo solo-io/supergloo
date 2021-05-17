@@ -34,7 +34,11 @@ weight: 2
 |settings.relay.server.insecure|bool|false||
 |settings.relay.server.reconnect_on_network_failures|bool|false||
 |settings.dashboard|struct| ||
-|settings.dashboard|interface| ||
+|settings.dashboard.auth_configs[]|[]ptr| ||
+|settings.dashboard.auth_configs[]|struct| ||
+|settings.dashboard.auth_configs[].name|struct| ||
+|settings.dashboard.auth_configs[].name.value|string| ||
+|settings.dashboard.auth_configs[]|interface| ||
 |disallowIntersectingConfig|bool|false|If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh.|
 |watchOutputTypes|bool|true|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|9091|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|

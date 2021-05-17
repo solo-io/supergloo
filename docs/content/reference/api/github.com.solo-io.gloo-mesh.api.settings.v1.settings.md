@@ -19,12 +19,12 @@ title: "settings.proto"
 
 ## Table of Contents
   - [DashboardSettings](#settings.mesh.gloo.solo.io.DashboardSettings)
+  - [DashboardSettings.AuthConfig](#settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig)
   - [DashboardSettings.NoAuth](#settings.mesh.gloo.solo.io.DashboardSettings.NoAuth)
   - [DashboardSettings.OidcConfig](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig)
   - [DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry)
   - [DashboardSettings.OidcConfig.DiscoveryOverride](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride)
   - [DashboardSettings.OidcConfig.HeaderConfig](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig)
-  - [DashboardSettings.OidcConfig.JwksOnDemandCacheRefreshPolicy](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.JwksOnDemandCacheRefreshPolicy)
   - [DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry)
   - [DashboardSettings.SessionConfig](#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig)
   - [DashboardSettings.SessionConfig.CookieOptions](#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieOptions)
@@ -36,6 +36,7 @@ title: "settings.proto"
   - [DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry)
   - [DiscoverySettings.Istio.IngressGatewayDetectorsEntry](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry)
   - [GrpcServer](#settings.mesh.gloo.solo.io.GrpcServer)
+  - [JwksOnDemandCacheRefreshPolicy](#settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy)
   - [RelaySettings](#settings.mesh.gloo.solo.io.RelaySettings)
   - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
   - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
@@ -54,7 +55,23 @@ title: "settings.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| none | [settings.mesh.gloo.solo.io.DashboardSettings.NoAuth]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.NoAuth" >}}) |  |  |
+| authConfigs | [][settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig" >}}) | repeated |  |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig"></a>
+
+### DashboardSettings.AuthConfig
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  |  |
+  | none | [settings.mesh.gloo.solo.io.DashboardSettings.NoAuth]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.NoAuth" >}}) |  |  |
   | oidc | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig" >}}) |  |  |
   
 
@@ -92,7 +109,7 @@ title: "settings.proto"
   | header | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig" >}}) |  | Additional headers. |
   | discoveryOverride | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride" >}}) |  | Ensure that certain values are set regardless of what the OIDC provider returns. |
   | discoveryPollInterval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | How often to poll the OIDC issuer for new configuration. |
-  | jwksCacheRefreshPolicy | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.JwksOnDemandCacheRefreshPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.JwksOnDemandCacheRefreshPolicy" >}}) |  | If a user executes a request with a key that is not found in the JWKS, it could be that the keys have rotated on the remote source, and not yet in the local cache. This policy lets you define the behavior for how to refresh the local cache during a request where an invalid key is provided |
+  | jwksCacheRefreshPolicy | [settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy" >}}) |  | If a user executes a request with a key that is not found in the JWKS, it could be that the keys have rotated on the remote source, and not yet in the local cache. This policy lets you define the behavior for how to refresh the local cache during a request where an invalid key is provided |
   
 
 
@@ -148,23 +165,6 @@ OIDC configuration is discovered at <issuerUrl>/.well-known/openid-configuration
 | ----- | ---- | ----- | ----------- |
 | idTokenHeader | string |  | If set, the ID token will be sent upstream with this header. |
   | accessTokenHeader | string |  | If set, the access token will be sent upstream with this header. |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.JwksOnDemandCacheRefreshPolicy"></a>
-
-### DashboardSettings.OidcConfig.JwksOnDemandCacheRefreshPolicy
-The json web key set (JWKS) (https://tools.ietf.org/html/rfc7517) is discovered at an interval from a remote source. When keys rotate in the remote source, there may be a delay in the local source picking up those new keys. Therefore, a user could execute a request with a token that has been signed by a key in the remote JWKS, but the local cache doesn't have the key yet. The request would fail because the key isn't contained in the local set. Since most IdPs publish key keys in their remote JWKS before they are used, this is not an issue most of the time. This policy lets you define the behavior for when a user has a token with a key not yet in the local cache.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| never | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Never refresh the local JWKS cache on demand. If a key is not in the cache, it is assumed to be malicious. This is the default policy since we assume that IdPs publish keys before they rotate them, and frequent polling finds the newest keys. |
-  | always | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | If a key is not in the cache, fetch the most recent keys from the IdP and update the cache. NOTE: This should only be done in trusted environments, since missing keys will each trigger a request to the IdP. Using this in an environment exposed to the internet will allow malicious agents to execute a DDoS attack by spamming protected endpoints with tokens signed by invalid keys. |
-  | maxIdpReqPerPollingInterval | uint32 |  | If a key is not in the cache, fetch the most recent keys from the IdP and update the cache. This value sets the number of requests to the IdP per polling interval. If that limit is exceeded, we will stop fetching from the IdP for the remainder of the polling interval. |
   
 
 
@@ -331,6 +331,23 @@ Options for connecting to an external gRPC server.
 | address | string |  | TCP address of the gRPC Server (including port). |
   | insecure | bool |  | If true communicate over HTTP rather than HTTPS. |
   | reconnectOnNetworkFailures | bool |  | If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures. |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy"></a>
+
+### JwksOnDemandCacheRefreshPolicy
+The json web key set (JWKS) (https://tools.ietf.org/html/rfc7517) is discovered at an interval from a remote source. When keys rotate in the remote source, there may be a delay in the local source picking up those new keys. Therefore, a user could execute a request with a token that has been signed by a key in the remote JWKS, but the local cache doesn't have the key yet. The request would fail because the key isn't contained in the local set. Since most IdPs publish key keys in their remote JWKS before they are used, this is not an issue most of the time. This policy lets you define the behavior for when a user has a token with a key not yet in the local cache.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| never | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Never refresh the local JWKS cache on demand. If a key is not in the cache, it is assumed to be malicious. This is the default policy since we assume that IdPs publish keys before they rotate them, and frequent polling finds the newest keys. |
+  | always | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | If a key is not in the cache, fetch the most recent keys from the IdP and update the cache. NOTE: This should only be done in trusted environments, since missing keys will each trigger a request to the IdP. Using this in an environment exposed to the internet will allow malicious agents to execute a DDoS attack by spamming protected endpoints with tokens signed by invalid keys. |
+  | maxIdpReqPerPollingInterval | uint32 |  | If a key is not in the cache, fetch the most recent keys from the IdP and update the cache. This value sets the number of requests to the IdP per polling interval. If that limit is exceeded, we will stop fetching from the IdP for the remainder of the polling interval. |
   
 
 

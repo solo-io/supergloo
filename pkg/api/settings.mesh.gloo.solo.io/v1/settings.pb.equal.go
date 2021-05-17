@@ -215,6 +215,119 @@ func (m *GrpcServer) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *DashboardSettings) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings)
+	if !ok {
+		that2, ok := that.(DashboardSettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetAuthConfigs()) != len(target.GetAuthConfigs()) {
+		return false
+	}
+	for idx, v := range m.GetAuthConfigs() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAuthConfigs()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAuthConfigs()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *JwksOnDemandCacheRefreshPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*JwksOnDemandCacheRefreshPolicy)
+	if !ok {
+		that2, ok := that.(JwksOnDemandCacheRefreshPolicy)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.Policy.(type) {
+
+	case *JwksOnDemandCacheRefreshPolicy_Never:
+		if _, ok := target.Policy.(*JwksOnDemandCacheRefreshPolicy_Never); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetNever()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetNever()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetNever(), target.GetNever()) {
+				return false
+			}
+		}
+
+	case *JwksOnDemandCacheRefreshPolicy_Always:
+		if _, ok := target.Policy.(*JwksOnDemandCacheRefreshPolicy_Always); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetAlways()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAlways()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetAlways(), target.GetAlways()) {
+				return false
+			}
+		}
+
+	case *JwksOnDemandCacheRefreshPolicy_MaxIdpReqPerPollingInterval:
+		if _, ok := target.Policy.(*JwksOnDemandCacheRefreshPolicy_MaxIdpReqPerPollingInterval); !ok {
+			return false
+		}
+
+		if m.GetMaxIdpReqPerPollingInterval() != target.GetMaxIdpReqPerPollingInterval() {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Policy != target.Policy {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *SettingsStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -252,69 +365,6 @@ func (m *SettingsStatus) Equal(that interface{}) bool {
 			return false
 		}
 
-	}
-
-	return true
-}
-
-// Equal function
-func (m *DashboardSettings) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DashboardSettings)
-	if !ok {
-		that2, ok := that.(DashboardSettings)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.AuthConfig.(type) {
-
-	case *DashboardSettings_None:
-		if _, ok := target.AuthConfig.(*DashboardSettings_None); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetNone()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetNone()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetNone(), target.GetNone()) {
-				return false
-			}
-		}
-
-	case *DashboardSettings_Oidc:
-		if _, ok := target.AuthConfig.(*DashboardSettings_Oidc); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetOidc()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetOidc()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetOidc(), target.GetOidc()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.AuthConfig != target.AuthConfig {
-			return false
-		}
 	}
 
 	return true
@@ -625,6 +675,79 @@ func (m *DashboardSettings_OidcConfig) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *DashboardSettings_AuthConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DashboardSettings_AuthConfig)
+	if !ok {
+		that2, ok := that.(DashboardSettings_AuthConfig)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetName()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetName()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetName(), target.GetName()) {
+			return false
+		}
+	}
+
+	switch m.AuthConfig.(type) {
+
+	case *DashboardSettings_AuthConfig_None:
+		if _, ok := target.AuthConfig.(*DashboardSettings_AuthConfig_None); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetNone()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetNone()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetNone(), target.GetNone()) {
+				return false
+			}
+		}
+
+	case *DashboardSettings_AuthConfig_Oidc:
+		if _, ok := target.AuthConfig.(*DashboardSettings_AuthConfig_Oidc); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetOidc()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetOidc()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetOidc(), target.GetOidc()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.AuthConfig != target.AuthConfig {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *DashboardSettings_SessionConfig_CookieSession) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -853,78 +976,6 @@ func (m *DashboardSettings_OidcConfig_DiscoveryOverride) Equal(that interface{})
 			return false
 		}
 
-	}
-
-	return true
-}
-
-// Equal function
-func (m *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy)
-	if !ok {
-		that2, ok := that.(DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.Policy.(type) {
-
-	case *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Never:
-		if _, ok := target.Policy.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Never); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetNever()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetNever()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetNever(), target.GetNever()) {
-				return false
-			}
-		}
-
-	case *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Always:
-		if _, ok := target.Policy.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_Always); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetAlways()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetAlways()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetAlways(), target.GetAlways()) {
-				return false
-			}
-		}
-
-	case *DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_MaxIdpReqPerPollingInterval:
-		if _, ok := target.Policy.(*DashboardSettings_OidcConfig_JwksOnDemandCacheRefreshPolicy_MaxIdpReqPerPollingInterval); !ok {
-			return false
-		}
-
-		if m.GetMaxIdpReqPerPollingInterval() != target.GetMaxIdpReqPerPollingInterval() {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.Policy != target.Policy {
-			return false
-		}
 	}
 
 	return true
