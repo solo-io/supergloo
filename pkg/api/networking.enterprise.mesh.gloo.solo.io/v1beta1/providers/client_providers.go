@@ -72,3 +72,31 @@ func VirtualDestinationClientFromConfigFactoryProvider() VirtualDestinationClien
 		return clients.VirtualDestinations(), nil
 	}
 }
+
+// Provider for ServiceDependencyClient from Clientset
+func ServiceDependencyClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependencyClient {
+	return clients.ServiceDependencies()
+}
+
+// Provider for ServiceDependency Client from Client
+func ServiceDependencyClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependencyClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewServiceDependencyClient(client)
+}
+
+type ServiceDependencyClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependencyClient
+
+func ServiceDependencyClientFactoryProvider() ServiceDependencyClientFactory {
+	return ServiceDependencyClientProvider
+}
+
+type ServiceDependencyClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependencyClient, error)
+
+func ServiceDependencyClientFromConfigFactoryProvider() ServiceDependencyClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependencyClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.ServiceDependencies(), nil
+	}
+}

@@ -380,3 +380,186 @@ func (mr *MockVirtualDestinationReconcileLoopMockRecorder) RunVirtualDestination
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunVirtualDestinationReconciler", reflect.TypeOf((*MockVirtualDestinationReconcileLoop)(nil).RunVirtualDestinationReconciler), varargs...)
 }
+
+// MockServiceDependencyReconciler is a mock of ServiceDependencyReconciler interface
+type MockServiceDependencyReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceDependencyReconcilerMockRecorder
+}
+
+// MockServiceDependencyReconcilerMockRecorder is the mock recorder for MockServiceDependencyReconciler
+type MockServiceDependencyReconcilerMockRecorder struct {
+	mock *MockServiceDependencyReconciler
+}
+
+// NewMockServiceDependencyReconciler creates a new mock instance
+func NewMockServiceDependencyReconciler(ctrl *gomock.Controller) *MockServiceDependencyReconciler {
+	mock := &MockServiceDependencyReconciler{ctrl: ctrl}
+	mock.recorder = &MockServiceDependencyReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceDependencyReconciler) EXPECT() *MockServiceDependencyReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileServiceDependency mocks base method
+func (m *MockServiceDependencyReconciler) ReconcileServiceDependency(obj *v1beta1.ServiceDependency) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileServiceDependency", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileServiceDependency indicates an expected call of ReconcileServiceDependency
+func (mr *MockServiceDependencyReconcilerMockRecorder) ReconcileServiceDependency(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceDependency", reflect.TypeOf((*MockServiceDependencyReconciler)(nil).ReconcileServiceDependency), obj)
+}
+
+// MockServiceDependencyDeletionReconciler is a mock of ServiceDependencyDeletionReconciler interface
+type MockServiceDependencyDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceDependencyDeletionReconcilerMockRecorder
+}
+
+// MockServiceDependencyDeletionReconcilerMockRecorder is the mock recorder for MockServiceDependencyDeletionReconciler
+type MockServiceDependencyDeletionReconcilerMockRecorder struct {
+	mock *MockServiceDependencyDeletionReconciler
+}
+
+// NewMockServiceDependencyDeletionReconciler creates a new mock instance
+func NewMockServiceDependencyDeletionReconciler(ctrl *gomock.Controller) *MockServiceDependencyDeletionReconciler {
+	mock := &MockServiceDependencyDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockServiceDependencyDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceDependencyDeletionReconciler) EXPECT() *MockServiceDependencyDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileServiceDependencyDeletion mocks base method
+func (m *MockServiceDependencyDeletionReconciler) ReconcileServiceDependencyDeletion(req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileServiceDependencyDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileServiceDependencyDeletion indicates an expected call of ReconcileServiceDependencyDeletion
+func (mr *MockServiceDependencyDeletionReconcilerMockRecorder) ReconcileServiceDependencyDeletion(req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceDependencyDeletion", reflect.TypeOf((*MockServiceDependencyDeletionReconciler)(nil).ReconcileServiceDependencyDeletion), req)
+}
+
+// MockServiceDependencyFinalizer is a mock of ServiceDependencyFinalizer interface
+type MockServiceDependencyFinalizer struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceDependencyFinalizerMockRecorder
+}
+
+// MockServiceDependencyFinalizerMockRecorder is the mock recorder for MockServiceDependencyFinalizer
+type MockServiceDependencyFinalizerMockRecorder struct {
+	mock *MockServiceDependencyFinalizer
+}
+
+// NewMockServiceDependencyFinalizer creates a new mock instance
+func NewMockServiceDependencyFinalizer(ctrl *gomock.Controller) *MockServiceDependencyFinalizer {
+	mock := &MockServiceDependencyFinalizer{ctrl: ctrl}
+	mock.recorder = &MockServiceDependencyFinalizerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceDependencyFinalizer) EXPECT() *MockServiceDependencyFinalizerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileServiceDependency mocks base method
+func (m *MockServiceDependencyFinalizer) ReconcileServiceDependency(obj *v1beta1.ServiceDependency) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileServiceDependency", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileServiceDependency indicates an expected call of ReconcileServiceDependency
+func (mr *MockServiceDependencyFinalizerMockRecorder) ReconcileServiceDependency(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileServiceDependency", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).ReconcileServiceDependency), obj)
+}
+
+// ServiceDependencyFinalizerName mocks base method
+func (m *MockServiceDependencyFinalizer) ServiceDependencyFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceDependencyFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// ServiceDependencyFinalizerName indicates an expected call of ServiceDependencyFinalizerName
+func (mr *MockServiceDependencyFinalizerMockRecorder) ServiceDependencyFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencyFinalizerName", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).ServiceDependencyFinalizerName))
+}
+
+// FinalizeServiceDependency mocks base method
+func (m *MockServiceDependencyFinalizer) FinalizeServiceDependency(obj *v1beta1.ServiceDependency) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeServiceDependency", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeServiceDependency indicates an expected call of FinalizeServiceDependency
+func (mr *MockServiceDependencyFinalizerMockRecorder) FinalizeServiceDependency(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeServiceDependency", reflect.TypeOf((*MockServiceDependencyFinalizer)(nil).FinalizeServiceDependency), obj)
+}
+
+// MockServiceDependencyReconcileLoop is a mock of ServiceDependencyReconcileLoop interface
+type MockServiceDependencyReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceDependencyReconcileLoopMockRecorder
+}
+
+// MockServiceDependencyReconcileLoopMockRecorder is the mock recorder for MockServiceDependencyReconcileLoop
+type MockServiceDependencyReconcileLoopMockRecorder struct {
+	mock *MockServiceDependencyReconcileLoop
+}
+
+// NewMockServiceDependencyReconcileLoop creates a new mock instance
+func NewMockServiceDependencyReconcileLoop(ctrl *gomock.Controller) *MockServiceDependencyReconcileLoop {
+	mock := &MockServiceDependencyReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockServiceDependencyReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceDependencyReconcileLoop) EXPECT() *MockServiceDependencyReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// RunServiceDependencyReconciler mocks base method
+func (m *MockServiceDependencyReconcileLoop) RunServiceDependencyReconciler(ctx context.Context, rec controller.ServiceDependencyReconciler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RunServiceDependencyReconciler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunServiceDependencyReconciler indicates an expected call of RunServiceDependencyReconciler
+func (mr *MockServiceDependencyReconcileLoopMockRecorder) RunServiceDependencyReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunServiceDependencyReconciler", reflect.TypeOf((*MockServiceDependencyReconcileLoop)(nil).RunServiceDependencyReconciler), varargs...)
+}

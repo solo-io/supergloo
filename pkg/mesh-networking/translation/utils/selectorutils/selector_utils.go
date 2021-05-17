@@ -1,31 +1,34 @@
 package selectorutils
 
 import (
+	"context"
+
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stringutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
-func SelectorMatchesWorkload(selectors []*commonv1.WorkloadSelector, workload *discoveryv1.Workload) bool {
+func SelectorMatchesWorkload(ctx context.Context, selectors []*commonv1.WorkloadSelector, workload *discoveryv1.Workload) bool {
 	if len(selectors) == 0 {
 		return true
 	}
 
-	for _, selector := range selectors {
-		kubeWorkload := workload.Spec.GetKubernetes()
+	kubeWorkload := workload.Spec.GetKubernetes()
+	if kubeWorkload == nil {
+		contextutils.LoggerFrom(ctx).DPanicf("Missing Kubernetes workload data for Workload %s", sets.Key(workload))
+		return false
+	}
 
-		kubeWorkloadMatcher := selector.GetKubeWorkloadMatcher()
-		if kubeWorkload != nil {
-			if kubeWorkloadMatches(
-				kubeWorkloadMatcher.GetLabels(),
-				kubeWorkloadMatcher.GetNamespaces(),
-				kubeWorkloadMatcher.GetClusters(),
-				kubeWorkload,
-			) {
-				return true
-			}
+	for _, selector := range selectors {
+
+		// matcher-based selection
+		matcher := selector.GetKubeWorkloadMatcher()
+		if kubeWorkloadMatches(matcher.GetLabels(), matcher.GetNamespaces(), matcher.GetClusters(), kubeWorkload) {
+			return true
 		}
 	}
 
