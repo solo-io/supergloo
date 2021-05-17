@@ -74,12 +74,12 @@ func (m *VirtualHostSpec) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetVirtualHostOptions()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetVirtualHostOptions()) {
+	if h, ok := interface{}(m.GetOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetOptions()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetVirtualHostOptions(), target.GetVirtualHostOptions()) {
+		if !proto.Equal(m.GetOptions(), target.GetOptions()) {
 			return false
 		}
 	}
@@ -166,34 +166,6 @@ func (m *VirtualHostStatus) Equal(that interface{}) bool {
 			}
 		}
 
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VirtualHostSpec_VirtualHostOptions) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualHostSpec_VirtualHostOptions)
-	if !ok {
-		that2, ok := that.(VirtualHostSpec_VirtualHostOptions)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetTodoAddOptions(), target.GetTodoAddOptions()) != 0 {
-		return false
 	}
 
 	return true
