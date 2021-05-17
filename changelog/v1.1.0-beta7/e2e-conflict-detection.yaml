@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1544
+    description: Conflict detection should respect cluster.
+  - type: NON_USER_FACING
+    description: Add e2e tests for conflict detection on Istio VirtualServices and DestinationRules.
