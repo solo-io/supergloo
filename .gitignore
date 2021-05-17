@@ -25,3 +25,6 @@ ci/gloo-mesh-temp/
 
 # mesctl generated debug snapshot json files
 *snapshot.json
+
+# helm values override generated during ci/setup-kind.sh
+helm-values-overrides.yaml
