@@ -250,3 +250,120 @@ func (r genericVirtualDestinationFinalizer) Finalize(object ezkube.Object) error
 	}
 	return r.finalizingReconciler.FinalizeVirtualDestination(obj)
 }
+
+// Reconcile Upsert events for the ServiceDependency Resource.
+// implemented by the user
+type ServiceDependencyReconciler interface {
+	ReconcileServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the ServiceDependency Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type ServiceDependencyDeletionReconciler interface {
+	ReconcileServiceDependencyDeletion(req reconcile.Request) error
+}
+
+type ServiceDependencyReconcilerFuncs struct {
+	OnReconcileServiceDependency         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error)
+	OnReconcileServiceDependencyDeletion func(req reconcile.Request) error
+}
+
+func (f *ServiceDependencyReconcilerFuncs) ReconcileServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error) {
+	if f.OnReconcileServiceDependency == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileServiceDependency(obj)
+}
+
+func (f *ServiceDependencyReconcilerFuncs) ReconcileServiceDependencyDeletion(req reconcile.Request) error {
+	if f.OnReconcileServiceDependencyDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileServiceDependencyDeletion(req)
+}
+
+// Reconcile and finalize the ServiceDependency Resource
+// implemented by the user
+type ServiceDependencyFinalizer interface {
+	ServiceDependencyReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	ServiceDependencyFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+}
+
+type ServiceDependencyReconcileLoop interface {
+	RunServiceDependencyReconciler(ctx context.Context, rec ServiceDependencyReconciler, predicates ...predicate.Predicate) error
+}
+
+type serviceDependencyReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewServiceDependencyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ServiceDependencyReconcileLoop {
+	return &serviceDependencyReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency{}, options),
+	}
+}
+
+func (c *serviceDependencyReconcileLoop) RunServiceDependencyReconciler(ctx context.Context, reconciler ServiceDependencyReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericServiceDependencyReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(ServiceDependencyFinalizer); ok {
+		reconcilerWrapper = genericServiceDependencyFinalizer{
+			genericServiceDependencyReconciler: genericReconciler,
+			finalizingReconciler:               finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericServiceDependencyHandler implements a generic reconcile.Reconciler
+type genericServiceDependencyReconciler struct {
+	reconciler ServiceDependencyReconciler
+}
+
+func (r genericServiceDependencyReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ServiceDependency handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileServiceDependency(obj)
+}
+
+func (r genericServiceDependencyReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(ServiceDependencyDeletionReconciler); ok {
+		return deletionReconciler.ReconcileServiceDependencyDeletion(request)
+	}
+	return nil
+}
+
+// genericServiceDependencyFinalizer implements a generic reconcile.FinalizingReconciler
+type genericServiceDependencyFinalizer struct {
+	genericServiceDependencyReconciler
+	finalizingReconciler ServiceDependencyFinalizer
+}
+
+func (r genericServiceDependencyFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.ServiceDependencyFinalizerName()
+}
+
+func (r genericServiceDependencyFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return errors.Errorf("internal error: ServiceDependency handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeServiceDependency(obj)
+}

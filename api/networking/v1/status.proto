@@ -23,4 +23,7 @@ message ApprovalStatus {
 
     // Any errors observed which prevented the resource from being Accepted.
     repeated string errors = 3;
+
+    // Any warnings observed while processing the resource.
+    repeated string warnings = 4;
 }

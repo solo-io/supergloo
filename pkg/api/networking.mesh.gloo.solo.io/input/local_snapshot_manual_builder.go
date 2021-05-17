@@ -43,6 +43,7 @@ type InputLocalSnapshotManualBuilder struct {
 
 	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -67,6 +68,7 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 
 		wasmDeployments:     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet(),
 		virtualDestinations: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet(),
+		serviceDependencies: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet(),
 
 		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet(),
 
@@ -92,6 +94,7 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 
 		i.wasmDeployments,
 		i.virtualDestinations,
+		i.serviceDependencies,
 
 		i.accessLogRecords,
 
@@ -134,6 +137,10 @@ func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*
 }
 func (i *InputLocalSnapshotManualBuilder) AddVirtualDestinations(virtualDestinations []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) *InputLocalSnapshotManualBuilder {
 	i.virtualDestinations.Insert(virtualDestinations...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddServiceDependencies(serviceDependencies []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) *InputLocalSnapshotManualBuilder {
+	i.serviceDependencies.Insert(serviceDependencies...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) *InputLocalSnapshotManualBuilder {

@@ -153,6 +153,20 @@ func (mr *MockRemoteSnapshotMockRecorder) VirtualServices() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualServices", reflect.TypeOf((*MockRemoteSnapshot)(nil).VirtualServices))
 }
 
+// Sidecars mocks base method
+func (m *MockRemoteSnapshot) Sidecars() v1alpha3sets.SidecarSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Sidecars")
+	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
+	return ret0
+}
+
+// Sidecars indicates an expected call of Sidecars
+func (mr *MockRemoteSnapshotMockRecorder) Sidecars() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sidecars", reflect.TypeOf((*MockRemoteSnapshot)(nil).Sidecars))
+}
+
 // AuthorizationPolicies mocks base method
 func (m *MockRemoteSnapshot) AuthorizationPolicies() v1beta1sets.AuthorizationPolicySet {
 	m.ctrl.T.Helper()

@@ -67,3 +67,25 @@ func (this *VirtualDestinationStatus) MarshalJSON() ([]byte, error) {
 func (this *VirtualDestinationStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
+// MarshalJSON is a custom marshaler for ServiceDependencySpec
+func (this *ServiceDependencySpec) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for ServiceDependencySpec
+func (this *ServiceDependencySpec) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for ServiceDependencyStatus
+func (this *ServiceDependencyStatus) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for ServiceDependencyStatus
+func (this *ServiceDependencyStatus) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
