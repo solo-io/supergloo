@@ -525,6 +525,11 @@ func conflictsWithUserVirtualService(
 
 	// virtual services from RemoteSnapshot only contain non-translated objects
 	userVirtualServices.List(func(vs *networkingv1alpha3.VirtualService) (_ bool) {
+		// different cluster, no conflict
+		if vs.ClusterName != translatedVirtualService.ClusterName {
+			return
+		}
+
 		// check if common hostnames exist
 		commonHostnames := utils.CommonHostnames(vs.Spec.Hosts, translatedVirtualService.Spec.Hosts)
 		if len(commonHostnames) > 0 {
