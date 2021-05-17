@@ -106,7 +106,7 @@ func (c *certAgentTranslator) IssuedCertiticatePending(
 ) ([]byte, error) {
 
 	// create a new private key
-	privateKey, err := utils.GeneratePrivateKey(int(issuedCertificate.Spec.CertOptions.GetRsaKeySizeBytes()))
+	privateKey, err := utils.GeneratePrivateKey()
 	if err != nil {
 		return nil, err
 	}
