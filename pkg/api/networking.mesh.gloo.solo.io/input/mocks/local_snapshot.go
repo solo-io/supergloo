@@ -170,6 +170,20 @@ func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
 }
 
+// ServiceDependencies mocks base method
+func (m *MockLocalSnapshot) ServiceDependencies() v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceDependencies")
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// ServiceDependencies indicates an expected call of ServiceDependencies
+func (mr *MockLocalSnapshotMockRecorder) ServiceDependencies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencies", reflect.TypeOf((*MockLocalSnapshot)(nil).ServiceDependencies))
+}
+
 // AccessLogRecords mocks base method
 func (m *MockLocalSnapshot) AccessLogRecords() v1sets2.AccessLogRecordSet {
 	m.ctrl.T.Helper()

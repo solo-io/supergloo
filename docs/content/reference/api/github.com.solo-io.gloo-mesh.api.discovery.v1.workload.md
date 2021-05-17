@@ -26,6 +26,8 @@ title: "workload.proto"
   - [WorkloadStatus](#discovery.mesh.gloo.solo.io.WorkloadStatus)
   - [WorkloadStatus.AppliedAccessLogRecord](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord)
   - [WorkloadStatus.AppliedWasmDeployment](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedWasmDeployment)
+  - [WorkloadStatus.ServiceDependencies](#discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies)
+  - [WorkloadStatus.ServiceDependencies.AppliedServiceDependency](#discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies.AppliedServiceDependency)
 
 
 
@@ -126,6 +128,7 @@ Describes a Kubernetes workload (e.g. a Deployment or DaemonSet).
 | observedGeneration | int64 |  | The observed generation of the Workload. When this matches the Workload's `metadata.generation` it indicates that Gloo Mesh has processed the latest version of the Workload. |
   | appliedAccessLogRecords | [][discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord" >}}) | repeated | The set of AccessLogRecords that have been applied to this Workload. |
   | appliedWasmDeployments | [][discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedWasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedWasmDeployment" >}}) | repeated | The set of WasmDeployments that have been applied to this Workload. |
+  | serviceDependencies | [discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies" >}}) |  | Specifies the [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}}) that apply to this Workload, and the resulting Destination hostnames that this Workload can send traffic to. |
   
 
 
@@ -160,6 +163,38 @@ Describes a [WasmDeployment]({{< versioned_link_path fromRoot="/reference/api/gi
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the WasmDeployment object. |
   | observedGeneration | int64 |  | The observed generation of the WasmDeployment. |
   | errors | []string | repeated | Any errors encountered while processing the WasmDeployment object. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies"></a>
+
+### WorkloadStatus.ServiceDependencies
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| appliedServiceDependencies | [][discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies.AppliedServiceDependency]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies.AppliedServiceDependency" >}}) | repeated | The set of [ServiceDependencies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}}) that have been applied to this Workload. |
+  | destinationHostnames | []string | repeated | The set of Destination hostnames that this Workload depends on. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.WorkloadStatus.ServiceDependencies.AppliedServiceDependency"></a>
+
+### WorkloadStatus.ServiceDependencies.AppliedServiceDependency
+Describes a [ServiceDependency]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.service_dependency/" >}}) that applies to this workload.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| serviceDependencyRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the ServiceDependency object. |
+  | observedGeneration | int64 |  | The observed generation of the ServiceDependency. |
   
 
 

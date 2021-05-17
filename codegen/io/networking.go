@@ -43,6 +43,7 @@ var (
 		}: {
 			"WasmDeployment",
 			"VirtualDestination",
+			"ServiceDependency",
 		},
 		schema.GroupVersion{
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,
@@ -67,6 +68,7 @@ var (
 				"EnvoyFilter",
 				"ServiceEntry",
 				"Gateway",
+				"Sidecar",
 			},
 			istiosecurityv1beta1.SchemeGroupVersion: {
 				"AuthorizationPolicy",
