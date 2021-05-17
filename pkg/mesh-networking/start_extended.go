@@ -10,7 +10,6 @@ import (
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
-	certissuertranslation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/translation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
@@ -100,9 +99,6 @@ type CertIssuerReconcilerExtensionOpts struct {
 	// Hook to override the Cert Issuer Snapshot Builder used by Cert Issuer Reconciler
 	MakeCertIssuerSnapshotBuilder func(params bootstrap.StartParameters) certissuerinput.Builder
 
-	// Hook to add additional translators to the cert issuer reconciler
-	MakeTranslator func(certissuertranslation.Translator) certissuertranslation.Translator
-
 	// Hook to override how the Cert Issuer Reconciler syncs the status of inputs (CertificateRequests)
 	SyncCertificateIssuerInputStatuses certissuerreconciliation.SyncStatusFunc
 }
@@ -117,7 +113,6 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 			)
 		}
 	}
-
 	if opts.RegisterCertIssuerReconciler == nil {
 		// initialize cert issuer with multicluster clients (default)
 		opts.RegisterCertIssuerReconciler = func(
@@ -133,12 +128,6 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 				certissuerinput.ReconcileOptions{},
 			)
 			return nil
-		}
-	}
-	if opts.MakeTranslator == nil {
-		// use default translator
-		opts.MakeTranslator = func(translator certissuertranslation.Translator) certissuertranslation.Translator {
-			return translator
 		}
 	}
 	if opts.SyncCertificateIssuerInputStatuses == nil {
