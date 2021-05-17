@@ -8,6 +8,7 @@ import (
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -24,13 +25,8 @@ type Output struct {
 // the output resources as defined by the `Output` resource below.
 
 type Translator interface {
-	// Determines whether or not the reconciler should process the IssuedCertificate
-	ShouldProcess(
-		ctx context.Context,
-		issuedCertificate *certificatesv1.IssuedCertificate,
-	) bool
-
 	// Translate the input resources into the SignedCert and SigningRootCa
+	// If Output and Err are nil, this translator is not responsible for this resource
 	Translate(
 		ctx context.Context,
 		certificateRequest *certificatesv1.CertificateRequest,
@@ -48,14 +44,6 @@ type secretTranslator struct {
 	mgmtClusterSecretClient corev1clients.SecretClient
 }
 
-func (s *secretTranslator) ShouldProcess(
-	ctx context.Context,
-	issuedCertificate *certificatesv1.IssuedCertificate,
-) bool {
-	// Only act if signing cert is present
-	return s.getSigningSecret(issuedCertificate) != nil
-}
-
 func (s *secretTranslator) Translate(
 	ctx context.Context,
 	certificateRequest *certificatesv1.CertificateRequest,
@@ -65,7 +53,8 @@ func (s *secretTranslator) Translate(
 	signingCert := s.getSigningSecret(issuedCertificate)
 	// This translator only cares about CA with local secrets
 	if signingCert == nil {
-		return nil, eris.New("No signing cert available to sign CSR")
+		contextutils.LoggerFrom(ctx).Debugf("No signing cert found, not this translator's responsiliblity")
+		return nil, nil
 	}
 
 	signingCertificateSecret, err := s.mgmtClusterSecretClient.GetSecret(ctx, ezkube.MakeClientObjectKey(signingCert))

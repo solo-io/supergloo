@@ -112,15 +112,12 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *c
 		return eris.Wrapf(err, "failed to find issued certificate matching certificate request")
 	}
 
-	// Check if it is the translators responsibility to handle this request
-	// If not return nil
-	if !r.translator.ShouldProcess(r.ctx, issuedCertificate) {
-		return nil
-	}
-
 	output, err := r.translator.Translate(r.ctx, certificateRequest, issuedCertificate)
 	if err != nil {
 		return eris.Wrapf(err, "failed to translate certificate request + issued certificate")
+	} else if output == nil {
+		// Do not process resource when output and err are nil
+		return nil
 	}
 
 	certificateRequest.Status = certificatesv1.CertificateRequestStatus{

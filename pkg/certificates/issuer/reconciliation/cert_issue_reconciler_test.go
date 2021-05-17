@@ -113,8 +113,8 @@ var _ = Describe("CertIssueReconciler", func() {
 			), nil)
 
 		mockTranslator.EXPECT().
-			ShouldProcess(gomock.Any(), issuedCert).
-			Return(false)
+			Translate(gomock.Any(), certRequest, issuedCert).
+			Return(nil, nil)
 
 		_, err := reconcileFunc(nil)
 		Expect(err).NotTo(HaveOccurred())
@@ -165,10 +165,6 @@ var _ = Describe("CertIssueReconciler", func() {
 		expectedCertRequest := certRequest.DeepCopy()
 		expectedCertRequest.Status.State = certificatesv1.CertificateRequestStatus_PENDING
 		expectedCertRequest.Status.ObservedGeneration = 2
-
-		mockTranslator.EXPECT().
-			ShouldProcess(gomock.Any(), issuedCert).
-			Return(true)
 
 		mockTranslator.EXPECT().
 			Translate(
@@ -232,10 +228,6 @@ var _ = Describe("CertIssueReconciler", func() {
 		expectedCertRequest := certRequest.DeepCopy()
 		expectedCertRequest.Status.State = certificatesv1.CertificateRequestStatus_PENDING
 		expectedCertRequest.Status.ObservedGeneration = 2
-
-		mockTranslator.EXPECT().
-			ShouldProcess(gomock.Any(), issuedCert).
-			Return(true)
 
 		mockTranslator.EXPECT().
 			Translate(

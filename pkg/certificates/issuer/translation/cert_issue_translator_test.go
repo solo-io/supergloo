@@ -51,10 +51,9 @@ var _ = Describe("CertIssueTranslator", func() {
 			},
 		}
 
-		Expect(translator.ShouldProcess(ctx, issuedCert)).To(BeFalse())
-
-		_, err := translator.Translate(ctx, nil, issuedCert)
+		output, err := translator.Translate(ctx, nil, issuedCert)
 		Expect(err).To(HaveOccurred())
+		Expect(output).To(BeNil())
 	})
 
 	DescribeTable(
@@ -85,8 +84,6 @@ var _ = Describe("CertIssueTranslator", func() {
 			issuedCert := issuedCertFactory(secret)
 
 			mockSecretClient.EXPECT().GetSecret(ctx, ezkube.MakeClientObjectKey(secret)).Return(secret, nil)
-
-			Expect(translator.ShouldProcess(ctx, issuedCert)).To(BeTrue())
 
 			output, err := translator.Translate(ctx, certRequest, issuedCert)
 			Expect(err).NotTo(HaveOccurred())
