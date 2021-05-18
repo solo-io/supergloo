@@ -347,6 +347,10 @@ spec:
             - port: 443
               targetPort: 8443
               name: https
+            - port: ${ingressPort}
+              nodePort: ${ingressPort}
+              targetPort: 8081
+              name: ingress-gateway-port
             - port: 15443
               targetPort: 15443
               name: tls
@@ -431,6 +435,10 @@ spec:
             - port: 443
               targetPort: 8443
               name: https
+            - port: ${ingressPort}
+              nodePort: ${ingressPort}
+              targetPort: 8081
+              name: ingress-gateway-port
             - port: 15443
               targetPort: 15443
               name: tls
