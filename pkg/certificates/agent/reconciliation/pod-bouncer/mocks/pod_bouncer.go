@@ -75,16 +75,16 @@ func (m *MockPodBouncer) EXPECT() *MockPodBouncerMockRecorder {
 }
 
 // BouncePods mocks base method
-func (m *MockPodBouncer) BouncePods(ctx context.Context, podBounceDirective *v1.PodBounceDirective, allPods v1sets.PodSet, allConfigMaps v1sets.ConfigMapSet, allSecrets v1sets.SecretSet) (bool, error) {
+func (m *MockPodBouncer) BouncePods(ctx context.Context, podBounceDirective *v1.PodBounceDirective, pods v1sets.PodSet, configMaps v1sets.ConfigMapSet, secrets v1sets.SecretSet) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BouncePods", ctx, podBounceDirective, allPods, allConfigMaps, allSecrets)
+	ret := m.ctrl.Call(m, "BouncePods", ctx, podBounceDirective, pods, configMaps, secrets)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BouncePods indicates an expected call of BouncePods
-func (mr *MockPodBouncerMockRecorder) BouncePods(ctx, podBounceDirective, allPods, allConfigMaps, allSecrets interface{}) *gomock.Call {
+func (mr *MockPodBouncerMockRecorder) BouncePods(ctx, podBounceDirective, pods, configMaps, secrets interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BouncePods", reflect.TypeOf((*MockPodBouncer)(nil).BouncePods), ctx, podBounceDirective, allPods, allConfigMaps, allSecrets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BouncePods", reflect.TypeOf((*MockPodBouncer)(nil).BouncePods), ctx, podBounceDirective, pods, configMaps, secrets)
 }
