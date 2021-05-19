@@ -132,7 +132,7 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 	outputs certagent.Builder,
 ) error {
 
-	// If this translator doesn't own the resource, return early
+	// If the IssuedCertificate's IssuedCertificateSecret is nil, the cert-agent is not responsible for issuing the certificate.
 	if !r.translator.ShouldProcess(r.ctx, issuedCertificate) {
 		return nil
 	}
