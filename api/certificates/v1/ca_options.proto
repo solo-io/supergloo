@@ -18,6 +18,10 @@ message CommonCertOptions {
 
   // Root cert organization name. Defaults to "gloo-mesh".
   string org_name = 3;
+
+  // The ratio of cert lifetime to refresh a cert. For example, at 0.10 and 1 hour TTL,
+  // we would refresh 6 minutes before expiration
+  float secret_rotation_grace_period_ratio = 4;
 }
 
 // Specify parameters for configuring the root certificate authority for a VirtualMesh.
