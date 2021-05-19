@@ -432,3 +432,213 @@ func (s *virtualDestinationSet) Delta(newSet VirtualDestinationSet) sksets.Resou
 	}
 	return s.Generic().Delta(newSet.Generic())
 }
+
+type ServiceDependencySet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency
+	// Return the Set as a map of key to resource.
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency
+	// Insert a resource into the set.
+	Insert(serviceDependency ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(serviceDependencySet ServiceDependencySet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(serviceDependency ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(serviceDependency ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set ServiceDependencySet) ServiceDependencySet
+	// Return the difference with the provided set
+	Difference(set ServiceDependencySet) ServiceDependencySet
+	// Return the intersection with the provided set
+	Intersection(set ServiceDependencySet) ServiceDependencySet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another ServiceDependencySet
+	Delta(newSet ServiceDependencySet) sksets.ResourceDelta
+}
+
+func makeGenericServiceDependencySet(serviceDependencyList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range serviceDependencyList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type serviceDependencySet struct {
+	set sksets.ResourceSet
+}
+
+func NewServiceDependencySet(serviceDependencyList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) ServiceDependencySet {
+	return &serviceDependencySet{set: makeGenericServiceDependencySet(serviceDependencyList)}
+}
+
+func NewServiceDependencySetFromList(serviceDependencyList *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependencyList) ServiceDependencySet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency, 0, len(serviceDependencyList.Items))
+	for idx := range serviceDependencyList.Items {
+		list = append(list, &serviceDependencyList.Items[idx])
+	}
+	return &serviceDependencySet{set: makeGenericServiceDependencySet(list)}
+}
+
+func (s *serviceDependencySet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	return s.Generic().Keys()
+}
+
+func (s *serviceDependencySet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency))
+		})
+	}
+
+	objs := s.Generic().List(genericFilters...)
+	serviceDependencyList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency, 0, len(objs))
+	for _, obj := range objs {
+		serviceDependencyList = append(serviceDependencyList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency))
+	}
+	return serviceDependencyList
+}
+
+func (s *serviceDependencySet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency))
+		})
+	}
+
+	var serviceDependencyList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		serviceDependencyList = append(serviceDependencyList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency))
+	}
+	return serviceDependencyList
+}
+
+func (s *serviceDependencySet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	}
+	return newMap
+}
+
+func (s *serviceDependencySet) Insert(
+	serviceDependencyList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency,
+) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
+	for _, obj := range serviceDependencyList {
+		s.Generic().Insert(obj)
+	}
+}
+
+func (s *serviceDependencySet) Has(serviceDependency ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(serviceDependency)
+}
+
+func (s *serviceDependencySet) Equal(
+	serviceDependencySet ServiceDependencySet,
+) bool {
+	if s == nil {
+		return serviceDependencySet == nil
+	}
+	return s.Generic().Equal(serviceDependencySet.Generic())
+}
+
+func (s *serviceDependencySet) Delete(ServiceDependency ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(ServiceDependency)
+}
+
+func (s *serviceDependencySet) Union(set ServiceDependencySet) ServiceDependencySet {
+	if s == nil {
+		return set
+	}
+	return NewServiceDependencySet(append(s.List(), set.List()...)...)
+}
+
+func (s *serviceDependencySet) Difference(set ServiceDependencySet) ServiceDependencySet {
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &serviceDependencySet{set: newSet}
+}
+
+func (s *serviceDependencySet) Intersection(set ServiceDependencySet) ServiceDependencySet {
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var serviceDependencyList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency
+	for _, obj := range newSet.List() {
+		serviceDependencyList = append(serviceDependencyList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency))
+	}
+	return NewServiceDependencySet(serviceDependencyList...)
+}
+
+func (s *serviceDependencySet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ServiceDependency %v", sksets.Key(id))
+	}
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency), nil
+}
+
+func (s *serviceDependencySet) Length() int {
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
+}
+
+func (s *serviceDependencySet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *serviceDependencySet) Delta(newSet ServiceDependencySet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
+}

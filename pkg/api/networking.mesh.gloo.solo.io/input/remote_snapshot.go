@@ -11,6 +11,7 @@
 // * Gateways
 // * ServiceEntries
 // * VirtualServices
+// * Sidecars
 // * AuthorizationPolicies
 // read from a given cluster or set of clusters, across all namespaces.
 //
@@ -26,8 +27,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/hashicorp/go-multierror"
@@ -99,6 +102,11 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1alpha3",
 		Kind:    "VirtualService",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "Sidecar",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "security.istio.io",
@@ -128,6 +136,8 @@ type RemoteSnapshot interface {
 	ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	// return the set of input VirtualServices
 	VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	// return the set of input Sidecars
+	Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet
 
 	// return the set of input AuthorizationPolicies
 	AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
@@ -162,6 +172,8 @@ type RemoteSyncStatusOptions struct {
 	ServiceEntry bool
 	// sync status of VirtualService objects
 	VirtualService bool
+	// sync status of Sidecar objects
+	Sidecar bool
 
 	// sync status of AuthorizationPolicy objects
 	AuthorizationPolicy bool
@@ -180,6 +192,7 @@ type snapshotRemote struct {
 	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
 	serviceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 }
@@ -197,6 +210,7 @@ func NewRemoteSnapshot(
 	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
 	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
@@ -212,6 +226,7 @@ func NewRemoteSnapshot(
 		gateways:              gateways,
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
+		sidecars:              sidecars,
 		authorizationPolicies: authorizationPolicies,
 	}
 }
@@ -231,6 +246,7 @@ func NewRemoteSnapshotFromGeneric(
 	gatewaySet := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntrySet := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecarSet := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -310,6 +326,15 @@ func NewRemoteSnapshotFromGeneric(
 		for _, virtualService := range virtualServices {
 			virtualServiceSet.Insert(virtualService.(*networking_istio_io_v1alpha3_types.VirtualService))
 		}
+		sidecars := snapshot[schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
+		}]
+
+		for _, sidecar := range sidecars {
+			sidecarSet.Insert(sidecar.(*networking_istio_io_v1alpha3_types.Sidecar))
+		}
 
 		authorizationPolicies := snapshot[schema.GroupVersionKind{
 			Group:   "security.istio.io",
@@ -332,6 +357,7 @@ func NewRemoteSnapshotFromGeneric(
 		gatewaySet,
 		serviceEntrySet,
 		virtualServiceSet,
+		sidecarSet,
 		authorizationPolicySet,
 	)
 }
@@ -366,6 +392,10 @@ func (s snapshotRemote) ServiceEntries() networking_istio_io_v1alpha3_sets.Servi
 
 func (s snapshotRemote) VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
 	return s.virtualServices
+}
+
+func (s snapshotRemote) Sidecars() networking_istio_io_v1alpha3_sets.SidecarSet {
+	return s.sidecars
 }
 
 func (s snapshotRemote) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
@@ -456,6 +486,7 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap["gateways"] = s.gateways.List()
 	snapshotMap["serviceEntries"] = s.serviceEntries.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
+	snapshotMap["sidecars"] = s.sidecars.List()
 	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
 	return json.Marshal(snapshotMap)
 }
@@ -486,6 +517,8 @@ type RemoteBuildOptions struct {
 	ServiceEntries ResourceRemoteBuildOptions
 	// List options for composing a snapshot from VirtualServices
 	VirtualServices ResourceRemoteBuildOptions
+	// List options for composing a snapshot from Sidecars
+	Sidecars ResourceRemoteBuildOptions
 
 	// List options for composing a snapshot from AuthorizationPolicies
 	AuthorizationPolicies ResourceRemoteBuildOptions
@@ -530,6 +563,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecars := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -561,6 +595,9 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertSidecarsFromCluster(ctx, cluster, sidecars, opts.Sidecars); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -578,6 +615,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		gateways,
 		serviceEntries,
 		virtualServices,
+		sidecars,
 		authorizationPolicies,
 	)
 
@@ -922,6 +960,48 @@ func (b *multiClusterRemoteBuilder) insertVirtualServicesFromCluster(ctx context
 
 	return nil
 }
+func (b *multiClusterRemoteBuilder) insertSidecarsFromCluster(ctx context.Context, cluster string, sidecars networking_istio_io_v1alpha3_sets.SidecarSet, opts ResourceRemoteBuildOptions) error {
+	sidecarClient, err := networking_istio_io_v1alpha3.NewMulticlusterSidecarClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	sidecarList, err := sidecarClient.ListSidecar(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range sidecarList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		sidecars.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx context.Context, cluster string, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
 	authorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
@@ -1003,6 +1083,7 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecars := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -1032,6 +1113,9 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertSidecars(ctx, sidecars, opts.Sidecars); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1047,6 +1131,7 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 		gateways,
 		serviceEntries,
 		virtualServices,
+		sidecars,
 		authorizationPolicies,
 	)
 
@@ -1319,6 +1404,39 @@ func (b *singleClusterRemoteBuilder) insertVirtualServices(ctx context.Context, 
 
 	return nil
 }
+func (b *singleClusterRemoteBuilder) insertSidecars(ctx context.Context, sidecars networking_istio_io_v1alpha3_sets.SidecarSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	sidecarList, err := networking_istio_io_v1alpha3.NewSidecarClient(b.mgr.GetClient()).ListSidecar(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range sidecarList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		sidecars.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *singleClusterRemoteBuilder) insertAuthorizationPolicies(ctx context.Context, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
 
@@ -1384,6 +1502,7 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
 	serviceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	sidecars := networking_istio_io_v1alpha3_sets.NewSidecarSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
@@ -1391,31 +1510,34 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
 		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
-			issuedCertificates.Insert(obj)
+			i.insertIssuedCertificate(ctx, obj, issuedCertificates, opts)
 		// insert PodBounceDirectives
 		case *certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective:
-			podBounceDirectives.Insert(obj)
+			i.insertPodBounceDirective(ctx, obj, podBounceDirectives, opts)
 		// insert XdsConfigs
 		case *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types.XdsConfig:
-			xdsConfigs.Insert(obj)
+			i.insertXdsConfig(ctx, obj, xdsConfigs, opts)
 		// insert DestinationRules
 		case *networking_istio_io_v1alpha3_types.DestinationRule:
-			destinationRules.Insert(obj)
+			i.insertDestinationRule(ctx, obj, destinationRules, opts)
 		// insert EnvoyFilters
 		case *networking_istio_io_v1alpha3_types.EnvoyFilter:
-			envoyFilters.Insert(obj)
+			i.insertEnvoyFilter(ctx, obj, envoyFilters, opts)
 		// insert Gateways
 		case *networking_istio_io_v1alpha3_types.Gateway:
-			gateways.Insert(obj)
+			i.insertGateway(ctx, obj, gateways, opts)
 		// insert ServiceEntries
 		case *networking_istio_io_v1alpha3_types.ServiceEntry:
-			serviceEntries.Insert(obj)
+			i.insertServiceEntry(ctx, obj, serviceEntries, opts)
 		// insert VirtualServices
 		case *networking_istio_io_v1alpha3_types.VirtualService:
-			virtualServices.Insert(obj)
+			i.insertVirtualService(ctx, obj, virtualServices, opts)
+		// insert Sidecars
+		case *networking_istio_io_v1alpha3_types.Sidecar:
+			i.insertSidecar(ctx, obj, sidecars, opts)
 		// insert AuthorizationPolicies
 		case *security_istio_io_v1beta1_types.AuthorizationPolicy:
-			authorizationPolicies.Insert(obj)
+			i.insertAuthorizationPolicy(ctx, obj, authorizationPolicies, opts)
 		}
 	})
 
@@ -1430,6 +1552,301 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		gateways,
 		serviceEntries,
 		virtualServices,
+		sidecars,
 		authorizationPolicies,
 	), nil
+}
+
+func (i *inMemoryRemoteBuilder) insertIssuedCertificate(
+	ctx context.Context,
+	issuedCertificate *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate,
+	issuedCertificateSet certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.IssuedCertificates.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = issuedCertificate.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(issuedCertificate.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		issuedCertificateSet.Insert(issuedCertificate)
+	}
+}
+func (i *inMemoryRemoteBuilder) insertPodBounceDirective(
+	ctx context.Context,
+	podBounceDirective *certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective,
+	podBounceDirectiveSet certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.PodBounceDirectives.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = podBounceDirective.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(podBounceDirective.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		podBounceDirectiveSet.Insert(podBounceDirective)
+	}
+}
+
+func (i *inMemoryRemoteBuilder) insertXdsConfig(
+	ctx context.Context,
+	xdsConfig *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types.XdsConfig,
+	xdsConfigSet xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.XdsConfigs.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = xdsConfig.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(xdsConfig.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		xdsConfigSet.Insert(xdsConfig)
+	}
+}
+
+func (i *inMemoryRemoteBuilder) insertDestinationRule(
+	ctx context.Context,
+	destinationRule *networking_istio_io_v1alpha3_types.DestinationRule,
+	destinationRuleSet networking_istio_io_v1alpha3_sets.DestinationRuleSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.DestinationRules.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = destinationRule.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(destinationRule.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		destinationRuleSet.Insert(destinationRule)
+	}
+}
+func (i *inMemoryRemoteBuilder) insertEnvoyFilter(
+	ctx context.Context,
+	envoyFilter *networking_istio_io_v1alpha3_types.EnvoyFilter,
+	envoyFilterSet networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.EnvoyFilters.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = envoyFilter.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(envoyFilter.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		envoyFilterSet.Insert(envoyFilter)
+	}
+}
+func (i *inMemoryRemoteBuilder) insertGateway(
+	ctx context.Context,
+	gateway *networking_istio_io_v1alpha3_types.Gateway,
+	gatewaySet networking_istio_io_v1alpha3_sets.GatewaySet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.Gateways.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = gateway.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(gateway.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		gatewaySet.Insert(gateway)
+	}
+}
+func (i *inMemoryRemoteBuilder) insertServiceEntry(
+	ctx context.Context,
+	serviceEntry *networking_istio_io_v1alpha3_types.ServiceEntry,
+	serviceEntrySet networking_istio_io_v1alpha3_sets.ServiceEntrySet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.ServiceEntries.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = serviceEntry.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(serviceEntry.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		serviceEntrySet.Insert(serviceEntry)
+	}
+}
+func (i *inMemoryRemoteBuilder) insertVirtualService(
+	ctx context.Context,
+	virtualService *networking_istio_io_v1alpha3_types.VirtualService,
+	virtualServiceSet networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.VirtualServices.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = virtualService.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(virtualService.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		virtualServiceSet.Insert(virtualService)
+	}
+}
+func (i *inMemoryRemoteBuilder) insertSidecar(
+	ctx context.Context,
+	sidecar *networking_istio_io_v1alpha3_types.Sidecar,
+	sidecarSet networking_istio_io_v1alpha3_sets.SidecarSet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.Sidecars.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = sidecar.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(sidecar.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		sidecarSet.Insert(sidecar)
+	}
+}
+
+func (i *inMemoryRemoteBuilder) insertAuthorizationPolicy(
+	ctx context.Context,
+	authorizationPolicy *security_istio_io_v1beta1_types.AuthorizationPolicy,
+	authorizationPolicySet security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+	buildOpts RemoteBuildOptions,
+) {
+
+	opts := buildOpts.AuthorizationPolicies.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = authorizationPolicy.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(authorizationPolicy.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		authorizationPolicySet.Insert(authorizationPolicy)
+	}
 }

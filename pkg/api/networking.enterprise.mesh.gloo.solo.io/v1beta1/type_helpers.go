@@ -8,3 +8,6 @@ type WasmDeploymentSlice []*WasmDeployment
 
 // VirtualDestinationSlice represents a slice of *VirtualDestination
 type VirtualDestinationSlice []*VirtualDestination
+
+// ServiceDependencySlice represents a slice of *ServiceDependency
+type ServiceDependencySlice []*ServiceDependency

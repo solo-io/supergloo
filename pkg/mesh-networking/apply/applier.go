@@ -184,7 +184,7 @@ func setWorkloadsForTrafficPolicies(
 		//	return
 		//}
 		for _, workload := range workloads {
-			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) &&
+			if selectorutils.SelectorMatchesWorkload(ctx, trafficPolicy.Spec.GetSourceSelector(), workload) &&
 				meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}

@@ -117,6 +117,7 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 		certificateRequest.Spec.CertificateSigningRequest,
 		signingCA.RootCert,
 		signingCA.PrivateKey,
+		issuedCertificate.Spec.GetCertOptions().GetTtlDays(),
 	)
 	if err != nil {
 		return eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))

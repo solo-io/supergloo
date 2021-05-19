@@ -78,7 +78,43 @@ type VirtualDestinationList struct {
 	Items           []VirtualDestination `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for ServiceDependency
+var ServiceDependencyGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "ServiceDependency",
+}
+
+// ServiceDependency is the Schema for the serviceDependency API
+type ServiceDependency struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   ServiceDependencySpec   `json:"spec,omitempty"`
+	Status ServiceDependencyStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (ServiceDependency) GVK() schema.GroupVersionKind {
+	return ServiceDependencyGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ServiceDependencyList contains a list of ServiceDependency
+type ServiceDependencyList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []ServiceDependency `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
+	SchemeBuilder.Register(&ServiceDependency{}, &ServiceDependencyList{})
 }

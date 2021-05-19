@@ -498,3 +498,245 @@ func (mr *MockVirtualDestinationSetMockRecorder) Delta(newSet interface{}) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockVirtualDestinationSet)(nil).Delta), newSet)
 }
+
+// MockServiceDependencySet is a mock of ServiceDependencySet interface
+type MockServiceDependencySet struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceDependencySetMockRecorder
+}
+
+// MockServiceDependencySetMockRecorder is the mock recorder for MockServiceDependencySet
+type MockServiceDependencySetMockRecorder struct {
+	mock *MockServiceDependencySet
+}
+
+// NewMockServiceDependencySet creates a new mock instance
+func NewMockServiceDependencySet(ctrl *gomock.Controller) *MockServiceDependencySet {
+	mock := &MockServiceDependencySet{ctrl: ctrl}
+	mock.recorder = &MockServiceDependencySetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceDependencySet) EXPECT() *MockServiceDependencySetMockRecorder {
+	return m.recorder
+}
+
+// Keys mocks base method
+func (m *MockServiceDependencySet) Keys() sets0.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets0.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys
+func (mr *MockServiceDependencySetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockServiceDependencySet)(nil).Keys))
+}
+
+// List mocks base method
+func (m *MockServiceDependencySet) List(filterResource ...func(*v1beta1.ServiceDependency) bool) []*v1beta1.ServiceDependency {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.ServiceDependency)
+	return ret0
+}
+
+// List indicates an expected call of List
+func (mr *MockServiceDependencySetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockServiceDependencySet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockServiceDependencySet) UnsortedList(filterResource ...func(*v1beta1.ServiceDependency) bool) []*v1beta1.ServiceDependency {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.ServiceDependency)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockServiceDependencySetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockServiceDependencySet)(nil).UnsortedList), filterResource...)
+}
+
+// Map mocks base method
+func (m *MockServiceDependencySet) Map() map[string]*v1beta1.ServiceDependency {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1beta1.ServiceDependency)
+	return ret0
+}
+
+// Map indicates an expected call of Map
+func (mr *MockServiceDependencySetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockServiceDependencySet)(nil).Map))
+}
+
+// Insert mocks base method
+func (m *MockServiceDependencySet) Insert(serviceDependency ...*v1beta1.ServiceDependency) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range serviceDependency {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert
+func (mr *MockServiceDependencySetMockRecorder) Insert(serviceDependency ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockServiceDependencySet)(nil).Insert), serviceDependency...)
+}
+
+// Equal mocks base method
+func (m *MockServiceDependencySet) Equal(serviceDependencySet v1beta1sets.ServiceDependencySet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", serviceDependencySet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal
+func (mr *MockServiceDependencySetMockRecorder) Equal(serviceDependencySet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockServiceDependencySet)(nil).Equal), serviceDependencySet)
+}
+
+// Has mocks base method
+func (m *MockServiceDependencySet) Has(serviceDependency ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", serviceDependency)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has
+func (mr *MockServiceDependencySetMockRecorder) Has(serviceDependency interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockServiceDependencySet)(nil).Has), serviceDependency)
+}
+
+// Delete mocks base method
+func (m *MockServiceDependencySet) Delete(serviceDependency ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", serviceDependency)
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockServiceDependencySetMockRecorder) Delete(serviceDependency interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockServiceDependencySet)(nil).Delete), serviceDependency)
+}
+
+// Union mocks base method
+func (m *MockServiceDependencySet) Union(set v1beta1sets.ServiceDependencySet) v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// Union indicates an expected call of Union
+func (mr *MockServiceDependencySetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockServiceDependencySet)(nil).Union), set)
+}
+
+// Difference mocks base method
+func (m *MockServiceDependencySet) Difference(set v1beta1sets.ServiceDependencySet) v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference
+func (mr *MockServiceDependencySetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockServiceDependencySet)(nil).Difference), set)
+}
+
+// Intersection mocks base method
+func (m *MockServiceDependencySet) Intersection(set v1beta1sets.ServiceDependencySet) v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection
+func (mr *MockServiceDependencySetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockServiceDependencySet)(nil).Intersection), set)
+}
+
+// Find mocks base method
+func (m *MockServiceDependencySet) Find(id ezkube.ResourceId) (*v1beta1.ServiceDependency, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1beta1.ServiceDependency)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find
+func (mr *MockServiceDependencySetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockServiceDependencySet)(nil).Find), id)
+}
+
+// Length mocks base method
+func (m *MockServiceDependencySet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length
+func (mr *MockServiceDependencySetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockServiceDependencySet)(nil).Length))
+}
+
+// Generic mocks base method
+func (m *MockServiceDependencySet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockServiceDependencySetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockServiceDependencySet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockServiceDependencySet) Delta(newSet v1beta1sets.ServiceDependencySet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockServiceDependencySetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockServiceDependencySet)(nil).Delta), newSet)
+}

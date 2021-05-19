@@ -31,3 +31,15 @@ func (in *VirtualDestinationStatus) DeepCopyInto(out *VirtualDestinationStatus) 
 	p := proto.Clone(in).(*VirtualDestinationStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the ServiceDependency.Spec
+func (in *ServiceDependencySpec) DeepCopyInto(out *ServiceDependencySpec) {
+	p := proto.Clone(in).(*ServiceDependencySpec)
+	*out = *p
+}
+
+// DeepCopyInto for the ServiceDependency.Status
+func (in *ServiceDependencyStatus) DeepCopyInto(out *ServiceDependencyStatus) {
+	p := proto.Clone(in).(*ServiceDependencyStatus)
+	*out = *p
+}

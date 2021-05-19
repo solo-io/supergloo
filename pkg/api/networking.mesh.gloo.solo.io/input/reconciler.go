@@ -47,6 +47,7 @@ import (
 // * Gateways
 // * ServiceEntries
 // * VirtualServices
+// * Sidecars
 // * AuthorizationPolicies
 // from a remote cluster.
 // * Settings
@@ -58,6 +59,7 @@ import (
 // * VirtualMeshes
 // * WasmDeployments
 // * VirtualDestinations
+// * ServiceDependencies
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -112,6 +114,8 @@ func RegisterInputReconciler(
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterServiceEntryReconcileLoop("ServiceEntry", clusters, options.Remote.ServiceEntries).AddMulticlusterServiceEntryReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize VirtualServices reconcile loop for remote clusters
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.Remote.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize Sidecars reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterSidecarReconcileLoop("Sidecar", clusters, options.Remote.Sidecars).AddMulticlusterSidecarReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize AuthorizationPolicies reconcile loop for remote clusters
 	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
@@ -155,6 +159,10 @@ func RegisterInputReconciler(
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualDestinationReconcileLoop("VirtualDestination", mgr, options.Local.VirtualDestinations).RunVirtualDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
+	// initialize ServiceDependencies reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewServiceDependencyReconcileLoop("ServiceDependency", mgr, options.Local.ServiceDependencies).RunServiceDependencyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
 
 	// initialize AccessLogRecords reconcile loop for local cluster
 	if err := observability_enterprise_mesh_gloo_solo_io_v1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
@@ -195,6 +203,8 @@ type RemoteReconcileOptions struct {
 	ServiceEntries reconcile.Options
 	// Options for reconciling VirtualServices
 	VirtualServices reconcile.Options
+	// Options for reconciling Sidecars
+	Sidecars reconcile.Options
 
 	// Options for reconciling AuthorizationPolicies
 	AuthorizationPolicies reconcile.Options
@@ -327,6 +337,21 @@ func (r *remoteInputReconciler) ReconcileVirtualServiceDeletion(clusterName stri
 	return err
 }
 
+func (r *remoteInputReconciler) ReconcileSidecar(clusterName string, obj *networking_istio_io_v1alpha3.Sidecar) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *remoteInputReconciler) ReconcileSidecarDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileRemoteGeneric(ref)
+	return err
+}
+
 func (r *remoteInputReconciler) ReconcileAuthorizationPolicy(clusterName string, obj *security_istio_io_v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
@@ -366,6 +391,8 @@ type LocalReconcileOptions struct {
 	WasmDeployments reconcile.Options
 	// Options for reconciling VirtualDestinations
 	VirtualDestinations reconcile.Options
+	// Options for reconciling ServiceDependencies
+	ServiceDependencies reconcile.Options
 
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
@@ -493,6 +520,19 @@ func (r *localInputReconciler) ReconcileVirtualDestination(obj *networking_enter
 }
 
 func (r *localInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileServiceDependencyDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

@@ -1022,8 +1022,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			// user-supplied, should yield conflict error
 			&networkingv1alpha3.VirtualService{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "user-provided-vs",
-					Namespace: "foo",
+					Name:        "user-provided-vs",
+					Namespace:   "foo",
+					ClusterName: "traffic-target-cluster",
 				},
 				Spec: networkingv1alpha3spec.VirtualService{
 					Hosts: []string{"*-hostname"},
