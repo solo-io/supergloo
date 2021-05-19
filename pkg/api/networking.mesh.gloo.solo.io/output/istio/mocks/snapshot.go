@@ -156,22 +156,8 @@ func (mr *MockSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockSnapshot)(nil).MarshalJSON))
 }
 
-// Sidecars mocks base method
-func (m *MockSnapshot) Sidecars() []istio.LabeledSidecarSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Sidecars")
-	ret0, _ := ret[0].([]istio.LabeledSidecarSet)
-	return ret0
-}
-
-// Sidecars indicates an expected call of Sidecars
-func (mr *MockSnapshotMockRecorder) Sidecars() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sidecars", reflect.TypeOf((*MockSnapshot)(nil).Sidecars))
-}
-
-// AuthorizationPolicies mocks base method
-func (m *MockSnapshot) AuthorizationPolicies() []istio.LabeledAuthorizationPolicySet {
+// PodBounceDirectives mocks base method.
+func (m *MockSnapshot) PodBounceDirectives() []istio.LabeledPodBounceDirectiveSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PodBounceDirectives")
 	ret0, _ := ret[0].([]istio.LabeledPodBounceDirectiveSet)
@@ -196,6 +182,20 @@ func (m *MockSnapshot) ServiceEntries() []istio.LabeledServiceEntrySet {
 func (mr *MockSnapshotMockRecorder) ServiceEntries() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceEntries", reflect.TypeOf((*MockSnapshot)(nil).ServiceEntries))
+}
+
+// Sidecars mocks base method.
+func (m *MockSnapshot) Sidecars() []istio.LabeledSidecarSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Sidecars")
+	ret0, _ := ret[0].([]istio.LabeledSidecarSet)
+	return ret0
+}
+
+// Sidecars indicates an expected call of Sidecars.
+func (mr *MockSnapshotMockRecorder) Sidecars() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sidecars", reflect.TypeOf((*MockSnapshot)(nil).Sidecars))
 }
 
 // VirtualServices mocks base method.
@@ -746,72 +746,30 @@ func (mr *MockLabeledVirtualServiceSetMockRecorder) Set() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledVirtualServiceSet)(nil).Set))
 }
 
-// Generic mocks base method
-func (m *MockLabeledVirtualServiceSet) Generic() output.ResourceList {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic")
-	ret0, _ := ret[0].(output.ResourceList)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic
-func (mr *MockLabeledVirtualServiceSetMockRecorder) Generic() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledVirtualServiceSet)(nil).Generic))
-}
-
-// MockLabeledSidecarSet is a mock of LabeledSidecarSet interface
+// MockLabeledSidecarSet is a mock of LabeledSidecarSet interface.
 type MockLabeledSidecarSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledSidecarSetMockRecorder
 }
 
-// MockLabeledSidecarSetMockRecorder is the mock recorder for MockLabeledSidecarSet
+// MockLabeledSidecarSetMockRecorder is the mock recorder for MockLabeledSidecarSet.
 type MockLabeledSidecarSetMockRecorder struct {
 	mock *MockLabeledSidecarSet
 }
 
-// NewMockLabeledSidecarSet creates a new mock instance
+// NewMockLabeledSidecarSet creates a new mock instance.
 func NewMockLabeledSidecarSet(ctrl *gomock.Controller) *MockLabeledSidecarSet {
 	mock := &MockLabeledSidecarSet{ctrl: ctrl}
 	mock.recorder = &MockLabeledSidecarSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockLabeledSidecarSet) EXPECT() *MockLabeledSidecarSetMockRecorder {
 	return m.recorder
 }
 
-// Labels mocks base method
-func (m *MockLabeledSidecarSet) Labels() map[string]string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Labels")
-	ret0, _ := ret[0].(map[string]string)
-	return ret0
-}
-
-// Labels indicates an expected call of Labels
-func (mr *MockLabeledSidecarSetMockRecorder) Labels() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSidecarSet)(nil).Labels))
-}
-
-// Set mocks base method
-func (m *MockLabeledSidecarSet) Set() v1alpha3sets.SidecarSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
-	return ret0
-}
-
-// Set indicates an expected call of Set
-func (mr *MockLabeledSidecarSetMockRecorder) Set() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSidecarSet)(nil).Set))
-}
-
-// Generic mocks base method
+// Generic mocks base method.
 func (m *MockLabeledSidecarSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
@@ -819,13 +777,41 @@ func (m *MockLabeledSidecarSet) Generic() output.ResourceList {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic
+// Generic indicates an expected call of Generic.
 func (mr *MockLabeledSidecarSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSidecarSet)(nil).Generic))
 }
 
-// MockLabeledAuthorizationPolicySet is a mock of LabeledAuthorizationPolicySet interface
+// Labels mocks base method.
+func (m *MockLabeledSidecarSet) Labels() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Labels")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// Labels indicates an expected call of Labels.
+func (mr *MockLabeledSidecarSetMockRecorder) Labels() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSidecarSet)(nil).Labels))
+}
+
+// Set mocks base method.
+func (m *MockLabeledSidecarSet) Set() v1alpha3sets.SidecarSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set")
+	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockLabeledSidecarSetMockRecorder) Set() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSidecarSet)(nil).Set))
+}
+
+// MockLabeledAuthorizationPolicySet is a mock of LabeledAuthorizationPolicySet interface.
 type MockLabeledAuthorizationPolicySet struct {
 	ctrl     *gomock.Controller
 	recorder *MockLabeledAuthorizationPolicySetMockRecorder
@@ -1037,6 +1023,22 @@ func (mr *MockBuilderMockRecorder) AddServiceEntries(serviceEntries ...interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddServiceEntries", reflect.TypeOf((*MockBuilder)(nil).AddServiceEntries), serviceEntries...)
 }
 
+// AddSidecars mocks base method.
+func (m *MockBuilder) AddSidecars(sidecars ...*v1alpha3.Sidecar) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range sidecars {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddSidecars", varargs...)
+}
+
+// AddSidecars indicates an expected call of AddSidecars.
+func (mr *MockBuilderMockRecorder) AddSidecars(sidecars ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSidecars", reflect.TypeOf((*MockBuilder)(nil).AddSidecars), sidecars...)
+}
+
 // AddVirtualServices mocks base method.
 func (m *MockBuilder) AddVirtualServices(virtualServices ...*v1alpha3.VirtualService) {
 	m.ctrl.T.Helper()
@@ -1155,38 +1157,8 @@ func (mr *MockBuilderMockRecorder) GetAuthorizationPolicies() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthorizationPolicies", reflect.TypeOf((*MockBuilder)(nil).GetAuthorizationPolicies))
 }
 
-// AddSidecars mocks base method
-func (m *MockBuilder) AddSidecars(sidecars ...*v1alpha3.Sidecar) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range sidecars {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "AddSidecars", varargs...)
-}
-
-// AddSidecars indicates an expected call of AddSidecars
-func (mr *MockBuilderMockRecorder) AddSidecars(sidecars ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSidecars", reflect.TypeOf((*MockBuilder)(nil).AddSidecars), sidecars...)
-}
-
-// GetSidecars mocks base method
-func (m *MockBuilder) GetSidecars() v1alpha3sets.SidecarSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSidecars")
-	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
-	return ret0
-}
-
-// GetSidecars indicates an expected call of GetSidecars
-func (mr *MockBuilderMockRecorder) GetSidecars() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSidecars", reflect.TypeOf((*MockBuilder)(nil).GetSidecars))
-}
-
-// AddAuthorizationPolicies mocks base method
-func (m *MockBuilder) AddAuthorizationPolicies(authorizationPolicies ...*v1beta10.AuthorizationPolicy) {
+// GetDestinationRules mocks base method.
+func (m *MockBuilder) GetDestinationRules() v1alpha3sets.DestinationRuleSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDestinationRules")
 	ret0, _ := ret[0].(v1alpha3sets.DestinationRuleSet)
@@ -1267,6 +1239,20 @@ func (m *MockBuilder) GetServiceEntries() v1alpha3sets.ServiceEntrySet {
 func (mr *MockBuilderMockRecorder) GetServiceEntries() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceEntries", reflect.TypeOf((*MockBuilder)(nil).GetServiceEntries))
+}
+
+// GetSidecars mocks base method.
+func (m *MockBuilder) GetSidecars() v1alpha3sets.SidecarSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSidecars")
+	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
+	return ret0
+}
+
+// GetSidecars indicates an expected call of GetSidecars.
+func (mr *MockBuilderMockRecorder) GetSidecars() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSidecars", reflect.TypeOf((*MockBuilder)(nil).GetSidecars))
 }
 
 // GetVirtualServices mocks base method.

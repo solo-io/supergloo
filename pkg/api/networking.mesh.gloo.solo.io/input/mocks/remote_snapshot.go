@@ -140,22 +140,8 @@ func (mr *MockRemoteSnapshotMockRecorder) PodBounceDirectives() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectives", reflect.TypeOf((*MockRemoteSnapshot)(nil).PodBounceDirectives))
 }
 
-// Sidecars mocks base method
-func (m *MockRemoteSnapshot) Sidecars() v1alpha3sets.SidecarSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Sidecars")
-	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
-	return ret0
-}
-
-// Sidecars indicates an expected call of Sidecars
-func (mr *MockRemoteSnapshotMockRecorder) Sidecars() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sidecars", reflect.TypeOf((*MockRemoteSnapshot)(nil).Sidecars))
-}
-
-// AuthorizationPolicies mocks base method
-func (m *MockRemoteSnapshot) AuthorizationPolicies() v1beta1sets.AuthorizationPolicySet {
+// ServiceEntries mocks base method.
+func (m *MockRemoteSnapshot) ServiceEntries() v1alpha3sets.ServiceEntrySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceEntries")
 	ret0, _ := ret[0].(v1alpha3sets.ServiceEntrySet)
@@ -166,6 +152,20 @@ func (m *MockRemoteSnapshot) AuthorizationPolicies() v1beta1sets.AuthorizationPo
 func (mr *MockRemoteSnapshotMockRecorder) ServiceEntries() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceEntries", reflect.TypeOf((*MockRemoteSnapshot)(nil).ServiceEntries))
+}
+
+// Sidecars mocks base method.
+func (m *MockRemoteSnapshot) Sidecars() v1alpha3sets.SidecarSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Sidecars")
+	ret0, _ := ret[0].(v1alpha3sets.SidecarSet)
+	return ret0
+}
+
+// Sidecars indicates an expected call of Sidecars.
+func (mr *MockRemoteSnapshotMockRecorder) Sidecars() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sidecars", reflect.TypeOf((*MockRemoteSnapshot)(nil).Sidecars))
 }
 
 // SyncStatuses mocks base method.

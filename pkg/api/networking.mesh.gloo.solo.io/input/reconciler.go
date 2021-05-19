@@ -181,6 +181,7 @@ func RegisterInputReconciler(
 
 	return base, nil
 }
+
 // Options for reconciling a snapshot in remote clusters
 type RemoteReconcileOptions struct {
 

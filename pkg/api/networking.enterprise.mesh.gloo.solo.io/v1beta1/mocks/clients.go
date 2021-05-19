@@ -74,6 +74,20 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
+// ServiceDependencies mocks base method.
+func (m *MockClientset) ServiceDependencies() v1beta1.ServiceDependencyClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceDependencies")
+	ret0, _ := ret[0].(v1beta1.ServiceDependencyClient)
+	return ret0
+}
+
+// ServiceDependencies indicates an expected call of ServiceDependencies.
+func (mr *MockClientsetMockRecorder) ServiceDependencies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencies", reflect.TypeOf((*MockClientset)(nil).ServiceDependencies))
+}
+
 // VirtualDestinations mocks base method.
 func (m *MockClientset) VirtualDestinations() v1beta1.VirtualDestinationClient {
 	m.ctrl.T.Helper()
@@ -102,21 +116,7 @@ func (mr *MockClientsetMockRecorder) WasmDeployments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockClientset)(nil).WasmDeployments))
 }
 
-// ServiceDependencies mocks base method
-func (m *MockClientset) ServiceDependencies() v1beta1.ServiceDependencyClient {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceDependencies")
-	ret0, _ := ret[0].(v1beta1.ServiceDependencyClient)
-	return ret0
-}
-
-// ServiceDependencies indicates an expected call of ServiceDependencies
-func (mr *MockClientsetMockRecorder) ServiceDependencies() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencies", reflect.TypeOf((*MockClientset)(nil).ServiceDependencies))
-}
-
-// MockWasmDeploymentReader is a mock of WasmDeploymentReader interface
+// MockWasmDeploymentReader is a mock of WasmDeploymentReader interface.
 type MockWasmDeploymentReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockWasmDeploymentReaderMockRecorder
@@ -1124,30 +1124,30 @@ func (mr *MockMulticlusterVirtualDestinationClientMockRecorder) Cluster(cluster 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterVirtualDestinationClient)(nil).Cluster), cluster)
 }
 
-// MockServiceDependencyReader is a mock of ServiceDependencyReader interface
+// MockServiceDependencyReader is a mock of ServiceDependencyReader interface.
 type MockServiceDependencyReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyReaderMockRecorder
 }
 
-// MockServiceDependencyReaderMockRecorder is the mock recorder for MockServiceDependencyReader
+// MockServiceDependencyReaderMockRecorder is the mock recorder for MockServiceDependencyReader.
 type MockServiceDependencyReaderMockRecorder struct {
 	mock *MockServiceDependencyReader
 }
 
-// NewMockServiceDependencyReader creates a new mock instance
+// NewMockServiceDependencyReader creates a new mock instance.
 func NewMockServiceDependencyReader(ctrl *gomock.Controller) *MockServiceDependencyReader {
 	mock := &MockServiceDependencyReader{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceDependencyReader) EXPECT() *MockServiceDependencyReaderMockRecorder {
 	return m.recorder
 }
 
-// GetServiceDependency mocks base method
+// GetServiceDependency mocks base method.
 func (m *MockServiceDependencyReader) GetServiceDependency(ctx context.Context, key client.ObjectKey) (*v1beta1.ServiceDependency, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceDependency", ctx, key)
@@ -1156,13 +1156,13 @@ func (m *MockServiceDependencyReader) GetServiceDependency(ctx context.Context, 
 	return ret0, ret1
 }
 
-// GetServiceDependency indicates an expected call of GetServiceDependency
+// GetServiceDependency indicates an expected call of GetServiceDependency.
 func (mr *MockServiceDependencyReaderMockRecorder) GetServiceDependency(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceDependency", reflect.TypeOf((*MockServiceDependencyReader)(nil).GetServiceDependency), ctx, key)
 }
 
-// ListServiceDependency mocks base method
+// ListServiceDependency mocks base method.
 func (m *MockServiceDependencyReader) ListServiceDependency(ctx context.Context, opts ...client.ListOption) (*v1beta1.ServiceDependencyList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1175,37 +1175,37 @@ func (m *MockServiceDependencyReader) ListServiceDependency(ctx context.Context,
 	return ret0, ret1
 }
 
-// ListServiceDependency indicates an expected call of ListServiceDependency
+// ListServiceDependency indicates an expected call of ListServiceDependency.
 func (mr *MockServiceDependencyReaderMockRecorder) ListServiceDependency(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListServiceDependency", reflect.TypeOf((*MockServiceDependencyReader)(nil).ListServiceDependency), varargs...)
 }
 
-// MockServiceDependencyWriter is a mock of ServiceDependencyWriter interface
+// MockServiceDependencyWriter is a mock of ServiceDependencyWriter interface.
 type MockServiceDependencyWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyWriterMockRecorder
 }
 
-// MockServiceDependencyWriterMockRecorder is the mock recorder for MockServiceDependencyWriter
+// MockServiceDependencyWriterMockRecorder is the mock recorder for MockServiceDependencyWriter.
 type MockServiceDependencyWriterMockRecorder struct {
 	mock *MockServiceDependencyWriter
 }
 
-// NewMockServiceDependencyWriter creates a new mock instance
+// NewMockServiceDependencyWriter creates a new mock instance.
 func NewMockServiceDependencyWriter(ctrl *gomock.Controller) *MockServiceDependencyWriter {
 	mock := &MockServiceDependencyWriter{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceDependencyWriter) EXPECT() *MockServiceDependencyWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateServiceDependency mocks base method
+// CreateServiceDependency mocks base method.
 func (m *MockServiceDependencyWriter) CreateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -1217,71 +1217,14 @@ func (m *MockServiceDependencyWriter) CreateServiceDependency(ctx context.Contex
 	return ret0
 }
 
-// CreateServiceDependency indicates an expected call of CreateServiceDependency
+// CreateServiceDependency indicates an expected call of CreateServiceDependency.
 func (mr *MockServiceDependencyWriterMockRecorder) CreateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).CreateServiceDependency), varargs...)
 }
 
-// DeleteServiceDependency mocks base method
-func (m *MockServiceDependencyWriter) DeleteServiceDependency(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteServiceDependency indicates an expected call of DeleteServiceDependency
-func (mr *MockServiceDependencyWriterMockRecorder) DeleteServiceDependency(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).DeleteServiceDependency), varargs...)
-}
-
-// UpdateServiceDependency mocks base method
-func (m *MockServiceDependencyWriter) UpdateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateServiceDependency indicates an expected call of UpdateServiceDependency
-func (mr *MockServiceDependencyWriterMockRecorder) UpdateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).UpdateServiceDependency), varargs...)
-}
-
-// PatchServiceDependency mocks base method
-func (m *MockServiceDependencyWriter) PatchServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "PatchServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchServiceDependency indicates an expected call of PatchServiceDependency
-func (mr *MockServiceDependencyWriterMockRecorder) PatchServiceDependency(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).PatchServiceDependency), varargs...)
-}
-
-// DeleteAllOfServiceDependency mocks base method
+// DeleteAllOfServiceDependency mocks base method.
 func (m *MockServiceDependencyWriter) DeleteAllOfServiceDependency(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1293,14 +1236,71 @@ func (m *MockServiceDependencyWriter) DeleteAllOfServiceDependency(ctx context.C
 	return ret0
 }
 
-// DeleteAllOfServiceDependency indicates an expected call of DeleteAllOfServiceDependency
+// DeleteAllOfServiceDependency indicates an expected call of DeleteAllOfServiceDependency.
 func (mr *MockServiceDependencyWriterMockRecorder) DeleteAllOfServiceDependency(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).DeleteAllOfServiceDependency), varargs...)
 }
 
-// UpsertServiceDependency mocks base method
+// DeleteServiceDependency mocks base method.
+func (m *MockServiceDependencyWriter) DeleteServiceDependency(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteServiceDependency indicates an expected call of DeleteServiceDependency.
+func (mr *MockServiceDependencyWriterMockRecorder) DeleteServiceDependency(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).DeleteServiceDependency), varargs...)
+}
+
+// PatchServiceDependency mocks base method.
+func (m *MockServiceDependencyWriter) PatchServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchServiceDependency indicates an expected call of PatchServiceDependency.
+func (mr *MockServiceDependencyWriterMockRecorder) PatchServiceDependency(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).PatchServiceDependency), varargs...)
+}
+
+// UpdateServiceDependency mocks base method.
+func (m *MockServiceDependencyWriter) UpdateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateServiceDependency indicates an expected call of UpdateServiceDependency.
+func (mr *MockServiceDependencyWriterMockRecorder) UpdateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).UpdateServiceDependency), varargs...)
+}
+
+// UpsertServiceDependency mocks base method.
 func (m *MockServiceDependencyWriter) UpsertServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, transitionFuncs ...v1beta1.ServiceDependencyTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -1312,56 +1312,37 @@ func (m *MockServiceDependencyWriter) UpsertServiceDependency(ctx context.Contex
 	return ret0
 }
 
-// UpsertServiceDependency indicates an expected call of UpsertServiceDependency
+// UpsertServiceDependency indicates an expected call of UpsertServiceDependency.
 func (mr *MockServiceDependencyWriterMockRecorder) UpsertServiceDependency(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceDependency", reflect.TypeOf((*MockServiceDependencyWriter)(nil).UpsertServiceDependency), varargs...)
 }
 
-// MockServiceDependencyStatusWriter is a mock of ServiceDependencyStatusWriter interface
+// MockServiceDependencyStatusWriter is a mock of ServiceDependencyStatusWriter interface.
 type MockServiceDependencyStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyStatusWriterMockRecorder
 }
 
-// MockServiceDependencyStatusWriterMockRecorder is the mock recorder for MockServiceDependencyStatusWriter
+// MockServiceDependencyStatusWriterMockRecorder is the mock recorder for MockServiceDependencyStatusWriter.
 type MockServiceDependencyStatusWriterMockRecorder struct {
 	mock *MockServiceDependencyStatusWriter
 }
 
-// NewMockServiceDependencyStatusWriter creates a new mock instance
+// NewMockServiceDependencyStatusWriter creates a new mock instance.
 func NewMockServiceDependencyStatusWriter(ctrl *gomock.Controller) *MockServiceDependencyStatusWriter {
 	mock := &MockServiceDependencyStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceDependencyStatusWriter) EXPECT() *MockServiceDependencyStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateServiceDependencyStatus mocks base method
-func (m *MockServiceDependencyStatusWriter) UpdateServiceDependencyStatus(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateServiceDependencyStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateServiceDependencyStatus indicates an expected call of UpdateServiceDependencyStatus
-func (mr *MockServiceDependencyStatusWriterMockRecorder) UpdateServiceDependencyStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependencyStatus", reflect.TypeOf((*MockServiceDependencyStatusWriter)(nil).UpdateServiceDependencyStatus), varargs...)
-}
-
-// PatchServiceDependencyStatus mocks base method
+// PatchServiceDependencyStatus mocks base method.
 func (m *MockServiceDependencyStatusWriter) PatchServiceDependencyStatus(ctx context.Context, obj *v1beta1.ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1373,37 +1354,113 @@ func (m *MockServiceDependencyStatusWriter) PatchServiceDependencyStatus(ctx con
 	return ret0
 }
 
-// PatchServiceDependencyStatus indicates an expected call of PatchServiceDependencyStatus
+// PatchServiceDependencyStatus indicates an expected call of PatchServiceDependencyStatus.
 func (mr *MockServiceDependencyStatusWriterMockRecorder) PatchServiceDependencyStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceDependencyStatus", reflect.TypeOf((*MockServiceDependencyStatusWriter)(nil).PatchServiceDependencyStatus), varargs...)
 }
 
-// MockServiceDependencyClient is a mock of ServiceDependencyClient interface
+// UpdateServiceDependencyStatus mocks base method.
+func (m *MockServiceDependencyStatusWriter) UpdateServiceDependencyStatus(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateServiceDependencyStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateServiceDependencyStatus indicates an expected call of UpdateServiceDependencyStatus.
+func (mr *MockServiceDependencyStatusWriterMockRecorder) UpdateServiceDependencyStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependencyStatus", reflect.TypeOf((*MockServiceDependencyStatusWriter)(nil).UpdateServiceDependencyStatus), varargs...)
+}
+
+// MockServiceDependencyClient is a mock of ServiceDependencyClient interface.
 type MockServiceDependencyClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceDependencyClientMockRecorder
 }
 
-// MockServiceDependencyClientMockRecorder is the mock recorder for MockServiceDependencyClient
+// MockServiceDependencyClientMockRecorder is the mock recorder for MockServiceDependencyClient.
 type MockServiceDependencyClientMockRecorder struct {
 	mock *MockServiceDependencyClient
 }
 
-// NewMockServiceDependencyClient creates a new mock instance
+// NewMockServiceDependencyClient creates a new mock instance.
 func NewMockServiceDependencyClient(ctrl *gomock.Controller) *MockServiceDependencyClient {
 	mock := &MockServiceDependencyClient{ctrl: ctrl}
 	mock.recorder = &MockServiceDependencyClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceDependencyClient) EXPECT() *MockServiceDependencyClientMockRecorder {
 	return m.recorder
 }
 
-// GetServiceDependency mocks base method
+// CreateServiceDependency mocks base method.
+func (m *MockServiceDependencyClient) CreateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateServiceDependency indicates an expected call of CreateServiceDependency.
+func (mr *MockServiceDependencyClientMockRecorder) CreateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).CreateServiceDependency), varargs...)
+}
+
+// DeleteAllOfServiceDependency mocks base method.
+func (m *MockServiceDependencyClient) DeleteAllOfServiceDependency(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfServiceDependency indicates an expected call of DeleteAllOfServiceDependency.
+func (mr *MockServiceDependencyClientMockRecorder) DeleteAllOfServiceDependency(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).DeleteAllOfServiceDependency), varargs...)
+}
+
+// DeleteServiceDependency mocks base method.
+func (m *MockServiceDependencyClient) DeleteServiceDependency(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteServiceDependency indicates an expected call of DeleteServiceDependency.
+func (mr *MockServiceDependencyClientMockRecorder) DeleteServiceDependency(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).DeleteServiceDependency), varargs...)
+}
+
+// GetServiceDependency mocks base method.
 func (m *MockServiceDependencyClient) GetServiceDependency(ctx context.Context, key client.ObjectKey) (*v1beta1.ServiceDependency, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceDependency", ctx, key)
@@ -1412,13 +1469,13 @@ func (m *MockServiceDependencyClient) GetServiceDependency(ctx context.Context, 
 	return ret0, ret1
 }
 
-// GetServiceDependency indicates an expected call of GetServiceDependency
+// GetServiceDependency indicates an expected call of GetServiceDependency.
 func (mr *MockServiceDependencyClientMockRecorder) GetServiceDependency(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).GetServiceDependency), ctx, key)
 }
 
-// ListServiceDependency mocks base method
+// ListServiceDependency mocks base method.
 func (m *MockServiceDependencyClient) ListServiceDependency(ctx context.Context, opts ...client.ListOption) (*v1beta1.ServiceDependencyList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1431,71 +1488,14 @@ func (m *MockServiceDependencyClient) ListServiceDependency(ctx context.Context,
 	return ret0, ret1
 }
 
-// ListServiceDependency indicates an expected call of ListServiceDependency
+// ListServiceDependency indicates an expected call of ListServiceDependency.
 func (mr *MockServiceDependencyClientMockRecorder) ListServiceDependency(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).ListServiceDependency), varargs...)
 }
 
-// CreateServiceDependency mocks base method
-func (m *MockServiceDependencyClient) CreateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.CreateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CreateServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateServiceDependency indicates an expected call of CreateServiceDependency
-func (mr *MockServiceDependencyClientMockRecorder) CreateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).CreateServiceDependency), varargs...)
-}
-
-// DeleteServiceDependency mocks base method
-func (m *MockServiceDependencyClient) DeleteServiceDependency(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteServiceDependency indicates an expected call of DeleteServiceDependency
-func (mr *MockServiceDependencyClientMockRecorder) DeleteServiceDependency(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).DeleteServiceDependency), varargs...)
-}
-
-// UpdateServiceDependency mocks base method
-func (m *MockServiceDependencyClient) UpdateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateServiceDependency indicates an expected call of UpdateServiceDependency
-func (mr *MockServiceDependencyClientMockRecorder) UpdateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).UpdateServiceDependency), varargs...)
-}
-
-// PatchServiceDependency mocks base method
+// PatchServiceDependency mocks base method.
 func (m *MockServiceDependencyClient) PatchServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1507,71 +1507,14 @@ func (m *MockServiceDependencyClient) PatchServiceDependency(ctx context.Context
 	return ret0
 }
 
-// PatchServiceDependency indicates an expected call of PatchServiceDependency
+// PatchServiceDependency indicates an expected call of PatchServiceDependency.
 func (mr *MockServiceDependencyClientMockRecorder) PatchServiceDependency(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).PatchServiceDependency), varargs...)
 }
 
-// DeleteAllOfServiceDependency mocks base method
-func (m *MockServiceDependencyClient) DeleteAllOfServiceDependency(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteAllOfServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteAllOfServiceDependency indicates an expected call of DeleteAllOfServiceDependency
-func (mr *MockServiceDependencyClientMockRecorder) DeleteAllOfServiceDependency(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).DeleteAllOfServiceDependency), varargs...)
-}
-
-// UpsertServiceDependency mocks base method
-func (m *MockServiceDependencyClient) UpsertServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, transitionFuncs ...v1beta1.ServiceDependencyTransitionFunction) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range transitionFuncs {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpsertServiceDependency", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpsertServiceDependency indicates an expected call of UpsertServiceDependency
-func (mr *MockServiceDependencyClientMockRecorder) UpsertServiceDependency(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).UpsertServiceDependency), varargs...)
-}
-
-// UpdateServiceDependencyStatus mocks base method
-func (m *MockServiceDependencyClient) UpdateServiceDependencyStatus(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateServiceDependencyStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateServiceDependencyStatus indicates an expected call of UpdateServiceDependencyStatus
-func (mr *MockServiceDependencyClientMockRecorder) UpdateServiceDependencyStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependencyStatus", reflect.TypeOf((*MockServiceDependencyClient)(nil).UpdateServiceDependencyStatus), varargs...)
-}
-
-// PatchServiceDependencyStatus mocks base method
+// PatchServiceDependencyStatus mocks base method.
 func (m *MockServiceDependencyClient) PatchServiceDependencyStatus(ctx context.Context, obj *v1beta1.ServiceDependency, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1583,37 +1526,94 @@ func (m *MockServiceDependencyClient) PatchServiceDependencyStatus(ctx context.C
 	return ret0
 }
 
-// PatchServiceDependencyStatus indicates an expected call of PatchServiceDependencyStatus
+// PatchServiceDependencyStatus indicates an expected call of PatchServiceDependencyStatus.
 func (mr *MockServiceDependencyClientMockRecorder) PatchServiceDependencyStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchServiceDependencyStatus", reflect.TypeOf((*MockServiceDependencyClient)(nil).PatchServiceDependencyStatus), varargs...)
 }
 
-// MockMulticlusterServiceDependencyClient is a mock of MulticlusterServiceDependencyClient interface
+// UpdateServiceDependency mocks base method.
+func (m *MockServiceDependencyClient) UpdateServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateServiceDependency indicates an expected call of UpdateServiceDependency.
+func (mr *MockServiceDependencyClientMockRecorder) UpdateServiceDependency(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).UpdateServiceDependency), varargs...)
+}
+
+// UpdateServiceDependencyStatus mocks base method.
+func (m *MockServiceDependencyClient) UpdateServiceDependencyStatus(ctx context.Context, obj *v1beta1.ServiceDependency, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateServiceDependencyStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateServiceDependencyStatus indicates an expected call of UpdateServiceDependencyStatus.
+func (mr *MockServiceDependencyClientMockRecorder) UpdateServiceDependencyStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceDependencyStatus", reflect.TypeOf((*MockServiceDependencyClient)(nil).UpdateServiceDependencyStatus), varargs...)
+}
+
+// UpsertServiceDependency mocks base method.
+func (m *MockServiceDependencyClient) UpsertServiceDependency(ctx context.Context, obj *v1beta1.ServiceDependency, transitionFuncs ...v1beta1.ServiceDependencyTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertServiceDependency", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertServiceDependency indicates an expected call of UpsertServiceDependency.
+func (mr *MockServiceDependencyClientMockRecorder) UpsertServiceDependency(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertServiceDependency", reflect.TypeOf((*MockServiceDependencyClient)(nil).UpsertServiceDependency), varargs...)
+}
+
+// MockMulticlusterServiceDependencyClient is a mock of MulticlusterServiceDependencyClient interface.
 type MockMulticlusterServiceDependencyClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterServiceDependencyClientMockRecorder
 }
 
-// MockMulticlusterServiceDependencyClientMockRecorder is the mock recorder for MockMulticlusterServiceDependencyClient
+// MockMulticlusterServiceDependencyClientMockRecorder is the mock recorder for MockMulticlusterServiceDependencyClient.
 type MockMulticlusterServiceDependencyClientMockRecorder struct {
 	mock *MockMulticlusterServiceDependencyClient
 }
 
-// NewMockMulticlusterServiceDependencyClient creates a new mock instance
+// NewMockMulticlusterServiceDependencyClient creates a new mock instance.
 func NewMockMulticlusterServiceDependencyClient(ctrl *gomock.Controller) *MockMulticlusterServiceDependencyClient {
 	mock := &MockMulticlusterServiceDependencyClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterServiceDependencyClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterServiceDependencyClient) EXPECT() *MockMulticlusterServiceDependencyClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method
+// Cluster mocks base method.
 func (m *MockMulticlusterServiceDependencyClient) Cluster(cluster string) (v1beta1.ServiceDependencyClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -1622,7 +1622,7 @@ func (m *MockMulticlusterServiceDependencyClient) Cluster(cluster string) (v1bet
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster
+// Cluster indicates an expected call of Cluster.
 func (mr *MockMulticlusterServiceDependencyClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterServiceDependencyClient)(nil).Cluster), cluster)

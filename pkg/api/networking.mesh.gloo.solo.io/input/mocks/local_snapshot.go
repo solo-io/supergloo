@@ -143,6 +143,20 @@ func (mr *MockLocalSnapshotMockRecorder) Secrets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockLocalSnapshot)(nil).Secrets))
 }
 
+// ServiceDependencies mocks base method.
+func (m *MockLocalSnapshot) ServiceDependencies() v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceDependencies")
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// ServiceDependencies indicates an expected call of ServiceDependencies.
+func (mr *MockLocalSnapshotMockRecorder) ServiceDependencies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencies", reflect.TypeOf((*MockLocalSnapshot)(nil).ServiceDependencies))
+}
+
 // Settings mocks base method.
 func (m *MockLocalSnapshot) Settings() v1sets3.SettingsSet {
 	m.ctrl.T.Helper()
@@ -171,22 +185,8 @@ func (mr *MockLocalSnapshotMockRecorder) SyncStatuses(ctx, c, opts interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockLocalSnapshot)(nil).SyncStatuses), ctx, c, opts)
 }
 
-// ServiceDependencies mocks base method
-func (m *MockLocalSnapshot) ServiceDependencies() v1beta1sets.ServiceDependencySet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceDependencies")
-	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
-	return ret0
-}
-
-// ServiceDependencies indicates an expected call of ServiceDependencies
-func (mr *MockLocalSnapshotMockRecorder) ServiceDependencies() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencies", reflect.TypeOf((*MockLocalSnapshot)(nil).ServiceDependencies))
-}
-
-// AccessLogRecords mocks base method
-func (m *MockLocalSnapshot) AccessLogRecords() v1sets2.AccessLogRecordSet {
+// SyncStatusesMultiCluster mocks base method.
+func (m *MockLocalSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.LocalSyncStatusOptions) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
 	ret0, _ := ret[0].(error)
