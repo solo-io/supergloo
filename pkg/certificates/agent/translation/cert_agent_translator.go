@@ -101,7 +101,7 @@ func (c *certAgentTranslator) ShouldProcess(ctx context.Context, issuedCertifica
 func (c *certAgentTranslator) IssuedCertiticatePending(
 	ctx context.Context,
 	issuedCertificate *certificatesv1.IssuedCertificate,
-	inputs input.Snapshot,
+	_ input.Snapshot,
 	outputs certagent.Builder,
 ) ([]byte, error) {
 
