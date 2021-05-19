@@ -39,9 +39,9 @@ type PodBouncer interface {
 	BouncePods(
 		ctx context.Context,
 		podBounceDirective *certificatesv1.PodBounceDirective,
-		allPods corev1sets.PodSet,
-		allConfigMaps corev1sets.ConfigMapSet,
-		allSecrets corev1sets.SecretSet,
+		pods corev1sets.PodSet,
+		configMaps corev1sets.ConfigMapSet,
+		secrets corev1sets.SecretSet,
 	) (bool, error)
 }
 
@@ -60,12 +60,13 @@ type podBouncer struct {
 	rootCertMatcher RootCertMatcher
 }
 
+// TODO: Figure out how to bounce pods without any downtime
 func (p *podBouncer) BouncePods(
 	ctx context.Context,
 	podBounceDirective *certificatesv1.PodBounceDirective,
-	allPods corev1sets.PodSet,
-	allConfigMaps corev1sets.ConfigMapSet,
-	allSecrets corev1sets.SecretSet,
+	pods corev1sets.PodSet,
+	configMaps corev1sets.ConfigMapSet,
+	secrets corev1sets.SecretSet,
 ) (bool, error) {
 
 	var errs error
@@ -79,7 +80,7 @@ func (p *podBouncer) BouncePods(
 
 			// if all required replicas are not ready, return true to indicate we should halt processing
 			// of the directive here in order to wait for a future update to the Pods in the input snapshot.
-			if !replacementsReady(allPods, selector, podsBounced.BouncedPods) {
+			if !replacementsReady(pods, selector, podsBounced.BouncedPods) {
 
 				contextutils.LoggerFrom(ctx).Debugf("podBounceDirective %v: waiting for ready pods for selector %v", sets.Key(podBounceDirective), selector)
 
@@ -95,7 +96,7 @@ func (p *podBouncer) BouncePods(
 		}
 
 		if selector.RootCertSync != nil {
-			configMap, err := allConfigMaps.Find(selector.RootCertSync.ConfigMapRef)
+			configMap, err := configMaps.Find(selector.RootCertSync.ConfigMapRef)
 			if err != nil && errors.IsNotFound(err) {
 				// ConfigMap isn't found; let's wait for it to be added by Istio
 				contextutils.LoggerFrom(ctx).Debugf("podBounceDirective %v: waiting for %v configmap creation for selector %v", sets.Key(podBounceDirective), selector.RootCertSync.ConfigMapRef.Name, selector)
@@ -111,7 +112,7 @@ func (p *podBouncer) BouncePods(
 				ctx,
 				[]byte(configMap.Data[selector.RootCertSync.ConfigMapKey]),
 				selector,
-				allSecrets,
+				secrets,
 			)
 			if err != nil {
 				return true, err
@@ -128,7 +129,7 @@ func (p *podBouncer) BouncePods(
 			}
 		}
 
-		podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
+		podsToDelete := pods.List(func(pod *corev1.Pod) bool {
 			return !isPodSelected(pod, selector)
 		})
 

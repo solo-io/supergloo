@@ -173,12 +173,6 @@ func (r *certAgentReconciler) ReconcileIssuedCertificate(
 			return err
 		}
 
-		// If translator does not return bytes or an error, it means the workflow should NOT
-		// continue any further
-		if csrBytes == nil {
-			return nil
-		}
-
 		// TODO: Figure out if we want to reuse the certificate request object
 		certificateRequest := &certificatesv1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{
