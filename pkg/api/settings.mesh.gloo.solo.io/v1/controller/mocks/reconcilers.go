@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockSettingsReconciler is a mock of SettingsReconciler interface
+// MockSettingsReconciler is a mock of SettingsReconciler interface.
 type MockSettingsReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsReconcilerMockRecorder
 }
 
-// MockSettingsReconcilerMockRecorder is the mock recorder for MockSettingsReconciler
+// MockSettingsReconcilerMockRecorder is the mock recorder for MockSettingsReconciler.
 type MockSettingsReconcilerMockRecorder struct {
 	mock *MockSettingsReconciler
 }
 
-// NewMockSettingsReconciler creates a new mock instance
+// NewMockSettingsReconciler creates a new mock instance.
 func NewMockSettingsReconciler(ctrl *gomock.Controller) *MockSettingsReconciler {
 	mock := &MockSettingsReconciler{ctrl: ctrl}
 	mock.recorder = &MockSettingsReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSettingsReconciler) EXPECT() *MockSettingsReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileSettings mocks base method
+// ReconcileSettings mocks base method.
 func (m *MockSettingsReconciler) ReconcileSettings(obj *v1.Settings) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettings", obj)
@@ -47,36 +47,36 @@ func (m *MockSettingsReconciler) ReconcileSettings(obj *v1.Settings) (reconcile.
 	return ret0, ret1
 }
 
-// ReconcileSettings indicates an expected call of ReconcileSettings
+// ReconcileSettings indicates an expected call of ReconcileSettings.
 func (mr *MockSettingsReconcilerMockRecorder) ReconcileSettings(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettings", reflect.TypeOf((*MockSettingsReconciler)(nil).ReconcileSettings), obj)
 }
 
-// MockSettingsDeletionReconciler is a mock of SettingsDeletionReconciler interface
+// MockSettingsDeletionReconciler is a mock of SettingsDeletionReconciler interface.
 type MockSettingsDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsDeletionReconcilerMockRecorder
 }
 
-// MockSettingsDeletionReconcilerMockRecorder is the mock recorder for MockSettingsDeletionReconciler
+// MockSettingsDeletionReconcilerMockRecorder is the mock recorder for MockSettingsDeletionReconciler.
 type MockSettingsDeletionReconcilerMockRecorder struct {
 	mock *MockSettingsDeletionReconciler
 }
 
-// NewMockSettingsDeletionReconciler creates a new mock instance
+// NewMockSettingsDeletionReconciler creates a new mock instance.
 func NewMockSettingsDeletionReconciler(ctrl *gomock.Controller) *MockSettingsDeletionReconciler {
 	mock := &MockSettingsDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockSettingsDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSettingsDeletionReconciler) EXPECT() *MockSettingsDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileSettingsDeletion mocks base method
+// ReconcileSettingsDeletion mocks base method.
 func (m *MockSettingsDeletionReconciler) ReconcileSettingsDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettingsDeletion", req)
@@ -84,36 +84,50 @@ func (m *MockSettingsDeletionReconciler) ReconcileSettingsDeletion(req reconcile
 	return ret0
 }
 
-// ReconcileSettingsDeletion indicates an expected call of ReconcileSettingsDeletion
+// ReconcileSettingsDeletion indicates an expected call of ReconcileSettingsDeletion.
 func (mr *MockSettingsDeletionReconcilerMockRecorder) ReconcileSettingsDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettingsDeletion", reflect.TypeOf((*MockSettingsDeletionReconciler)(nil).ReconcileSettingsDeletion), req)
 }
 
-// MockSettingsFinalizer is a mock of SettingsFinalizer interface
+// MockSettingsFinalizer is a mock of SettingsFinalizer interface.
 type MockSettingsFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsFinalizerMockRecorder
 }
 
-// MockSettingsFinalizerMockRecorder is the mock recorder for MockSettingsFinalizer
+// MockSettingsFinalizerMockRecorder is the mock recorder for MockSettingsFinalizer.
 type MockSettingsFinalizerMockRecorder struct {
 	mock *MockSettingsFinalizer
 }
 
-// NewMockSettingsFinalizer creates a new mock instance
+// NewMockSettingsFinalizer creates a new mock instance.
 func NewMockSettingsFinalizer(ctrl *gomock.Controller) *MockSettingsFinalizer {
 	mock := &MockSettingsFinalizer{ctrl: ctrl}
 	mock.recorder = &MockSettingsFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSettingsFinalizer) EXPECT() *MockSettingsFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileSettings mocks base method
+// FinalizeSettings mocks base method.
+func (m *MockSettingsFinalizer) FinalizeSettings(obj *v1.Settings) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeSettings", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeSettings indicates an expected call of FinalizeSettings.
+func (mr *MockSettingsFinalizerMockRecorder) FinalizeSettings(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeSettings", reflect.TypeOf((*MockSettingsFinalizer)(nil).FinalizeSettings), obj)
+}
+
+// ReconcileSettings mocks base method.
 func (m *MockSettingsFinalizer) ReconcileSettings(obj *v1.Settings) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettings", obj)
@@ -122,13 +136,13 @@ func (m *MockSettingsFinalizer) ReconcileSettings(obj *v1.Settings) (reconcile.R
 	return ret0, ret1
 }
 
-// ReconcileSettings indicates an expected call of ReconcileSettings
+// ReconcileSettings indicates an expected call of ReconcileSettings.
 func (mr *MockSettingsFinalizerMockRecorder) ReconcileSettings(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettings", reflect.TypeOf((*MockSettingsFinalizer)(nil).ReconcileSettings), obj)
 }
 
-// SettingsFinalizerName mocks base method
+// SettingsFinalizerName mocks base method.
 func (m *MockSettingsFinalizer) SettingsFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SettingsFinalizerName")
@@ -136,50 +150,36 @@ func (m *MockSettingsFinalizer) SettingsFinalizerName() string {
 	return ret0
 }
 
-// SettingsFinalizerName indicates an expected call of SettingsFinalizerName
+// SettingsFinalizerName indicates an expected call of SettingsFinalizerName.
 func (mr *MockSettingsFinalizerMockRecorder) SettingsFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SettingsFinalizerName", reflect.TypeOf((*MockSettingsFinalizer)(nil).SettingsFinalizerName))
 }
 
-// FinalizeSettings mocks base method
-func (m *MockSettingsFinalizer) FinalizeSettings(obj *v1.Settings) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeSettings", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FinalizeSettings indicates an expected call of FinalizeSettings
-func (mr *MockSettingsFinalizerMockRecorder) FinalizeSettings(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeSettings", reflect.TypeOf((*MockSettingsFinalizer)(nil).FinalizeSettings), obj)
-}
-
-// MockSettingsReconcileLoop is a mock of SettingsReconcileLoop interface
+// MockSettingsReconcileLoop is a mock of SettingsReconcileLoop interface.
 type MockSettingsReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsReconcileLoopMockRecorder
 }
 
-// MockSettingsReconcileLoopMockRecorder is the mock recorder for MockSettingsReconcileLoop
+// MockSettingsReconcileLoopMockRecorder is the mock recorder for MockSettingsReconcileLoop.
 type MockSettingsReconcileLoopMockRecorder struct {
 	mock *MockSettingsReconcileLoop
 }
 
-// NewMockSettingsReconcileLoop creates a new mock instance
+// NewMockSettingsReconcileLoop creates a new mock instance.
 func NewMockSettingsReconcileLoop(ctrl *gomock.Controller) *MockSettingsReconcileLoop {
 	mock := &MockSettingsReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockSettingsReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSettingsReconcileLoop) EXPECT() *MockSettingsReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunSettingsReconciler mocks base method
+// RunSettingsReconciler mocks base method.
 func (m *MockSettingsReconcileLoop) RunSettingsReconciler(ctx context.Context, rec controller.SettingsReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -191,7 +191,7 @@ func (m *MockSettingsReconcileLoop) RunSettingsReconciler(ctx context.Context, r
 	return ret0
 }
 
-// RunSettingsReconciler indicates an expected call of RunSettingsReconciler
+// RunSettingsReconciler indicates an expected call of RunSettingsReconciler.
 func (mr *MockSettingsReconcileLoopMockRecorder) RunSettingsReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
