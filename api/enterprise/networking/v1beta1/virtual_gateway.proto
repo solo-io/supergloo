@@ -362,7 +362,7 @@ message SelectedGatewayWorkload {
     // the namespace where the gateway workload is running
     string namespace = 2;
     // the cluster where the gateway workload is running
-    string cluster = 3;
+    string clusterName = 3;
 
     // the external URL by which the gateway can be accessed on the given workload, if it exists
     string external_url = 4;

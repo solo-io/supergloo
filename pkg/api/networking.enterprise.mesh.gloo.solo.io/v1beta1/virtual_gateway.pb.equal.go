@@ -250,7 +250,7 @@ func (m *SelectedGatewayWorkload) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
+	if strings.Compare(m.GetClusterName(), target.GetClusterName()) != 0 {
 		return false
 	}
 
