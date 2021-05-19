@@ -2683,7 +2683,7 @@ spec:
             selectedGateways:
               items:
                 properties:
-                  cluster:
+                  clusterName:
                     description: the cluster where the gateway workload is running
                     type: string
                   externalUrl:

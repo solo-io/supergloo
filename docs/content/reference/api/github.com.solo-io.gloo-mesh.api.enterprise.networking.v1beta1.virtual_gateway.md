@@ -111,7 +111,7 @@ a gateway workload (e.g. Deployment) where a virtual gateway will be served
 | ----- | ---- | ----- | ----------- |
 | name | string |  | the name of the gateway workload |
   | namespace | string |  | the namespace where the gateway workload is running |
-  | cluster | string |  | the cluster where the gateway workload is running |
+  | clusterName | string |  | the cluster where the gateway workload is running |
   | externalUrl | string |  | the external URL by which the gateway can be accessed on the given workload, if it exists |
   
 
