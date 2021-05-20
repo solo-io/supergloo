@@ -74,6 +74,11 @@ func (t *translator) Translate(
 	[]*networkingv1alpha3.VirtualService,
 	[]*networkingv1alpha3.DestinationRule,
 ) {
+	// nothing to translate if this Destination is not federated to any external meshes
+	if len(destination.Status.AppliedFederation.GetFederatedToMeshes()) == 0 {
+		return nil, nil, nil
+	}
+
 	// KubeService scenario
 	kubeService := destination.Spec.GetKubeService()
 	appliedFederation := destination.Status.AppliedFederation
