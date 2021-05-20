@@ -144,7 +144,12 @@ func (t *translator) Translate(
 	}
 
 	// translate local resources
-	localServiceEntry, localDestinationRule := t.translateForLocalMesh(destination, destinationMesh, remoteServiceEntryTemplate, remoteDestinationRule)
+	localServiceEntry, localDestinationRule := t.translateForLocalMesh(
+		destination,
+		destinationMesh,
+		remoteServiceEntryTemplate,
+		remoteDestinationRule,
+	)
 	// Append the VirtualMesh as a parent to the outputs
 	metautils.AppendParent(t.ctx, localServiceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, localDestinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
@@ -260,18 +265,22 @@ func (t *translator) translateForLocalMesh(
 		},
 	}
 
-	dr := &networkingv1alpha3.DestinationRule{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        federatedHostname,
-			Namespace:   destinationIstioMesh.Installation.Namespace,
-			ClusterName: destinationIstioMesh.Installation.Cluster,
-			Labels:      metautils.TranslatedObjectLabels(),
-		},
-		Spec: networkingv1alpha3spec.DestinationRule{
-			Host:          federatedHostname,
-			Subsets:       remoteDestinationRule.Spec.Subsets,
-			TrafficPolicy: remoteDestinationRule.Spec.TrafficPolicy,
-		},
+	var dr *networkingv1alpha3.DestinationRule
+	// if the remote DestinationRule is nil, that means no DestinationRule config is required for this federated Destination
+	if remoteDestinationRule != nil {
+		dr = &networkingv1alpha3.DestinationRule{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        federatedHostname,
+				Namespace:   destinationIstioMesh.Installation.Namespace,
+				ClusterName: destinationIstioMesh.Installation.Cluster,
+				Labels:      metautils.TranslatedObjectLabels(),
+			},
+			Spec: networkingv1alpha3spec.DestinationRule{
+				Host:          federatedHostname,
+				Subsets:       remoteDestinationRule.Spec.Subsets,
+				TrafficPolicy: remoteDestinationRule.Spec.TrafficPolicy,
+			},
+		}
 	}
 
 	return se, dr

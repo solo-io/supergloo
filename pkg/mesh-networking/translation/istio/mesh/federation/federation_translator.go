@@ -88,6 +88,8 @@ func (t *translator) Translate(
 	// istio gateway names must be DNS-1123 labels
 	// hyphens are legal, dots are not, so we convert here
 	gwName := BuildGatewayName(virtualMesh)
+
+	// currently, in non flat-network mode, only TLS-secured cross cluster traffic is supported
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        gwName,
