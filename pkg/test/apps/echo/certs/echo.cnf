@@ -1,0 +1,16 @@
+[req]
+default_bits       = 2048
+prompt             = no
+distinguished_name = req_distinguished_name
+req_extensions     = san_reqext
+
+[ req_distinguished_name ]
+countryName         = US
+stateOrProvinceName = MA
+organizationName    = Solo.io
+
+[ san_reqext ]
+subjectAltName      = @alt_names
+
+[alt_names]
+DNS.0   = *.solo.io

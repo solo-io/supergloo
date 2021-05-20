@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backend-route
+spec:
+  hosts:
+  - backend.{{.EchoContext.AppNamespace.Name}}.svc.cluster.local
+  http:
+  - name: "backend-routes"
+    match:
+    - uri:
+        prefix: "/route1"
+    - uri:
+        prefix: "/route2"
+    route:
+    - destination:
+        host: backend.{{.EchoContext.AppNamespace.Name}}.svc.cluster.local
