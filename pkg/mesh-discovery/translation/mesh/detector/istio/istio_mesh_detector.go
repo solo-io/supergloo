@@ -217,13 +217,22 @@ func getIngressGateway(
 		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
 
 	case corev1.ServiceTypeLoadBalancer:
+		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
 		ingress := svc.Status.LoadBalancer.Ingress
 		if len(ingress) == 0 {
-			return nil, eris.Errorf("no loadBalancer.ingress status reported for service")
+			// Check for user-set external IPs
+			externalIPs := svc.Spec.ExternalIPs
+			if len(externalIPs) != 0 {
+				gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
+					Ip: svc.Spec.ExternalIPs[0],
+				}
+				// Continue to set deprecated field until it is removed
+				gatewayInfo.ExternalAddress = svc.Spec.ExternalIPs[0]
+				break
+			} else {
+				return nil, eris.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service as a user if you are using a non-kubernetes load balancer.")
+			}
 		}
-
-		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
-
 		// If the Ip address is set in the ingress, use that
 		if ingress[0].IP != "" {
 			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
@@ -239,7 +248,6 @@ func getIngressGateway(
 			// Continue to set deprecated field until it is removed
 			gatewayInfo.ExternalAddress = ingress[0].Hostname
 		}
-
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
 	}

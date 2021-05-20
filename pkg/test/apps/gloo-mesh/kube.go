@@ -251,7 +251,13 @@ func serviceIngressToAddress(svc *v1.Service) (string, error) {
 	var address string
 	ingress := svc.Status.LoadBalancer.Ingress
 	if len(ingress) == 0 {
-		return "", fmt.Errorf("no loadBalancer.ingress status reported for service")
+		// Check for user-set external IPs
+		externalIPs := svc.Spec.ExternalIPs
+		if len(externalIPs) != 0 {
+			address = svc.Spec.ExternalIPs[0]
+		} else {
+			return "", fmt.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service as a user if you are using a non-kubernetes load balancer.")
+		}
 	}
 
 	// If the Ip address is set in the ingress, use that

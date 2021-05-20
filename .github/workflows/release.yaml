@@ -87,7 +87,7 @@ jobs:
           version: '3.6.1'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Gcloud Login
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@master
         with:
           version: '290.0.1'
           project_id: ${{ secrets.GC_GHA_SA_PROJECT_ID }}

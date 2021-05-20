@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1564
+    description: >
+      Gloo Mesh will now discover an ExternalIP on an Ingress Gateway service
+      if the LoadBalancer status is not set. This value should be populated by
+      the user when using a non-kubernetes LoadBalancer.
