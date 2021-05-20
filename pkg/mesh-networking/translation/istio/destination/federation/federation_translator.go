@@ -98,7 +98,7 @@ func (t *translator) Translate(
 	}
 
 	// translate ServiceEntry template
-	serviceEntryTemplate, err := t.translateServiceEntryTemplate(destination, destinationMesh)
+	remoteServiceEntryTemplate, err := t.translateRemoteServiceEntryTemplate(destination, destinationMesh)
 	if err != nil {
 		contextutils.LoggerFrom(t.ctx).Errorf("Encountered error while translating ServiceEntry template for Destination %v", ezkube.MakeObjectRef(destination))
 		return nil, nil, nil
@@ -108,6 +108,8 @@ func (t *translator) Translate(
 	var virtualServices []*networkingv1alpha3.VirtualService
 	var destinationRules []*networkingv1alpha3.DestinationRule
 
+	// translate remote resources
+	var remoteDestinationRule *networkingv1alpha3.DestinationRule
 	for _, meshRef := range destination.Status.AppliedFederation.GetFederatedToMeshes() {
 		remoteMesh, err := in.Meshes().Find(meshRef)
 		if err != nil {
@@ -120,12 +122,11 @@ func (t *translator) Translate(
 			destinationVirtualMesh,
 			in,
 			remoteMesh,
-			serviceEntryTemplate,
+			remoteServiceEntryTemplate,
 			reporter,
 		)
 
 		// Append the VirtualMesh as a parent to the outputs
-		// TODO(harveyxia) append Destination as parent once new GC is being implemented
 		metautils.AppendParent(t.ctx, serviceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 		metautils.AppendParent(t.ctx, virtualService, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 		metautils.AppendParent(t.ctx, destinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
@@ -133,13 +134,23 @@ func (t *translator) Translate(
 		serviceEntries = append(serviceEntries, serviceEntry)
 		virtualServices = append(virtualServices, virtualService)
 		destinationRules = append(destinationRules, destinationRule)
+
+		remoteDestinationRule = destinationRule
 	}
+
+	// translate local resources
+	localServiceEntry, localDestinationRule := t.translateForLocalMesh(destination, destinationMesh, remoteServiceEntryTemplate, remoteDestinationRule)
+	// Append the VirtualMesh as a parent to the outputs
+	metautils.AppendParent(t.ctx, localServiceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, localDestinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+	serviceEntries = append(serviceEntries, localServiceEntry)
+	destinationRules = append(destinationRules, localDestinationRule)
 
 	return serviceEntries, virtualServices, destinationRules
 }
 
 // translate the ServiceEntry template that must exist on all meshes this Destination is federated to
-func (t *translator) translateServiceEntryTemplate(
+func (t *translator) translateRemoteServiceEntryTemplate(
 	destination *discoveryv1.Destination,
 	destinationMesh *discoveryv1.Mesh,
 ) (*networkingv1alpha3.ServiceEntry, error) {
@@ -204,6 +215,66 @@ func (t *translator) translateServiceEntryTemplate(
 	}, nil
 }
 
+// translate resources local to this Destination's mesh that allow routing to this Destination from clients in remote Meshes
+// A ServiceEntry is needed to map the Destination's global FQDN to the local FQDN.
+func (t *translator) translateForLocalMesh(
+	destination *discoveryv1.Destination,
+	destinationMesh *discoveryv1.Mesh,
+	remoteServiceEntryTemplate *networkingv1alpha3.ServiceEntry,
+	remoteDestinationRule *networkingv1alpha3.DestinationRule,
+) (*networkingv1alpha3.ServiceEntry, *networkingv1alpha3.DestinationRule) {
+	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
+	destinationIstioMesh := destinationMesh.Spec.GetIstio()
+
+	ports := remoteServiceEntryTemplate.Spec.Ports
+	clusterLabels := remoteServiceEntryTemplate.Spec.Endpoints[0].Labels
+
+	se := &networkingv1alpha3.ServiceEntry{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        federatedHostname,
+			Namespace:   destinationIstioMesh.Installation.Namespace,
+			ClusterName: destinationIstioMesh.Installation.Cluster,
+			Labels:      metautils.TranslatedObjectLabels(),
+		},
+		Spec: networkingv1alpha3spec.ServiceEntry{
+			// match the federate hostname
+			Hosts: []string{federatedHostname},
+			// only export to Gateway workload namespace
+			ExportTo:   []string{"."},
+			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
+			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+			Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
+				{
+					// map to the local hostname
+					Address: destination.Status.LocalFqdn,
+					// needed for cross cluster subset routing
+					Labels: clusterLabels,
+				},
+			},
+			Ports: ports,
+		},
+	}
+
+	dr := &networkingv1alpha3.DestinationRule{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        federatedHostname,
+			Namespace:   destinationIstioMesh.Installation.Namespace,
+			ClusterName: destinationIstioMesh.Installation.Cluster,
+			Labels:      metautils.TranslatedObjectLabels(),
+		},
+		Spec: networkingv1alpha3spec.DestinationRule{
+			Host:          federatedHostname,
+			Subsets:       remoteDestinationRule.Spec.Subsets,
+			TrafficPolicy: remoteDestinationRule.Spec.TrafficPolicy,
+		},
+	}
+
+	return se, dr
+}
+
+// translate resources for remote meshes that allow routing to this Destination from clients in those remote Meshes
+// A ServiceEntry is needed to represent the federated Destination on all remote meshes.
+// A VirtualService and DestinationRule are needed to reflect any policies that apply to the federated Destination.
 func (t *translator) translateForRemoteMesh(
 	destination *discoveryv1.Destination,
 	destinationVirtualMesh *networkingv1.VirtualMesh,

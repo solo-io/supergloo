@@ -331,6 +331,7 @@ spec:
       enabled: true
       k8s:
         env:
+          # needed for Gateway TLS `AUTO_PASSTHROUGH` mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
           - name: ISTIO_META_ROUTER_MODE
             value: "sni-dnat"
         service:
@@ -414,6 +415,7 @@ spec:
       enabled: true
       k8s:
         env:
+          # needed for Gateway TLS `AUTO_PASSTHROUGH` mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
           - name: ISTIO_META_ROUTER_MODE
             value: "sni-dnat"
         service:
@@ -475,6 +477,7 @@ spec:
       enabled: true
       k8s:
         env:
+          # needed for Gateway TLS `AUTO_PASSTHROUGH` mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
           - name: ISTIO_META_ROUTER_MODE
             value: "sni-dnat"
         service:

@@ -3,7 +3,6 @@ package federation_test
 import (
 	"context"
 
-	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -114,8 +113,6 @@ var _ = Describe("FederationTranslator", func() {
 
 		Expect(outputs.GetGateways().Length()).To(Equal(1))
 		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
-		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
-		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
 	})
 })
 
@@ -146,74 +143,5 @@ var expectedGateway = &networkingv1alpha3.Gateway{
 			},
 		},
 		Selector: map[string]string{"gatewaylabels": "righthere"},
-	},
-}
-var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "my-virtual-mesh.config-namespace",
-		Namespace:   "namespace",
-		ClusterName: "cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-		},
-	},
-	Spec: networkingv1alpha3spec.EnvoyFilter{
-		WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
-			Labels: map[string]string{"gatewaylabels": "righthere"},
-		},
-		ConfigPatches: []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
-			{
-				ApplyTo: networkingv1alpha3spec.EnvoyFilter_NETWORK_FILTER,
-				Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
-					Context: networkingv1alpha3spec.EnvoyFilter_GATEWAY,
-					ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-						Listener: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch{
-							PortNumber: 9191,
-							FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
-									Name: "envoy.filters.network.sni_cluster",
-								},
-							},
-						},
-					},
-				},
-				Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
-					Operation: 5,
-					Value: &types.Struct{
-						Fields: map[string]*types.Value{
-							"name": {
-								Kind: &types.Value_StringValue{
-									StringValue: "envoy.filters.network.tcp_cluster_rewrite",
-								},
-							},
-							"typed_config": {
-								Kind: &types.Value_StructValue{
-									StructValue: &types.Struct{
-										Fields: map[string]*types.Value{
-											"@type": {
-												Kind: &types.Value_StringValue{
-													StringValue: "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
-												},
-											},
-											"cluster_replacement": {
-												Kind: &types.Value_StringValue{
-													StringValue: ".cluster.local",
-												},
-											},
-											"cluster_pattern": {
-												Kind: &types.Value_StringValue{
-													StringValue: "\\.cluster.soloio$",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
 	},
 }

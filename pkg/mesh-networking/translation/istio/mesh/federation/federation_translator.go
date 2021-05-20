@@ -56,6 +56,7 @@ func NewTranslator(
 }
 
 // translate the appropriate resources for the given Mesh.
+// A Gateway is needed to configure the ingress gateway workload to forward requests originating from external meshes.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
 	mesh *discoveryv1.Mesh,
