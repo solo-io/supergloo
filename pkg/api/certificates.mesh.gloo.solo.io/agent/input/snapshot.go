@@ -7,6 +7,7 @@
 // * CertificateRequests
 // * PodBounceDirectives
 // * Secrets
+// * ServiceAccounts
 // * ConfigMaps
 // * Pods
 // read from a given cluster or set of clusters, across all namespaces.
@@ -72,6 +73,11 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 	schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
+		Kind:    "ServiceAccount",
+	},
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
 		Kind:    "ConfigMap",
 	},
 	schema.GroupVersionKind{
@@ -93,6 +99,8 @@ type Snapshot interface {
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
+	// return the set of input ServiceAccounts
+	ServiceAccounts() v1_sets.ServiceAccountSet
 	// return the set of input ConfigMaps
 	ConfigMaps() v1_sets.ConfigMapSet
 	// return the set of input Pods
@@ -119,6 +127,8 @@ type SyncStatusOptions struct {
 
 	// sync status of Secret objects
 	Secret bool
+	// sync status of ServiceAccount objects
+	ServiceAccount bool
 	// sync status of ConfigMap objects
 	ConfigMap bool
 	// sync status of Pod objects
@@ -132,9 +142,10 @@ type snapshot struct {
 	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
-	secrets    v1_sets.SecretSet
-	configMaps v1_sets.ConfigMapSet
-	pods       v1_sets.PodSet
+	secrets         v1_sets.SecretSet
+	serviceAccounts v1_sets.ServiceAccountSet
+	configMaps      v1_sets.ConfigMapSet
+	pods            v1_sets.PodSet
 }
 
 func NewSnapshot(
@@ -145,6 +156,7 @@ func NewSnapshot(
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
 
 	secrets v1_sets.SecretSet,
+	serviceAccounts v1_sets.ServiceAccountSet,
 	configMaps v1_sets.ConfigMapSet,
 	pods v1_sets.PodSet,
 
@@ -156,6 +168,7 @@ func NewSnapshot(
 		certificateRequests: certificateRequests,
 		podBounceDirectives: podBounceDirectives,
 		secrets:             secrets,
+		serviceAccounts:     serviceAccounts,
 		configMaps:          configMaps,
 		pods:                pods,
 	}
@@ -171,6 +184,7 @@ func NewSnapshotFromGeneric(
 	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secretSet := v1_sets.NewSecretSet()
+	serviceAccountSet := v1_sets.NewServiceAccountSet()
 	configMapSet := v1_sets.NewConfigMapSet()
 	podSet := v1_sets.NewPodSet()
 
@@ -213,6 +227,15 @@ func NewSnapshotFromGeneric(
 		for _, secret := range secrets {
 			secretSet.Insert(secret.(*v1_types.Secret))
 		}
+		serviceAccounts := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ServiceAccount",
+		}]
+
+		for _, serviceAccount := range serviceAccounts {
+			serviceAccountSet.Insert(serviceAccount.(*v1_types.ServiceAccount))
+		}
 		configMaps := snapshot[schema.GroupVersionKind{
 			Group:   "",
 			Version: "v1",
@@ -239,6 +262,7 @@ func NewSnapshotFromGeneric(
 		certificateRequestSet,
 		podBounceDirectiveSet,
 		secretSet,
+		serviceAccountSet,
 		configMapSet,
 		podSet,
 	)
@@ -258,6 +282,10 @@ func (s snapshot) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.P
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
 	return s.secrets
+}
+
+func (s snapshot) ServiceAccounts() v1_sets.ServiceAccountSet {
+	return s.serviceAccounts
 }
 
 func (s snapshot) ConfigMaps() v1_sets.ConfigMapSet {
@@ -346,6 +374,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["certificateRequests"] = s.certificateRequests.List()
 	snapshotMap["podBounceDirectives"] = s.podBounceDirectives.List()
 	snapshotMap["secrets"] = s.secrets.List()
+	snapshotMap["serviceAccounts"] = s.serviceAccounts.List()
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["pods"] = s.pods.List()
 	return json.Marshal(snapshotMap)
@@ -368,6 +397,8 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceBuildOptions
+	// List options for composing a snapshot from ServiceAccounts
+	ServiceAccounts ResourceBuildOptions
 	// List options for composing a snapshot from ConfigMaps
 	ConfigMaps ResourceBuildOptions
 	// List options for composing a snapshot from Pods
@@ -408,6 +439,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
+	serviceAccounts := v1_sets.NewServiceAccountSet()
 	configMaps := v1_sets.NewConfigMapSet()
 	pods := v1_sets.NewPodSet()
 
@@ -427,6 +459,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertServiceAccountsFromCluster(ctx, cluster, serviceAccounts, opts.ServiceAccounts); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -443,6 +478,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		certificateRequests,
 		podBounceDirectives,
 		secrets,
+		serviceAccounts,
 		configMaps,
 		pods,
 	)
@@ -619,6 +655,48 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 
 	return nil
 }
+func (b *multiClusterBuilder) insertServiceAccountsFromCluster(ctx context.Context, cluster string, serviceAccounts v1_sets.ServiceAccountSet, opts ResourceBuildOptions) error {
+	serviceAccountClient, err := v1.NewMulticlusterServiceAccountClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ServiceAccount",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceAccountList, err := serviceAccountClient.ListServiceAccount(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceAccountList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		serviceAccounts.Insert(item)
+	}
+
+	return nil
+}
 func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
 	configMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -736,6 +814,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
+	serviceAccounts := v1_sets.NewServiceAccountSet()
 	configMaps := v1_sets.NewConfigMapSet()
 	pods := v1_sets.NewPodSet()
 
@@ -753,6 +832,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertServiceAccounts(ctx, serviceAccounts, opts.ServiceAccounts); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -767,6 +849,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		certificateRequests,
 		podBounceDirectives,
 		secrets,
+		serviceAccounts,
 		configMaps,
 		pods,
 	)
@@ -907,6 +990,39 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 
 	return nil
 }
+func (b *singleClusterBuilder) insertServiceAccounts(ctx context.Context, serviceAccounts v1_sets.ServiceAccountSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ServiceAccount",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceAccountList, err := v1.NewServiceAccountClient(b.mgr.GetClient()).ListServiceAccount(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceAccountList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		serviceAccounts.Insert(item)
+	}
+
+	return nil
+}
 func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -999,6 +1115,7 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
+	serviceAccounts := v1_sets.NewServiceAccountSet()
 	configMaps := v1_sets.NewConfigMapSet()
 	pods := v1_sets.NewPodSet()
 
@@ -1016,6 +1133,9 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		// insert Secrets
 		case *v1_types.Secret:
 			i.insertSecret(ctx, obj, secrets, opts)
+		// insert ServiceAccounts
+		case *v1_types.ServiceAccount:
+			i.insertServiceAccount(ctx, obj, serviceAccounts, opts)
 		// insert ConfigMaps
 		case *v1_types.ConfigMap:
 			i.insertConfigMap(ctx, obj, configMaps, opts)
@@ -1032,6 +1152,7 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		certificateRequests,
 		podBounceDirectives,
 		secrets,
+		serviceAccounts,
 		configMaps,
 		pods,
 	), nil
@@ -1152,6 +1273,35 @@ func (i *inMemoryBuilder) insertSecret(
 
 	if !filteredOut {
 		secretSet.Insert(secret)
+	}
+}
+func (i *inMemoryBuilder) insertServiceAccount(
+	ctx context.Context,
+	serviceAccount *v1_types.ServiceAccount,
+	serviceAccountSet v1_sets.ServiceAccountSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.ServiceAccounts.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = serviceAccount.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(serviceAccount.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		serviceAccountSet.Insert(serviceAccount)
 	}
 }
 func (i *inMemoryBuilder) insertConfigMap(

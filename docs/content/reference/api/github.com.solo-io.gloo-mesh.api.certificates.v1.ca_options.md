@@ -38,6 +38,7 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | ttlDays | uint32 |  | Number of days before root cert expires. Defaults to 365. |
   | rsaKeySizeBytes | uint32 |  | Size in bytes of the root cert's private key. Defaults to 4096. |
   | orgName | string |  | Root cert organization name. Defaults to "gloo-mesh". |
+  | secretRotationGracePeriodRatio | float |  | The ratio of cert lifetime to refresh a cert. For example, at 0.10 and 1 hour TTL, we would refresh 6 minutes before expiration |
   
 
 
