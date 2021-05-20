@@ -12,44 +12,30 @@ import (
 	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/mesh"
 )
 
-// MockDependencyFactory is a mock of DependencyFactory interface
+// MockDependencyFactory is a mock of DependencyFactory interface.
 type MockDependencyFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockDependencyFactoryMockRecorder
 }
 
-// MockDependencyFactoryMockRecorder is the mock recorder for MockDependencyFactory
+// MockDependencyFactoryMockRecorder is the mock recorder for MockDependencyFactory.
 type MockDependencyFactoryMockRecorder struct {
 	mock *MockDependencyFactory
 }
 
-// NewMockDependencyFactory creates a new mock instance
+// NewMockDependencyFactory creates a new mock instance.
 func NewMockDependencyFactory(ctrl *gomock.Controller) *MockDependencyFactory {
 	mock := &MockDependencyFactory{ctrl: ctrl}
 	mock.recorder = &MockDependencyFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 	return m.recorder
 }
 
-// MakeMeshTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshTranslator() mesh.Translator {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshTranslator")
-	ret0, _ := ret[0].(mesh.Translator)
-	return ret0
-}
-
-// MakeMeshTranslator indicates an expected call of MakeMeshTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator))
-}
-
-// MakeDestinationTranslator mocks base method
+// MakeDestinationTranslator mocks base method.
 func (m *MockDependencyFactory) MakeDestinationTranslator() destination.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeDestinationTranslator")
@@ -57,8 +43,22 @@ func (m *MockDependencyFactory) MakeDestinationTranslator() destination.Translat
 	return ret0
 }
 
-// MakeDestinationTranslator indicates an expected call of MakeDestinationTranslator
+// MakeDestinationTranslator indicates an expected call of MakeDestinationTranslator.
 func (mr *MockDependencyFactoryMockRecorder) MakeDestinationTranslator() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeDestinationTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeDestinationTranslator))
+}
+
+// MakeMeshTranslator mocks base method.
+func (m *MockDependencyFactory) MakeMeshTranslator() mesh.Translator {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MakeMeshTranslator")
+	ret0, _ := ret[0].(mesh.Translator)
+	return ret0
+}
+
+// MakeMeshTranslator indicates an expected call of MakeMeshTranslator.
+func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator))
 }

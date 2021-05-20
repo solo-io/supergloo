@@ -15,30 +15,157 @@ import (
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockRoleSet is a mock of RoleSet interface
+// MockRoleSet is a mock of RoleSet interface.
 type MockRoleSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleSetMockRecorder
 }
 
-// MockRoleSetMockRecorder is the mock recorder for MockRoleSet
+// MockRoleSetMockRecorder is the mock recorder for MockRoleSet.
 type MockRoleSetMockRecorder struct {
 	mock *MockRoleSet
 }
 
-// NewMockRoleSet creates a new mock instance
+// NewMockRoleSet creates a new mock instance.
 func NewMockRoleSet(ctrl *gomock.Controller) *MockRoleSet {
 	mock := &MockRoleSet{ctrl: ctrl}
 	mock.recorder = &MockRoleSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleSet) EXPECT() *MockRoleSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method
+// Delete mocks base method.
+func (m *MockRoleSet) Delete(role ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", role)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRoleSetMockRecorder) Delete(role interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleSet)(nil).Delete), role)
+}
+
+// Delta mocks base method.
+func (m *MockRoleSet) Delta(newSet v1sets.RoleSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta.
+func (mr *MockRoleSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleSet)(nil).Delta), newSet)
+}
+
+// Difference mocks base method.
+func (m *MockRoleSet) Difference(set v1sets.RoleSet) v1sets.RoleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1sets.RoleSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockRoleSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockRoleSet)(nil).Difference), set)
+}
+
+// Equal mocks base method.
+func (m *MockRoleSet) Equal(roleSet v1sets.RoleSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", roleSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockRoleSetMockRecorder) Equal(roleSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockRoleSet)(nil).Equal), roleSet)
+}
+
+// Find mocks base method.
+func (m *MockRoleSet) Find(id ezkube.ResourceId) (*v1.Role, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Role)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockRoleSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleSet)(nil).Find), id)
+}
+
+// Generic mocks base method.
+func (m *MockRoleSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockRoleSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRoleSet)(nil).Generic))
+}
+
+// Has mocks base method.
+func (m *MockRoleSet) Has(role ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", role)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockRoleSetMockRecorder) Has(role interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockRoleSet)(nil).Has), role)
+}
+
+// Insert mocks base method.
+func (m *MockRoleSet) Insert(role ...*v1.Role) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range role {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockRoleSetMockRecorder) Insert(role ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockRoleSet)(nil).Insert), role...)
+}
+
+// Intersection mocks base method.
+func (m *MockRoleSet) Intersection(set v1sets.RoleSet) v1sets.RoleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1sets.RoleSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockRoleSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRoleSet)(nil).Intersection), set)
+}
+
+// Keys mocks base method.
 func (m *MockRoleSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -46,13 +173,27 @@ func (m *MockRoleSet) Keys() sets0.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys
+// Keys indicates an expected call of Keys.
 func (mr *MockRoleSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockRoleSet)(nil).Keys))
 }
 
-// List mocks base method
+// Length mocks base method.
+func (m *MockRoleSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockRoleSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleSet)(nil).Length))
+}
+
+// List mocks base method.
 func (m *MockRoleSet) List(filterResource ...func(*v1.Role) bool) []*v1.Role {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -64,13 +205,41 @@ func (m *MockRoleSet) List(filterResource ...func(*v1.Role) bool) []*v1.Role {
 	return ret0
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockRoleSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleSet)(nil).List), filterResource...)
 }
 
-// UnsortedList mocks base method
+// Map mocks base method.
+func (m *MockRoleSet) Map() map[string]*v1.Role {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1.Role)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockRoleSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockRoleSet)(nil).Map))
+}
+
+// Union mocks base method.
+func (m *MockRoleSet) Union(set v1sets.RoleSet) v1sets.RoleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1sets.RoleSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockRoleSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockRoleSet)(nil).Union), set)
+}
+
+// UnsortedList mocks base method.
 func (m *MockRoleSet) UnsortedList(filterResource ...func(*v1.Role) bool) []*v1.Role {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -82,205 +251,163 @@ func (m *MockRoleSet) UnsortedList(filterResource ...func(*v1.Role) bool) []*v1.
 	return ret0
 }
 
-// UnsortedList indicates an expected call of UnsortedList
+// UnsortedList indicates an expected call of UnsortedList.
 func (mr *MockRoleSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRoleSet)(nil).UnsortedList), filterResource...)
 }
 
-// Map mocks base method
-func (m *MockRoleSet) Map() map[string]*v1.Role {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1.Role)
-	return ret0
-}
-
-// Map indicates an expected call of Map
-func (mr *MockRoleSetMockRecorder) Map() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockRoleSet)(nil).Map))
-}
-
-// Insert mocks base method
-func (m *MockRoleSet) Insert(role ...*v1.Role) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range role {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "Insert", varargs...)
-}
-
-// Insert indicates an expected call of Insert
-func (mr *MockRoleSetMockRecorder) Insert(role ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockRoleSet)(nil).Insert), role...)
-}
-
-// Equal mocks base method
-func (m *MockRoleSet) Equal(roleSet v1sets.RoleSet) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Equal", roleSet)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Equal indicates an expected call of Equal
-func (mr *MockRoleSetMockRecorder) Equal(roleSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockRoleSet)(nil).Equal), roleSet)
-}
-
-// Has mocks base method
-func (m *MockRoleSet) Has(role ezkube.ResourceId) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Has", role)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Has indicates an expected call of Has
-func (mr *MockRoleSetMockRecorder) Has(role interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockRoleSet)(nil).Has), role)
-}
-
-// Delete mocks base method
-func (m *MockRoleSet) Delete(role ezkube.ResourceId) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Delete", role)
-}
-
-// Delete indicates an expected call of Delete
-func (mr *MockRoleSetMockRecorder) Delete(role interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleSet)(nil).Delete), role)
-}
-
-// Union mocks base method
-func (m *MockRoleSet) Union(set v1sets.RoleSet) v1sets.RoleSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Union", set)
-	ret0, _ := ret[0].(v1sets.RoleSet)
-	return ret0
-}
-
-// Union indicates an expected call of Union
-func (mr *MockRoleSetMockRecorder) Union(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockRoleSet)(nil).Union), set)
-}
-
-// Difference mocks base method
-func (m *MockRoleSet) Difference(set v1sets.RoleSet) v1sets.RoleSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Difference", set)
-	ret0, _ := ret[0].(v1sets.RoleSet)
-	return ret0
-}
-
-// Difference indicates an expected call of Difference
-func (mr *MockRoleSetMockRecorder) Difference(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockRoleSet)(nil).Difference), set)
-}
-
-// Intersection mocks base method
-func (m *MockRoleSet) Intersection(set v1sets.RoleSet) v1sets.RoleSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Intersection", set)
-	ret0, _ := ret[0].(v1sets.RoleSet)
-	return ret0
-}
-
-// Intersection indicates an expected call of Intersection
-func (mr *MockRoleSetMockRecorder) Intersection(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRoleSet)(nil).Intersection), set)
-}
-
-// Find mocks base method
-func (m *MockRoleSet) Find(id ezkube.ResourceId) (*v1.Role, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", id)
-	ret0, _ := ret[0].(*v1.Role)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Find indicates an expected call of Find
-func (mr *MockRoleSetMockRecorder) Find(id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleSet)(nil).Find), id)
-}
-
-// Length mocks base method
-func (m *MockRoleSet) Length() int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Length")
-	ret0, _ := ret[0].(int)
-	return ret0
-}
-
-// Length indicates an expected call of Length
-func (mr *MockRoleSetMockRecorder) Length() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleSet)(nil).Length))
-}
-
-// Generic mocks base method
-func (m *MockRoleSet) Generic() sets.ResourceSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic")
-	ret0, _ := ret[0].(sets.ResourceSet)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic
-func (mr *MockRoleSetMockRecorder) Generic() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRoleSet)(nil).Generic))
-}
-
-// Delta mocks base method
-func (m *MockRoleSet) Delta(newSet v1sets.RoleSet) sets.ResourceDelta {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delta", newSet)
-	ret0, _ := ret[0].(sets.ResourceDelta)
-	return ret0
-}
-
-// Delta indicates an expected call of Delta
-func (mr *MockRoleSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleSet)(nil).Delta), newSet)
-}
-
-// MockRoleBindingSet is a mock of RoleBindingSet interface
+// MockRoleBindingSet is a mock of RoleBindingSet interface.
 type MockRoleBindingSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingSetMockRecorder
 }
 
-// MockRoleBindingSetMockRecorder is the mock recorder for MockRoleBindingSet
+// MockRoleBindingSetMockRecorder is the mock recorder for MockRoleBindingSet.
 type MockRoleBindingSetMockRecorder struct {
 	mock *MockRoleBindingSet
 }
 
-// NewMockRoleBindingSet creates a new mock instance
+// NewMockRoleBindingSet creates a new mock instance.
 func NewMockRoleBindingSet(ctrl *gomock.Controller) *MockRoleBindingSet {
 	mock := &MockRoleBindingSet{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleBindingSet) EXPECT() *MockRoleBindingSetMockRecorder {
 	return m.recorder
 }
 
-// Keys mocks base method
+// Delete mocks base method.
+func (m *MockRoleBindingSet) Delete(roleBinding ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", roleBinding)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRoleBindingSetMockRecorder) Delete(roleBinding interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleBindingSet)(nil).Delete), roleBinding)
+}
+
+// Delta mocks base method.
+func (m *MockRoleBindingSet) Delta(newSet v1sets.RoleBindingSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta.
+func (mr *MockRoleBindingSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleBindingSet)(nil).Delta), newSet)
+}
+
+// Difference mocks base method.
+func (m *MockRoleBindingSet) Difference(set v1sets.RoleBindingSet) v1sets.RoleBindingSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1sets.RoleBindingSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockRoleBindingSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockRoleBindingSet)(nil).Difference), set)
+}
+
+// Equal mocks base method.
+func (m *MockRoleBindingSet) Equal(roleBindingSet v1sets.RoleBindingSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", roleBindingSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockRoleBindingSetMockRecorder) Equal(roleBindingSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockRoleBindingSet)(nil).Equal), roleBindingSet)
+}
+
+// Find mocks base method.
+func (m *MockRoleBindingSet) Find(id ezkube.ResourceId) (*v1.RoleBinding, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.RoleBinding)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockRoleBindingSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleBindingSet)(nil).Find), id)
+}
+
+// Generic mocks base method.
+func (m *MockRoleBindingSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockRoleBindingSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRoleBindingSet)(nil).Generic))
+}
+
+// Has mocks base method.
+func (m *MockRoleBindingSet) Has(roleBinding ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", roleBinding)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockRoleBindingSetMockRecorder) Has(roleBinding interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockRoleBindingSet)(nil).Has), roleBinding)
+}
+
+// Insert mocks base method.
+func (m *MockRoleBindingSet) Insert(roleBinding ...*v1.RoleBinding) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range roleBinding {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockRoleBindingSetMockRecorder) Insert(roleBinding ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockRoleBindingSet)(nil).Insert), roleBinding...)
+}
+
+// Intersection mocks base method.
+func (m *MockRoleBindingSet) Intersection(set v1sets.RoleBindingSet) v1sets.RoleBindingSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1sets.RoleBindingSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockRoleBindingSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRoleBindingSet)(nil).Intersection), set)
+}
+
+// Keys mocks base method.
 func (m *MockRoleBindingSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -288,13 +415,27 @@ func (m *MockRoleBindingSet) Keys() sets0.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys
+// Keys indicates an expected call of Keys.
 func (mr *MockRoleBindingSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockRoleBindingSet)(nil).Keys))
 }
 
-// List mocks base method
+// Length mocks base method.
+func (m *MockRoleBindingSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockRoleBindingSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleBindingSet)(nil).Length))
+}
+
+// List mocks base method.
 func (m *MockRoleBindingSet) List(filterResource ...func(*v1.RoleBinding) bool) []*v1.RoleBinding {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -306,13 +447,41 @@ func (m *MockRoleBindingSet) List(filterResource ...func(*v1.RoleBinding) bool) 
 	return ret0
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockRoleBindingSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoleBindingSet)(nil).List), filterResource...)
 }
 
-// UnsortedList mocks base method
+// Map mocks base method.
+func (m *MockRoleBindingSet) Map() map[string]*v1.RoleBinding {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1.RoleBinding)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockRoleBindingSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockRoleBindingSet)(nil).Map))
+}
+
+// Union mocks base method.
+func (m *MockRoleBindingSet) Union(set v1sets.RoleBindingSet) v1sets.RoleBindingSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1sets.RoleBindingSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockRoleBindingSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockRoleBindingSet)(nil).Union), set)
+}
+
+// UnsortedList mocks base method.
 func (m *MockRoleBindingSet) UnsortedList(filterResource ...func(*v1.RoleBinding) bool) []*v1.RoleBinding {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -324,177 +493,8 @@ func (m *MockRoleBindingSet) UnsortedList(filterResource ...func(*v1.RoleBinding
 	return ret0
 }
 
-// UnsortedList indicates an expected call of UnsortedList
+// UnsortedList indicates an expected call of UnsortedList.
 func (mr *MockRoleBindingSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRoleBindingSet)(nil).UnsortedList), filterResource...)
-}
-
-// Map mocks base method
-func (m *MockRoleBindingSet) Map() map[string]*v1.RoleBinding {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1.RoleBinding)
-	return ret0
-}
-
-// Map indicates an expected call of Map
-func (mr *MockRoleBindingSetMockRecorder) Map() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockRoleBindingSet)(nil).Map))
-}
-
-// Insert mocks base method
-func (m *MockRoleBindingSet) Insert(roleBinding ...*v1.RoleBinding) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range roleBinding {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "Insert", varargs...)
-}
-
-// Insert indicates an expected call of Insert
-func (mr *MockRoleBindingSetMockRecorder) Insert(roleBinding ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockRoleBindingSet)(nil).Insert), roleBinding...)
-}
-
-// Equal mocks base method
-func (m *MockRoleBindingSet) Equal(roleBindingSet v1sets.RoleBindingSet) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Equal", roleBindingSet)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Equal indicates an expected call of Equal
-func (mr *MockRoleBindingSetMockRecorder) Equal(roleBindingSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockRoleBindingSet)(nil).Equal), roleBindingSet)
-}
-
-// Has mocks base method
-func (m *MockRoleBindingSet) Has(roleBinding ezkube.ResourceId) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Has", roleBinding)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Has indicates an expected call of Has
-func (mr *MockRoleBindingSetMockRecorder) Has(roleBinding interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockRoleBindingSet)(nil).Has), roleBinding)
-}
-
-// Delete mocks base method
-func (m *MockRoleBindingSet) Delete(roleBinding ezkube.ResourceId) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Delete", roleBinding)
-}
-
-// Delete indicates an expected call of Delete
-func (mr *MockRoleBindingSetMockRecorder) Delete(roleBinding interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleBindingSet)(nil).Delete), roleBinding)
-}
-
-// Union mocks base method
-func (m *MockRoleBindingSet) Union(set v1sets.RoleBindingSet) v1sets.RoleBindingSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Union", set)
-	ret0, _ := ret[0].(v1sets.RoleBindingSet)
-	return ret0
-}
-
-// Union indicates an expected call of Union
-func (mr *MockRoleBindingSetMockRecorder) Union(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockRoleBindingSet)(nil).Union), set)
-}
-
-// Difference mocks base method
-func (m *MockRoleBindingSet) Difference(set v1sets.RoleBindingSet) v1sets.RoleBindingSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Difference", set)
-	ret0, _ := ret[0].(v1sets.RoleBindingSet)
-	return ret0
-}
-
-// Difference indicates an expected call of Difference
-func (mr *MockRoleBindingSetMockRecorder) Difference(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockRoleBindingSet)(nil).Difference), set)
-}
-
-// Intersection mocks base method
-func (m *MockRoleBindingSet) Intersection(set v1sets.RoleBindingSet) v1sets.RoleBindingSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Intersection", set)
-	ret0, _ := ret[0].(v1sets.RoleBindingSet)
-	return ret0
-}
-
-// Intersection indicates an expected call of Intersection
-func (mr *MockRoleBindingSetMockRecorder) Intersection(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRoleBindingSet)(nil).Intersection), set)
-}
-
-// Find mocks base method
-func (m *MockRoleBindingSet) Find(id ezkube.ResourceId) (*v1.RoleBinding, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", id)
-	ret0, _ := ret[0].(*v1.RoleBinding)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Find indicates an expected call of Find
-func (mr *MockRoleBindingSetMockRecorder) Find(id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRoleBindingSet)(nil).Find), id)
-}
-
-// Length mocks base method
-func (m *MockRoleBindingSet) Length() int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Length")
-	ret0, _ := ret[0].(int)
-	return ret0
-}
-
-// Length indicates an expected call of Length
-func (mr *MockRoleBindingSetMockRecorder) Length() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRoleBindingSet)(nil).Length))
-}
-
-// Generic mocks base method
-func (m *MockRoleBindingSet) Generic() sets.ResourceSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic")
-	ret0, _ := ret[0].(sets.ResourceSet)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic
-func (mr *MockRoleBindingSetMockRecorder) Generic() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRoleBindingSet)(nil).Generic))
-}
-
-// Delta mocks base method
-func (m *MockRoleBindingSet) Delta(newSet v1sets.RoleBindingSet) sets.ResourceDelta {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delta", newSet)
-	ret0, _ := ret[0].(sets.ResourceDelta)
-	return ret0
-}
-
-// Delta indicates an expected call of Delta
-func (mr *MockRoleBindingSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRoleBindingSet)(nil).Delta), newSet)
 }

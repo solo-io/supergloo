@@ -1,4 +1,4 @@
-package pod_bouncer
+package podbouncer
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 )
 
-//go:generate mockgen -source ./pod_bouncer.go -destination mocks/pod_bouncer.go
+//go:generate mockgen -source ./podbouncer.go -destination mocks/podbouncer.go
 
 type RootCertMatcher interface {
 	MatchesRootCert(

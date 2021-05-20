@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
+	podbouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -49,7 +49,7 @@ type certAgentReconciler struct {
 	ctx         context.Context
 	builder     input.Builder
 	localClient client.Client
-	podBouncer  pod_bouncer.PodBouncer
+	podBouncer  podbouncer.PodBouncer
 	translator  translation.Translator
 }
 
@@ -57,7 +57,7 @@ func Start(
 	ctx context.Context,
 	builder input.Builder,
 	mgr manager.Manager,
-	podBouncer pod_bouncer.PodBouncer,
+	podBouncer podbouncer.PodBouncer,
 	translator translation.Translator,
 ) error {
 	d := &certAgentReconciler{
@@ -74,7 +74,7 @@ func Start(
 // Exposed for testing
 func NewCertAgentReconciler(
 	ctx context.Context,
-	podBouncer pod_bouncer.PodBouncer,
+	podBouncer podbouncer.PodBouncer,
 	translator translation.Translator,
 ) Reconciler {
 

@@ -13,30 +13,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMulticlusterClientset is a mock of MulticlusterClientset interface
+// MockMulticlusterClientset is a mock of MulticlusterClientset interface.
 type MockMulticlusterClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterClientsetMockRecorder
 }
 
-// MockMulticlusterClientsetMockRecorder is the mock recorder for MockMulticlusterClientset
+// MockMulticlusterClientsetMockRecorder is the mock recorder for MockMulticlusterClientset.
 type MockMulticlusterClientsetMockRecorder struct {
 	mock *MockMulticlusterClientset
 }
 
-// NewMockMulticlusterClientset creates a new mock instance
+// NewMockMulticlusterClientset creates a new mock instance.
 func NewMockMulticlusterClientset(ctrl *gomock.Controller) *MockMulticlusterClientset {
 	mock := &MockMulticlusterClientset{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterClientset) EXPECT() *MockMulticlusterClientsetMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method
+// Cluster mocks base method.
 func (m *MockMulticlusterClientset) Cluster(cluster string) (v1.Clientset, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -45,50 +45,36 @@ func (m *MockMulticlusterClientset) Cluster(cluster string) (v1.Clientset, error
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster
+// Cluster indicates an expected call of Cluster.
 func (mr *MockMulticlusterClientsetMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterClientset)(nil).Cluster), cluster)
 }
 
-// MockClientset is a mock of Clientset interface
+// MockClientset is a mock of Clientset interface.
 type MockClientset struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientsetMockRecorder
 }
 
-// MockClientsetMockRecorder is the mock recorder for MockClientset
+// MockClientsetMockRecorder is the mock recorder for MockClientset.
 type MockClientsetMockRecorder struct {
 	mock *MockClientset
 }
 
-// NewMockClientset creates a new mock instance
+// NewMockClientset creates a new mock instance.
 func NewMockClientset(ctrl *gomock.Controller) *MockClientset {
 	mock := &MockClientset{ctrl: ctrl}
 	mock.recorder = &MockClientsetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// IssuedCertificates mocks base method
-func (m *MockClientset) IssuedCertificates() v1.IssuedCertificateClient {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IssuedCertificates")
-	ret0, _ := ret[0].(v1.IssuedCertificateClient)
-	return ret0
-}
-
-// IssuedCertificates indicates an expected call of IssuedCertificates
-func (mr *MockClientsetMockRecorder) IssuedCertificates() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockClientset)(nil).IssuedCertificates))
-}
-
-// CertificateRequests mocks base method
+// CertificateRequests mocks base method.
 func (m *MockClientset) CertificateRequests() v1.CertificateRequestClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CertificateRequests")
@@ -96,13 +82,27 @@ func (m *MockClientset) CertificateRequests() v1.CertificateRequestClient {
 	return ret0
 }
 
-// CertificateRequests indicates an expected call of CertificateRequests
+// CertificateRequests indicates an expected call of CertificateRequests.
 func (mr *MockClientsetMockRecorder) CertificateRequests() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockClientset)(nil).CertificateRequests))
 }
 
-// PodBounceDirectives mocks base method
+// IssuedCertificates mocks base method.
+func (m *MockClientset) IssuedCertificates() v1.IssuedCertificateClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IssuedCertificates")
+	ret0, _ := ret[0].(v1.IssuedCertificateClient)
+	return ret0
+}
+
+// IssuedCertificates indicates an expected call of IssuedCertificates.
+func (mr *MockClientsetMockRecorder) IssuedCertificates() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockClientset)(nil).IssuedCertificates))
+}
+
+// PodBounceDirectives mocks base method.
 func (m *MockClientset) PodBounceDirectives() v1.PodBounceDirectiveClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PodBounceDirectives")
@@ -110,36 +110,36 @@ func (m *MockClientset) PodBounceDirectives() v1.PodBounceDirectiveClient {
 	return ret0
 }
 
-// PodBounceDirectives indicates an expected call of PodBounceDirectives
+// PodBounceDirectives indicates an expected call of PodBounceDirectives.
 func (mr *MockClientsetMockRecorder) PodBounceDirectives() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectives", reflect.TypeOf((*MockClientset)(nil).PodBounceDirectives))
 }
 
-// MockIssuedCertificateReader is a mock of IssuedCertificateReader interface
+// MockIssuedCertificateReader is a mock of IssuedCertificateReader interface.
 type MockIssuedCertificateReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockIssuedCertificateReaderMockRecorder
 }
 
-// MockIssuedCertificateReaderMockRecorder is the mock recorder for MockIssuedCertificateReader
+// MockIssuedCertificateReaderMockRecorder is the mock recorder for MockIssuedCertificateReader.
 type MockIssuedCertificateReaderMockRecorder struct {
 	mock *MockIssuedCertificateReader
 }
 
-// NewMockIssuedCertificateReader creates a new mock instance
+// NewMockIssuedCertificateReader creates a new mock instance.
 func NewMockIssuedCertificateReader(ctrl *gomock.Controller) *MockIssuedCertificateReader {
 	mock := &MockIssuedCertificateReader{ctrl: ctrl}
 	mock.recorder = &MockIssuedCertificateReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIssuedCertificateReader) EXPECT() *MockIssuedCertificateReaderMockRecorder {
 	return m.recorder
 }
 
-// GetIssuedCertificate mocks base method
+// GetIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateReader) GetIssuedCertificate(ctx context.Context, key client.ObjectKey) (*v1.IssuedCertificate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIssuedCertificate", ctx, key)
@@ -148,13 +148,13 @@ func (m *MockIssuedCertificateReader) GetIssuedCertificate(ctx context.Context, 
 	return ret0, ret1
 }
 
-// GetIssuedCertificate indicates an expected call of GetIssuedCertificate
+// GetIssuedCertificate indicates an expected call of GetIssuedCertificate.
 func (mr *MockIssuedCertificateReaderMockRecorder) GetIssuedCertificate(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateReader)(nil).GetIssuedCertificate), ctx, key)
 }
 
-// ListIssuedCertificate mocks base method
+// ListIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateReader) ListIssuedCertificate(ctx context.Context, opts ...client.ListOption) (*v1.IssuedCertificateList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -167,37 +167,37 @@ func (m *MockIssuedCertificateReader) ListIssuedCertificate(ctx context.Context,
 	return ret0, ret1
 }
 
-// ListIssuedCertificate indicates an expected call of ListIssuedCertificate
+// ListIssuedCertificate indicates an expected call of ListIssuedCertificate.
 func (mr *MockIssuedCertificateReaderMockRecorder) ListIssuedCertificate(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateReader)(nil).ListIssuedCertificate), varargs...)
 }
 
-// MockIssuedCertificateWriter is a mock of IssuedCertificateWriter interface
+// MockIssuedCertificateWriter is a mock of IssuedCertificateWriter interface.
 type MockIssuedCertificateWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockIssuedCertificateWriterMockRecorder
 }
 
-// MockIssuedCertificateWriterMockRecorder is the mock recorder for MockIssuedCertificateWriter
+// MockIssuedCertificateWriterMockRecorder is the mock recorder for MockIssuedCertificateWriter.
 type MockIssuedCertificateWriterMockRecorder struct {
 	mock *MockIssuedCertificateWriter
 }
 
-// NewMockIssuedCertificateWriter creates a new mock instance
+// NewMockIssuedCertificateWriter creates a new mock instance.
 func NewMockIssuedCertificateWriter(ctrl *gomock.Controller) *MockIssuedCertificateWriter {
 	mock := &MockIssuedCertificateWriter{ctrl: ctrl}
 	mock.recorder = &MockIssuedCertificateWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIssuedCertificateWriter) EXPECT() *MockIssuedCertificateWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateIssuedCertificate mocks base method
+// CreateIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateWriter) CreateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -209,71 +209,14 @@ func (m *MockIssuedCertificateWriter) CreateIssuedCertificate(ctx context.Contex
 	return ret0
 }
 
-// CreateIssuedCertificate indicates an expected call of CreateIssuedCertificate
+// CreateIssuedCertificate indicates an expected call of CreateIssuedCertificate.
 func (mr *MockIssuedCertificateWriterMockRecorder) CreateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).CreateIssuedCertificate), varargs...)
 }
 
-// DeleteIssuedCertificate mocks base method
-func (m *MockIssuedCertificateWriter) DeleteIssuedCertificate(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteIssuedCertificate indicates an expected call of DeleteIssuedCertificate
-func (mr *MockIssuedCertificateWriterMockRecorder) DeleteIssuedCertificate(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).DeleteIssuedCertificate), varargs...)
-}
-
-// UpdateIssuedCertificate mocks base method
-func (m *MockIssuedCertificateWriter) UpdateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateIssuedCertificate indicates an expected call of UpdateIssuedCertificate
-func (mr *MockIssuedCertificateWriterMockRecorder) UpdateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).UpdateIssuedCertificate), varargs...)
-}
-
-// PatchIssuedCertificate mocks base method
-func (m *MockIssuedCertificateWriter) PatchIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, patch client.Patch, opts ...client.PatchOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "PatchIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchIssuedCertificate indicates an expected call of PatchIssuedCertificate
-func (mr *MockIssuedCertificateWriterMockRecorder) PatchIssuedCertificate(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).PatchIssuedCertificate), varargs...)
-}
-
-// DeleteAllOfIssuedCertificate mocks base method
+// DeleteAllOfIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateWriter) DeleteAllOfIssuedCertificate(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -285,14 +228,71 @@ func (m *MockIssuedCertificateWriter) DeleteAllOfIssuedCertificate(ctx context.C
 	return ret0
 }
 
-// DeleteAllOfIssuedCertificate indicates an expected call of DeleteAllOfIssuedCertificate
+// DeleteAllOfIssuedCertificate indicates an expected call of DeleteAllOfIssuedCertificate.
 func (mr *MockIssuedCertificateWriterMockRecorder) DeleteAllOfIssuedCertificate(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).DeleteAllOfIssuedCertificate), varargs...)
 }
 
-// UpsertIssuedCertificate mocks base method
+// DeleteIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateWriter) DeleteIssuedCertificate(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteIssuedCertificate indicates an expected call of DeleteIssuedCertificate.
+func (mr *MockIssuedCertificateWriterMockRecorder) DeleteIssuedCertificate(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).DeleteIssuedCertificate), varargs...)
+}
+
+// PatchIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateWriter) PatchIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchIssuedCertificate indicates an expected call of PatchIssuedCertificate.
+func (mr *MockIssuedCertificateWriterMockRecorder) PatchIssuedCertificate(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).PatchIssuedCertificate), varargs...)
+}
+
+// UpdateIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateWriter) UpdateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateIssuedCertificate indicates an expected call of UpdateIssuedCertificate.
+func (mr *MockIssuedCertificateWriterMockRecorder) UpdateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).UpdateIssuedCertificate), varargs...)
+}
+
+// UpsertIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateWriter) UpsertIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, transitionFuncs ...v1.IssuedCertificateTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -304,56 +304,37 @@ func (m *MockIssuedCertificateWriter) UpsertIssuedCertificate(ctx context.Contex
 	return ret0
 }
 
-// UpsertIssuedCertificate indicates an expected call of UpsertIssuedCertificate
+// UpsertIssuedCertificate indicates an expected call of UpsertIssuedCertificate.
 func (mr *MockIssuedCertificateWriterMockRecorder) UpsertIssuedCertificate(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateWriter)(nil).UpsertIssuedCertificate), varargs...)
 }
 
-// MockIssuedCertificateStatusWriter is a mock of IssuedCertificateStatusWriter interface
+// MockIssuedCertificateStatusWriter is a mock of IssuedCertificateStatusWriter interface.
 type MockIssuedCertificateStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockIssuedCertificateStatusWriterMockRecorder
 }
 
-// MockIssuedCertificateStatusWriterMockRecorder is the mock recorder for MockIssuedCertificateStatusWriter
+// MockIssuedCertificateStatusWriterMockRecorder is the mock recorder for MockIssuedCertificateStatusWriter.
 type MockIssuedCertificateStatusWriterMockRecorder struct {
 	mock *MockIssuedCertificateStatusWriter
 }
 
-// NewMockIssuedCertificateStatusWriter creates a new mock instance
+// NewMockIssuedCertificateStatusWriter creates a new mock instance.
 func NewMockIssuedCertificateStatusWriter(ctrl *gomock.Controller) *MockIssuedCertificateStatusWriter {
 	mock := &MockIssuedCertificateStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockIssuedCertificateStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIssuedCertificateStatusWriter) EXPECT() *MockIssuedCertificateStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateIssuedCertificateStatus mocks base method
-func (m *MockIssuedCertificateStatusWriter) UpdateIssuedCertificateStatus(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateIssuedCertificateStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateIssuedCertificateStatus indicates an expected call of UpdateIssuedCertificateStatus
-func (mr *MockIssuedCertificateStatusWriterMockRecorder) UpdateIssuedCertificateStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificateStatus", reflect.TypeOf((*MockIssuedCertificateStatusWriter)(nil).UpdateIssuedCertificateStatus), varargs...)
-}
-
-// PatchIssuedCertificateStatus mocks base method
+// PatchIssuedCertificateStatus mocks base method.
 func (m *MockIssuedCertificateStatusWriter) PatchIssuedCertificateStatus(ctx context.Context, obj *v1.IssuedCertificate, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -365,37 +346,113 @@ func (m *MockIssuedCertificateStatusWriter) PatchIssuedCertificateStatus(ctx con
 	return ret0
 }
 
-// PatchIssuedCertificateStatus indicates an expected call of PatchIssuedCertificateStatus
+// PatchIssuedCertificateStatus indicates an expected call of PatchIssuedCertificateStatus.
 func (mr *MockIssuedCertificateStatusWriterMockRecorder) PatchIssuedCertificateStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchIssuedCertificateStatus", reflect.TypeOf((*MockIssuedCertificateStatusWriter)(nil).PatchIssuedCertificateStatus), varargs...)
 }
 
-// MockIssuedCertificateClient is a mock of IssuedCertificateClient interface
+// UpdateIssuedCertificateStatus mocks base method.
+func (m *MockIssuedCertificateStatusWriter) UpdateIssuedCertificateStatus(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateIssuedCertificateStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateIssuedCertificateStatus indicates an expected call of UpdateIssuedCertificateStatus.
+func (mr *MockIssuedCertificateStatusWriterMockRecorder) UpdateIssuedCertificateStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificateStatus", reflect.TypeOf((*MockIssuedCertificateStatusWriter)(nil).UpdateIssuedCertificateStatus), varargs...)
+}
+
+// MockIssuedCertificateClient is a mock of IssuedCertificateClient interface.
 type MockIssuedCertificateClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockIssuedCertificateClientMockRecorder
 }
 
-// MockIssuedCertificateClientMockRecorder is the mock recorder for MockIssuedCertificateClient
+// MockIssuedCertificateClientMockRecorder is the mock recorder for MockIssuedCertificateClient.
 type MockIssuedCertificateClientMockRecorder struct {
 	mock *MockIssuedCertificateClient
 }
 
-// NewMockIssuedCertificateClient creates a new mock instance
+// NewMockIssuedCertificateClient creates a new mock instance.
 func NewMockIssuedCertificateClient(ctrl *gomock.Controller) *MockIssuedCertificateClient {
 	mock := &MockIssuedCertificateClient{ctrl: ctrl}
 	mock.recorder = &MockIssuedCertificateClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIssuedCertificateClient) EXPECT() *MockIssuedCertificateClientMockRecorder {
 	return m.recorder
 }
 
-// GetIssuedCertificate mocks base method
+// CreateIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateClient) CreateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateIssuedCertificate indicates an expected call of CreateIssuedCertificate.
+func (mr *MockIssuedCertificateClientMockRecorder) CreateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).CreateIssuedCertificate), varargs...)
+}
+
+// DeleteAllOfIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateClient) DeleteAllOfIssuedCertificate(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfIssuedCertificate indicates an expected call of DeleteAllOfIssuedCertificate.
+func (mr *MockIssuedCertificateClientMockRecorder) DeleteAllOfIssuedCertificate(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).DeleteAllOfIssuedCertificate), varargs...)
+}
+
+// DeleteIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateClient) DeleteIssuedCertificate(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteIssuedCertificate indicates an expected call of DeleteIssuedCertificate.
+func (mr *MockIssuedCertificateClientMockRecorder) DeleteIssuedCertificate(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).DeleteIssuedCertificate), varargs...)
+}
+
+// GetIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateClient) GetIssuedCertificate(ctx context.Context, key client.ObjectKey) (*v1.IssuedCertificate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIssuedCertificate", ctx, key)
@@ -404,13 +461,13 @@ func (m *MockIssuedCertificateClient) GetIssuedCertificate(ctx context.Context, 
 	return ret0, ret1
 }
 
-// GetIssuedCertificate indicates an expected call of GetIssuedCertificate
+// GetIssuedCertificate indicates an expected call of GetIssuedCertificate.
 func (mr *MockIssuedCertificateClientMockRecorder) GetIssuedCertificate(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).GetIssuedCertificate), ctx, key)
 }
 
-// ListIssuedCertificate mocks base method
+// ListIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateClient) ListIssuedCertificate(ctx context.Context, opts ...client.ListOption) (*v1.IssuedCertificateList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -423,71 +480,14 @@ func (m *MockIssuedCertificateClient) ListIssuedCertificate(ctx context.Context,
 	return ret0, ret1
 }
 
-// ListIssuedCertificate indicates an expected call of ListIssuedCertificate
+// ListIssuedCertificate indicates an expected call of ListIssuedCertificate.
 func (mr *MockIssuedCertificateClientMockRecorder) ListIssuedCertificate(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).ListIssuedCertificate), varargs...)
 }
 
-// CreateIssuedCertificate mocks base method
-func (m *MockIssuedCertificateClient) CreateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.CreateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CreateIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateIssuedCertificate indicates an expected call of CreateIssuedCertificate
-func (mr *MockIssuedCertificateClientMockRecorder) CreateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).CreateIssuedCertificate), varargs...)
-}
-
-// DeleteIssuedCertificate mocks base method
-func (m *MockIssuedCertificateClient) DeleteIssuedCertificate(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteIssuedCertificate indicates an expected call of DeleteIssuedCertificate
-func (mr *MockIssuedCertificateClientMockRecorder) DeleteIssuedCertificate(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).DeleteIssuedCertificate), varargs...)
-}
-
-// UpdateIssuedCertificate mocks base method
-func (m *MockIssuedCertificateClient) UpdateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateIssuedCertificate indicates an expected call of UpdateIssuedCertificate
-func (mr *MockIssuedCertificateClientMockRecorder) UpdateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).UpdateIssuedCertificate), varargs...)
-}
-
-// PatchIssuedCertificate mocks base method
+// PatchIssuedCertificate mocks base method.
 func (m *MockIssuedCertificateClient) PatchIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -499,71 +499,14 @@ func (m *MockIssuedCertificateClient) PatchIssuedCertificate(ctx context.Context
 	return ret0
 }
 
-// PatchIssuedCertificate indicates an expected call of PatchIssuedCertificate
+// PatchIssuedCertificate indicates an expected call of PatchIssuedCertificate.
 func (mr *MockIssuedCertificateClientMockRecorder) PatchIssuedCertificate(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).PatchIssuedCertificate), varargs...)
 }
 
-// DeleteAllOfIssuedCertificate mocks base method
-func (m *MockIssuedCertificateClient) DeleteAllOfIssuedCertificate(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteAllOfIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteAllOfIssuedCertificate indicates an expected call of DeleteAllOfIssuedCertificate
-func (mr *MockIssuedCertificateClientMockRecorder) DeleteAllOfIssuedCertificate(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).DeleteAllOfIssuedCertificate), varargs...)
-}
-
-// UpsertIssuedCertificate mocks base method
-func (m *MockIssuedCertificateClient) UpsertIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, transitionFuncs ...v1.IssuedCertificateTransitionFunction) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range transitionFuncs {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpsertIssuedCertificate", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpsertIssuedCertificate indicates an expected call of UpsertIssuedCertificate
-func (mr *MockIssuedCertificateClientMockRecorder) UpsertIssuedCertificate(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).UpsertIssuedCertificate), varargs...)
-}
-
-// UpdateIssuedCertificateStatus mocks base method
-func (m *MockIssuedCertificateClient) UpdateIssuedCertificateStatus(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateIssuedCertificateStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateIssuedCertificateStatus indicates an expected call of UpdateIssuedCertificateStatus
-func (mr *MockIssuedCertificateClientMockRecorder) UpdateIssuedCertificateStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificateStatus", reflect.TypeOf((*MockIssuedCertificateClient)(nil).UpdateIssuedCertificateStatus), varargs...)
-}
-
-// PatchIssuedCertificateStatus mocks base method
+// PatchIssuedCertificateStatus mocks base method.
 func (m *MockIssuedCertificateClient) PatchIssuedCertificateStatus(ctx context.Context, obj *v1.IssuedCertificate, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -575,37 +518,94 @@ func (m *MockIssuedCertificateClient) PatchIssuedCertificateStatus(ctx context.C
 	return ret0
 }
 
-// PatchIssuedCertificateStatus indicates an expected call of PatchIssuedCertificateStatus
+// PatchIssuedCertificateStatus indicates an expected call of PatchIssuedCertificateStatus.
 func (mr *MockIssuedCertificateClientMockRecorder) PatchIssuedCertificateStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchIssuedCertificateStatus", reflect.TypeOf((*MockIssuedCertificateClient)(nil).PatchIssuedCertificateStatus), varargs...)
 }
 
-// MockMulticlusterIssuedCertificateClient is a mock of MulticlusterIssuedCertificateClient interface
+// UpdateIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateClient) UpdateIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateIssuedCertificate indicates an expected call of UpdateIssuedCertificate.
+func (mr *MockIssuedCertificateClientMockRecorder) UpdateIssuedCertificate(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).UpdateIssuedCertificate), varargs...)
+}
+
+// UpdateIssuedCertificateStatus mocks base method.
+func (m *MockIssuedCertificateClient) UpdateIssuedCertificateStatus(ctx context.Context, obj *v1.IssuedCertificate, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateIssuedCertificateStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateIssuedCertificateStatus indicates an expected call of UpdateIssuedCertificateStatus.
+func (mr *MockIssuedCertificateClientMockRecorder) UpdateIssuedCertificateStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIssuedCertificateStatus", reflect.TypeOf((*MockIssuedCertificateClient)(nil).UpdateIssuedCertificateStatus), varargs...)
+}
+
+// UpsertIssuedCertificate mocks base method.
+func (m *MockIssuedCertificateClient) UpsertIssuedCertificate(ctx context.Context, obj *v1.IssuedCertificate, transitionFuncs ...v1.IssuedCertificateTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertIssuedCertificate", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertIssuedCertificate indicates an expected call of UpsertIssuedCertificate.
+func (mr *MockIssuedCertificateClientMockRecorder) UpsertIssuedCertificate(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertIssuedCertificate", reflect.TypeOf((*MockIssuedCertificateClient)(nil).UpsertIssuedCertificate), varargs...)
+}
+
+// MockMulticlusterIssuedCertificateClient is a mock of MulticlusterIssuedCertificateClient interface.
 type MockMulticlusterIssuedCertificateClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterIssuedCertificateClientMockRecorder
 }
 
-// MockMulticlusterIssuedCertificateClientMockRecorder is the mock recorder for MockMulticlusterIssuedCertificateClient
+// MockMulticlusterIssuedCertificateClientMockRecorder is the mock recorder for MockMulticlusterIssuedCertificateClient.
 type MockMulticlusterIssuedCertificateClientMockRecorder struct {
 	mock *MockMulticlusterIssuedCertificateClient
 }
 
-// NewMockMulticlusterIssuedCertificateClient creates a new mock instance
+// NewMockMulticlusterIssuedCertificateClient creates a new mock instance.
 func NewMockMulticlusterIssuedCertificateClient(ctrl *gomock.Controller) *MockMulticlusterIssuedCertificateClient {
 	mock := &MockMulticlusterIssuedCertificateClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterIssuedCertificateClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterIssuedCertificateClient) EXPECT() *MockMulticlusterIssuedCertificateClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method
+// Cluster mocks base method.
 func (m *MockMulticlusterIssuedCertificateClient) Cluster(cluster string) (v1.IssuedCertificateClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -614,36 +614,36 @@ func (m *MockMulticlusterIssuedCertificateClient) Cluster(cluster string) (v1.Is
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster
+// Cluster indicates an expected call of Cluster.
 func (mr *MockMulticlusterIssuedCertificateClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterIssuedCertificateClient)(nil).Cluster), cluster)
 }
 
-// MockCertificateRequestReader is a mock of CertificateRequestReader interface
+// MockCertificateRequestReader is a mock of CertificateRequestReader interface.
 type MockCertificateRequestReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateRequestReaderMockRecorder
 }
 
-// MockCertificateRequestReaderMockRecorder is the mock recorder for MockCertificateRequestReader
+// MockCertificateRequestReaderMockRecorder is the mock recorder for MockCertificateRequestReader.
 type MockCertificateRequestReaderMockRecorder struct {
 	mock *MockCertificateRequestReader
 }
 
-// NewMockCertificateRequestReader creates a new mock instance
+// NewMockCertificateRequestReader creates a new mock instance.
 func NewMockCertificateRequestReader(ctrl *gomock.Controller) *MockCertificateRequestReader {
 	mock := &MockCertificateRequestReader{ctrl: ctrl}
 	mock.recorder = &MockCertificateRequestReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCertificateRequestReader) EXPECT() *MockCertificateRequestReaderMockRecorder {
 	return m.recorder
 }
 
-// GetCertificateRequest mocks base method
+// GetCertificateRequest mocks base method.
 func (m *MockCertificateRequestReader) GetCertificateRequest(ctx context.Context, key client.ObjectKey) (*v1.CertificateRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCertificateRequest", ctx, key)
@@ -652,13 +652,13 @@ func (m *MockCertificateRequestReader) GetCertificateRequest(ctx context.Context
 	return ret0, ret1
 }
 
-// GetCertificateRequest indicates an expected call of GetCertificateRequest
+// GetCertificateRequest indicates an expected call of GetCertificateRequest.
 func (mr *MockCertificateRequestReaderMockRecorder) GetCertificateRequest(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCertificateRequest", reflect.TypeOf((*MockCertificateRequestReader)(nil).GetCertificateRequest), ctx, key)
 }
 
-// ListCertificateRequest mocks base method
+// ListCertificateRequest mocks base method.
 func (m *MockCertificateRequestReader) ListCertificateRequest(ctx context.Context, opts ...client.ListOption) (*v1.CertificateRequestList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -671,37 +671,37 @@ func (m *MockCertificateRequestReader) ListCertificateRequest(ctx context.Contex
 	return ret0, ret1
 }
 
-// ListCertificateRequest indicates an expected call of ListCertificateRequest
+// ListCertificateRequest indicates an expected call of ListCertificateRequest.
 func (mr *MockCertificateRequestReaderMockRecorder) ListCertificateRequest(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCertificateRequest", reflect.TypeOf((*MockCertificateRequestReader)(nil).ListCertificateRequest), varargs...)
 }
 
-// MockCertificateRequestWriter is a mock of CertificateRequestWriter interface
+// MockCertificateRequestWriter is a mock of CertificateRequestWriter interface.
 type MockCertificateRequestWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateRequestWriterMockRecorder
 }
 
-// MockCertificateRequestWriterMockRecorder is the mock recorder for MockCertificateRequestWriter
+// MockCertificateRequestWriterMockRecorder is the mock recorder for MockCertificateRequestWriter.
 type MockCertificateRequestWriterMockRecorder struct {
 	mock *MockCertificateRequestWriter
 }
 
-// NewMockCertificateRequestWriter creates a new mock instance
+// NewMockCertificateRequestWriter creates a new mock instance.
 func NewMockCertificateRequestWriter(ctrl *gomock.Controller) *MockCertificateRequestWriter {
 	mock := &MockCertificateRequestWriter{ctrl: ctrl}
 	mock.recorder = &MockCertificateRequestWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCertificateRequestWriter) EXPECT() *MockCertificateRequestWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateCertificateRequest mocks base method
+// CreateCertificateRequest mocks base method.
 func (m *MockCertificateRequestWriter) CreateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -713,71 +713,14 @@ func (m *MockCertificateRequestWriter) CreateCertificateRequest(ctx context.Cont
 	return ret0
 }
 
-// CreateCertificateRequest indicates an expected call of CreateCertificateRequest
+// CreateCertificateRequest indicates an expected call of CreateCertificateRequest.
 func (mr *MockCertificateRequestWriterMockRecorder) CreateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).CreateCertificateRequest), varargs...)
 }
 
-// DeleteCertificateRequest mocks base method
-func (m *MockCertificateRequestWriter) DeleteCertificateRequest(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteCertificateRequest indicates an expected call of DeleteCertificateRequest
-func (mr *MockCertificateRequestWriterMockRecorder) DeleteCertificateRequest(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).DeleteCertificateRequest), varargs...)
-}
-
-// UpdateCertificateRequest mocks base method
-func (m *MockCertificateRequestWriter) UpdateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateCertificateRequest indicates an expected call of UpdateCertificateRequest
-func (mr *MockCertificateRequestWriterMockRecorder) UpdateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).UpdateCertificateRequest), varargs...)
-}
-
-// PatchCertificateRequest mocks base method
-func (m *MockCertificateRequestWriter) PatchCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, patch client.Patch, opts ...client.PatchOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "PatchCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchCertificateRequest indicates an expected call of PatchCertificateRequest
-func (mr *MockCertificateRequestWriterMockRecorder) PatchCertificateRequest(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).PatchCertificateRequest), varargs...)
-}
-
-// DeleteAllOfCertificateRequest mocks base method
+// DeleteAllOfCertificateRequest mocks base method.
 func (m *MockCertificateRequestWriter) DeleteAllOfCertificateRequest(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -789,14 +732,71 @@ func (m *MockCertificateRequestWriter) DeleteAllOfCertificateRequest(ctx context
 	return ret0
 }
 
-// DeleteAllOfCertificateRequest indicates an expected call of DeleteAllOfCertificateRequest
+// DeleteAllOfCertificateRequest indicates an expected call of DeleteAllOfCertificateRequest.
 func (mr *MockCertificateRequestWriterMockRecorder) DeleteAllOfCertificateRequest(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).DeleteAllOfCertificateRequest), varargs...)
 }
 
-// UpsertCertificateRequest mocks base method
+// DeleteCertificateRequest mocks base method.
+func (m *MockCertificateRequestWriter) DeleteCertificateRequest(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCertificateRequest indicates an expected call of DeleteCertificateRequest.
+func (mr *MockCertificateRequestWriterMockRecorder) DeleteCertificateRequest(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).DeleteCertificateRequest), varargs...)
+}
+
+// PatchCertificateRequest mocks base method.
+func (m *MockCertificateRequestWriter) PatchCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCertificateRequest indicates an expected call of PatchCertificateRequest.
+func (mr *MockCertificateRequestWriterMockRecorder) PatchCertificateRequest(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).PatchCertificateRequest), varargs...)
+}
+
+// UpdateCertificateRequest mocks base method.
+func (m *MockCertificateRequestWriter) UpdateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRequest indicates an expected call of UpdateCertificateRequest.
+func (mr *MockCertificateRequestWriterMockRecorder) UpdateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).UpdateCertificateRequest), varargs...)
+}
+
+// UpsertCertificateRequest mocks base method.
 func (m *MockCertificateRequestWriter) UpsertCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, transitionFuncs ...v1.CertificateRequestTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -808,56 +808,37 @@ func (m *MockCertificateRequestWriter) UpsertCertificateRequest(ctx context.Cont
 	return ret0
 }
 
-// UpsertCertificateRequest indicates an expected call of UpsertCertificateRequest
+// UpsertCertificateRequest indicates an expected call of UpsertCertificateRequest.
 func (mr *MockCertificateRequestWriterMockRecorder) UpsertCertificateRequest(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertCertificateRequest", reflect.TypeOf((*MockCertificateRequestWriter)(nil).UpsertCertificateRequest), varargs...)
 }
 
-// MockCertificateRequestStatusWriter is a mock of CertificateRequestStatusWriter interface
+// MockCertificateRequestStatusWriter is a mock of CertificateRequestStatusWriter interface.
 type MockCertificateRequestStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateRequestStatusWriterMockRecorder
 }
 
-// MockCertificateRequestStatusWriterMockRecorder is the mock recorder for MockCertificateRequestStatusWriter
+// MockCertificateRequestStatusWriterMockRecorder is the mock recorder for MockCertificateRequestStatusWriter.
 type MockCertificateRequestStatusWriterMockRecorder struct {
 	mock *MockCertificateRequestStatusWriter
 }
 
-// NewMockCertificateRequestStatusWriter creates a new mock instance
+// NewMockCertificateRequestStatusWriter creates a new mock instance.
 func NewMockCertificateRequestStatusWriter(ctrl *gomock.Controller) *MockCertificateRequestStatusWriter {
 	mock := &MockCertificateRequestStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockCertificateRequestStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCertificateRequestStatusWriter) EXPECT() *MockCertificateRequestStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateCertificateRequestStatus mocks base method
-func (m *MockCertificateRequestStatusWriter) UpdateCertificateRequestStatus(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateCertificateRequestStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateCertificateRequestStatus indicates an expected call of UpdateCertificateRequestStatus
-func (mr *MockCertificateRequestStatusWriterMockRecorder) UpdateCertificateRequestStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequestStatus", reflect.TypeOf((*MockCertificateRequestStatusWriter)(nil).UpdateCertificateRequestStatus), varargs...)
-}
-
-// PatchCertificateRequestStatus mocks base method
+// PatchCertificateRequestStatus mocks base method.
 func (m *MockCertificateRequestStatusWriter) PatchCertificateRequestStatus(ctx context.Context, obj *v1.CertificateRequest, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -869,37 +850,113 @@ func (m *MockCertificateRequestStatusWriter) PatchCertificateRequestStatus(ctx c
 	return ret0
 }
 
-// PatchCertificateRequestStatus indicates an expected call of PatchCertificateRequestStatus
+// PatchCertificateRequestStatus indicates an expected call of PatchCertificateRequestStatus.
 func (mr *MockCertificateRequestStatusWriterMockRecorder) PatchCertificateRequestStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRequestStatus", reflect.TypeOf((*MockCertificateRequestStatusWriter)(nil).PatchCertificateRequestStatus), varargs...)
 }
 
-// MockCertificateRequestClient is a mock of CertificateRequestClient interface
+// UpdateCertificateRequestStatus mocks base method.
+func (m *MockCertificateRequestStatusWriter) UpdateCertificateRequestStatus(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRequestStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRequestStatus indicates an expected call of UpdateCertificateRequestStatus.
+func (mr *MockCertificateRequestStatusWriterMockRecorder) UpdateCertificateRequestStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequestStatus", reflect.TypeOf((*MockCertificateRequestStatusWriter)(nil).UpdateCertificateRequestStatus), varargs...)
+}
+
+// MockCertificateRequestClient is a mock of CertificateRequestClient interface.
 type MockCertificateRequestClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertificateRequestClientMockRecorder
 }
 
-// MockCertificateRequestClientMockRecorder is the mock recorder for MockCertificateRequestClient
+// MockCertificateRequestClientMockRecorder is the mock recorder for MockCertificateRequestClient.
 type MockCertificateRequestClientMockRecorder struct {
 	mock *MockCertificateRequestClient
 }
 
-// NewMockCertificateRequestClient creates a new mock instance
+// NewMockCertificateRequestClient creates a new mock instance.
 func NewMockCertificateRequestClient(ctrl *gomock.Controller) *MockCertificateRequestClient {
 	mock := &MockCertificateRequestClient{ctrl: ctrl}
 	mock.recorder = &MockCertificateRequestClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCertificateRequestClient) EXPECT() *MockCertificateRequestClientMockRecorder {
 	return m.recorder
 }
 
-// GetCertificateRequest mocks base method
+// CreateCertificateRequest mocks base method.
+func (m *MockCertificateRequestClient) CreateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateCertificateRequest indicates an expected call of CreateCertificateRequest.
+func (mr *MockCertificateRequestClientMockRecorder) CreateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).CreateCertificateRequest), varargs...)
+}
+
+// DeleteAllOfCertificateRequest mocks base method.
+func (m *MockCertificateRequestClient) DeleteAllOfCertificateRequest(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfCertificateRequest indicates an expected call of DeleteAllOfCertificateRequest.
+func (mr *MockCertificateRequestClientMockRecorder) DeleteAllOfCertificateRequest(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).DeleteAllOfCertificateRequest), varargs...)
+}
+
+// DeleteCertificateRequest mocks base method.
+func (m *MockCertificateRequestClient) DeleteCertificateRequest(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCertificateRequest indicates an expected call of DeleteCertificateRequest.
+func (mr *MockCertificateRequestClientMockRecorder) DeleteCertificateRequest(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).DeleteCertificateRequest), varargs...)
+}
+
+// GetCertificateRequest mocks base method.
 func (m *MockCertificateRequestClient) GetCertificateRequest(ctx context.Context, key client.ObjectKey) (*v1.CertificateRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCertificateRequest", ctx, key)
@@ -908,13 +965,13 @@ func (m *MockCertificateRequestClient) GetCertificateRequest(ctx context.Context
 	return ret0, ret1
 }
 
-// GetCertificateRequest indicates an expected call of GetCertificateRequest
+// GetCertificateRequest indicates an expected call of GetCertificateRequest.
 func (mr *MockCertificateRequestClientMockRecorder) GetCertificateRequest(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).GetCertificateRequest), ctx, key)
 }
 
-// ListCertificateRequest mocks base method
+// ListCertificateRequest mocks base method.
 func (m *MockCertificateRequestClient) ListCertificateRequest(ctx context.Context, opts ...client.ListOption) (*v1.CertificateRequestList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -927,71 +984,14 @@ func (m *MockCertificateRequestClient) ListCertificateRequest(ctx context.Contex
 	return ret0, ret1
 }
 
-// ListCertificateRequest indicates an expected call of ListCertificateRequest
+// ListCertificateRequest indicates an expected call of ListCertificateRequest.
 func (mr *MockCertificateRequestClientMockRecorder) ListCertificateRequest(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).ListCertificateRequest), varargs...)
 }
 
-// CreateCertificateRequest mocks base method
-func (m *MockCertificateRequestClient) CreateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.CreateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CreateCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateCertificateRequest indicates an expected call of CreateCertificateRequest
-func (mr *MockCertificateRequestClientMockRecorder) CreateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).CreateCertificateRequest), varargs...)
-}
-
-// DeleteCertificateRequest mocks base method
-func (m *MockCertificateRequestClient) DeleteCertificateRequest(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteCertificateRequest indicates an expected call of DeleteCertificateRequest
-func (mr *MockCertificateRequestClientMockRecorder) DeleteCertificateRequest(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).DeleteCertificateRequest), varargs...)
-}
-
-// UpdateCertificateRequest mocks base method
-func (m *MockCertificateRequestClient) UpdateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateCertificateRequest indicates an expected call of UpdateCertificateRequest
-func (mr *MockCertificateRequestClientMockRecorder) UpdateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).UpdateCertificateRequest), varargs...)
-}
-
-// PatchCertificateRequest mocks base method
+// PatchCertificateRequest mocks base method.
 func (m *MockCertificateRequestClient) PatchCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1003,71 +1003,14 @@ func (m *MockCertificateRequestClient) PatchCertificateRequest(ctx context.Conte
 	return ret0
 }
 
-// PatchCertificateRequest indicates an expected call of PatchCertificateRequest
+// PatchCertificateRequest indicates an expected call of PatchCertificateRequest.
 func (mr *MockCertificateRequestClientMockRecorder) PatchCertificateRequest(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).PatchCertificateRequest), varargs...)
 }
 
-// DeleteAllOfCertificateRequest mocks base method
-func (m *MockCertificateRequestClient) DeleteAllOfCertificateRequest(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteAllOfCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteAllOfCertificateRequest indicates an expected call of DeleteAllOfCertificateRequest
-func (mr *MockCertificateRequestClientMockRecorder) DeleteAllOfCertificateRequest(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).DeleteAllOfCertificateRequest), varargs...)
-}
-
-// UpsertCertificateRequest mocks base method
-func (m *MockCertificateRequestClient) UpsertCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, transitionFuncs ...v1.CertificateRequestTransitionFunction) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range transitionFuncs {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpsertCertificateRequest", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpsertCertificateRequest indicates an expected call of UpsertCertificateRequest
-func (mr *MockCertificateRequestClientMockRecorder) UpsertCertificateRequest(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).UpsertCertificateRequest), varargs...)
-}
-
-// UpdateCertificateRequestStatus mocks base method
-func (m *MockCertificateRequestClient) UpdateCertificateRequestStatus(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateCertificateRequestStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateCertificateRequestStatus indicates an expected call of UpdateCertificateRequestStatus
-func (mr *MockCertificateRequestClientMockRecorder) UpdateCertificateRequestStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequestStatus", reflect.TypeOf((*MockCertificateRequestClient)(nil).UpdateCertificateRequestStatus), varargs...)
-}
-
-// PatchCertificateRequestStatus mocks base method
+// PatchCertificateRequestStatus mocks base method.
 func (m *MockCertificateRequestClient) PatchCertificateRequestStatus(ctx context.Context, obj *v1.CertificateRequest, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1079,37 +1022,94 @@ func (m *MockCertificateRequestClient) PatchCertificateRequestStatus(ctx context
 	return ret0
 }
 
-// PatchCertificateRequestStatus indicates an expected call of PatchCertificateRequestStatus
+// PatchCertificateRequestStatus indicates an expected call of PatchCertificateRequestStatus.
 func (mr *MockCertificateRequestClientMockRecorder) PatchCertificateRequestStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRequestStatus", reflect.TypeOf((*MockCertificateRequestClient)(nil).PatchCertificateRequestStatus), varargs...)
 }
 
-// MockMulticlusterCertificateRequestClient is a mock of MulticlusterCertificateRequestClient interface
+// UpdateCertificateRequest mocks base method.
+func (m *MockCertificateRequestClient) UpdateCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRequest indicates an expected call of UpdateCertificateRequest.
+func (mr *MockCertificateRequestClientMockRecorder) UpdateCertificateRequest(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).UpdateCertificateRequest), varargs...)
+}
+
+// UpdateCertificateRequestStatus mocks base method.
+func (m *MockCertificateRequestClient) UpdateCertificateRequestStatus(ctx context.Context, obj *v1.CertificateRequest, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRequestStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRequestStatus indicates an expected call of UpdateCertificateRequestStatus.
+func (mr *MockCertificateRequestClientMockRecorder) UpdateCertificateRequestStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRequestStatus", reflect.TypeOf((*MockCertificateRequestClient)(nil).UpdateCertificateRequestStatus), varargs...)
+}
+
+// UpsertCertificateRequest mocks base method.
+func (m *MockCertificateRequestClient) UpsertCertificateRequest(ctx context.Context, obj *v1.CertificateRequest, transitionFuncs ...v1.CertificateRequestTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertCertificateRequest", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertCertificateRequest indicates an expected call of UpsertCertificateRequest.
+func (mr *MockCertificateRequestClientMockRecorder) UpsertCertificateRequest(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertCertificateRequest", reflect.TypeOf((*MockCertificateRequestClient)(nil).UpsertCertificateRequest), varargs...)
+}
+
+// MockMulticlusterCertificateRequestClient is a mock of MulticlusterCertificateRequestClient interface.
 type MockMulticlusterCertificateRequestClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterCertificateRequestClientMockRecorder
 }
 
-// MockMulticlusterCertificateRequestClientMockRecorder is the mock recorder for MockMulticlusterCertificateRequestClient
+// MockMulticlusterCertificateRequestClientMockRecorder is the mock recorder for MockMulticlusterCertificateRequestClient.
 type MockMulticlusterCertificateRequestClientMockRecorder struct {
 	mock *MockMulticlusterCertificateRequestClient
 }
 
-// NewMockMulticlusterCertificateRequestClient creates a new mock instance
+// NewMockMulticlusterCertificateRequestClient creates a new mock instance.
 func NewMockMulticlusterCertificateRequestClient(ctrl *gomock.Controller) *MockMulticlusterCertificateRequestClient {
 	mock := &MockMulticlusterCertificateRequestClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterCertificateRequestClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterCertificateRequestClient) EXPECT() *MockMulticlusterCertificateRequestClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method
+// Cluster mocks base method.
 func (m *MockMulticlusterCertificateRequestClient) Cluster(cluster string) (v1.CertificateRequestClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -1118,36 +1118,36 @@ func (m *MockMulticlusterCertificateRequestClient) Cluster(cluster string) (v1.C
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster
+// Cluster indicates an expected call of Cluster.
 func (mr *MockMulticlusterCertificateRequestClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterCertificateRequestClient)(nil).Cluster), cluster)
 }
 
-// MockPodBounceDirectiveReader is a mock of PodBounceDirectiveReader interface
+// MockPodBounceDirectiveReader is a mock of PodBounceDirectiveReader interface.
 type MockPodBounceDirectiveReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodBounceDirectiveReaderMockRecorder
 }
 
-// MockPodBounceDirectiveReaderMockRecorder is the mock recorder for MockPodBounceDirectiveReader
+// MockPodBounceDirectiveReaderMockRecorder is the mock recorder for MockPodBounceDirectiveReader.
 type MockPodBounceDirectiveReaderMockRecorder struct {
 	mock *MockPodBounceDirectiveReader
 }
 
-// NewMockPodBounceDirectiveReader creates a new mock instance
+// NewMockPodBounceDirectiveReader creates a new mock instance.
 func NewMockPodBounceDirectiveReader(ctrl *gomock.Controller) *MockPodBounceDirectiveReader {
 	mock := &MockPodBounceDirectiveReader{ctrl: ctrl}
 	mock.recorder = &MockPodBounceDirectiveReaderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodBounceDirectiveReader) EXPECT() *MockPodBounceDirectiveReaderMockRecorder {
 	return m.recorder
 }
 
-// GetPodBounceDirective mocks base method
+// GetPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveReader) GetPodBounceDirective(ctx context.Context, key client.ObjectKey) (*v1.PodBounceDirective, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPodBounceDirective", ctx, key)
@@ -1156,13 +1156,13 @@ func (m *MockPodBounceDirectiveReader) GetPodBounceDirective(ctx context.Context
 	return ret0, ret1
 }
 
-// GetPodBounceDirective indicates an expected call of GetPodBounceDirective
+// GetPodBounceDirective indicates an expected call of GetPodBounceDirective.
 func (mr *MockPodBounceDirectiveReaderMockRecorder) GetPodBounceDirective(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveReader)(nil).GetPodBounceDirective), ctx, key)
 }
 
-// ListPodBounceDirective mocks base method
+// ListPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveReader) ListPodBounceDirective(ctx context.Context, opts ...client.ListOption) (*v1.PodBounceDirectiveList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1175,37 +1175,37 @@ func (m *MockPodBounceDirectiveReader) ListPodBounceDirective(ctx context.Contex
 	return ret0, ret1
 }
 
-// ListPodBounceDirective indicates an expected call of ListPodBounceDirective
+// ListPodBounceDirective indicates an expected call of ListPodBounceDirective.
 func (mr *MockPodBounceDirectiveReaderMockRecorder) ListPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveReader)(nil).ListPodBounceDirective), varargs...)
 }
 
-// MockPodBounceDirectiveWriter is a mock of PodBounceDirectiveWriter interface
+// MockPodBounceDirectiveWriter is a mock of PodBounceDirectiveWriter interface.
 type MockPodBounceDirectiveWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodBounceDirectiveWriterMockRecorder
 }
 
-// MockPodBounceDirectiveWriterMockRecorder is the mock recorder for MockPodBounceDirectiveWriter
+// MockPodBounceDirectiveWriterMockRecorder is the mock recorder for MockPodBounceDirectiveWriter.
 type MockPodBounceDirectiveWriterMockRecorder struct {
 	mock *MockPodBounceDirectiveWriter
 }
 
-// NewMockPodBounceDirectiveWriter creates a new mock instance
+// NewMockPodBounceDirectiveWriter creates a new mock instance.
 func NewMockPodBounceDirectiveWriter(ctrl *gomock.Controller) *MockPodBounceDirectiveWriter {
 	mock := &MockPodBounceDirectiveWriter{ctrl: ctrl}
 	mock.recorder = &MockPodBounceDirectiveWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodBounceDirectiveWriter) EXPECT() *MockPodBounceDirectiveWriterMockRecorder {
 	return m.recorder
 }
 
-// CreatePodBounceDirective mocks base method
+// CreatePodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveWriter) CreatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -1217,71 +1217,14 @@ func (m *MockPodBounceDirectiveWriter) CreatePodBounceDirective(ctx context.Cont
 	return ret0
 }
 
-// CreatePodBounceDirective indicates an expected call of CreatePodBounceDirective
+// CreatePodBounceDirective indicates an expected call of CreatePodBounceDirective.
 func (mr *MockPodBounceDirectiveWriterMockRecorder) CreatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).CreatePodBounceDirective), varargs...)
 }
 
-// DeletePodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveWriter) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeletePodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePodBounceDirective indicates an expected call of DeletePodBounceDirective
-func (mr *MockPodBounceDirectiveWriterMockRecorder) DeletePodBounceDirective(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).DeletePodBounceDirective), varargs...)
-}
-
-// UpdatePodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveWriter) UpdatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdatePodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdatePodBounceDirective indicates an expected call of UpdatePodBounceDirective
-func (mr *MockPodBounceDirectiveWriterMockRecorder) UpdatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).UpdatePodBounceDirective), varargs...)
-}
-
-// PatchPodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveWriter) PatchPodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj, patch}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "PatchPodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PatchPodBounceDirective indicates an expected call of PatchPodBounceDirective
-func (mr *MockPodBounceDirectiveWriterMockRecorder) PatchPodBounceDirective(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).PatchPodBounceDirective), varargs...)
-}
-
-// DeleteAllOfPodBounceDirective mocks base method
+// DeleteAllOfPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveWriter) DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1293,14 +1236,71 @@ func (m *MockPodBounceDirectiveWriter) DeleteAllOfPodBounceDirective(ctx context
 	return ret0
 }
 
-// DeleteAllOfPodBounceDirective indicates an expected call of DeleteAllOfPodBounceDirective
+// DeleteAllOfPodBounceDirective indicates an expected call of DeleteAllOfPodBounceDirective.
 func (mr *MockPodBounceDirectiveWriterMockRecorder) DeleteAllOfPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).DeleteAllOfPodBounceDirective), varargs...)
 }
 
-// UpsertPodBounceDirective mocks base method
+// DeletePodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveWriter) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeletePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePodBounceDirective indicates an expected call of DeletePodBounceDirective.
+func (mr *MockPodBounceDirectiveWriterMockRecorder) DeletePodBounceDirective(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).DeletePodBounceDirective), varargs...)
+}
+
+// PatchPodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveWriter) PatchPodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodBounceDirective indicates an expected call of PatchPodBounceDirective.
+func (mr *MockPodBounceDirectiveWriterMockRecorder) PatchPodBounceDirective(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).PatchPodBounceDirective), varargs...)
+}
+
+// UpdatePodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveWriter) UpdatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirective indicates an expected call of UpdatePodBounceDirective.
+func (mr *MockPodBounceDirectiveWriterMockRecorder) UpdatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).UpdatePodBounceDirective), varargs...)
+}
+
+// UpsertPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveWriter) UpsertPodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, transitionFuncs ...v1.PodBounceDirectiveTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
@@ -1312,56 +1312,37 @@ func (m *MockPodBounceDirectiveWriter) UpsertPodBounceDirective(ctx context.Cont
 	return ret0
 }
 
-// UpsertPodBounceDirective indicates an expected call of UpsertPodBounceDirective
+// UpsertPodBounceDirective indicates an expected call of UpsertPodBounceDirective.
 func (mr *MockPodBounceDirectiveWriterMockRecorder) UpsertPodBounceDirective(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).UpsertPodBounceDirective), varargs...)
 }
 
-// MockPodBounceDirectiveStatusWriter is a mock of PodBounceDirectiveStatusWriter interface
+// MockPodBounceDirectiveStatusWriter is a mock of PodBounceDirectiveStatusWriter interface.
 type MockPodBounceDirectiveStatusWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodBounceDirectiveStatusWriterMockRecorder
 }
 
-// MockPodBounceDirectiveStatusWriterMockRecorder is the mock recorder for MockPodBounceDirectiveStatusWriter
+// MockPodBounceDirectiveStatusWriterMockRecorder is the mock recorder for MockPodBounceDirectiveStatusWriter.
 type MockPodBounceDirectiveStatusWriterMockRecorder struct {
 	mock *MockPodBounceDirectiveStatusWriter
 }
 
-// NewMockPodBounceDirectiveStatusWriter creates a new mock instance
+// NewMockPodBounceDirectiveStatusWriter creates a new mock instance.
 func NewMockPodBounceDirectiveStatusWriter(ctrl *gomock.Controller) *MockPodBounceDirectiveStatusWriter {
 	mock := &MockPodBounceDirectiveStatusWriter{ctrl: ctrl}
 	mock.recorder = &MockPodBounceDirectiveStatusWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodBounceDirectiveStatusWriter) EXPECT() *MockPodBounceDirectiveStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdatePodBounceDirectiveStatus mocks base method
-func (m *MockPodBounceDirectiveStatusWriter) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdatePodBounceDirectiveStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdatePodBounceDirectiveStatus indicates an expected call of UpdatePodBounceDirectiveStatus
-func (mr *MockPodBounceDirectiveStatusWriterMockRecorder) UpdatePodBounceDirectiveStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveStatusWriter)(nil).UpdatePodBounceDirectiveStatus), varargs...)
-}
-
-// PatchPodBounceDirectiveStatus mocks base method
+// PatchPodBounceDirectiveStatus mocks base method.
 func (m *MockPodBounceDirectiveStatusWriter) PatchPodBounceDirectiveStatus(ctx context.Context, obj *v1.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1373,37 +1354,113 @@ func (m *MockPodBounceDirectiveStatusWriter) PatchPodBounceDirectiveStatus(ctx c
 	return ret0
 }
 
-// PatchPodBounceDirectiveStatus indicates an expected call of PatchPodBounceDirectiveStatus
+// PatchPodBounceDirectiveStatus indicates an expected call of PatchPodBounceDirectiveStatus.
 func (mr *MockPodBounceDirectiveStatusWriterMockRecorder) PatchPodBounceDirectiveStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveStatusWriter)(nil).PatchPodBounceDirectiveStatus), varargs...)
 }
 
-// MockPodBounceDirectiveClient is a mock of PodBounceDirectiveClient interface
+// UpdatePodBounceDirectiveStatus mocks base method.
+func (m *MockPodBounceDirectiveStatusWriter) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirectiveStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirectiveStatus indicates an expected call of UpdatePodBounceDirectiveStatus.
+func (mr *MockPodBounceDirectiveStatusWriterMockRecorder) UpdatePodBounceDirectiveStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveStatusWriter)(nil).UpdatePodBounceDirectiveStatus), varargs...)
+}
+
+// MockPodBounceDirectiveClient is a mock of PodBounceDirectiveClient interface.
 type MockPodBounceDirectiveClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodBounceDirectiveClientMockRecorder
 }
 
-// MockPodBounceDirectiveClientMockRecorder is the mock recorder for MockPodBounceDirectiveClient
+// MockPodBounceDirectiveClientMockRecorder is the mock recorder for MockPodBounceDirectiveClient.
 type MockPodBounceDirectiveClientMockRecorder struct {
 	mock *MockPodBounceDirectiveClient
 }
 
-// NewMockPodBounceDirectiveClient creates a new mock instance
+// NewMockPodBounceDirectiveClient creates a new mock instance.
 func NewMockPodBounceDirectiveClient(ctrl *gomock.Controller) *MockPodBounceDirectiveClient {
 	mock := &MockPodBounceDirectiveClient{ctrl: ctrl}
 	mock.recorder = &MockPodBounceDirectiveClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodBounceDirectiveClient) EXPECT() *MockPodBounceDirectiveClientMockRecorder {
 	return m.recorder
 }
 
-// GetPodBounceDirective mocks base method
+// CreatePodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveClient) CreatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreatePodBounceDirective indicates an expected call of CreatePodBounceDirective.
+func (mr *MockPodBounceDirectiveClientMockRecorder) CreatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).CreatePodBounceDirective), varargs...)
+}
+
+// DeleteAllOfPodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveClient) DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfPodBounceDirective indicates an expected call of DeleteAllOfPodBounceDirective.
+func (mr *MockPodBounceDirectiveClientMockRecorder) DeleteAllOfPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).DeleteAllOfPodBounceDirective), varargs...)
+}
+
+// DeletePodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveClient) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeletePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePodBounceDirective indicates an expected call of DeletePodBounceDirective.
+func (mr *MockPodBounceDirectiveClientMockRecorder) DeletePodBounceDirective(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).DeletePodBounceDirective), varargs...)
+}
+
+// GetPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveClient) GetPodBounceDirective(ctx context.Context, key client.ObjectKey) (*v1.PodBounceDirective, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPodBounceDirective", ctx, key)
@@ -1412,13 +1469,13 @@ func (m *MockPodBounceDirectiveClient) GetPodBounceDirective(ctx context.Context
 	return ret0, ret1
 }
 
-// GetPodBounceDirective indicates an expected call of GetPodBounceDirective
+// GetPodBounceDirective indicates an expected call of GetPodBounceDirective.
 func (mr *MockPodBounceDirectiveClientMockRecorder) GetPodBounceDirective(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).GetPodBounceDirective), ctx, key)
 }
 
-// ListPodBounceDirective mocks base method
+// ListPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveClient) ListPodBounceDirective(ctx context.Context, opts ...client.ListOption) (*v1.PodBounceDirectiveList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -1431,71 +1488,14 @@ func (m *MockPodBounceDirectiveClient) ListPodBounceDirective(ctx context.Contex
 	return ret0, ret1
 }
 
-// ListPodBounceDirective indicates an expected call of ListPodBounceDirective
+// ListPodBounceDirective indicates an expected call of ListPodBounceDirective.
 func (mr *MockPodBounceDirectiveClientMockRecorder) ListPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).ListPodBounceDirective), varargs...)
 }
 
-// CreatePodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveClient) CreatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.CreateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CreatePodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreatePodBounceDirective indicates an expected call of CreatePodBounceDirective
-func (mr *MockPodBounceDirectiveClientMockRecorder) CreatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).CreatePodBounceDirective), varargs...)
-}
-
-// DeletePodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveClient) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, key}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeletePodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePodBounceDirective indicates an expected call of DeletePodBounceDirective
-func (mr *MockPodBounceDirectiveClientMockRecorder) DeletePodBounceDirective(ctx, key interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).DeletePodBounceDirective), varargs...)
-}
-
-// UpdatePodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveClient) UpdatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdatePodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdatePodBounceDirective indicates an expected call of UpdatePodBounceDirective
-func (mr *MockPodBounceDirectiveClientMockRecorder) UpdatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpdatePodBounceDirective), varargs...)
-}
-
-// PatchPodBounceDirective mocks base method
+// PatchPodBounceDirective mocks base method.
 func (m *MockPodBounceDirectiveClient) PatchPodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1507,71 +1507,14 @@ func (m *MockPodBounceDirectiveClient) PatchPodBounceDirective(ctx context.Conte
 	return ret0
 }
 
-// PatchPodBounceDirective indicates an expected call of PatchPodBounceDirective
+// PatchPodBounceDirective indicates an expected call of PatchPodBounceDirective.
 func (mr *MockPodBounceDirectiveClientMockRecorder) PatchPodBounceDirective(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).PatchPodBounceDirective), varargs...)
 }
 
-// DeleteAllOfPodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveClient) DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteAllOfPodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteAllOfPodBounceDirective indicates an expected call of DeleteAllOfPodBounceDirective
-func (mr *MockPodBounceDirectiveClientMockRecorder) DeleteAllOfPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).DeleteAllOfPodBounceDirective), varargs...)
-}
-
-// UpsertPodBounceDirective mocks base method
-func (m *MockPodBounceDirectiveClient) UpsertPodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, transitionFuncs ...v1.PodBounceDirectiveTransitionFunction) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range transitionFuncs {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpsertPodBounceDirective", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpsertPodBounceDirective indicates an expected call of UpsertPodBounceDirective
-func (mr *MockPodBounceDirectiveClientMockRecorder) UpsertPodBounceDirective(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpsertPodBounceDirective), varargs...)
-}
-
-// UpdatePodBounceDirectiveStatus mocks base method
-func (m *MockPodBounceDirectiveClient) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, obj}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdatePodBounceDirectiveStatus", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdatePodBounceDirectiveStatus indicates an expected call of UpdatePodBounceDirectiveStatus
-func (mr *MockPodBounceDirectiveClientMockRecorder) UpdatePodBounceDirectiveStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpdatePodBounceDirectiveStatus), varargs...)
-}
-
-// PatchPodBounceDirectiveStatus mocks base method
+// PatchPodBounceDirectiveStatus mocks base method.
 func (m *MockPodBounceDirectiveClient) PatchPodBounceDirectiveStatus(ctx context.Context, obj *v1.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
@@ -1583,37 +1526,94 @@ func (m *MockPodBounceDirectiveClient) PatchPodBounceDirectiveStatus(ctx context
 	return ret0
 }
 
-// PatchPodBounceDirectiveStatus indicates an expected call of PatchPodBounceDirectiveStatus
+// PatchPodBounceDirectiveStatus indicates an expected call of PatchPodBounceDirectiveStatus.
 func (mr *MockPodBounceDirectiveClientMockRecorder) PatchPodBounceDirectiveStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).PatchPodBounceDirectiveStatus), varargs...)
 }
 
-// MockMulticlusterPodBounceDirectiveClient is a mock of MulticlusterPodBounceDirectiveClient interface
+// UpdatePodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveClient) UpdatePodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirective indicates an expected call of UpdatePodBounceDirective.
+func (mr *MockPodBounceDirectiveClientMockRecorder) UpdatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpdatePodBounceDirective), varargs...)
+}
+
+// UpdatePodBounceDirectiveStatus mocks base method.
+func (m *MockPodBounceDirectiveClient) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *v1.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirectiveStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirectiveStatus indicates an expected call of UpdatePodBounceDirectiveStatus.
+func (mr *MockPodBounceDirectiveClientMockRecorder) UpdatePodBounceDirectiveStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpdatePodBounceDirectiveStatus), varargs...)
+}
+
+// UpsertPodBounceDirective mocks base method.
+func (m *MockPodBounceDirectiveClient) UpsertPodBounceDirective(ctx context.Context, obj *v1.PodBounceDirective, transitionFuncs ...v1.PodBounceDirectiveTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertPodBounceDirective indicates an expected call of UpsertPodBounceDirective.
+func (mr *MockPodBounceDirectiveClientMockRecorder) UpsertPodBounceDirective(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpsertPodBounceDirective), varargs...)
+}
+
+// MockMulticlusterPodBounceDirectiveClient is a mock of MulticlusterPodBounceDirectiveClient interface.
 type MockMulticlusterPodBounceDirectiveClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterPodBounceDirectiveClientMockRecorder
 }
 
-// MockMulticlusterPodBounceDirectiveClientMockRecorder is the mock recorder for MockMulticlusterPodBounceDirectiveClient
+// MockMulticlusterPodBounceDirectiveClientMockRecorder is the mock recorder for MockMulticlusterPodBounceDirectiveClient.
 type MockMulticlusterPodBounceDirectiveClientMockRecorder struct {
 	mock *MockMulticlusterPodBounceDirectiveClient
 }
 
-// NewMockMulticlusterPodBounceDirectiveClient creates a new mock instance
+// NewMockMulticlusterPodBounceDirectiveClient creates a new mock instance.
 func NewMockMulticlusterPodBounceDirectiveClient(ctrl *gomock.Controller) *MockMulticlusterPodBounceDirectiveClient {
 	mock := &MockMulticlusterPodBounceDirectiveClient{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterPodBounceDirectiveClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterPodBounceDirectiveClient) EXPECT() *MockMulticlusterPodBounceDirectiveClientMockRecorder {
 	return m.recorder
 }
 
-// Cluster mocks base method
+// Cluster mocks base method.
 func (m *MockMulticlusterPodBounceDirectiveClient) Cluster(cluster string) (v1.PodBounceDirectiveClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
@@ -1622,7 +1622,7 @@ func (m *MockMulticlusterPodBounceDirectiveClient) Cluster(cluster string) (v1.P
 	return ret0, ret1
 }
 
-// Cluster indicates an expected call of Cluster
+// Cluster indicates an expected call of Cluster.
 func (mr *MockMulticlusterPodBounceDirectiveClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveClient)(nil).Cluster), cluster)

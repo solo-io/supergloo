@@ -13,30 +13,30 @@ import (
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 )
 
-// MockTranslator is a mock of Translator interface
+// MockTranslator is a mock of Translator interface.
 type MockTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTranslatorMockRecorder
 }
 
-// MockTranslatorMockRecorder is the mock recorder for MockTranslator
+// MockTranslatorMockRecorder is the mock recorder for MockTranslator.
 type MockTranslatorMockRecorder struct {
 	mock *MockTranslator
 }
 
-// NewMockTranslator creates a new mock instance
+// NewMockTranslator creates a new mock instance.
 func NewMockTranslator(ctrl *gomock.Controller) *MockTranslator {
 	mock := &MockTranslator{ctrl: ctrl}
 	mock.recorder = &MockTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
-// TranslateMeshes mocks base method
+// TranslateMeshes mocks base method.
 func (m *MockTranslator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *v1.DiscoverySettings) v1sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateMeshes", in, settings)
@@ -44,7 +44,7 @@ func (m *MockTranslator) TranslateMeshes(in input.DiscoveryInputSnapshot, settin
 	return ret0
 }
 
-// TranslateMeshes indicates an expected call of TranslateMeshes
+// TranslateMeshes indicates an expected call of TranslateMeshes.
 func (mr *MockTranslatorMockRecorder) TranslateMeshes(in, settings interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshes", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshes), in, settings)

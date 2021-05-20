@@ -1,4 +1,4 @@
-package pod_bouncer_test
+package podbouncer_test
 
 import (
 	"testing"
