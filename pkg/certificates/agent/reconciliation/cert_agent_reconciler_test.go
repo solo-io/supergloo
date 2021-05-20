@@ -11,7 +11,7 @@ import (
 	mock_certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent/mocks"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation"
-	mock_pod_bouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer/mocks"
+	mock_podbouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer/mocks"
 	mock_translation "github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation/mocks"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -25,7 +25,7 @@ var _ = Describe("CertAgentReconciler", func() {
 		ctrl *gomock.Controller
 
 		mockTranslator *mock_translation.MockTranslator
-		mockPodBouncer *mock_pod_bouncer.MockPodBouncer
+		mockPodBouncer *mock_podbouncer.MockPodBouncer
 		mockOutput     *mock_certagent.MockBuilder
 	)
 
@@ -33,7 +33,7 @@ var _ = Describe("CertAgentReconciler", func() {
 		ctrl, ctx = gomock.WithContext(context.Background(), GinkgoT())
 
 		mockTranslator = mock_translation.NewMockTranslator(ctrl)
-		mockPodBouncer = mock_pod_bouncer.NewMockPodBouncer(ctrl)
+		mockPodBouncer = mock_podbouncer.NewMockPodBouncer(ctrl)
 		mockOutput = mock_certagent.NewMockBuilder(ctrl)
 	})
 

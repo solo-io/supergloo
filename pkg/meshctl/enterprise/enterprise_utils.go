@@ -38,6 +38,8 @@ type RegistrationOptions struct {
 	TokenSecretName      string
 	TokenSecretNamespace string
 	TokenSecretKey       string
+
+	ReleaseName string
 }
 
 func ensureCerts(ctx context.Context, opts *RegistrationOptions) (bool, error) {
@@ -53,7 +55,12 @@ func ensureCerts(ctx context.Context, opts *RegistrationOptions) (bool, error) {
 		// nothing to be done here
 		return createdBootstrapToken, nil
 	}
-	mgmtKubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.MgmtContext)
+	mgmtKubeConfigPath := opts.KubeConfigPath
+	// override if provided
+	if opts.MgmtKubeConfigPath != "" {
+		mgmtKubeConfigPath = opts.MgmtKubeConfigPath
+	}
+	mgmtKubeClient, err := utils.BuildClient(mgmtKubeConfigPath, opts.MgmtContext)
 	if err != nil {
 		return createdBootstrapToken, err
 	}
@@ -196,12 +203,17 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 	}
 	logrus.Info("💻 Installing relay agent in the remote cluster")
 
+	releaseName := gloomesh.EnterpriseAgentReleaseName
+	if opts.ReleaseName != "" {
+		releaseName = opts.ReleaseName
+	}
+
 	if err := (helm.Installer{
 		KubeConfig:  opts.KubeConfigPath,
 		KubeContext: opts.RemoteContext,
 		ChartUri:    chartPath,
 		Namespace:   opts.RemoteNamespace,
-		ReleaseName: gloomesh.EnterpriseAgentReleaseName,
+		ReleaseName: releaseName,
 		ValuesFile:  opts.AgentChartValuesPath,
 		Verbose:     opts.Verbose,
 		Values:      values,
@@ -209,15 +221,20 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		return err
 	}
 
-	kubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.MgmtContext)
+	kubeConfigPath := opts.MgmtKubeConfigPath
+	if kubeConfigPath == "" {
+		kubeConfigPath = opts.KubeConfigPath
+	}
+
+	mgmtKubeClient, err := utils.BuildClient(kubeConfigPath, opts.MgmtContext)
 	if err != nil {
 		return err
 	}
-	clusterClient := v1alpha1.NewKubernetesClusterClient(kubeClient)
+	mgmtClusterClient := v1alpha1.NewKubernetesClusterClient(mgmtKubeClient)
 
 	logrus.Info("📃 Creating ", Bold(opts.ClusterName+" KubernetesCluster CRD"), " in management cluster")
 
-	err = clusterClient.CreateKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
+	err = mgmtClusterClient.CreateKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      opts.ClusterName,
 			Namespace: opts.MgmtNamespace,
@@ -293,11 +310,15 @@ func waitForClientCert(ctx context.Context, remoteKubeSecretClient v1.SecretClie
 }
 
 func DeregisterCluster(ctx context.Context, opts RegistrationOptions) error {
+	releaseName := gloomesh.EnterpriseAgentReleaseName
+	if opts.ReleaseName != "" {
+		releaseName = opts.ReleaseName
+	}
 	if err := (helm.Uninstaller{
 		KubeConfig:  opts.KubeConfigPath,
 		KubeContext: opts.RemoteContext,
 		Namespace:   opts.RemoteNamespace,
-		ReleaseName: gloomesh.EnterpriseAgentReleaseName,
+		ReleaseName: releaseName,
 		Verbose:     opts.Verbose,
 	}).UninstallChart(ctx); err != nil {
 		return err

@@ -14,30 +14,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockAccessLogRecordEventHandler is a mock of AccessLogRecordEventHandler interface
+// MockAccessLogRecordEventHandler is a mock of AccessLogRecordEventHandler interface.
 type MockAccessLogRecordEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockAccessLogRecordEventHandlerMockRecorder
 }
 
-// MockAccessLogRecordEventHandlerMockRecorder is the mock recorder for MockAccessLogRecordEventHandler
+// MockAccessLogRecordEventHandlerMockRecorder is the mock recorder for MockAccessLogRecordEventHandler.
 type MockAccessLogRecordEventHandlerMockRecorder struct {
 	mock *MockAccessLogRecordEventHandler
 }
 
-// NewMockAccessLogRecordEventHandler creates a new mock instance
+// NewMockAccessLogRecordEventHandler creates a new mock instance.
 func NewMockAccessLogRecordEventHandler(ctrl *gomock.Controller) *MockAccessLogRecordEventHandler {
 	mock := &MockAccessLogRecordEventHandler{ctrl: ctrl}
 	mock.recorder = &MockAccessLogRecordEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAccessLogRecordEventHandler) EXPECT() *MockAccessLogRecordEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateAccessLogRecord mocks base method
+// CreateAccessLogRecord mocks base method.
 func (m *MockAccessLogRecordEventHandler) CreateAccessLogRecord(obj *v1.AccessLogRecord) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAccessLogRecord", obj)
@@ -45,27 +45,13 @@ func (m *MockAccessLogRecordEventHandler) CreateAccessLogRecord(obj *v1.AccessLo
 	return ret0
 }
 
-// CreateAccessLogRecord indicates an expected call of CreateAccessLogRecord
+// CreateAccessLogRecord indicates an expected call of CreateAccessLogRecord.
 func (mr *MockAccessLogRecordEventHandlerMockRecorder) CreateAccessLogRecord(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordEventHandler)(nil).CreateAccessLogRecord), obj)
 }
 
-// UpdateAccessLogRecord mocks base method
-func (m *MockAccessLogRecordEventHandler) UpdateAccessLogRecord(old, new *v1.AccessLogRecord) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAccessLogRecord", old, new)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateAccessLogRecord indicates an expected call of UpdateAccessLogRecord
-func (mr *MockAccessLogRecordEventHandlerMockRecorder) UpdateAccessLogRecord(old, new interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordEventHandler)(nil).UpdateAccessLogRecord), old, new)
-}
-
-// DeleteAccessLogRecord mocks base method
+// DeleteAccessLogRecord mocks base method.
 func (m *MockAccessLogRecordEventHandler) DeleteAccessLogRecord(obj *v1.AccessLogRecord) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAccessLogRecord", obj)
@@ -73,13 +59,13 @@ func (m *MockAccessLogRecordEventHandler) DeleteAccessLogRecord(obj *v1.AccessLo
 	return ret0
 }
 
-// DeleteAccessLogRecord indicates an expected call of DeleteAccessLogRecord
+// DeleteAccessLogRecord indicates an expected call of DeleteAccessLogRecord.
 func (mr *MockAccessLogRecordEventHandlerMockRecorder) DeleteAccessLogRecord(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordEventHandler)(nil).DeleteAccessLogRecord), obj)
 }
 
-// GenericAccessLogRecord mocks base method
+// GenericAccessLogRecord mocks base method.
 func (m *MockAccessLogRecordEventHandler) GenericAccessLogRecord(obj *v1.AccessLogRecord) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericAccessLogRecord", obj)
@@ -87,36 +73,50 @@ func (m *MockAccessLogRecordEventHandler) GenericAccessLogRecord(obj *v1.AccessL
 	return ret0
 }
 
-// GenericAccessLogRecord indicates an expected call of GenericAccessLogRecord
+// GenericAccessLogRecord indicates an expected call of GenericAccessLogRecord.
 func (mr *MockAccessLogRecordEventHandlerMockRecorder) GenericAccessLogRecord(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordEventHandler)(nil).GenericAccessLogRecord), obj)
 }
 
-// MockAccessLogRecordEventWatcher is a mock of AccessLogRecordEventWatcher interface
+// UpdateAccessLogRecord mocks base method.
+func (m *MockAccessLogRecordEventHandler) UpdateAccessLogRecord(old, new *v1.AccessLogRecord) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAccessLogRecord", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAccessLogRecord indicates an expected call of UpdateAccessLogRecord.
+func (mr *MockAccessLogRecordEventHandlerMockRecorder) UpdateAccessLogRecord(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordEventHandler)(nil).UpdateAccessLogRecord), old, new)
+}
+
+// MockAccessLogRecordEventWatcher is a mock of AccessLogRecordEventWatcher interface.
 type MockAccessLogRecordEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockAccessLogRecordEventWatcherMockRecorder
 }
 
-// MockAccessLogRecordEventWatcherMockRecorder is the mock recorder for MockAccessLogRecordEventWatcher
+// MockAccessLogRecordEventWatcherMockRecorder is the mock recorder for MockAccessLogRecordEventWatcher.
 type MockAccessLogRecordEventWatcherMockRecorder struct {
 	mock *MockAccessLogRecordEventWatcher
 }
 
-// NewMockAccessLogRecordEventWatcher creates a new mock instance
+// NewMockAccessLogRecordEventWatcher creates a new mock instance.
 func NewMockAccessLogRecordEventWatcher(ctrl *gomock.Controller) *MockAccessLogRecordEventWatcher {
 	mock := &MockAccessLogRecordEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockAccessLogRecordEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAccessLogRecordEventWatcher) EXPECT() *MockAccessLogRecordEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockAccessLogRecordEventWatcher) AddEventHandler(ctx context.Context, h controller.AccessLogRecordEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -128,7 +128,7 @@ func (m *MockAccessLogRecordEventWatcher) AddEventHandler(ctx context.Context, h
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockAccessLogRecordEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)

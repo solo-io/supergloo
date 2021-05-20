@@ -1,4 +1,4 @@
-package pod_bouncer
+package podbouncer
 
 import (
 	"bytes"
