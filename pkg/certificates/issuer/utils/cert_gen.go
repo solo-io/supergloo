@@ -27,7 +27,8 @@ const (
 func GenCertForCSR(
 	hosts []string, csrPem, signingCert, privateKey []byte, ttlDays uint32,
 ) ([]byte, error) {
-	// TODO(ilackarms): allow configuring this TTL in the virtual mesh
+
+	// Default to 1 year
 	ttl := time.Until(time.Now().AddDate(1, 0, 0))
 	if ttlDays > 0 {
 		ttl = time.Hour * 24 * time.Duration(ttlDays)
