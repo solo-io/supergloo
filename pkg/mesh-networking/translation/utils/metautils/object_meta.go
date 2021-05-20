@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/labels"
+
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -15,7 +17,6 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 

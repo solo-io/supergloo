@@ -14,30 +14,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockRoleEventHandler is a mock of RoleEventHandler interface
+// MockRoleEventHandler is a mock of RoleEventHandler interface.
 type MockRoleEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleEventHandlerMockRecorder
 }
 
-// MockRoleEventHandlerMockRecorder is the mock recorder for MockRoleEventHandler
+// MockRoleEventHandlerMockRecorder is the mock recorder for MockRoleEventHandler.
 type MockRoleEventHandlerMockRecorder struct {
 	mock *MockRoleEventHandler
 }
 
-// NewMockRoleEventHandler creates a new mock instance
+// NewMockRoleEventHandler creates a new mock instance.
 func NewMockRoleEventHandler(ctrl *gomock.Controller) *MockRoleEventHandler {
 	mock := &MockRoleEventHandler{ctrl: ctrl}
 	mock.recorder = &MockRoleEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleEventHandler) EXPECT() *MockRoleEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateRole mocks base method
+// CreateRole mocks base method.
 func (m *MockRoleEventHandler) CreateRole(obj *v1.Role) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRole", obj)
@@ -45,27 +45,13 @@ func (m *MockRoleEventHandler) CreateRole(obj *v1.Role) error {
 	return ret0
 }
 
-// CreateRole indicates an expected call of CreateRole
+// CreateRole indicates an expected call of CreateRole.
 func (mr *MockRoleEventHandlerMockRecorder) CreateRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRole", reflect.TypeOf((*MockRoleEventHandler)(nil).CreateRole), obj)
 }
 
-// UpdateRole mocks base method
-func (m *MockRoleEventHandler) UpdateRole(old, new *v1.Role) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateRole", old, new)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateRole indicates an expected call of UpdateRole
-func (mr *MockRoleEventHandlerMockRecorder) UpdateRole(old, new interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRole", reflect.TypeOf((*MockRoleEventHandler)(nil).UpdateRole), old, new)
-}
-
-// DeleteRole mocks base method
+// DeleteRole mocks base method.
 func (m *MockRoleEventHandler) DeleteRole(obj *v1.Role) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRole", obj)
@@ -73,13 +59,13 @@ func (m *MockRoleEventHandler) DeleteRole(obj *v1.Role) error {
 	return ret0
 }
 
-// DeleteRole indicates an expected call of DeleteRole
+// DeleteRole indicates an expected call of DeleteRole.
 func (mr *MockRoleEventHandlerMockRecorder) DeleteRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRole", reflect.TypeOf((*MockRoleEventHandler)(nil).DeleteRole), obj)
 }
 
-// GenericRole mocks base method
+// GenericRole mocks base method.
 func (m *MockRoleEventHandler) GenericRole(obj *v1.Role) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericRole", obj)
@@ -87,36 +73,50 @@ func (m *MockRoleEventHandler) GenericRole(obj *v1.Role) error {
 	return ret0
 }
 
-// GenericRole indicates an expected call of GenericRole
+// GenericRole indicates an expected call of GenericRole.
 func (mr *MockRoleEventHandlerMockRecorder) GenericRole(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericRole", reflect.TypeOf((*MockRoleEventHandler)(nil).GenericRole), obj)
 }
 
-// MockRoleEventWatcher is a mock of RoleEventWatcher interface
+// UpdateRole mocks base method.
+func (m *MockRoleEventHandler) UpdateRole(old, new *v1.Role) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRole", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRole indicates an expected call of UpdateRole.
+func (mr *MockRoleEventHandlerMockRecorder) UpdateRole(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRole", reflect.TypeOf((*MockRoleEventHandler)(nil).UpdateRole), old, new)
+}
+
+// MockRoleEventWatcher is a mock of RoleEventWatcher interface.
 type MockRoleEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleEventWatcherMockRecorder
 }
 
-// MockRoleEventWatcherMockRecorder is the mock recorder for MockRoleEventWatcher
+// MockRoleEventWatcherMockRecorder is the mock recorder for MockRoleEventWatcher.
 type MockRoleEventWatcherMockRecorder struct {
 	mock *MockRoleEventWatcher
 }
 
-// NewMockRoleEventWatcher creates a new mock instance
+// NewMockRoleEventWatcher creates a new mock instance.
 func NewMockRoleEventWatcher(ctrl *gomock.Controller) *MockRoleEventWatcher {
 	mock := &MockRoleEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockRoleEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleEventWatcher) EXPECT() *MockRoleEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockRoleEventWatcher) AddEventHandler(ctx context.Context, h controller.RoleEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -128,37 +128,37 @@ func (m *MockRoleEventWatcher) AddEventHandler(ctx context.Context, h controller
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockRoleEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockRoleEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
-// MockRoleBindingEventHandler is a mock of RoleBindingEventHandler interface
+// MockRoleBindingEventHandler is a mock of RoleBindingEventHandler interface.
 type MockRoleBindingEventHandler struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingEventHandlerMockRecorder
 }
 
-// MockRoleBindingEventHandlerMockRecorder is the mock recorder for MockRoleBindingEventHandler
+// MockRoleBindingEventHandlerMockRecorder is the mock recorder for MockRoleBindingEventHandler.
 type MockRoleBindingEventHandlerMockRecorder struct {
 	mock *MockRoleBindingEventHandler
 }
 
-// NewMockRoleBindingEventHandler creates a new mock instance
+// NewMockRoleBindingEventHandler creates a new mock instance.
 func NewMockRoleBindingEventHandler(ctrl *gomock.Controller) *MockRoleBindingEventHandler {
 	mock := &MockRoleBindingEventHandler{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingEventHandlerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleBindingEventHandler) EXPECT() *MockRoleBindingEventHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateRoleBinding mocks base method
+// CreateRoleBinding mocks base method.
 func (m *MockRoleBindingEventHandler) CreateRoleBinding(obj *v1.RoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRoleBinding", obj)
@@ -166,27 +166,13 @@ func (m *MockRoleBindingEventHandler) CreateRoleBinding(obj *v1.RoleBinding) err
 	return ret0
 }
 
-// CreateRoleBinding indicates an expected call of CreateRoleBinding
+// CreateRoleBinding indicates an expected call of CreateRoleBinding.
 func (mr *MockRoleBindingEventHandlerMockRecorder) CreateRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoleBinding", reflect.TypeOf((*MockRoleBindingEventHandler)(nil).CreateRoleBinding), obj)
 }
 
-// UpdateRoleBinding mocks base method
-func (m *MockRoleBindingEventHandler) UpdateRoleBinding(old, new *v1.RoleBinding) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateRoleBinding", old, new)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateRoleBinding indicates an expected call of UpdateRoleBinding
-func (mr *MockRoleBindingEventHandlerMockRecorder) UpdateRoleBinding(old, new interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRoleBinding", reflect.TypeOf((*MockRoleBindingEventHandler)(nil).UpdateRoleBinding), old, new)
-}
-
-// DeleteRoleBinding mocks base method
+// DeleteRoleBinding mocks base method.
 func (m *MockRoleBindingEventHandler) DeleteRoleBinding(obj *v1.RoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRoleBinding", obj)
@@ -194,13 +180,13 @@ func (m *MockRoleBindingEventHandler) DeleteRoleBinding(obj *v1.RoleBinding) err
 	return ret0
 }
 
-// DeleteRoleBinding indicates an expected call of DeleteRoleBinding
+// DeleteRoleBinding indicates an expected call of DeleteRoleBinding.
 func (mr *MockRoleBindingEventHandlerMockRecorder) DeleteRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoleBinding", reflect.TypeOf((*MockRoleBindingEventHandler)(nil).DeleteRoleBinding), obj)
 }
 
-// GenericRoleBinding mocks base method
+// GenericRoleBinding mocks base method.
 func (m *MockRoleBindingEventHandler) GenericRoleBinding(obj *v1.RoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenericRoleBinding", obj)
@@ -208,36 +194,50 @@ func (m *MockRoleBindingEventHandler) GenericRoleBinding(obj *v1.RoleBinding) er
 	return ret0
 }
 
-// GenericRoleBinding indicates an expected call of GenericRoleBinding
+// GenericRoleBinding indicates an expected call of GenericRoleBinding.
 func (mr *MockRoleBindingEventHandlerMockRecorder) GenericRoleBinding(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericRoleBinding", reflect.TypeOf((*MockRoleBindingEventHandler)(nil).GenericRoleBinding), obj)
 }
 
-// MockRoleBindingEventWatcher is a mock of RoleBindingEventWatcher interface
+// UpdateRoleBinding mocks base method.
+func (m *MockRoleBindingEventHandler) UpdateRoleBinding(old, new *v1.RoleBinding) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRoleBinding", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRoleBinding indicates an expected call of UpdateRoleBinding.
+func (mr *MockRoleBindingEventHandlerMockRecorder) UpdateRoleBinding(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRoleBinding", reflect.TypeOf((*MockRoleBindingEventHandler)(nil).UpdateRoleBinding), old, new)
+}
+
+// MockRoleBindingEventWatcher is a mock of RoleBindingEventWatcher interface.
 type MockRoleBindingEventWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockRoleBindingEventWatcherMockRecorder
 }
 
-// MockRoleBindingEventWatcherMockRecorder is the mock recorder for MockRoleBindingEventWatcher
+// MockRoleBindingEventWatcherMockRecorder is the mock recorder for MockRoleBindingEventWatcher.
 type MockRoleBindingEventWatcherMockRecorder struct {
 	mock *MockRoleBindingEventWatcher
 }
 
-// NewMockRoleBindingEventWatcher creates a new mock instance
+// NewMockRoleBindingEventWatcher creates a new mock instance.
 func NewMockRoleBindingEventWatcher(ctrl *gomock.Controller) *MockRoleBindingEventWatcher {
 	mock := &MockRoleBindingEventWatcher{ctrl: ctrl}
 	mock.recorder = &MockRoleBindingEventWatcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleBindingEventWatcher) EXPECT() *MockRoleBindingEventWatcherMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockRoleBindingEventWatcher) AddEventHandler(ctx context.Context, h controller.RoleBindingEventHandler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, h}
@@ -249,7 +249,7 @@ func (m *MockRoleBindingEventWatcher) AddEventHandler(ctx context.Context, h con
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockRoleBindingEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, h}, predicates...)
