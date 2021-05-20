@@ -225,7 +225,8 @@ func getIngressGateway(
 		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
 		ingress := svc.Status.LoadBalancer.Ingress
 		var addr string
-		if len(ingress) == 0 { // Check for user-set external IPs
+		if len(ingress) == 0 {
+			// Check for user-set external IPs
 			externalIPs := svc.Spec.ExternalIPs
 			if len(externalIPs) != 0 {
 				addr = svc.Spec.ExternalIPs[0]
@@ -233,9 +234,10 @@ func getIngressGateway(
 					Ip: addr,
 				}
 			} else {
-				return nil, eris.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service as a user if you are using a non-kubernetes load balancer.")
+				return nil, eris.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service if you are using a non-kubernetes load balancer.")
 			}
-		} else if ingress[0].IP != "" { // If the Ip address is set in the ingress, use that
+		} else if ingress[0].IP != "" {
+			// If the Ip address is set in the ingress, use that
 			addr = ingress[0].IP
 			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 				Ip: addr,
