@@ -21,9 +21,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
-  - [TrafficPolicySpec.Policy.CorsPolicy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch)
   - [TrafficPolicySpec.Policy.CsrfPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy)
-  - [TrafficPolicySpec.Policy.CsrfPolicy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch)
   - [TrafficPolicySpec.Policy.DLPPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.DLPPolicy)
   - [TrafficPolicySpec.Policy.ExtAuth](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.ExtAuth)
   - [TrafficPolicySpec.Policy.FaultInjection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection)
@@ -35,6 +33,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection)
   - [TrafficPolicySpec.Policy.Ratelimit](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Ratelimit)
   - [TrafficPolicySpec.Policy.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy)
+  - [TrafficPolicySpec.Policy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.StringMatch)
   - [TrafficPolicySpec.Policy.Transform](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Transform)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry)
@@ -96,29 +95,12 @@ Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| allowOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
+| allowOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
   | allowMethods | []string | repeated | List of HTTP methods allowed to access the resource. The content will be serialized to the `Access-Control-Allow-Methods` header. |
   | allowHeaders | []string | repeated | List of HTTP headers that can be used when requesting the resource. Serialized to the `Access-Control-Allow-Headers` header. |
   | exposeHeaders | []string | repeated | A list of HTTP headers that browsers are allowed to access. Serialized to the `Access-Control-Expose-Headers` header. |
   | maxAge | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Specify how long the results of a preflight request can be cached. Serialized to the `Access-Control-Max-Age` header. |
   | allowCredentials | [google.protobuf.BoolValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.BoolValue" >}}) |  | Indicates whether the caller is allowed to send the actual request (not the preflight) using credentials. Translates to the `Access-Control-Allow-Credentials` header. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch"></a>
-
-### TrafficPolicySpec.Policy.CorsPolicy.StringMatch
-Describes how to match a given string in HTTP headers. Match is case-sensitive.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| exact | string |  | Exact string match. |
-  | prefix | string |  | Prefix-based match. |
-  | regex | string |  | ECMAscript style regex-based match. |
   
 
 
@@ -136,24 +118,7 @@ CSRF filter config.
 | filterEnabled | bool |  | Specifies that CSRF policies will be evaluated, tracked and enforced. |
   | shadowEnabled | bool |  | Specifies that CSRF policies will be evaluated and tracked, but not enforced.<br>This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise. |
   | percentage | double |  | Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests evaluated and tracked, but not enforced.<br>If filter_enabled or shadow_enabled is true. Envoy will lookup the runtime key to get the percentage of requests to filter.<br>.. note:: This field defaults to 100 |
-  | additionalOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch"></a>
-
-### TrafficPolicySpec.Policy.CsrfPolicy.StringMatch
-Describes how to match a given string in HTTP headers. Match is case-sensitive.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| exact | string |  | Exact string match. |
-  | prefix | string |  | Prefix-based match. |
-  | regex | string |  | ECMAscript style regex-based match. |
+  | additionalOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
   
 
 
@@ -327,6 +292,23 @@ Specify retries for failed requests.
 | ----- | ---- | ----- | ----------- |
 | attempts | int32 |  | Number of retries for a given request |
   | perTryTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.StringMatch"></a>
+
+### TrafficPolicySpec.Policy.StringMatch
+Describes how to match a given string in HTTP headers. Match is case-sensitive.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| exact | string |  | Exact string match. |
+  | prefix | string |  | Prefix-based match. |
+  | regex | string |  | ECMAscript style regex-based match. |
   
 
 

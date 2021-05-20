@@ -306,6 +306,66 @@ func (m *TrafficPolicySpec_Policy) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *TrafficPolicySpec_Policy_StringMatch) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficPolicySpec_Policy_StringMatch)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_Policy_StringMatch)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.MatchType.(type) {
+
+	case *TrafficPolicySpec_Policy_StringMatch_Exact:
+		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_StringMatch_Exact); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
+			return false
+		}
+
+	case *TrafficPolicySpec_Policy_StringMatch_Prefix:
+		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_StringMatch_Prefix); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
+			return false
+		}
+
+	case *TrafficPolicySpec_Policy_StringMatch_Regex:
+		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_StringMatch_Regex); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.MatchType != target.MatchType {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *TrafficPolicySpec_Policy_RetryPolicy) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -881,66 +941,6 @@ func (m *TrafficPolicySpec_Policy_FaultInjection_Abort) Equal(that interface{}) 
 }
 
 // Equal function
-func (m *TrafficPolicySpec_Policy_CorsPolicy_StringMatch) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_CorsPolicy_StringMatch)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.MatchType.(type) {
-
-	case *TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.MatchType != target.MatchType {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *TrafficPolicySpec_Policy_MTLS_Istio) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -963,66 +963,6 @@ func (m *TrafficPolicySpec_Policy_MTLS_Istio) Equal(that interface{}) bool {
 
 	if m.GetTlsMode() != target.GetTlsMode() {
 		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *TrafficPolicySpec_Policy_CsrfPolicy_StringMatch) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_Policy_CsrfPolicy_StringMatch)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_CsrfPolicy_StringMatch)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.MatchType.(type) {
-
-	case *TrafficPolicySpec_Policy_CsrfPolicy_StringMatch_Exact:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CsrfPolicy_StringMatch_Exact); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_Policy_CsrfPolicy_StringMatch_Prefix:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CsrfPolicy_StringMatch_Prefix); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_Policy_CsrfPolicy_StringMatch_Regex:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CsrfPolicy_StringMatch_Regex); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.MatchType != target.MatchType {
-			return false
-		}
 	}
 
 	return true
