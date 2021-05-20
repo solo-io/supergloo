@@ -258,14 +258,14 @@ func serviceIngressToAddress(svc *v1.Service) (string, error) {
 		} else {
 			return "", fmt.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service as a user if you are using a non-kubernetes load balancer.")
 		}
-	}
-
-	// If the Ip address is set in the ingress, use that
-	if ingress[0].IP != "" {
-		address = ingress[0].IP
 	} else {
-		// Otherwise use the hostname
-		address = ingress[0].Hostname
+		// If the Ip address is set in the ingress, use that
+		if ingress[0].IP != "" {
+			address = ingress[0].IP
+		} else {
+			// Otherwise use the hostname
+			address = ingress[0].Hostname
+		}
 	}
 	return fmt.Sprintf("%s:%s", address, port), nil
 }
