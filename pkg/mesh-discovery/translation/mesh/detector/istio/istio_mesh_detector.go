@@ -199,6 +199,7 @@ func getIngressGateway(
 
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
+		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
 		addr, err := getNodeIp(
 			svc.ClusterName,
 			svc.Namespace,
@@ -207,39 +208,49 @@ func getIngressGateway(
 			nodes,
 		)
 		if err != nil {
-			return nil, err
+			// Check for user-set external IPs
+			externalIPs := svc.Spec.ExternalIPs
+			if len(externalIPs) != 0 {
+				addr = svc.Spec.ExternalIPs[0]
+			} else {
+				return nil, err
+			}
 		}
 		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 			Ip: addr,
 		}
 		// Continue to set deprecated field until it is removed
 		gatewayInfo.ExternalAddress = addr
-		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
-
 	case corev1.ServiceTypeLoadBalancer:
-		ingress := svc.Status.LoadBalancer.Ingress
-		if len(ingress) == 0 {
-			return nil, eris.Errorf("no loadBalancer.ingress status reported for service")
-		}
-
 		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
-
-		// If the Ip address is set in the ingress, use that
-		if ingress[0].IP != "" {
-			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-				Ip: ingress[0].IP,
+		ingress := svc.Status.LoadBalancer.Ingress
+		var addr string
+		if len(ingress) == 0 {
+			// Check for user-set external IPs
+			externalIPs := svc.Spec.ExternalIPs
+			if len(externalIPs) != 0 {
+				addr = svc.Spec.ExternalIPs[0]
+				gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
+					Ip: addr,
+				}
+			} else {
+				return nil, eris.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service if you are using a non-kubernetes load balancer.")
 			}
-			// Continue to set deprecated field until it is removed
-			gatewayInfo.ExternalAddress = ingress[0].IP
+		} else if ingress[0].IP != "" {
+			// If the Ip address is set in the ingress, use that
+			addr = ingress[0].IP
+			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
+				Ip: addr,
+			}
 		} else {
 			// Otherwise use the hostname
+			addr = ingress[0].Hostname
 			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
-				DnsName: ingress[0].Hostname,
+				DnsName: addr,
 			}
-			// Continue to set deprecated field until it is removed
-			gatewayInfo.ExternalAddress = ingress[0].Hostname
 		}
-
+		// Continue to set deprecated field until it is removed
+		gatewayInfo.ExternalAddress = addr
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
 	}
