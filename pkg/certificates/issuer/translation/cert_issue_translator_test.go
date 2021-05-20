@@ -52,7 +52,7 @@ var _ = Describe("CertIssueTranslator", func() {
 		}
 
 		output, err := translator.Translate(ctx, nil, issuedCert)
-		Expect(err).To(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(BeNil())
 	})
 
