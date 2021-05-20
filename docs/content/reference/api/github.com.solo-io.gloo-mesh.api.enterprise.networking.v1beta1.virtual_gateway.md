@@ -420,13 +420,12 @@ Options for deploying the VirtualGateway to an Istio Ingress Gateway
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions"></a>
 
 ### VirtualGatewaySpec.GatewayOptions
-TODO: Fill in more options<br>route-level options (inherited by route)
+TODO: Fill in more options
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| trafficPolicy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | options shared from TrafficPolicy OutlierDetection  and TrafficShift isn't supported on the route level. TODO: Discuss with team Traffic policy can be declared in-line here, or this gateway can be selected from a TrafficPolicy CRD. |
-  | perConnectionBufferLimitBytes | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Soft limit on size of the listener's new connection read and write buffers. If unspecified, defaults to 1MiB For more info, check out the [Envoy docs](https://www.envoyproxy.io/docs/envoy/v1.17.1/api-v3/config/listener/v3/listener.proto) |
+| perConnectionBufferLimitBytes | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Soft limit on size of the listener's new connection read and write buffers. If unspecified, defaults to 1MiB For more info, check out the [Envoy docs](https://www.envoyproxy.io/docs/envoy/v1.17.1/api-v3/config/listener/v3/listener.proto) |
   
 
 

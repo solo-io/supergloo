@@ -295,14 +295,6 @@ message VirtualGatewaySpec {
 
     // TODO: Fill in more options 
     message GatewayOptions {
-        // route-level options (inherited by route)
-
-        // options shared from TrafficPolicy
-        // OutlierDetection  and TrafficShift isn't supported on the route level.
-        // TODO: Discuss with team
-        // Traffic policy can be declared in-line here, or this
-        // gateway can be selected from a TrafficPolicy CRD.
-        networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy traffic_policy = 1;
 
         // gateway-level options (only apply to gateway/listener)
         
