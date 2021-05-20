@@ -199,6 +199,7 @@ func getIngressGateway(
 
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
+		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
 		addr, err := getNodeIp(
 			svc.ClusterName,
 			svc.Namespace,
@@ -207,15 +208,24 @@ func getIngressGateway(
 			nodes,
 		)
 		if err != nil {
-			return nil, err
+			// Check for user-set external IPs
+			externalIPs := svc.Spec.ExternalIPs
+			if len(externalIPs) != 0 {
+				gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
+					Ip: svc.Spec.ExternalIPs[0],
+				}
+				// Continue to set deprecated field until it is removed
+				gatewayInfo.ExternalAddress = svc.Spec.ExternalIPs[0]
+				break
+			} else {
+				return nil, err
+			}
 		}
 		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 			Ip: addr,
 		}
 		// Continue to set deprecated field until it is removed
 		gatewayInfo.ExternalAddress = addr
-		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
-
 	case corev1.ServiceTypeLoadBalancer:
 		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
 		ingress := svc.Status.LoadBalancer.Ingress
