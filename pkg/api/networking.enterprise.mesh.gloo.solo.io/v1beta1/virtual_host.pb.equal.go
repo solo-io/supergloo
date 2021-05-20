@@ -88,6 +88,40 @@ func (m *VirtualHostSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *VirtualHostOptions) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualHostOptions)
+	if !ok {
+		that2, ok := that.(VirtualHostOptions)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTrafficPolicy()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTrafficPolicy()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTrafficPolicy(), target.GetTrafficPolicy()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *VirtualHostStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

@@ -172,7 +172,7 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 							PortNumber: 9191,
 							FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
 								Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
-									Name: "envoy.filters.network.sni_cluster",
+									Name: "envoy.envoyfilters.network.sni_cluster",
 								},
 							},
 						},
@@ -184,7 +184,7 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 						Fields: map[string]*types.Value{
 							"name": {
 								Kind: &types.Value_StringValue{
-									StringValue: "envoy.filters.network.tcp_cluster_rewrite",
+									StringValue: "envoy.envoyfilters.network.tcp_cluster_rewrite",
 								},
 							},
 							"typed_config": {

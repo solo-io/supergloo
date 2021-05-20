@@ -35,7 +35,14 @@ message VirtualHostSpec {
     // Route table options contain additional configuration to be applied to all traffic served by the route table.
     // Some configuration here can be overridden by Route Options.
     // OutlierDetection and TrafficShift isn't supported on the route level.
-    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 3;
+    VirtualHostOptions options = 3;
+}
+
+message VirtualHostOptions {
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy traffic_policy = 1;
+
+    //     TODO: Move into traffic policy anything that goes on the route level and would be conceivably used for East/West traffic
+    //    .networking.enterprise.mesh.gloo.solo.io.filters.Waf waf = 2;
 }
 
 message VirtualHostStatus {

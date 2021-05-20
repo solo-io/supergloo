@@ -34,8 +34,8 @@ const (
 	defaultGatewayProtocol = "TLS"
 	DefaultGatewayPortName = "tls"
 
-	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
-	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
+	envoySniClusterFilterName        = "envoy.envoyfilters.network.sni_cluster"
+	envoyTcpClusterRewriteFilterName = "envoy.envoyfilters.network.tcp_cluster_rewrite"
 )
 
 // the VirtualService translator translates a Mesh into a VirtualService.

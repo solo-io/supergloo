@@ -925,267 +925,344 @@ spec:
                                     Some configuration here can be overridden by Route Options.
                                     OutlierDetection and TrafficShift isn't supported on the route level.
                                   properties:
-                                    corsPolicy:
-                                      description: |-
-                                        Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
-                                        for further details about cross origin resource sharing.
+                                    trafficPolicy:
                                       properties:
-                                        allowCredentials:
+                                        corsPolicy:
                                           description: |-
-                                            Indicates whether the caller is allowed to send the actual request
-                                            (not the preflight) using credentials. Translates to the
-                                            `Access-Control-Allow-Credentials` header.
-                                          nullable: true
-                                          type: boolean
-                                        allowHeaders:
-                                          description: |-
-                                            List of HTTP headers that can be used when requesting the
-                                            resource. Serialized to the `Access-Control-Allow-Headers` header.
-                                          items:
-                                            type: string
-                                          type: array
-                                        allowMethods:
-                                          description: |-
-                                            List of HTTP methods allowed to access the resource. The content will
-                                            be serialized to the `Access-Control-Allow-Methods` header.
-                                          items:
-                                            type: string
-                                          type: array
-                                        allowOrigins:
-                                          description: String patterns that match
-                                            allowed origins. An origin is allowed
-                                            if any of the string matchers match.
-                                          items:
-                                            oneOf:
-                                            - not:
-                                                anyOf:
+                                            Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+                                            for further details about cross origin resource sharing.
+                                          properties:
+                                            allowCredentials:
+                                              description: |-
+                                                Indicates whether the caller is allowed to send the actual request
+                                                (not the preflight) using credentials. Translates to the
+                                                `Access-Control-Allow-Credentials` header.
+                                              nullable: true
+                                              type: boolean
+                                            allowHeaders:
+                                              description: |-
+                                                List of HTTP headers that can be used when requesting the
+                                                resource. Serialized to the `Access-Control-Allow-Headers` header.
+                                              items:
+                                                type: string
+                                              type: array
+                                            allowMethods:
+                                              description: |-
+                                                List of HTTP methods allowed to access the resource. The content will
+                                                be serialized to the `Access-Control-Allow-Methods` header.
+                                              items:
+                                                type: string
+                                              type: array
+                                            allowOrigins:
+                                              description: String patterns that match
+                                                allowed origins. An origin is allowed
+                                                if any of the string matchers match.
+                                              items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - exact
+                                                    - required:
+                                                      - prefix
+                                                    - required:
+                                                      - regex
                                                 - required:
                                                   - exact
                                                 - required:
                                                   - prefix
                                                 - required:
                                                   - regex
-                                            - required:
-                                              - exact
-                                            - required:
-                                              - prefix
-                                            - required:
-                                              - regex
-                                            properties:
-                                              exact:
-                                                description: Exact string match.
+                                                properties:
+                                                  exact:
+                                                    description: Exact string match.
+                                                    type: string
+                                                  prefix:
+                                                    description: Prefix-based match.
+                                                    type: string
+                                                  regex:
+                                                    description: ECMAscript style
+                                                      regex-based match.
+                                                    type: string
+                                                type: object
+                                              type: array
+                                            exposeHeaders:
+                                              description: |-
+                                                A list of HTTP headers that browsers are allowed to
+                                                access. Serialized to the `Access-Control-Expose-Headers` header.
+                                              items:
                                                 type: string
-                                              prefix:
-                                                description: Prefix-based match.
-                                                type: string
-                                              regex:
-                                                description: ECMAscript style regex-based
-                                                  match.
-                                                type: string
-                                            type: object
-                                          type: array
-                                        exposeHeaders:
-                                          description: |-
-                                            A list of HTTP headers that browsers are allowed to
-                                            access. Serialized to the `Access-Control-Expose-Headers` header.
-                                          items:
-                                            type: string
-                                          type: array
-                                        maxAge:
-                                          description: |-
-                                            Specify how long the results of a preflight request can be
-                                            cached. Serialized to the `Access-Control-Max-Age` header.
-                                          type: string
-                                      type: object
-                                    faultInjection:
-                                      description: Inject faulty responses.
-                                      oneOf:
-                                      - not:
-                                          anyOf:
+                                              type: array
+                                            maxAge:
+                                              description: |-
+                                                Specify how long the results of a preflight request can be
+                                                cached. Serialized to the `Access-Control-Max-Age` header.
+                                              type: string
+                                          type: object
+                                        csrf:
+                                          description: Configure the Envoy based CSRF
+                                            filter
+                                          properties:
+                                            additionalOrigins:
+                                              description: |-
+                                                Specifies additional source origins that will be allowed in addition to
+                                                the destination origin.
+                                              items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - exact
+                                                    - required:
+                                                      - prefix
+                                                    - required:
+                                                      - regex
+                                                - required:
+                                                  - exact
+                                                - required:
+                                                  - prefix
+                                                - required:
+                                                  - regex
+                                                properties:
+                                                  exact:
+                                                    description: Exact string match.
+                                                    type: string
+                                                  prefix:
+                                                    description: Prefix-based match.
+                                                    type: string
+                                                  regex:
+                                                    description: ECMAscript style
+                                                      regex-based match.
+                                                    type: string
+                                                type: object
+                                              type: array
+                                            filterEnabled:
+                                              description: Specifies that CSRF policies
+                                                will be evaluated, tracked and enforced.
+                                              type: boolean
+                                            percentage:
+                                              description: |-
+                                                Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                                                evaluated and tracked, but not enforced.
+
+                                                If filter_enabled or shadow_enabled is true.
+                                                Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                                                .. note:: This field defaults to 100
+                                              format: double
+                                              type: number
+                                            shadowEnabled:
+                                              description: |-
+                                                Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                                                This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                                              type: boolean
+                                          type: object
+                                        faultInjection:
+                                          description: Inject faulty responses.
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - fixedDelay
+                                              - required:
+                                                - abort
                                           - required:
                                             - fixedDelay
                                           - required:
                                             - abort
-                                      - required:
-                                        - fixedDelay
-                                      - required:
-                                        - abort
-                                      properties:
-                                        abort:
-                                          description: Abort the request and return
-                                            the specified error code back to traffic
-                                            source.
                                           properties:
-                                            httpStatus:
-                                              description: Required. HTTP status code
-                                                to use to abort the request.
-                                              format: int32
-                                              type: integer
+                                            abort:
+                                              description: Abort the request and return
+                                                the specified error code back to traffic
+                                                source.
+                                              properties:
+                                                httpStatus:
+                                                  description: Required. HTTP status
+                                                    code to use to abort the request.
+                                                  format: int32
+                                                  type: integer
+                                              type: object
+                                            fixedDelay:
+                                              description: 'Add a delay of a fixed
+                                                duration before sending the request.
+                                                Format: `1h`/`1m`/`1s`/`1ms`. MUST
+                                                be >=1ms.'
+                                              type: string
+                                            percentage:
+                                              description: Percentage of requests
+                                                to be faulted. Values range between
+                                                0 and 100. If omitted all requests
+                                                will be faulted.
+                                              format: double
+                                              type: number
                                           type: object
-                                        fixedDelay:
-                                          description: 'Add a delay of a fixed duration
-                                            before sending the request. Format: `1h`/`1m`/`1s`/`1ms`.
-                                            MUST be >=1ms.'
-                                          type: string
-                                        percentage:
-                                          description: Percentage of requests to be
-                                            faulted. Values range between 0 and 100.
-                                            If omitted all requests will be faulted.
-                                          format: double
-                                          type: number
-                                      type: object
-                                    headerManipulation:
-                                      description: Manipulate request and response
-                                        headers.
-                                      properties:
-                                        appendRequestHeaders:
-                                          additionalProperties:
-                                            type: string
-                                          description: Additional HTTP headers to
-                                            add before forwarding a request to the
-                                            destination service.
+                                        headerManipulation:
+                                          description: Manipulate request and response
+                                            headers.
+                                          properties:
+                                            appendRequestHeaders:
+                                              additionalProperties:
+                                                type: string
+                                              description: Additional HTTP headers
+                                                to add before forwarding a request
+                                                to the destination service.
+                                              type: object
+                                            appendResponseHeaders:
+                                              additionalProperties:
+                                                type: string
+                                              description: Additional HTTP headers
+                                                to add before returning a response
+                                                to the caller.
+                                              type: object
+                                            removeRequestHeaders:
+                                              description: HTTP headers to remove
+                                                before forwarding a request to the
+                                                destination service.
+                                              items:
+                                                type: string
+                                              type: array
+                                            removeResponseHeaders:
+                                              description: HTTP headers to remove
+                                                before returning a response to the
+                                                caller.
+                                              items:
+                                                type: string
+                                              type: array
                                           type: object
-                                        appendResponseHeaders:
-                                          additionalProperties:
-                                            type: string
-                                          description: Additional HTTP headers to
-                                            add before returning a response to the
-                                            caller.
-                                          type: object
-                                        removeRequestHeaders:
-                                          description: HTTP headers to remove before
-                                            forwarding a request to the destination
-                                            service.
-                                          items:
-                                            type: string
-                                          type: array
-                                        removeResponseHeaders:
-                                          description: HTTP headers to remove before
-                                            returning a response to the caller.
-                                          items:
-                                            type: string
-                                          type: array
-                                      type: object
-                                    mirror:
-                                      description: Mirror traffic to a another destination
-                                        (traffic will be sent to its original destination
-                                        in addition to the mirrored destinations).
-                                      oneOf:
-                                      - not:
-                                          anyOf:
+                                        mirror:
+                                          description: Mirror traffic to a another
+                                            destination (traffic will be sent to its
+                                            original destination in addition to the
+                                            mirrored destinations).
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - kubeService
                                           - required:
                                             - kubeService
-                                      - required:
-                                        - kubeService
-                                      properties:
-                                        kubeService:
-                                          description: Reference (name, namespace,
-                                            Gloo Mesh cluster) to a Kubernetes service.
                                           properties:
-                                            clusterName:
-                                              description: name of the cluster in
-                                                which the resource exists
-                                              type: string
-                                            name:
-                                              description: name of the resource being
-                                                referenced
-                                              type: string
-                                            namespace:
-                                              description: namespace of the resource
-                                                being referenced
-                                              type: string
+                                            kubeService:
+                                              description: Reference (name, namespace,
+                                                Gloo Mesh cluster) to a Kubernetes
+                                                service.
+                                              properties:
+                                                clusterName:
+                                                  description: name of the cluster
+                                                    in which the resource exists
+                                                  type: string
+                                                name:
+                                                  description: name of the resource
+                                                    being referenced
+                                                  type: string
+                                                namespace:
+                                                  description: namespace of the resource
+                                                    being referenced
+                                                  type: string
+                                              type: object
+                                            percentage:
+                                              description: Percentage of traffic to
+                                                mirror. If omitted all traffic will
+                                                be mirrored. Values must be between
+                                                0 and 100.
+                                              format: double
+                                              type: number
+                                            port:
+                                              description: Port on the destination
+                                                to receive traffic. Required if the
+                                                destination exposes multiple ports.
+                                              maximum: 4294967295
+                                              minimum: 0
+                                              type: integer
                                           type: object
-                                        percentage:
-                                          description: Percentage of traffic to mirror.
-                                            If omitted all traffic will be mirrored.
-                                            Values must be between 0 and 100.
-                                          format: double
-                                          type: number
-                                        port:
-                                          description: Port on the destination to
-                                            receive traffic. Required if the destination
-                                            exposes multiple ports.
-                                          maximum: 4294967295
-                                          minimum: 0
-                                          type: integer
-                                      type: object
-                                    mtls:
-                                      description: |-
-                                        Configure mTLS settings. If specified will override global default defined in Settings.
-                                        DEPRECATED: use DestinationPolicy to configure MTLS
-                                      properties:
-                                        istio:
-                                          description: Istio TLS settings.
-                                          properties:
-                                            tlsMode:
-                                              description: TLS connection mode
-                                              enum:
-                                              - DISABLE
-                                              - SIMPLE
-                                              - ISTIO_MUTUAL
-                                              type: string
-                                          type: object
-                                      type: object
-                                    outlierDetection:
-                                      description: |-
-                                        Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
-                                        Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-                                        DEPRECATED: use DestinationPolicy to configure Outlier Detection
-                                      properties:
-                                        baseEjectionTime:
-                                          description: 'The minimum ejection duration.
-                                            Format: `1h`/`1m`/`1s`/`1ms`. Must be
-                                            >= `1ms`. A default will be used if not
-                                            set.'
-                                          type: string
-                                        consecutiveErrors:
-                                          description: The number of errors before
-                                            a host is ejected from the connection
-                                            pool. A default will be used if not set.
-                                          maximum: 4294967295
-                                          minimum: 0
-                                          type: integer
-                                        interval:
-                                          description: 'The time interval between
-                                            ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`.
-                                            Must be >= `1ms`. A default will be used
-                                            if not set.'
-                                          type: string
-                                        maxEjectionPercent:
+                                        mtls:
                                           description: |-
-                                            The maximum percentage of hosts that can be ejected from the load balancing pool.
-                                            At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
-                                          maximum: 4294967295
-                                          minimum: 0
-                                          type: integer
-                                      type: object
-                                    requestTimeout:
-                                      description: Set a timeout on requests.
-                                      type: string
-                                    retries:
-                                      description: Set a retry policy on requests.
-                                      properties:
-                                        attempts:
-                                          description: Number of retries for a given
-                                            request
-                                          format: int32
-                                          type: integer
-                                        perTryTimeout:
-                                          description: 'Timeout per retry attempt
-                                            for a given request. Format: `1h`/`1m`/`1s`/`1ms`.
-                                            *Must be >= 1ms*.'
+                                            Configure mTLS settings. If specified will override global default defined in Settings.
+                                            DEPRECATED: use DestinationPolicy to configure MTLS
+                                          properties:
+                                            istio:
+                                              description: Istio TLS settings.
+                                              properties:
+                                                tlsMode:
+                                                  description: TLS connection mode
+                                                  enum:
+                                                  - DISABLE
+                                                  - SIMPLE
+                                                  - ISTIO_MUTUAL
+                                                  type: string
+                                              type: object
+                                          type: object
+                                        outlierDetection:
+                                          description: |-
+                                            Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+                                            Specifying this field requires an empty `source_selector` because it must apply to all traffic.
+                                            DEPRECATED: use DestinationPolicy to configure Outlier Detection
+                                          properties:
+                                            baseEjectionTime:
+                                              description: 'The minimum ejection duration.
+                                                Format: `1h`/`1m`/`1s`/`1ms`. Must
+                                                be >= `1ms`. A default will be used
+                                                if not set.'
+                                              type: string
+                                            consecutiveErrors:
+                                              description: The number of errors before
+                                                a host is ejected from the connection
+                                                pool. A default will be used if not
+                                                set.
+                                              maximum: 4294967295
+                                              minimum: 0
+                                              type: integer
+                                            interval:
+                                              description: 'The time interval between
+                                                ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`.
+                                                Must be >= `1ms`. A default will be
+                                                used if not set.'
+                                              type: string
+                                            maxEjectionPercent:
+                                              description: |-
+                                                The maximum percentage of hosts that can be ejected from the load balancing pool.
+                                                At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
+                                              maximum: 4294967295
+                                              minimum: 0
+                                              type: integer
+                                          type: object
+                                        requestTimeout:
+                                          description: Set a timeout on requests.
                                           type: string
-                                      type: object
-                                    trafficShift:
-                                      description: Shift traffic to a different destination.
-                                      properties:
-                                        destinations:
-                                          description: Specify weighted traffic shift
-                                            destinations.
-                                          items:
-                                            oneOf:
-                                            - not:
-                                                anyOf:
+                                        retries:
+                                          description: Set a retry policy on requests.
+                                          properties:
+                                            attempts:
+                                              description: Number of retries for a
+                                                given request
+                                              format: int32
+                                              type: integer
+                                            perTryTimeout:
+                                              description: 'Timeout per retry attempt
+                                                for a given request. Format: `1h`/`1m`/`1s`/`1ms`.
+                                                *Must be >= 1ms*.'
+                                              type: string
+                                          type: object
+                                        trafficShift:
+                                          description: Shift traffic to a different
+                                            destination.
+                                          properties:
+                                            destinations:
+                                              description: Specify weighted traffic
+                                                shift destinations.
+                                              items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - kubeService
+                                                    - required:
+                                                      - virtualDestination
+                                                    - required:
+                                                      - static
+                                                    - required:
+                                                      - clusterHeader
                                                 - required:
                                                   - kubeService
                                                 - required:
@@ -1194,137 +1271,135 @@ spec:
                                                   - static
                                                 - required:
                                                   - clusterHeader
-                                            - required:
-                                              - kubeService
-                                            - required:
-                                              - virtualDestination
-                                            - required:
-                                              - static
-                                            - required:
-                                              - clusterHeader
-                                            properties:
-                                              clusterHeader:
-                                                description: |-
-                                                  Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
-                                                  If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
-                                                  Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
-                                                  {{/* NOTE: unimplemented */}}
-                                                type: string
-                                              kubeService:
-                                                description: Specify a Kubernetes
-                                                  Service.
                                                 properties:
-                                                  clusterName:
-                                                    description: The Gloo Mesh cluster
-                                                      name (registration name) of
-                                                      the service.
+                                                  clusterHeader:
+                                                    description: |-
+                                                      Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                                                      If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                                                      Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                                                      {{/* NOTE: unimplemented */}}
                                                     type: string
-                                                  name:
-                                                    description: The name of the service.
-                                                    type: string
-                                                  namespace:
-                                                    description: The namespace of
-                                                      the service.
-                                                    type: string
-                                                  port:
-                                                    description: Port on the service
-                                                      to receive traffic. Required
-                                                      if the service exposes more
-                                                      than one port.
+                                                  kubeService:
+                                                    description: Specify a Kubernetes
+                                                      Service.
+                                                    properties:
+                                                      clusterName:
+                                                        description: The Gloo Mesh
+                                                          cluster name (registration
+                                                          name) of the service.
+                                                        type: string
+                                                      name:
+                                                        description: The name of the
+                                                          service.
+                                                        type: string
+                                                      namespace:
+                                                        description: The namespace
+                                                          of the service.
+                                                        type: string
+                                                      port:
+                                                        description: Port on the service
+                                                          to receive traffic. Required
+                                                          if the service exposes more
+                                                          than one port.
+                                                        maximum: 4294967295
+                                                        minimum: 0
+                                                        type: integer
+                                                      subset:
+                                                        additionalProperties:
+                                                          type: string
+                                                        description: Specify, by labels,
+                                                          a subset of service instances
+                                                          to route to.
+                                                        type: object
+                                                    type: object
+                                                  options:
+                                                    description: |-
+                                                      additional options / config for a route which will be applied
+                                                      when this destination is selected.
+                                                    properties:
+                                                      headerManipulation:
+                                                        description: manipualte headers
+                                                          on traffic sent to this
+                                                          destination
+                                                        properties:
+                                                          appendRequestHeaders:
+                                                            additionalProperties:
+                                                              type: string
+                                                            description: Additional
+                                                              HTTP headers to add
+                                                              before forwarding a
+                                                              request to the destination
+                                                              service.
+                                                            type: object
+                                                          appendResponseHeaders:
+                                                            additionalProperties:
+                                                              type: string
+                                                            description: Additional
+                                                              HTTP headers to add
+                                                              before returning a response
+                                                              to the caller.
+                                                            type: object
+                                                          removeRequestHeaders:
+                                                            description: HTTP headers
+                                                              to remove before forwarding
+                                                              a request to the destination
+                                                              service.
+                                                            items:
+                                                              type: string
+                                                            type: array
+                                                          removeResponseHeaders:
+                                                            description: HTTP headers
+                                                              to remove before returning
+                                                              a response to the caller.
+                                                            items:
+                                                              type: string
+                                                            type: array
+                                                        type: object
+                                                    type: object
+                                                  static:
+                                                    description: Reference to a gloo
+                                                      mesh Static Destination
+                                                    properties:
+                                                      name:
+                                                        description: name of the resource
+                                                          being referenced
+                                                        type: string
+                                                      namespace:
+                                                        description: namespace of
+                                                          the resource being referenced
+                                                        type: string
+                                                    type: object
+                                                  virtualDestination:
+                                                    description: Specify a VirtualDestination.
+                                                    properties:
+                                                      name:
+                                                        description: The name of the
+                                                          VirtualDestination object.
+                                                        type: string
+                                                      namespace:
+                                                        description: The namespace
+                                                          of the VirtualDestination
+                                                          object.
+                                                        type: string
+                                                      subset:
+                                                        additionalProperties:
+                                                          type: string
+                                                        description: Specify, by labels,
+                                                          a subset of service instances
+                                                          backing the VirtualDestination
+                                                          to route to.
+                                                        type: object
+                                                    type: object
+                                                  weight:
+                                                    description: |-
+                                                      Specify the proportion of traffic to be forwarded to this destination.
+                                                      Weights across all of the `destinations` must sum to 100.
                                                     maximum: 4294967295
                                                     minimum: 0
                                                     type: integer
-                                                  subset:
-                                                    additionalProperties:
-                                                      type: string
-                                                    description: Specify, by labels,
-                                                      a subset of service instances
-                                                      to route to.
-                                                    type: object
                                                 type: object
-                                              options:
-                                                description: |-
-                                                  additional options / config for a route which will be applied
-                                                  when this destination is selected.
-                                                properties:
-                                                  headerManipulation:
-                                                    description: manipualte headers
-                                                      on traffic sent to this destination
-                                                    properties:
-                                                      appendRequestHeaders:
-                                                        additionalProperties:
-                                                          type: string
-                                                        description: Additional HTTP
-                                                          headers to add before forwarding
-                                                          a request to the destination
-                                                          service.
-                                                        type: object
-                                                      appendResponseHeaders:
-                                                        additionalProperties:
-                                                          type: string
-                                                        description: Additional HTTP
-                                                          headers to add before returning
-                                                          a response to the caller.
-                                                        type: object
-                                                      removeRequestHeaders:
-                                                        description: HTTP headers
-                                                          to remove before forwarding
-                                                          a request to the destination
-                                                          service.
-                                                        items:
-                                                          type: string
-                                                        type: array
-                                                      removeResponseHeaders:
-                                                        description: HTTP headers
-                                                          to remove before returning
-                                                          a response to the caller.
-                                                        items:
-                                                          type: string
-                                                        type: array
-                                                    type: object
-                                                type: object
-                                              static:
-                                                description: Reference to a gloo mesh
-                                                  Static Destination
-                                                properties:
-                                                  name:
-                                                    description: name of the resource
-                                                      being referenced
-                                                    type: string
-                                                  namespace:
-                                                    description: namespace of the
-                                                      resource being referenced
-                                                    type: string
-                                                type: object
-                                              virtualDestination:
-                                                description: Specify a VirtualDestination.
-                                                properties:
-                                                  name:
-                                                    description: The name of the VirtualDestination
-                                                      object.
-                                                    type: string
-                                                  namespace:
-                                                    description: The namespace of
-                                                      the VirtualDestination object.
-                                                    type: string
-                                                  subset:
-                                                    additionalProperties:
-                                                      type: string
-                                                    description: Specify, by labels,
-                                                      a subset of service instances
-                                                      backing the VirtualDestination
-                                                      to route to.
-                                                    type: object
-                                                type: object
-                                              weight:
-                                                description: |-
-                                                  Specify the proportion of traffic to be forwarded to this destination.
-                                                  Weights across all of the `destinations` must sum to 100.
-                                                maximum: 4294967295
-                                                minimum: 0
-                                                type: integer
-                                            type: object
-                                          type: array
+                                              type: array
+                                          type: object
                                       type: object
                                   type: object
                                 routes:
@@ -1656,6 +1731,65 @@ spec:
                                                   Specify how long the results of a preflight request can be
                                                   cached. Serialized to the `Access-Control-Max-Age` header.
                                                 type: string
+                                            type: object
+                                          csrf:
+                                            description: Configure the Envoy based
+                                              CSRF filter
+                                            properties:
+                                              additionalOrigins:
+                                                description: |-
+                                                  Specifies additional source origins that will be allowed in addition to
+                                                  the destination origin.
+                                                items:
+                                                  oneOf:
+                                                  - not:
+                                                      anyOf:
+                                                      - required:
+                                                        - exact
+                                                      - required:
+                                                        - prefix
+                                                      - required:
+                                                        - regex
+                                                  - required:
+                                                    - exact
+                                                  - required:
+                                                    - prefix
+                                                  - required:
+                                                    - regex
+                                                  properties:
+                                                    exact:
+                                                      description: Exact string match.
+                                                      type: string
+                                                    prefix:
+                                                      description: Prefix-based match.
+                                                      type: string
+                                                    regex:
+                                                      description: ECMAscript style
+                                                        regex-based match.
+                                                      type: string
+                                                  type: object
+                                                type: array
+                                              filterEnabled:
+                                                description: Specifies that CSRF policies
+                                                  will be evaluated, tracked and enforced.
+                                                type: boolean
+                                              percentage:
+                                                description: |-
+                                                  Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                                                  evaluated and tracked, but not enforced.
+
+                                                  If filter_enabled or shadow_enabled is true.
+                                                  Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                                                  .. note:: This field defaults to 100
+                                                format: double
+                                                type: number
+                                              shadowEnabled:
+                                                description: |-
+                                                  Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                                                  This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                                                type: boolean
                                             type: object
                                           faultInjection:
                                             description: Inject faulty responses.
@@ -2743,6 +2877,63 @@ spec:
                             cached. Serialized to the `Access-Control-Max-Age` header.
                           type: string
                       type: object
+                    csrf:
+                      description: Configure the Envoy based CSRF filter
+                      properties:
+                        additionalOrigins:
+                          description: |-
+                            Specifies additional source origins that will be allowed in addition to
+                            the destination origin.
+                          items:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
+                            - required:
+                              - exact
+                            - required:
+                              - prefix
+                            - required:
+                              - regex
+                            properties:
+                              exact:
+                                description: Exact string match.
+                                type: string
+                              prefix:
+                                description: Prefix-based match.
+                                type: string
+                              regex:
+                                description: ECMAscript style regex-based match.
+                                type: string
+                            type: object
+                          type: array
+                        filterEnabled:
+                          description: Specifies that CSRF policies will be evaluated,
+                            tracked and enforced.
+                          type: boolean
+                        percentage:
+                          description: |-
+                            Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                            evaluated and tracked, but not enforced.
+
+                            If filter_enabled or shadow_enabled is true.
+                            Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                            .. note:: This field defaults to 100
+                          format: double
+                          type: number
+                        shadowEnabled:
+                          description: |-
+                            Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                            This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                          type: boolean
+                      type: object
                     faultInjection:
                       description: Inject faulty responses.
                       oneOf:
@@ -3181,246 +3372,317 @@ spec:
                 Some configuration here can be overridden by Route Options.
                 OutlierDetection and TrafficShift isn't supported on the route level.
               properties:
-                corsPolicy:
-                  description: |-
-                    Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
-                    for further details about cross origin resource sharing.
+                trafficPolicy:
                   properties:
-                    allowCredentials:
+                    corsPolicy:
                       description: |-
-                        Indicates whether the caller is allowed to send the actual request
-                        (not the preflight) using credentials. Translates to the
-                        `Access-Control-Allow-Credentials` header.
-                      nullable: true
-                      type: boolean
-                    allowHeaders:
-                      description: |-
-                        List of HTTP headers that can be used when requesting the
-                        resource. Serialized to the `Access-Control-Allow-Headers` header.
-                      items:
-                        type: string
-                      type: array
-                    allowMethods:
-                      description: |-
-                        List of HTTP methods allowed to access the resource. The content will
-                        be serialized to the `Access-Control-Allow-Methods` header.
-                      items:
-                        type: string
-                      type: array
-                    allowOrigins:
-                      description: String patterns that match allowed origins. An
-                        origin is allowed if any of the string matchers match.
-                      items:
-                        oneOf:
-                        - not:
-                            anyOf:
+                        Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+                        for further details about cross origin resource sharing.
+                      properties:
+                        allowCredentials:
+                          description: |-
+                            Indicates whether the caller is allowed to send the actual request
+                            (not the preflight) using credentials. Translates to the
+                            `Access-Control-Allow-Credentials` header.
+                          nullable: true
+                          type: boolean
+                        allowHeaders:
+                          description: |-
+                            List of HTTP headers that can be used when requesting the
+                            resource. Serialized to the `Access-Control-Allow-Headers` header.
+                          items:
+                            type: string
+                          type: array
+                        allowMethods:
+                          description: |-
+                            List of HTTP methods allowed to access the resource. The content will
+                            be serialized to the `Access-Control-Allow-Methods` header.
+                          items:
+                            type: string
+                          type: array
+                        allowOrigins:
+                          description: String patterns that match allowed origins.
+                            An origin is allowed if any of the string matchers match.
+                          items:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
                             - required:
                               - exact
                             - required:
                               - prefix
                             - required:
                               - regex
-                        - required:
-                          - exact
-                        - required:
-                          - prefix
-                        - required:
-                          - regex
-                        properties:
-                          exact:
-                            description: Exact string match.
+                            properties:
+                              exact:
+                                description: Exact string match.
+                                type: string
+                              prefix:
+                                description: Prefix-based match.
+                                type: string
+                              regex:
+                                description: ECMAscript style regex-based match.
+                                type: string
+                            type: object
+                          type: array
+                        exposeHeaders:
+                          description: |-
+                            A list of HTTP headers that browsers are allowed to
+                            access. Serialized to the `Access-Control-Expose-Headers` header.
+                          items:
                             type: string
-                          prefix:
-                            description: Prefix-based match.
-                            type: string
-                          regex:
-                            description: ECMAscript style regex-based match.
-                            type: string
-                        type: object
-                      type: array
-                    exposeHeaders:
-                      description: |-
-                        A list of HTTP headers that browsers are allowed to
-                        access. Serialized to the `Access-Control-Expose-Headers` header.
-                      items:
-                        type: string
-                      type: array
-                    maxAge:
-                      description: |-
-                        Specify how long the results of a preflight request can be
-                        cached. Serialized to the `Access-Control-Max-Age` header.
-                      type: string
-                  type: object
-                faultInjection:
-                  description: Inject faulty responses.
-                  oneOf:
-                  - not:
-                      anyOf:
+                          type: array
+                        maxAge:
+                          description: |-
+                            Specify how long the results of a preflight request can be
+                            cached. Serialized to the `Access-Control-Max-Age` header.
+                          type: string
+                      type: object
+                    csrf:
+                      description: Configure the Envoy based CSRF filter
+                      properties:
+                        additionalOrigins:
+                          description: |-
+                            Specifies additional source origins that will be allowed in addition to
+                            the destination origin.
+                          items:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
+                            - required:
+                              - exact
+                            - required:
+                              - prefix
+                            - required:
+                              - regex
+                            properties:
+                              exact:
+                                description: Exact string match.
+                                type: string
+                              prefix:
+                                description: Prefix-based match.
+                                type: string
+                              regex:
+                                description: ECMAscript style regex-based match.
+                                type: string
+                            type: object
+                          type: array
+                        filterEnabled:
+                          description: Specifies that CSRF policies will be evaluated,
+                            tracked and enforced.
+                          type: boolean
+                        percentage:
+                          description: |-
+                            Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                            evaluated and tracked, but not enforced.
+
+                            If filter_enabled or shadow_enabled is true.
+                            Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                            .. note:: This field defaults to 100
+                          format: double
+                          type: number
+                        shadowEnabled:
+                          description: |-
+                            Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                            This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                          type: boolean
+                      type: object
+                    faultInjection:
+                      description: Inject faulty responses.
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - fixedDelay
+                          - required:
+                            - abort
                       - required:
                         - fixedDelay
                       - required:
                         - abort
-                  - required:
-                    - fixedDelay
-                  - required:
-                    - abort
-                  properties:
-                    abort:
-                      description: Abort the request and return the specified error
-                        code back to traffic source.
                       properties:
-                        httpStatus:
-                          description: Required. HTTP status code to use to abort
-                            the request.
-                          format: int32
-                          type: integer
+                        abort:
+                          description: Abort the request and return the specified
+                            error code back to traffic source.
+                          properties:
+                            httpStatus:
+                              description: Required. HTTP status code to use to abort
+                                the request.
+                              format: int32
+                              type: integer
+                          type: object
+                        fixedDelay:
+                          description: 'Add a delay of a fixed duration before sending
+                            the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                          type: string
+                        percentage:
+                          description: Percentage of requests to be faulted. Values
+                            range between 0 and 100. If omitted all requests will
+                            be faulted.
+                          format: double
+                          type: number
                       type: object
-                    fixedDelay:
-                      description: 'Add a delay of a fixed duration before sending
-                        the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
-                      type: string
-                    percentage:
-                      description: Percentage of requests to be faulted. Values range
-                        between 0 and 100. If omitted all requests will be faulted.
-                      format: double
-                      type: number
-                  type: object
-                headerManipulation:
-                  description: Manipulate request and response headers.
-                  properties:
-                    appendRequestHeaders:
-                      additionalProperties:
-                        type: string
-                      description: Additional HTTP headers to add before forwarding
-                        a request to the destination service.
+                    headerManipulation:
+                      description: Manipulate request and response headers.
+                      properties:
+                        appendRequestHeaders:
+                          additionalProperties:
+                            type: string
+                          description: Additional HTTP headers to add before forwarding
+                            a request to the destination service.
+                          type: object
+                        appendResponseHeaders:
+                          additionalProperties:
+                            type: string
+                          description: Additional HTTP headers to add before returning
+                            a response to the caller.
+                          type: object
+                        removeRequestHeaders:
+                          description: HTTP headers to remove before forwarding a
+                            request to the destination service.
+                          items:
+                            type: string
+                          type: array
+                        removeResponseHeaders:
+                          description: HTTP headers to remove before returning a response
+                            to the caller.
+                          items:
+                            type: string
+                          type: array
                       type: object
-                    appendResponseHeaders:
-                      additionalProperties:
-                        type: string
-                      description: Additional HTTP headers to add before returning
-                        a response to the caller.
-                      type: object
-                    removeRequestHeaders:
-                      description: HTTP headers to remove before forwarding a request
-                        to the destination service.
-                      items:
-                        type: string
-                      type: array
-                    removeResponseHeaders:
-                      description: HTTP headers to remove before returning a response
-                        to the caller.
-                      items:
-                        type: string
-                      type: array
-                  type: object
-                mirror:
-                  description: Mirror traffic to a another destination (traffic will
-                    be sent to its original destination in addition to the mirrored
-                    destinations).
-                  oneOf:
-                  - not:
-                      anyOf:
+                    mirror:
+                      description: Mirror traffic to a another destination (traffic
+                        will be sent to its original destination in addition to the
+                        mirrored destinations).
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - kubeService
                       - required:
                         - kubeService
-                  - required:
-                    - kubeService
-                  properties:
-                    kubeService:
-                      description: Reference (name, namespace, Gloo Mesh cluster)
-                        to a Kubernetes service.
                       properties:
-                        clusterName:
-                          description: name of the cluster in which the resource exists
-                          type: string
-                        name:
-                          description: name of the resource being referenced
-                          type: string
-                        namespace:
-                          description: namespace of the resource being referenced
-                          type: string
+                        kubeService:
+                          description: Reference (name, namespace, Gloo Mesh cluster)
+                            to a Kubernetes service.
+                          properties:
+                            clusterName:
+                              description: name of the cluster in which the resource
+                                exists
+                              type: string
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                        percentage:
+                          description: Percentage of traffic to mirror. If omitted
+                            all traffic will be mirrored. Values must be between 0
+                            and 100.
+                          format: double
+                          type: number
+                        port:
+                          description: Port on the destination to receive traffic.
+                            Required if the destination exposes multiple ports.
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
                       type: object
-                    percentage:
-                      description: Percentage of traffic to mirror. If omitted all
-                        traffic will be mirrored. Values must be between 0 and 100.
-                      format: double
-                      type: number
-                    port:
-                      description: Port on the destination to receive traffic. Required
-                        if the destination exposes multiple ports.
-                      maximum: 4294967295
-                      minimum: 0
-                      type: integer
-                  type: object
-                mtls:
-                  description: |-
-                    Configure mTLS settings. If specified will override global default defined in Settings.
-                    DEPRECATED: use DestinationPolicy to configure MTLS
-                  properties:
-                    istio:
-                      description: Istio TLS settings.
-                      properties:
-                        tlsMode:
-                          description: TLS connection mode
-                          enum:
-                          - DISABLE
-                          - SIMPLE
-                          - ISTIO_MUTUAL
-                          type: string
-                      type: object
-                  type: object
-                outlierDetection:
-                  description: |-
-                    Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
-                    Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-                    DEPRECATED: use DestinationPolicy to configure Outlier Detection
-                  properties:
-                    baseEjectionTime:
-                      description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
-                        Must be >= `1ms`. A default will be used if not set.'
-                      type: string
-                    consecutiveErrors:
-                      description: The number of errors before a host is ejected from
-                        the connection pool. A default will be used if not set.
-                      maximum: 4294967295
-                      minimum: 0
-                      type: integer
-                    interval:
-                      description: 'The time interval between ejection sweep analysis.
-                        Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default
-                        will be used if not set.'
-                      type: string
-                    maxEjectionPercent:
+                    mtls:
                       description: |-
-                        The maximum percentage of hosts that can be ejected from the load balancing pool.
-                        At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
-                      maximum: 4294967295
-                      minimum: 0
-                      type: integer
-                  type: object
-                requestTimeout:
-                  description: Set a timeout on requests.
-                  type: string
-                retries:
-                  description: Set a retry policy on requests.
-                  properties:
-                    attempts:
-                      description: Number of retries for a given request
-                      format: int32
-                      type: integer
-                    perTryTimeout:
-                      description: 'Timeout per retry attempt for a given request.
-                        Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                        Configure mTLS settings. If specified will override global default defined in Settings.
+                        DEPRECATED: use DestinationPolicy to configure MTLS
+                      properties:
+                        istio:
+                          description: Istio TLS settings.
+                          properties:
+                            tlsMode:
+                              description: TLS connection mode
+                              enum:
+                              - DISABLE
+                              - SIMPLE
+                              - ISTIO_MUTUAL
+                              type: string
+                          type: object
+                      type: object
+                    outlierDetection:
+                      description: |-
+                        Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+                        Specifying this field requires an empty `source_selector` because it must apply to all traffic.
+                        DEPRECATED: use DestinationPolicy to configure Outlier Detection
+                      properties:
+                        baseEjectionTime:
+                          description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`.
+                            Must be >= `1ms`. A default will be used if not set.'
+                          type: string
+                        consecutiveErrors:
+                          description: The number of errors before a host is ejected
+                            from the connection pool. A default will be used if not
+                            set.
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
+                        interval:
+                          description: 'The time interval between ejection sweep analysis.
+                            Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default
+                            will be used if not set.'
+                          type: string
+                        maxEjectionPercent:
+                          description: |-
+                            The maximum percentage of hosts that can be ejected from the load balancing pool.
+                            At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
+                      type: object
+                    requestTimeout:
+                      description: Set a timeout on requests.
                       type: string
-                  type: object
-                trafficShift:
-                  description: Shift traffic to a different destination.
-                  properties:
-                    destinations:
-                      description: Specify weighted traffic shift destinations.
-                      items:
-                        oneOf:
-                        - not:
-                            anyOf:
+                    retries:
+                      description: Set a retry policy on requests.
+                      properties:
+                        attempts:
+                          description: Number of retries for a given request
+                          format: int32
+                          type: integer
+                        perTryTimeout:
+                          description: 'Timeout per retry attempt for a given request.
+                            Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                          type: string
+                      type: object
+                    trafficShift:
+                      description: Shift traffic to a different destination.
+                      properties:
+                        destinations:
+                          description: Specify weighted traffic shift destinations.
+                          items:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - kubeService
+                                - required:
+                                  - virtualDestination
+                                - required:
+                                  - static
+                                - required:
+                                  - clusterHeader
                             - required:
                               - kubeService
                             - required:
@@ -3429,120 +3691,117 @@ spec:
                               - static
                             - required:
                               - clusterHeader
-                        - required:
-                          - kubeService
-                        - required:
-                          - virtualDestination
-                        - required:
-                          - static
-                        - required:
-                          - clusterHeader
-                        properties:
-                          clusterHeader:
-                            description: |-
-                              Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
-                              If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
-                              Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
-                              {{/* NOTE: unimplemented */}}
-                            type: string
-                          kubeService:
-                            description: Specify a Kubernetes Service.
                             properties:
-                              clusterName:
-                                description: The Gloo Mesh cluster name (registration
-                                  name) of the service.
+                              clusterHeader:
+                                description: |-
+                                  Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                                  If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                                  Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                                  {{/* NOTE: unimplemented */}}
                                 type: string
-                              name:
-                                description: The name of the service.
-                                type: string
-                              namespace:
-                                description: The namespace of the service.
-                                type: string
-                              port:
-                                description: Port on the service to receive traffic.
-                                  Required if the service exposes more than one port.
+                              kubeService:
+                                description: Specify a Kubernetes Service.
+                                properties:
+                                  clusterName:
+                                    description: The Gloo Mesh cluster name (registration
+                                      name) of the service.
+                                    type: string
+                                  name:
+                                    description: The name of the service.
+                                    type: string
+                                  namespace:
+                                    description: The namespace of the service.
+                                    type: string
+                                  port:
+                                    description: Port on the service to receive traffic.
+                                      Required if the service exposes more than one
+                                      port.
+                                    maximum: 4294967295
+                                    minimum: 0
+                                    type: integer
+                                  subset:
+                                    additionalProperties:
+                                      type: string
+                                    description: Specify, by labels, a subset of service
+                                      instances to route to.
+                                    type: object
+                                type: object
+                              options:
+                                description: |-
+                                  additional options / config for a route which will be applied
+                                  when this destination is selected.
+                                properties:
+                                  headerManipulation:
+                                    description: manipualte headers on traffic sent
+                                      to this destination
+                                    properties:
+                                      appendRequestHeaders:
+                                        additionalProperties:
+                                          type: string
+                                        description: Additional HTTP headers to add
+                                          before forwarding a request to the destination
+                                          service.
+                                        type: object
+                                      appendResponseHeaders:
+                                        additionalProperties:
+                                          type: string
+                                        description: Additional HTTP headers to add
+                                          before returning a response to the caller.
+                                        type: object
+                                      removeRequestHeaders:
+                                        description: HTTP headers to remove before
+                                          forwarding a request to the destination
+                                          service.
+                                        items:
+                                          type: string
+                                        type: array
+                                      removeResponseHeaders:
+                                        description: HTTP headers to remove before
+                                          returning a response to the caller.
+                                        items:
+                                          type: string
+                                        type: array
+                                    type: object
+                                type: object
+                              static:
+                                description: Reference to a gloo mesh Static Destination
+                                properties:
+                                  name:
+                                    description: name of the resource being referenced
+                                    type: string
+                                  namespace:
+                                    description: namespace of the resource being referenced
+                                    type: string
+                                type: object
+                              virtualDestination:
+                                description: Specify a VirtualDestination.
+                                properties:
+                                  name:
+                                    description: The name of the VirtualDestination
+                                      object.
+                                    type: string
+                                  namespace:
+                                    description: The namespace of the VirtualDestination
+                                      object.
+                                    type: string
+                                  subset:
+                                    additionalProperties:
+                                      type: string
+                                    description: Specify, by labels, a subset of service
+                                      instances backing the VirtualDestination to
+                                      route to.
+                                    type: object
+                                type: object
+                              weight:
+                                description: |-
+                                  Specify the proportion of traffic to be forwarded to this destination.
+                                  Weights across all of the `destinations` must sum to 100.
                                 maximum: 4294967295
                                 minimum: 0
                                 type: integer
-                              subset:
-                                additionalProperties:
-                                  type: string
-                                description: Specify, by labels, a subset of service
-                                  instances to route to.
-                                type: object
                             type: object
-                          options:
-                            description: |-
-                              additional options / config for a route which will be applied
-                              when this destination is selected.
-                            properties:
-                              headerManipulation:
-                                description: manipualte headers on traffic sent to
-                                  this destination
-                                properties:
-                                  appendRequestHeaders:
-                                    additionalProperties:
-                                      type: string
-                                    description: Additional HTTP headers to add before
-                                      forwarding a request to the destination service.
-                                    type: object
-                                  appendResponseHeaders:
-                                    additionalProperties:
-                                      type: string
-                                    description: Additional HTTP headers to add before
-                                      returning a response to the caller.
-                                    type: object
-                                  removeRequestHeaders:
-                                    description: HTTP headers to remove before forwarding
-                                      a request to the destination service.
-                                    items:
-                                      type: string
-                                    type: array
-                                  removeResponseHeaders:
-                                    description: HTTP headers to remove before returning
-                                      a response to the caller.
-                                    items:
-                                      type: string
-                                    type: array
-                                type: object
-                            type: object
-                          static:
-                            description: Reference to a gloo mesh Static Destination
-                            properties:
-                              name:
-                                description: name of the resource being referenced
-                                type: string
-                              namespace:
-                                description: namespace of the resource being referenced
-                                type: string
-                            type: object
-                          virtualDestination:
-                            description: Specify a VirtualDestination.
-                            properties:
-                              name:
-                                description: The name of the VirtualDestination object.
-                                type: string
-                              namespace:
-                                description: The namespace of the VirtualDestination
-                                  object.
-                                type: string
-                              subset:
-                                additionalProperties:
-                                  type: string
-                                description: Specify, by labels, a subset of service
-                                  instances backing the VirtualDestination to route
-                                  to.
-                                type: object
-                            type: object
-                          weight:
-                            description: |-
-                              Specify the proportion of traffic to be forwarded to this destination.
-                              Weights across all of the `destinations` must sum to 100.
-                            maximum: 4294967295
-                            minimum: 0
-                            type: integer
-                        type: object
-                      type: array
+                          type: array
+                      type: object
                   type: object
               type: object
             routes:
@@ -3858,6 +4117,63 @@ spec:
                               Specify how long the results of a preflight request can be
                               cached. Serialized to the `Access-Control-Max-Age` header.
                             type: string
+                        type: object
+                      csrf:
+                        description: Configure the Envoy based CSRF filter
+                        properties:
+                          additionalOrigins:
+                            description: |-
+                              Specifies additional source origins that will be allowed in addition to
+                              the destination origin.
+                            items:
+                              oneOf:
+                              - not:
+                                  anyOf:
+                                  - required:
+                                    - exact
+                                  - required:
+                                    - prefix
+                                  - required:
+                                    - regex
+                              - required:
+                                - exact
+                              - required:
+                                - prefix
+                              - required:
+                                - regex
+                              properties:
+                                exact:
+                                  description: Exact string match.
+                                  type: string
+                                prefix:
+                                  description: Prefix-based match.
+                                  type: string
+                                regex:
+                                  description: ECMAscript style regex-based match.
+                                  type: string
+                              type: object
+                            type: array
+                          filterEnabled:
+                            description: Specifies that CSRF policies will be evaluated,
+                              tracked and enforced.
+                            type: boolean
+                          percentage:
+                            description: |-
+                              Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                              evaluated and tracked, but not enforced.
+
+                              If filter_enabled or shadow_enabled is true.
+                              Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                              .. note:: This field defaults to 100
+                            format: double
+                            type: number
+                          shadowEnabled:
+                            description: |-
+                              Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                              This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                            type: boolean
                         type: object
                       faultInjection:
                         description: Inject faulty responses.
@@ -4741,6 +5057,63 @@ spec:
                               Specify how long the results of a preflight request can be
                               cached. Serialized to the `Access-Control-Max-Age` header.
                             type: string
+                        type: object
+                      csrf:
+                        description: Configure the Envoy based CSRF filter
+                        properties:
+                          additionalOrigins:
+                            description: |-
+                              Specifies additional source origins that will be allowed in addition to
+                              the destination origin.
+                            items:
+                              oneOf:
+                              - not:
+                                  anyOf:
+                                  - required:
+                                    - exact
+                                  - required:
+                                    - prefix
+                                  - required:
+                                    - regex
+                              - required:
+                                - exact
+                              - required:
+                                - prefix
+                              - required:
+                                - regex
+                              properties:
+                                exact:
+                                  description: Exact string match.
+                                  type: string
+                                prefix:
+                                  description: Prefix-based match.
+                                  type: string
+                                regex:
+                                  description: ECMAscript style regex-based match.
+                                  type: string
+                              type: object
+                            type: array
+                          filterEnabled:
+                            description: Specifies that CSRF policies will be evaluated,
+                              tracked and enforced.
+                            type: boolean
+                          percentage:
+                            description: |-
+                              Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                              evaluated and tracked, but not enforced.
+
+                              If filter_enabled or shadow_enabled is true.
+                              Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                              .. note:: This field defaults to 100
+                            format: double
+                            type: number
+                          shadowEnabled:
+                            description: |-
+                              Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                              This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                            type: boolean
                         type: object
                       faultInjection:
                         description: Inject faulty responses.

@@ -22,6 +22,10 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
   - [TrafficPolicySpec.Policy.CorsPolicy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch)
+  - [TrafficPolicySpec.Policy.CsrfPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy)
+  - [TrafficPolicySpec.Policy.CsrfPolicy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch)
+  - [TrafficPolicySpec.Policy.DLPPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.DLPPolicy)
+  - [TrafficPolicySpec.Policy.ExtAuth](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.ExtAuth)
   - [TrafficPolicySpec.Policy.FaultInjection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection)
   - [TrafficPolicySpec.Policy.FaultInjection.Abort](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.Abort)
   - [TrafficPolicySpec.Policy.MTLS](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS)
@@ -29,7 +33,9 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy.Mirror](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror)
   - [TrafficPolicySpec.Policy.MultiDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination)
   - [TrafficPolicySpec.Policy.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection)
+  - [TrafficPolicySpec.Policy.Ratelimit](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Ratelimit)
   - [TrafficPolicySpec.Policy.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy)
+  - [TrafficPolicySpec.Policy.Transform](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Transform)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry)
 
@@ -75,6 +81,7 @@ Specify L7 routing and post-routing configuration.
   | headerManipulation | [networking.mesh.gloo.solo.io.HeaderManipulation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
   | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. DEPRECATED: use DestinationPolicy to configure Outlier Detection |
   | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. DEPRECATED: use DestinationPolicy to configure MTLS |
+  | csrf | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter |
   
 
 
@@ -112,6 +119,71 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | exact | string |  | Exact string match. |
   | prefix | string |  | Prefix-based match. |
   | regex | string |  | ECMAscript style regex-based match. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy"></a>
+
+### TrafficPolicySpec.Policy.CsrfPolicy
+CSRF filter config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| filterEnabled | bool |  | Specifies that CSRF policies will be evaluated, tracked and enforced. |
+  | shadowEnabled | bool |  | Specifies that CSRF policies will be evaluated and tracked, but not enforced.<br>This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise. |
+  | percentage | double |  | Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests evaluated and tracked, but not enforced.<br>If filter_enabled or shadow_enabled is true. Envoy will lookup the runtime key to get the percentage of requests to filter.<br>.. note:: This field defaults to 100 |
+  | additionalOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy.StringMatch"></a>
+
+### TrafficPolicySpec.Policy.CsrfPolicy.StringMatch
+Describes how to match a given string in HTTP headers. Match is case-sensitive.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| exact | string |  | Exact string match. |
+  | prefix | string |  | Prefix-based match. |
+  | regex | string |  | ECMAscript style regex-based match. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.DLPPolicy"></a>
+
+### TrafficPolicySpec.Policy.DLPPolicy
+DLP filter config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| todo | string |  | TODO: implement |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.ExtAuth"></a>
+
+### TrafficPolicySpec.Policy.ExtAuth
+ExtAuth filter config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| todo | string |  | TODO: implement |
   
 
 
@@ -230,6 +302,21 @@ Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/
 
 
 
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Ratelimit"></a>
+
+### TrafficPolicySpec.Policy.Ratelimit
+Ratelimit filter config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| todo | string |  | TODO: implement |
+  
+
+
+
+
+
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy"></a>
 
 ### TrafficPolicySpec.Policy.RetryPolicy
@@ -240,6 +327,21 @@ Specify retries for failed requests.
 | ----- | ---- | ----- | ----------- |
 | attempts | int32 |  | Number of retries for a given request |
   | perTryTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Transform"></a>
+
+### TrafficPolicySpec.Policy.Transform
+Transform filter config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| todo | string |  | TODO: implement |
   
 
 
