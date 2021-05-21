@@ -6,6 +6,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/route.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -33,18 +34,15 @@ message VirtualHostSpec {
 
     // Route table options contain additional configuration to be applied to all traffic served by the route table.
     // Some configuration here can be overridden by Route Options.
-    VirtualHostOptions virtual_host_options = 3;
+    // OutlierDetection and TrafficShift isn't supported on the route level.
+    VirtualHostOptions options = 3;
+}
 
-    // TODO: Fill / maybe replace with traffic policy?
-    message VirtualHostOptions {
-        // see message VirtualHostOptions in options.proto
+message VirtualHostOptions {
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy traffic_policy = 1;
 
-        // options shared from TrafficPolicy
-        // OutlierDetection  and TrafficShift isn't supported on the route level.
-        // TrafficPolicySpec.Policy traffic_policy = 1;
-
-        string todo_add_options = 1;
-    }
+    //     TODO: Move into traffic policy anything that goes on the route level and would be conceivably used for East/West traffic
+    //    .networking.enterprise.mesh.gloo.solo.io.filters.Waf waf = 2;
 }
 
 message VirtualHostStatus {

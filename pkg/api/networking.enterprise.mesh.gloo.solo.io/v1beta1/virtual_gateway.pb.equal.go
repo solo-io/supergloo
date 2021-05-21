@@ -483,16 +483,6 @@ func (m *VirtualGatewaySpec_GatewayOptions) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetTrafficPolicy()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetTrafficPolicy()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetTrafficPolicy(), target.GetTrafficPolicy()) {
-			return false
-		}
-	}
-
 	if h, ok := interface{}(m.GetPerConnectionBufferLimitBytes()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetPerConnectionBufferLimitBytes()) {
 			return false

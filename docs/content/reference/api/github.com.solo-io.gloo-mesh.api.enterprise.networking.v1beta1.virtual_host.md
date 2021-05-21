@@ -18,11 +18,26 @@ title: "virtual_host.proto"
 
 
 ## Table of Contents
+  - [VirtualHostOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualHostOptions)
   - [VirtualHostSpec](#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec)
-  - [VirtualHostSpec.VirtualHostOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions)
   - [VirtualHostStatus](#networking.enterprise.mesh.gloo.solo.io.VirtualHostStatus)
 
 
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualHostOptions"></a>
+
+### VirtualHostOptions
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| trafficPolicy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  |  |
+  
 
 
 
@@ -38,22 +53,7 @@ A `VirtualHost` is used to configure routes. It is selected by a `VirtualGateway
 | ----- | ---- | ----- | ----------- |
 | domains | []string | repeated | The list of domains (i.e.: matching the `Host` header of a request) that belong to this virtual host. Note that the wildcard will not match the empty string. e.g. “*-bar.foo.com” will match “baz-bar.foo.com” but not “-bar.foo.com”. Additionally, a special entry “*” is allowed which will match any host/authority header. Only a single virtual host on a gateway can match on “*”. A domain must be unique across all virtual hosts on a gateway or the config will be invalidated by Gloo Domains on virtual hosts obey the same rules as [Envoy Virtual Hosts](https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto) |
   | routes | [][networking.enterprise.mesh.gloo.solo.io.Route]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.Route" >}}) | repeated | The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches this virtual host. If the request matches more than one route in the list, the first route matched will be selected. If the list of routes is empty, the virtual host will be ignored by Gloo. |
-  | virtualHostOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions" >}}) |  | Route table options contain additional configuration to be applied to all traffic served by the route table. Some configuration here can be overridden by Route Options. |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec.VirtualHostOptions"></a>
-
-### VirtualHostSpec.VirtualHostOptions
-TODO: Fill / maybe replace with traffic policy?<br>see message VirtualHostOptions in options.proto
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| todoAddOptions | string |  |  |
+  | options | [networking.enterprise.mesh.gloo.solo.io.VirtualHostOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostOptions" >}}) |  | Route table options contain additional configuration to be applied to all traffic served by the route table. Some configuration here can be overridden by Route Options. OutlierDetection and TrafficShift isn't supported on the route level. |
   
 
 

@@ -719,6 +719,63 @@ spec:
                                   cached. Serialized to the `Access-Control-Max-Age` header.
                                 type: string
                             type: object
+                          csrf:
+                            description: Configure the Envoy based CSRF filter
+                            properties:
+                              additionalOrigins:
+                                description: |-
+                                  Specifies additional source origins that will be allowed in addition to
+                                  the destination origin.
+                                items:
+                                  oneOf:
+                                  - not:
+                                      anyOf:
+                                      - required:
+                                        - exact
+                                      - required:
+                                        - prefix
+                                      - required:
+                                        - regex
+                                  - required:
+                                    - exact
+                                  - required:
+                                    - prefix
+                                  - required:
+                                    - regex
+                                  properties:
+                                    exact:
+                                      description: Exact string match.
+                                      type: string
+                                    prefix:
+                                      description: Prefix-based match.
+                                      type: string
+                                    regex:
+                                      description: ECMAscript style regex-based match.
+                                      type: string
+                                  type: object
+                                type: array
+                              filterEnabled:
+                                description: Specifies that CSRF policies will be
+                                  evaluated, tracked and enforced.
+                                type: boolean
+                              percentage:
+                                description: |-
+                                  Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                                  evaluated and tracked, but not enforced.
+
+                                  If filter_enabled or shadow_enabled is true.
+                                  Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                                  .. note:: This field defaults to 100
+                                format: double
+                                type: number
+                              shadowEnabled:
+                                description: |-
+                                  Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                                  This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                                type: boolean
+                            type: object
                           faultInjection:
                             description: Inject faulty responses.
                             oneOf:
