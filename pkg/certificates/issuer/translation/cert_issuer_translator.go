@@ -12,18 +12,22 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"go.uber.org/zap"
 )
 
+// Information required by cert issuer reconciler to fulfill CertificateRequest
 type Output struct {
+	// Newly signed certirficate to be used by the mesh
 	SignedCertificate []byte
-	SigningRootCa     []byte
+	// Root CA used to sign this certificate
+	SigningRootCa []byte
 }
 
 //go:generate mockgen -source ./cert_issuer_translator.go -destination mocks/translator.go
 
 // The cert issuer translator represents an entity which translates the input resources, into
 // the output resources as defined by the `Output` resource below.
-
+// See Output struct above
 type Translator interface {
 	// Translate the input resources into the SignedCert and SigningRootCa
 	// If Output and Err are nil, this translator is not responsible for this resource
@@ -50,10 +54,16 @@ func (s *secretTranslator) Translate(
 	issuedCertificate *certificatesv1.IssuedCertificate,
 ) (*Output, error) {
 
+	ctx = contextutils.WithLoggerValues(
+		ctx,
+		zap.String("CertificateRequest", sets.Key(certificateRequest)),
+		zap.String("IssuedCertificate", sets.Key(issuedCertificate)),
+	)
+
 	signingCert := s.getSigningSecret(issuedCertificate)
 	// This translator only cares about CA with local secrets
 	if signingCert == nil {
-		contextutils.LoggerFrom(ctx).Debugf("No signing cert found, not this translator's responsiliblity")
+		contextutils.LoggerFrom(ctx).Debugf("No signing cert found, not this translator's responsiliblity to sign CSR")
 		return nil, nil
 	}
 

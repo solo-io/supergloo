@@ -9,7 +9,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-
 	corev1clients "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/mocks"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
@@ -51,7 +50,7 @@ var _ = Describe("CertIssueTranslator", func() {
 			},
 		}
 
-		output, err := translator.Translate(ctx, nil, issuedCert)
+		output, err := translator.Translate(ctx, &certificatesv1.CertificateRequest{}, issuedCert)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(BeNil())
 	})
@@ -83,7 +82,9 @@ var _ = Describe("CertIssueTranslator", func() {
 
 			issuedCert := issuedCertFactory(secret)
 
-			mockSecretClient.EXPECT().GetSecret(ctx, ezkube.MakeClientObjectKey(secret)).Return(secret, nil)
+			mockSecretClient.EXPECT().
+				GetSecret(gomock.Any(), ezkube.MakeClientObjectKey(secret)).
+				Return(secret, nil)
 
 			output, err := translator.Translate(ctx, certRequest, issuedCert)
 			Expect(err).NotTo(HaveOccurred())
