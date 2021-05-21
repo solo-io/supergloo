@@ -51,7 +51,11 @@ func (mr *MockRootCertMatcherMockRecorder) MatchesRootCert(ctx, rootCert, select
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MatchesRootCert", reflect.TypeOf((*MockRootCertMatcher)(nil).MatchesRootCert), ctx, rootCert, selector, allSecrets)
 }
 
+<<<<<<< HEAD
 // MockPodBouncer is a mock of PodBouncer interface
+=======
+// MockPodBouncer is a mock of PodBouncer interface.
+>>>>>>> 9fa635251a935c8d5dc16c42de2544ec8bc452a6
 type MockPodBouncer struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodBouncerMockRecorder

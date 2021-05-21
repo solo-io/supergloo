@@ -1,4 +1,4 @@
-package reconciliation_test
+package reconciliation
 
 import (
 	"testing"
