@@ -37,14 +37,6 @@ var (
 	}
 )
 
-type Reconciler interface {
-	ReconcileIssuedCertificate(
-		issuedCertificate *certificatesv1.IssuedCertificate,
-		inputSnap input.Snapshot,
-		outputs certagent.Builder,
-	) error
-}
-
 type certAgentReconciler struct {
 	ctx         context.Context
 	builder     input.Builder
@@ -71,20 +63,6 @@ func Start(
 	return err
 }
 
-// Exposed for testing
-func NewCertAgentReconciler(
-	ctx context.Context,
-	podBouncer podbouncer.PodBouncer,
-	translator translation.Translator,
-) Reconciler {
-
-	return &certAgentReconciler{
-		ctx:        ctx,
-		podBouncer: podBouncer,
-		translator: translator,
-	}
-}
-
 // reconcile global state
 func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "cert-agent", input.BuildOptions{})
@@ -97,7 +75,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 	// process issued certificates
 	for _, issuedCertificate := range inputSnap.IssuedCertificates().List() {
-		if err := r.ReconcileIssuedCertificate(
+		if err := r.reconcileIssuedCertificate(
 			issuedCertificate,
 			inputSnap,
 			outputs,
@@ -126,7 +104,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 }
 
 // Exposed for testing
-func (r *certAgentReconciler) ReconcileIssuedCertificate(
+func (r *certAgentReconciler) reconcileIssuedCertificate(
 	issuedCertificate *certificatesv1.IssuedCertificate,
 	inputSnap input.Snapshot,
 	outputs certagent.Builder,

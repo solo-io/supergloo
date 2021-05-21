@@ -1,4 +1,4 @@
-package reconciliation_test
+package reconciliation
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	mock_certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent/mocks"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation"
 	mock_podbouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer/mocks"
 	mock_translation "github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation/mocks"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -43,8 +42,12 @@ var _ = Describe("CertAgentReconciler", func() {
 
 	It("Will search for secret/readd it if Status==FINISHED", func() {
 
-		reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
-
+		// reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+		reconciler := &certAgentReconciler{
+			ctx:        ctx,
+			podBouncer: mockPodBouncer,
+			translator: mockTranslator,
+		}
 		issuedCert := &certificatesv1.IssuedCertificate{
 			ObjectMeta: metav1.ObjectMeta{
 				Generation: 2,
@@ -75,7 +78,7 @@ var _ = Describe("CertAgentReconciler", func() {
 		mockTranslator.EXPECT().ShouldProcess(gomock.Any(), issuedCert).Return(true)
 		mockOutput.EXPECT().AddSecrets(writtenSecret)
 
-		err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+		err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -118,8 +121,12 @@ var _ = Describe("CertAgentReconciler", func() {
 		})
 
 		It("Create CSR if translator Pending func returns properly", func() {
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
 
-			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
 			inputSnap := input.NewInputSnapshotManualBuilder("hello").
 				Build()
 
@@ -133,14 +140,19 @@ var _ = Describe("CertAgentReconciler", func() {
 				ShouldProcess(ctx, issuedCert).
 				Return(true)
 
-			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
 		})
 
 		It("Will do nothing if should Process is false", func() {
 
-			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
+
 			inputSnap := input.NewInputSnapshotManualBuilder("hello").
 				Build()
 
@@ -148,7 +160,7 @@ var _ = Describe("CertAgentReconciler", func() {
 				ShouldProcess(ctx, issuedCert).
 				Return(false)
 
-			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
 		})
@@ -193,7 +205,11 @@ var _ = Describe("CertAgentReconciler", func() {
 
 		It("Find CSR and pass into translator when cert is requested", func() {
 
-			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
 
 			inputSnap := input.NewInputSnapshotManualBuilder("hello").
 				AddCertificateRequests([]*certificatesv1.CertificateRequest{csr}).
@@ -207,14 +223,18 @@ var _ = Describe("CertAgentReconciler", func() {
 				IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
 				Return(nil)
 
-			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
 		})
 
 		It("Will not update status when translator.ShouldProcess == false", func() {
 
-			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
 
 			inputSnap := input.NewInputSnapshotManualBuilder("hello").
 				AddCertificateRequests([]*certificatesv1.CertificateRequest{csr}).
@@ -224,7 +244,7 @@ var _ = Describe("CertAgentReconciler", func() {
 				ShouldProcess(gomock.Any(), issuedCert).
 				Return(false)
 
-			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
 		})
@@ -263,7 +283,11 @@ var _ = Describe("CertAgentReconciler", func() {
 
 		It("Will delete pods when cert has been issued", func() {
 
-			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
 
 			pods := v1sets.NewPodSet(&corev1.Pod{})
 			configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
@@ -288,14 +312,18 @@ var _ = Describe("CertAgentReconciler", func() {
 				BouncePods(gomock.Any(), pbd, pods, configMaps, secrets).
 				Return(false, nil)
 
-			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
 		})
 
 		It("Will not delete pods when translator.ShouldProcess==false", func() {
 
-			reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
 
 			pods := v1sets.NewPodSet(&corev1.Pod{})
 			configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
@@ -312,7 +340,7 @@ var _ = Describe("CertAgentReconciler", func() {
 				ShouldProcess(gomock.Any(), issuedCert).
 				Return(false)
 
-			err := reconciler.ReconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
 		})
