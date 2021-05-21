@@ -341,6 +341,12 @@ spec:
                   maximum: 4294967295
                   minimum: 0
                   type: integer
+                secretRotationGracePeriodRatio:
+                  description: |-
+                    The ratio of cert lifetime to refresh a cert. For example, at 0.10 and 1 hour TTL,
+                    we would refresh 6 minutes before expiration
+                  format: float
+                  type: number
                 ttlDays:
                   description: Number of days before root cert expires. Defaults to
                     365.

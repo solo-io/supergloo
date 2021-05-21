@@ -29,6 +29,7 @@ var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 
 type Options struct {
 	KubeConfigPath         string
+	MgmtKubeConfigPath     string
 	MgmtContext            string
 	MgmtNamespace          string
 	RemoteContext          string
@@ -63,7 +64,12 @@ func (o Options) GetChartPath(ctx context.Context, override, template string) (s
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
 func (o Options) ConstructClientConfigs() (mgmtKubeCfg, remoteKubeCfg clientcmd.ClientConfig, err error) {
-	mgmtKubeCfg, err = kubeconfig.GetClientConfigWithContext(o.KubeConfigPath, o.MgmtContext, "")
+
+	kubeConfigPath := o.MgmtKubeConfigPath
+	if kubeConfigPath == "" {
+		kubeConfigPath = o.KubeConfigPath
+	}
+	mgmtKubeCfg, err = kubeconfig.GetClientConfigWithContext(kubeConfigPath, o.MgmtContext, "")
 	if err != nil {
 		return nil, nil, err
 	}

@@ -58,6 +58,10 @@ func (m *CommonCertOptions) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetSecretRotationGracePeriodRatio() != target.GetSecretRotationGracePeriodRatio() {
+		return false
+	}
+
 	return true
 }
 
