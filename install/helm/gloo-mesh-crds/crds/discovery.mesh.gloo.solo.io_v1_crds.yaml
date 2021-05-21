@@ -1438,12 +1438,41 @@ spec:
                       - ip
                     properties:
                       dnsName:
-                        description: Will be populated if the LoadBalancer Address
-                          is a DNS name
+                        description: |-
+                          Will be populated if the LoadBalancer Address is a DNS name
+                          DEPRECATED: use external_addresses.dns_name
                         type: string
                       externalAddress:
-                        description: 'DEPRECATED: in favor of dns_name or external_ip'
+                        description: 'DEPRECATED: in favor of dns_name or external_addresses'
                         type: string
+                      externalAddresses:
+                        description: |-
+                          The externally-reachable addresses on which the gateway is listening for TLS connections.
+                          These will be the address used for cross-cluster connectivity.
+                          Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
+                        items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - dnsName
+                              - required:
+                                - ip
+                          - required:
+                            - dnsName
+                          - required:
+                            - ip
+                          properties:
+                            dnsName:
+                              description: Will be populated if the LoadBalancer Address
+                                is a DNS name
+                              type: string
+                            ip:
+                              description: Will be populated if the LoadBalancer Address
+                                is an IP
+                              type: string
+                          type: object
+                        type: array
                       externalTlsPort:
                         description: |-
                           The externally-reachable port on which the gateway is listening for TLS connections.
@@ -1454,8 +1483,9 @@ spec:
                         minimum: 0
                         type: integer
                       ip:
-                        description: Will be populated if the LoadBalancer Address
-                          is an IP
+                        description: |-
+                          Will be populated if the LoadBalancer Address is an IP
+                          DEPRECATED: use external_addresses.ip
                         type: string
                       tlsContainerPort:
                         description: |-

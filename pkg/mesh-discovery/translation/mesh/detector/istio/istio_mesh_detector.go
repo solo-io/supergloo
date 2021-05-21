@@ -190,17 +190,17 @@ func getIngressGateway(
 		return nil, eris.Errorf("no TLS port found on ingress gateway")
 	}
 
-	// TODO(ilackarms): currently we only use one address to connect to the gateway.
-	// We can support multiple addresses per gateway for load balancing purposes in the future
-
-	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
-		WorkloadLabels: workloadLabels,
+	if tlsPort.TargetPort.StrVal != "" {
+		// TODO(ilackarms): for the sake of simplicity, we only support number target ports
+		// if we come across the need to support named ports, we can add the lookup on the pod container itself here
+		return nil, eris.Errorf("named target ports are not currently supported on ingress gateway")
 	}
 
+	var externalAddresses []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress
+	var externalTlsPort uint32
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
-		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
-		addr, err := getNodeIp(
+		nodeIps, err := getNodeIps(
 			svc.ClusterName,
 			svc.Namespace,
 			workloadLabels,
@@ -208,63 +208,63 @@ func getIngressGateway(
 			nodes,
 		)
 		if err != nil {
-			// Check for user-set external IPs
-			externalIPs := svc.Spec.ExternalIPs
-			if len(externalIPs) != 0 {
-				addr = svc.Spec.ExternalIPs[0]
-			} else {
-				return nil, err
-			}
+			return nil, err
 		}
-		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-			Ip: addr,
+		for _, nodeIp := range nodeIps {
+			externalAddresses = append(externalAddresses, &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+				ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+					Ip: nodeIp,
+				},
+			})
 		}
-		// Continue to set deprecated field until it is removed
-		gatewayInfo.ExternalAddress = addr
+		externalTlsPort = uint32(tlsPort.NodePort)
 	case corev1.ServiceTypeLoadBalancer:
-		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
 		ingress := svc.Status.LoadBalancer.Ingress
-		var addr string
-		if len(ingress) == 0 {
-			// Check for user-set external IPs
-			externalIPs := svc.Spec.ExternalIPs
-			if len(externalIPs) != 0 {
-				addr = svc.Spec.ExternalIPs[0]
-				gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-					Ip: addr,
-				}
-			} else {
-				return nil, eris.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service if you are using a non-kubernetes load balancer.")
-			}
-		} else if ingress[0].IP != "" {
-			// If the Ip address is set in the ingress, use that
-			addr = ingress[0].IP
-			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-				Ip: addr,
-			}
-		} else {
-			// Otherwise use the hostname
-			addr = ingress[0].Hostname
-			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
-				DnsName: addr,
-			}
+		for _, loadBalancerIngress := range ingress {
+			externalAddresses = append(externalAddresses, &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+				ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+					Ip: loadBalancerIngress.IP,
+				},
+			})
 		}
-		// Continue to set deprecated field until it is removed
-		gatewayInfo.ExternalAddress = addr
+		externalTlsPort = uint32(tlsPort.Port)
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
 	}
 
-	if tlsPort.TargetPort.StrVal != "" {
-		// TODO(ilackarms): for the sake of simplicity, we only support number target ports
-		// if we come across the need to support named ports, we can add the lookup on the pod container itself here
-		return nil, eris.Errorf("named target ports are not currently supported on ingress gateway")
+	for _, externalIP := range svc.Spec.ExternalIPs {
+		externalAddresses = append(externalAddresses, &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+			ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+				Ip: externalIP,
+			},
+		})
 	}
+
 	containerPort := tlsPort.TargetPort.IntVal
 	if containerPort == 0 {
 		containerPort = tlsPort.Port
 	}
-	gatewayInfo.TlsContainerPort = uint32(containerPort)
+
+	if len(externalAddresses) == 0 {
+		return nil, eris.Errorf("no external addresses found for service type %v for ingress gateway", svc.Spec.Type)
+	}
+
+	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
+		WorkloadLabels:    workloadLabels,
+		ExternalTlsPort:   externalTlsPort,
+		TlsContainerPort:  uint32(containerPort),
+		ExternalAddresses: externalAddresses,
+	}
+
+	// Continue to set deprecated fields until they are removed
+	switch extAddr := externalAddresses[0].ExternalAddressType.(type) {
+	case *discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip:
+		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{Ip: extAddr.Ip}
+		gatewayInfo.ExternalAddress = extAddr.Ip
+	case *discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_DnsName:
+		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{DnsName: extAddr.DnsName}
+		gatewayInfo.ExternalAddress = extAddr.DnsName
+	}
 
 	return gatewayInfo, nil
 }
@@ -282,45 +282,52 @@ func getIngressServices(
 	})
 }
 
-func getNodeIp(
+func getNodeIps(
 	cluster,
 	namespace string,
 	workloadLabels map[string]string,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
-) (string, error) {
+) ([]string, error) {
+	var ips []string
 	ingressPods := pods.List(func(pod *corev1.Pod) bool {
 		return pod.ClusterName != cluster ||
 			pod.Namespace != namespace ||
 			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(pod.Labels))
 	})
 	if len(ingressPods) < 1 {
-		return "", eris.Errorf("no pods found backing ingress workload %v in namespace %v", workloadLabels, namespace)
+		return nil, eris.Errorf("no pods found backing ingress workload %v in namespace %v", workloadLabels, namespace)
 	}
 	// TODO(ilackarms): currently we just grab the node ip of the first available pod
 	// Eventually we may want to consider supporting multiple nodes/IPs for load balancing.
-	ingressPod := ingressPods[0]
-	ingressNode, err := nodes.Find(&skv1.ClusterObjectRef{
-		ClusterName: cluster,
-		Name:        ingressPod.Spec.NodeName,
-	})
-	if err != nil {
-		return "", eris.Wrapf(err, "failed to find ingress node for pod %v", sets.Key(ingressPod))
-	}
+	var ingressNodeNames []string
+	for _, ingressPod := range ingressPods {
+		ingressNode, err := nodes.Find(&skv1.ClusterObjectRef{
+			ClusterName: cluster,
+			Name:        ingressPod.Spec.NodeName,
+		})
+		if err != nil {
+			return nil, eris.Wrapf(err, "failed to find ingress node for pod %v", sets.Key(ingressPod))
+		}
+		ingressNodeNames = append(ingressNodeNames, ingressPod.Spec.NodeName)
 
-	isKindNode := isKindNode(ingressNode)
-	for _, addr := range ingressNode.Status.Addresses {
-		if isKindNode {
-			// For Kind clusters, we use the NodeInteralIP for the external IP address.
-			if addr.Type != corev1.NodeInternalIP {
+		isKindNode := isKindNode(ingressNode)
+		for _, addr := range ingressNode.Status.Addresses {
+			if isKindNode {
+				// For Kind clusters, we use the NodeInteralIP for the external IP address.
+				if addr.Type != corev1.NodeInternalIP {
+					continue
+				}
+			} else if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeInternalDNS {
 				continue
 			}
-		} else if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeInternalDNS {
-			continue
+			ips = append(ips, addr.Address)
 		}
-		return addr.Address, nil
 	}
-	return "", eris.Errorf("no external addresses reported for ingress node %v", sets.Key(ingressNode))
+	if len(ips) == 0 {
+		return nil, eris.Errorf("no external addresses reported for ingress node %v", ingressNodeNames)
+	}
+	return ips, nil
 }
 
 func isKindNode(node *corev1.Node) bool {

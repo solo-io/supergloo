@@ -61,17 +61,20 @@ message MeshSpec {
             // [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
             map<string, string> workload_labels = 1;
 
-            // DEPRECATED: in favor of dns_name or external_ip
+            // DEPRECATED: in favor of dns_name or external_addresses
             string external_address = 2;
 
             // The externally-reachable address on which the gateway is listening for TLS connections.
             // This will be the address used for cross-cluster connectivity.
             // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
+            // DEPRECATED: use external_addresses
             oneof external_address_type {
                 // Will be populated if the LoadBalancer Address is a DNS name
+                // DEPRECATED: use external_addresses.dns_name
                 string dns_name = 5;
 
                 // Will be populated if the LoadBalancer Address is an IP
+                // DEPRECATED: use external_addresses.ip
                 string ip = 6;
             }
 
@@ -84,6 +87,27 @@ message MeshSpec {
             // Container port on which the gateway is listening for TLS connections.
             // Defaults to 15443.
             uint32 tls_container_port = 4;
+
+            // The externally-reachable addresses on which the gateway is listening for TLS connections.
+            // These will be the address used for cross-cluster connectivity.
+            // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
+            repeated ExternalAddress external_addresses = 7;
+
+            message ExternalAddress {
+
+                // The externally-reachable address on which the gateway is listening for TLS connections.
+                // This will be the address used for cross-cluster connectivity.
+                // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
+                oneof external_address_type {
+                    // Will be populated if the LoadBalancer Address is a DNS name
+                    string dns_name = 1;
+
+                    // Will be populated if the LoadBalancer Address is an IP
+                    string ip = 2;
+                }
+
+
+            }
         }
     }
 
