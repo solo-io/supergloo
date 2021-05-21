@@ -15,8 +15,11 @@ const (
 	rsaKeySize = 4096
 )
 
-func GeneratePrivateKey() ([]byte, error) {
-	priv, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
+func GeneratePrivateKey(keySize int) ([]byte, error) {
+	if keySize == 0 {
+		keySize = rsaKeySize
+	}
+	priv, err := rsa.GenerateKey(rand.Reader, keySize)
 	if err != nil {
 		return nil, eris.Errorf("RSA key generation failed (%v)", err)
 	}
