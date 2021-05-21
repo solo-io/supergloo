@@ -23,7 +23,7 @@ import (
 const (
 	filePermissions = 0644
 
-	// envoyfilters for snapshots
+	// filters for snapshots
 	networking = "networking"
 	discovery  = "discovery"
 	input      = "input"
