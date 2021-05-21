@@ -207,23 +207,33 @@ func getIngressGateway(
 			nodes,
 		)
 		if err != nil {
-			return nil, err
+			// Check for user-set external IPs
+			if len(svc.Spec.ExternalIPs) != 0 {
+				addr = svc.Spec.ExternalIPs[0]
+			} else {
+				return nil, err
+			}
 		}
 		externalAddress = addr
 		externalPort = uint32(tlsPort.NodePort)
-
 	case corev1.ServiceTypeLoadBalancer:
 		ingress := svc.Status.LoadBalancer.Ingress
 		if len(ingress) == 0 {
-			return nil, eris.Errorf("no loadBalancer.ingress status reported for service")
-		}
-
-		externalAddress = ingress[0].Hostname
-		if externalAddress == "" {
+			// Check for user-set external IPs
+			externalIPs := svc.Spec.ExternalIPs
+			if len(externalIPs) != 0 {
+				externalAddress = svc.Spec.ExternalIPs[0]
+			} else {
+				return nil, eris.Errorf("no loadBalancer.ingress status reported for service. Please set an external IP on the service if you are using a non-kubernetes load balancer.")
+			}
+		} else if ingress[0].IP != "" {
+			// If the Ip address is set in the ingress, use that
 			externalAddress = ingress[0].IP
+		} else {
+			// Otherwise use the hostname
+			externalAddress = ingress[0].Hostname
 		}
 		externalPort = uint32(tlsPort.Port)
-
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
 	}
