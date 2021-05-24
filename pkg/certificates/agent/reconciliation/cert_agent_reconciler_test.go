@@ -10,6 +10,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	mock_certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent/mocks"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	mock_podbouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer/mocks"
+	mock_translation "github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation/mocks"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -75,11 +79,27 @@ var _ = Describe("CertAgentReconciler", func() {
 		mockOutput.EXPECT().AddSecrets(writtenSecret)
 
 		err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	Context("IssuedCertificatePending", func() {
+		var (
 			issuedCert *certificatesv1.IssuedCertificate
 			csr        *certificatesv1.CertificateRequest
 			csrBytes   []byte
+		)
+		BeforeEach(func() {
+
+			issuedCert = &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "hello",
+					Namespace:  "world",
+					Generation: 3,
+				},
+				Spec: certificatesv1.IssuedCertificateSpec{},
+				Status: certificatesv1.IssuedCertificateStatus{
 					State:              certificatesv1.IssuedCertificateStatus_FINISHED,
+					ObservedGeneration: 2,
 				},
 			}
 
@@ -119,6 +139,13 @@ var _ = Describe("CertAgentReconciler", func() {
 			mockTranslator.EXPECT().
 				ShouldProcess(ctx, issuedCert).
 				Return(true)
+
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_REQUESTED))
+		})
+
+		It("Will do nothing if should Process is false", func() {
 
 			reconciler := &certAgentReconciler{
 				ctx:        ctx,
