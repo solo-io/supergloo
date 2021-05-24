@@ -469,7 +469,6 @@ spec:
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
         # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
-        GLOO_MESH_CLUSTER_NAME: ${cluster}
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -555,6 +554,9 @@ function install_istio() {
   then
     install_istio_1_8 $cluster $port
   elif istioctl version | grep -E -- '1.9'
+  then
+    install_istio_1_9 $cluster $port
+  elif istioctl version | grep -E -- '1.10'
   then
     install_istio_1_9 $cluster $port
   else
