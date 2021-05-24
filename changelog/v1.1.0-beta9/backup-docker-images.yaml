@@ -3,3 +3,4 @@ changelog:
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1553
     description: >
       Back up docker images to Quay.io every release.
+    resolvesIssue: false
