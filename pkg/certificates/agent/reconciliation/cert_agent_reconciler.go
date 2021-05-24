@@ -37,14 +37,6 @@ var (
 	}
 )
 
-type Reconciler interface {
-	ReconcileIssuedCertificate(
-		issuedCertificate *certificatesv1.IssuedCertificate,
-		inputSnap input.Snapshot,
-		outputs certagent.Builder,
-	) error
-}
-
 type certAgentReconciler struct {
 	ctx         context.Context
 	builder     input.Builder

@@ -347,7 +347,7 @@ func (t *translator) constructIssuedCertificate(
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
 			Hosts:       []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
-			CertOptions: buildDefaultCertOptions(options),
+			CertOptions: buildDefaultCertOptions(options, defaultIstioOrg),
 			// Set deprecated field for backwards compatibility
 			Org:                     defaultIstioOrg,
 			IssuedCertificateSecret: istioCaCerts,
@@ -356,13 +356,16 @@ func (t *translator) constructIssuedCertificate(
 	}, podBounceDirective
 }
 
-func buildDefaultCertOptions(options *certificatesv1.CommonCertOptions) *certificatesv1.CommonCertOptions {
+func buildDefaultCertOptions(
+	options *certificatesv1.CommonCertOptions,
+	orgName string,
+) *certificatesv1.CommonCertOptions {
 	result := proto.Clone(options).(*certificatesv1.CommonCertOptions)
 	if result == nil {
 		result = &certificatesv1.CommonCertOptions{}
 	}
 	if result.GetOrgName() == "" {
-		result.OrgName = defaultIstioOrg
+		result.OrgName = orgName
 	}
 	if result.GetTtlDays() == 0 {
 		result.TtlDays = defaultRootCertTTLDays
@@ -370,37 +373,30 @@ func buildDefaultCertOptions(options *certificatesv1.CommonCertOptions) *certifi
 	if result.GetRsaKeySizeBytes() == 0 {
 		result.RsaKeySizeBytes = defaultRootCertRsaKeySize
 	}
+	if result.GetSecretRotationGracePeriodRatio() == 0 {
+		result.SecretRotationGracePeriodRatio = defaultSecretRotationGracePeriodRatio
+	}
 	return result
 }
 
 const (
-	defaultRootCertTTLDays     = 365
-	defaultRootCertTTLDuration = defaultRootCertTTLDays * 24 * time.Hour
-	defaultRootCertRsaKeySize  = 4096
-	defaultOrgName             = "gloo-mesh"
+	defaultRootCertTTLDays                = 365
+	defaultRootCertTTLDuration            = defaultRootCertTTLDays * 24 * time.Hour
+	defaultRootCertRsaKeySize             = 4096
+	defaultOrgName                        = "gloo-mesh"
+	defaultSecretRotationGracePeriodRatio = 0.10
 )
 
 func generateSelfSignedCert(
 	builtinCA *certificatesv1.CommonCertOptions,
 ) (*secrets.RootCAData, error) {
-	org := defaultOrgName
-	if builtinCA.GetOrgName() != "" {
-		org = builtinCA.GetOrgName()
-	}
-	ttl := defaultRootCertTTLDuration
-	if builtinCA.GetTtlDays() > 0 {
-		ttl = time.Duration(builtinCA.GetTtlDays()) * 24 * time.Hour
-	}
-	rsaKeySize := defaultRootCertRsaKeySize
-	if builtinCA.GetRsaKeySizeBytes() > 0 {
-		rsaKeySize = int(builtinCA.GetRsaKeySizeBytes())
-	}
+	certOptions := buildDefaultCertOptions(builtinCA, defaultOrgName)
 	options := util.CertOptions{
-		Org:          org,
+		Org:          certOptions.GetOrgName(),
 		IsCA:         true,
 		IsSelfSigned: true,
-		TTL:          ttl,
-		RSAKeySize:   rsaKeySize,
+		TTL:          time.Duration(certOptions.GetTtlDays()) * 24 * time.Hour,
+		RSAKeySize:   int(certOptions.GetRsaKeySizeBytes()),
 		PKCS8Key:     false, // currently only supporting PKCS1
 	}
 	cert, key, err := util.GenCertKeyFromOptions(options)
