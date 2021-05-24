@@ -469,6 +469,7 @@ spec:
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
         # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
   components:
     # Istio Gateway feature
     ingressGateways:
