@@ -61,10 +61,11 @@ jobs:
           username: _json_key
           password: ${{ secrets.GC_GHA_SA_JSON_KEY }}
       - name: Docker Backup Login
-        env:
-          QUAY_IO_PASSWORD: ${{ secrets.QUAY_IO_PASSWORD }}
-        run: |
-          docker login quay.io --username "solo-io+solobot" --password $QUAY_IO_PASSWORD
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: solo-io+solobot
+          password: ${{ secrets.QUAY_IO_PASSWORD }}
       - name: Push Images
         run: make push-all-images
         env:
