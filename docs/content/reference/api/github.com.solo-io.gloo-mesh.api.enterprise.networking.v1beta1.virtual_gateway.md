@@ -22,6 +22,7 @@ title: "virtual_gateway.proto"
   - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
   - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
   - [SelectedGatewayWorkload](#networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload)
+  - [SelectedGatewayWorkload.LabelsEntry](#networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.LabelsEntry)
   - [VirtualGatewaySpec](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec)
   - [VirtualGatewaySpec.ConnectionHandler](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler)
   - [VirtualGatewaySpec.ConnectionHandler.ConnectionMatch](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch)
@@ -29,7 +30,6 @@ title: "virtual_gateway.proto"
   - [VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions)
   - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes)
   - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions)
-  - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions)
   - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier)
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes)
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost)
@@ -113,7 +113,24 @@ a gateway workload (e.g. Deployment) where a virtual gateway will be served
 | name | string |  | the name of the gateway workload |
   | namespace | string |  | the namespace where the gateway workload is running |
   | clusterName | string |  | the cluster where the gateway workload is running |
+  | labels | [][networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.LabelsEntry" >}}) | repeated | the labels used to identify the gateway workload |
   | externalUrl | string |  | the external URL by which the gateway can be accessed on the given workload, if it exists |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.LabelsEntry"></a>
+
+### SelectedGatewayWorkload.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
   
 
 
@@ -181,6 +198,7 @@ TODO: Fill ConnectionOptions
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | tlsContext | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions" >}}) |  | TODO |
+  | strictFilterManagement | bool |  | Restricts filter from being added to the corresponding Envoy Listener unless they are explicitly configured in the connection handler options |
   | enableProxyProtocol | bool |  | enable PROXY protocol for this connection handler. |
   
 
@@ -223,28 +241,12 @@ TODO: Fill ConnectionOptions
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions"></a>
 
 ### VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
-TODO: Fill with HttpListenerOptions from gloo options.proto Team discussion topic
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| options | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions" >}}) |  |  |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions"></a>
-
-### VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| strictFilterManagement | bool |  | Restricts filter from being added to the filter chain unless explicitly enabled in FilterOptions |
-  | csrf | bool |  |  |
+| csrf | [networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter for this Gateway. |
   
 
 

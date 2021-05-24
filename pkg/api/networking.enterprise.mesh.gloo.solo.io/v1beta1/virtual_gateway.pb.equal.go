@@ -254,6 +254,17 @@ func (m *SelectedGatewayWorkload) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetLabels()) != len(target.GetLabels()) {
+		return false
+	}
+	for k, v := range m.GetLabels() {
+
+		if strings.Compare(v, target.GetLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
 	if strings.Compare(m.GetExternalUrl(), target.GetExternalUrl()) != 0 {
 		return false
 	}
