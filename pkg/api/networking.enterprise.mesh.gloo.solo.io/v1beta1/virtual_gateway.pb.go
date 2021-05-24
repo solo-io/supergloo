@@ -290,7 +290,9 @@ type SelectedGatewayWorkload struct {
 	// the namespace where the gateway workload is running
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// the cluster where the gateway workload is running
-	ClusterName string `protobuf:"bytes,3,opt,name=clusterName,proto3" json:"clusterName,omitempty"`
+	ClusterName string `protobuf:"bytes,3,opt,name=cluster_name,json=clusterName,proto3" json:"cluster_name,omitempty"`
+	// the labels used to identify the gateway workload
+	Labels map[string]string `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// the external URL by which the gateway can be accessed on the given workload, if it exists
 	ExternalUrl string `protobuf:"bytes,4,opt,name=external_url,json=externalUrl,proto3" json:"external_url,omitempty"`
 }
@@ -346,6 +348,13 @@ func (x *SelectedGatewayWorkload) GetClusterName() string {
 		return x.ClusterName
 	}
 	return ""
+}
+
+func (x *SelectedGatewayWorkload) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
 }
 
 func (x *SelectedGatewayWorkload) GetExternalUrl() string {
@@ -1781,7 +1790,7 @@ type SDSConfig_CallCredentials struct {
 func (x *SDSConfig_CallCredentials) Reset() {
 	*x = SDSConfig_CallCredentials{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[23]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1794,7 +1803,7 @@ func (x *SDSConfig_CallCredentials) String() string {
 func (*SDSConfig_CallCredentials) ProtoMessage() {}
 
 func (x *SDSConfig_CallCredentials) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[23]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1831,7 +1840,7 @@ type SDSConfig_CallCredentials_FileCredentialSource struct {
 func (x *SDSConfig_CallCredentials_FileCredentialSource) Reset() {
 	*x = SDSConfig_CallCredentials_FileCredentialSource{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[24]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1844,7 +1853,7 @@ func (x *SDSConfig_CallCredentials_FileCredentialSource) String() string {
 func (*SDSConfig_CallCredentials_FileCredentialSource) ProtoMessage() {}
 
 func (x *SDSConfig_CallCredentials_FileCredentialSource) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[24]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2275,59 +2284,69 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_
 	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
 	0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
 	0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x4c, 0x69, 0x73, 0x74,
-	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x90, 0x01, 0x0a, 0x17,
+	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0xb2, 0x02, 0x0a, 0x17,
 	0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x57,
 	0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
 	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x63, 0x6c, 0x75,
-	0x73, 0x74, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
-	0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x65,
-	0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0b, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x55, 0x72, 0x6c, 0x22, 0xbd,
-	0x04, 0x0a, 0x09, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x1d, 0x0a, 0x0a,
-	0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x75, 0x72, 0x69, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x09, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x55, 0x72, 0x69, 0x12, 0x6f, 0x0a, 0x10, 0x63,
-	0x61, 0x6c, 0x6c, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x42, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69,
-	0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65,
-	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e,
-	0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x61, 0x6c, 0x6c, 0x43, 0x72,
-	0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x48, 0x00, 0x52, 0x0f, 0x63, 0x61, 0x6c,
-	0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x23, 0x0a, 0x0c,
-	0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01,
-	0x28, 0x09, 0x48, 0x00, 0x52, 0x0b, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x61, 0x6d,
-	0x65, 0x12, 0x38, 0x0a, 0x18, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
-	0x73, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x16, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
-	0x73, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x36, 0x0a, 0x17, 0x76,
-	0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78,
-	0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x15, 0x76, 0x61,
-	0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x4e,
-	0x61, 0x6d, 0x65, 0x1a, 0xf9, 0x01, 0x0a, 0x0f, 0x43, 0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64,
-	0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x8d, 0x01, 0x0a, 0x16, 0x66, 0x69, 0x6c, 0x65,
-	0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x5f, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x57, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65,
-	0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
-	0x69, 0x6f, 0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x61, 0x6c,
-	0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x2e, 0x46, 0x69, 0x6c,
+	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x63, 0x6c, 0x75,
+	0x73, 0x74, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x0b, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x64, 0x0a, 0x06,
+	0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x4c, 0x2e, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70,
+	0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73,
+	0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x65, 0x64, 0x47,
+	0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x4c,
+	0x61, 0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65,
+	0x6c, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x5f, 0x75,
+	0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e,
+	0x61, 0x6c, 0x55, 0x72, 0x6c, 0x1a, 0x39, 0x0a, 0x0b, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x45,
+	0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01,
+	0x22, 0xbd, 0x04, 0x0a, 0x09, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x1d,
+	0x0a, 0x0a, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x75, 0x72, 0x69, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x09, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x55, 0x72, 0x69, 0x12, 0x6f, 0x0a,
+	0x10, 0x63, 0x61, 0x6c, 0x6c, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c,
+	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x42, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e,
+	0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
+	0x6f, 0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x61, 0x6c, 0x6c,
+	0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x48, 0x00, 0x52, 0x0f, 0x63,
+	0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x23,
+	0x0a, 0x0c, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0b, 0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4e,
+	0x61, 0x6d, 0x65, 0x12, 0x38, 0x0a, 0x18, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61,
+	0x74, 0x65, 0x73, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x16, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61,
+	0x74, 0x65, 0x73, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x36, 0x0a,
+	0x17, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f, 0x6e, 0x74,
+	0x65, 0x78, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x15,
+	0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x78,
+	0x74, 0x4e, 0x61, 0x6d, 0x65, 0x1a, 0xf9, 0x01, 0x0a, 0x0f, 0x43, 0x61, 0x6c, 0x6c, 0x43, 0x72,
+	0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x12, 0x8d, 0x01, 0x0a, 0x16, 0x66, 0x69,
+	0x6c, 0x65, 0x5f, 0x63, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x5f, 0x73, 0x6f,
+	0x75, 0x72, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x57, 0x2e, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69,
+	0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c,
+	0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x44, 0x53, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43,
+	0x61, 0x6c, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x73, 0x2e, 0x46,
+	0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x52, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74,
+	0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x1a, 0x56, 0x0a, 0x14, 0x46, 0x69, 0x6c,
 	0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x52, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61,
-	0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x1a, 0x56, 0x0a, 0x14, 0x46, 0x69, 0x6c, 0x65, 0x43,
-	0x72, 0x65, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12,
-	0x26, 0x0a, 0x0f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x6e, 0x61,
-	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x46,
-	0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65,
-	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x42,
-	0x0d, 0x0a, 0x0b, 0x73, 0x64, 0x73, 0x5f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x65, 0x72, 0x42, 0x5a,
-	0x5a, 0x54, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c,
-	0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70,
-	0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
-	0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73,
-	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76,
-	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x65, 0x12, 0x26, 0x0a, 0x0f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f, 0x66, 0x69, 0x6c, 0x65, 0x5f,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x74, 0x6f, 0x6b, 0x65,
+	0x6e, 0x46, 0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x68, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x42, 0x0d, 0x0a, 0x0b, 0x73, 0x64, 0x73, 0x5f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x65, 0x72,
+	0x42, 0x5a, 0x5a, 0x54, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73,
+	0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68,
+	0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d,
+	0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
+	0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2343,7 +2362,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual
 }
 
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_goTypes = []interface{}{
 	(VirtualGatewaySpec_ConnectionHandler_TcpRoutes_TcpHost_SslConfig_SslParameters_ProtocolVersion)(0), // 0: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
 	(*VirtualGatewaySpec)(nil),                                                                         // 1: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec
@@ -2369,69 +2388,71 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_
 	(*VirtualGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings)(nil),                 // 21: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
 	(*VirtualGatewaySpec_ConnectionHandler_TcpRoutes_TcpOptions_TcpProxySettings_TunnelingConfig)(nil), // 22: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
 	nil,                               // 23: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry
-	(*SDSConfig_CallCredentials)(nil), // 24: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
-	(*SDSConfig_CallCredentials_FileCredentialSource)(nil), // 25: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
-	(*v1.WorkloadSelector)(nil),                            // 26: common.mesh.gloo.solo.io.WorkloadSelector
-	(*v11.ObjectRef)(nil),                                  // 27: core.skv2.solo.io.ObjectRef
-	(*wrappers.UInt32Value)(nil),                           // 28: google.protobuf.UInt32Value
-	(*wrappers.BoolValue)(nil),                             // 29: google.protobuf.BoolValue
-	(*v1.ObjectSelector)(nil),                              // 30: common.mesh.gloo.solo.io.ObjectSelector
-	(*VirtualHostSpec)(nil),                                // 31: networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec
-	(*v12.CsrfPolicy)(nil),                                 // 32: networking.mesh.gloo.solo.io.CsrfPolicy
-	(*v11.ClusterObjectRef)(nil),                           // 33: core.skv2.solo.io.ClusterObjectRef
-	(*empty.Empty)(nil),                                    // 34: google.protobuf.Empty
-	(*duration.Duration)(nil),                              // 35: google.protobuf.Duration
-	(*v1.ObjectRefList)(nil),                               // 36: common.mesh.gloo.solo.io.ObjectRefList
+	nil,                               // 24: networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.LabelsEntry
+	(*SDSConfig_CallCredentials)(nil), // 25: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
+	(*SDSConfig_CallCredentials_FileCredentialSource)(nil), // 26: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
+	(*v1.WorkloadSelector)(nil),                            // 27: common.mesh.gloo.solo.io.WorkloadSelector
+	(*v11.ObjectRef)(nil),                                  // 28: core.skv2.solo.io.ObjectRef
+	(*wrappers.UInt32Value)(nil),                           // 29: google.protobuf.UInt32Value
+	(*wrappers.BoolValue)(nil),                             // 30: google.protobuf.BoolValue
+	(*v1.ObjectSelector)(nil),                              // 31: common.mesh.gloo.solo.io.ObjectSelector
+	(*VirtualHostSpec)(nil),                                // 32: networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec
+	(*v12.CsrfPolicy)(nil),                                 // 33: networking.mesh.gloo.solo.io.CsrfPolicy
+	(*v11.ClusterObjectRef)(nil),                           // 34: core.skv2.solo.io.ClusterObjectRef
+	(*empty.Empty)(nil),                                    // 35: google.protobuf.Empty
+	(*duration.Duration)(nil),                              // 36: google.protobuf.Duration
+	(*v1.ObjectRefList)(nil),                               // 37: common.mesh.gloo.solo.io.ObjectRefList
 }
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_depIdxs = []int32{
 	5,  // 0: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.deploy_to_ingress_gateways:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway
-	26, // 1: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.deploy_to_sidecars:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
+	27, // 1: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.deploy_to_sidecars:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
 	6,  // 2: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.connection_handlers:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler
 	7,  // 3: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions
 	3,  // 4: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.selected_gateways:type_name -> networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload
-	27, // 5: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.selected_virtual_hosts:type_name -> core.skv2.solo.io.ObjectRef
-	27, // 6: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.selected_route_tables:type_name -> core.skv2.solo.io.ObjectRef
+	28, // 5: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.selected_virtual_hosts:type_name -> core.skv2.solo.io.ObjectRef
+	28, // 6: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.selected_route_tables:type_name -> core.skv2.solo.io.ObjectRef
 	23, // 7: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.created_istio_gateways:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry
-	24, // 8: networking.enterprise.mesh.gloo.solo.io.SDSConfig.call_credentials:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
-	26, // 9: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway.gateway_workloads:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
-	8,  // 10: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.connection_match:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch
-	10, // 11: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.http:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes
-	11, // 12: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.tcp:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes
-	9,  // 13: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.connection_options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions
-	28, // 14: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions.per_connection_buffer_limit_bytes:type_name -> google.protobuf.UInt32Value
-	12, // 15: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.tls_context:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
-	13, // 16: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.route_config:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
-	14, // 17: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.route_options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
-	15, // 18: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.tcp_hosts:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
-	16, // 19: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
-	29, // 20: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions.presented:type_name -> google.protobuf.BoolValue
-	29, // 21: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions.validated:type_name -> google.protobuf.BoolValue
-	30, // 22: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier.virtual_host_selector:type_name -> common.mesh.gloo.solo.io.ObjectSelector
-	31, // 23: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier.virtual_host:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec
-	32, // 24: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.csrf:type_name -> networking.mesh.gloo.solo.io.CsrfPolicy
-	17, // 25: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.ssl_config:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
-	18, // 26: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.destination:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
-	21, // 27: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.tcp_proxy_settings:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
-	27, // 28: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
-	19, // 29: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.ssl_files:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
-	4,  // 30: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.sds:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig
-	20, // 31: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.parameters:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
-	27, // 32: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.static:type_name -> core.skv2.solo.io.ObjectRef
-	27, // 33: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.virtual:type_name -> core.skv2.solo.io.ObjectRef
-	33, // 34: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.kube:type_name -> core.skv2.solo.io.ClusterObjectRef
-	34, // 35: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.forward_sni_cluster_name:type_name -> google.protobuf.Empty
-	0,  // 36: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.minimum_protocol_version:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
-	0,  // 37: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.maximum_protocol_version:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
-	28, // 38: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.max_connect_attempts:type_name -> google.protobuf.UInt32Value
-	35, // 39: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.idle_timeout:type_name -> google.protobuf.Duration
-	22, // 40: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.tunneling_config:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
-	36, // 41: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry.value:type_name -> common.mesh.gloo.solo.io.ObjectRefList
-	25, // 42: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.file_credential_source:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
-	43, // [43:43] is the sub-list for method output_type
-	43, // [43:43] is the sub-list for method input_type
-	43, // [43:43] is the sub-list for extension type_name
-	43, // [43:43] is the sub-list for extension extendee
-	0,  // [0:43] is the sub-list for field type_name
+	24, // 8: networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.labels:type_name -> networking.enterprise.mesh.gloo.solo.io.SelectedGatewayWorkload.LabelsEntry
+	25, // 9: networking.enterprise.mesh.gloo.solo.io.SDSConfig.call_credentials:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials
+	27, // 10: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway.gateway_workloads:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
+	8,  // 11: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.connection_match:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionMatch
+	10, // 12: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.http:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes
+	11, // 13: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.tcp:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes
+	9,  // 14: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.connection_options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions
+	29, // 15: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions.per_connection_buffer_limit_bytes:type_name -> google.protobuf.UInt32Value
+	12, // 16: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.tls_context:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions
+	13, // 17: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.route_config:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier
+	14, // 18: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.route_options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
+	15, // 19: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.tcp_hosts:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost
+	16, // 20: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.options:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions
+	30, // 21: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions.presented:type_name -> google.protobuf.BoolValue
+	30, // 22: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions.validated:type_name -> google.protobuf.BoolValue
+	31, // 23: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier.virtual_host_selector:type_name -> common.mesh.gloo.solo.io.ObjectSelector
+	32, // 24: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier.virtual_host:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec
+	33, // 25: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.csrf:type_name -> networking.mesh.gloo.solo.io.CsrfPolicy
+	17, // 26: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.ssl_config:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig
+	18, // 27: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.destination:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction
+	21, // 28: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.tcp_proxy_settings:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings
+	28, // 29: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.secret_ref:type_name -> core.skv2.solo.io.ObjectRef
+	19, // 30: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.ssl_files:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SSLFiles
+	4,  // 31: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.sds:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig
+	20, // 32: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.parameters:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters
+	28, // 33: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.static:type_name -> core.skv2.solo.io.ObjectRef
+	28, // 34: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.virtual:type_name -> core.skv2.solo.io.ObjectRef
+	34, // 35: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.kube:type_name -> core.skv2.solo.io.ClusterObjectRef
+	35, // 36: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.TcpAction.forward_sni_cluster_name:type_name -> google.protobuf.Empty
+	0,  // 37: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.minimum_protocol_version:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
+	0,  // 38: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.maximum_protocol_version:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion
+	29, // 39: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.max_connect_attempts:type_name -> google.protobuf.UInt32Value
+	36, // 40: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.idle_timeout:type_name -> google.protobuf.Duration
+	22, // 41: networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.tunneling_config:type_name -> networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpOptions.TcpProxySettings.TunnelingConfig
+	37, // 42: networking.enterprise.mesh.gloo.solo.io.VirtualGatewayStatus.CreatedIstioGatewaysEntry.value:type_name -> common.mesh.gloo.solo.io.ObjectRefList
+	26, // 43: networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.file_credential_source:type_name -> networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource
+	44, // [44:44] is the sub-list for method output_type
+	44, // [44:44] is the sub-list for method input_type
+	44, // [44:44] is the sub-list for extension type_name
+	44, // [44:44] is the sub-list for extension extendee
+	0,  // [0:44] is the sub-list for field type_name
 }
 
 func init() {
@@ -2707,7 +2728,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SDSConfig_CallCredentials); i {
 			case 0:
 				return &v.state
@@ -2719,7 +2740,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SDSConfig_CallCredentials_FileCredentialSource); i {
 			case 0:
 				return &v.state
@@ -2761,7 +2782,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_virtual_gateway_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   25,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

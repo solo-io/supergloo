@@ -2908,6 +2908,11 @@ spec:
                     description: the external URL by which the gateway can be accessed
                       on the given workload, if it exists
                     type: string
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: the labels used to identify the gateway workload
+                    type: object
                   name:
                     description: the name of the gateway workload
                     type: string
