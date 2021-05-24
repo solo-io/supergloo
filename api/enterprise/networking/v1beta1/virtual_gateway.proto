@@ -160,7 +160,7 @@ message VirtualGatewaySpec {
                 // healthcheck.options.gloo.solo.io.HealthCheck health_check = 4;
 
                 // Configure the Envoy based CSRF filter for this Gateway.
-                .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CsrfPolicy csrf = 2;
+                .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
 
             }
         }
