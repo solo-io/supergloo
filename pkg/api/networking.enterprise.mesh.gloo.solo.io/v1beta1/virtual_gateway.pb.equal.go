@@ -90,12 +90,12 @@ func (m *VirtualGatewaySpec) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetGatewayOptions()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetGatewayOptions()) {
+	if h, ok := interface{}(m.GetOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetOptions()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetGatewayOptions(), target.GetGatewayOptions()) {
+		if !proto.Equal(m.GetOptions(), target.GetOptions()) {
 			return false
 		}
 	}
@@ -800,6 +800,48 @@ func (m *VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) Equal(that
 	if target == nil {
 		return m == nil
 	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetOptions()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetOptions(), target.GetOptions()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions_FilterOptions) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions_FilterOptions)
+	if !ok {
+		that2, ok := that.(VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions_FilterOptions)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetStrictFilterManagement() != target.GetStrictFilterManagement() {
+		return false
+	}
+
+	if m.GetCsrf() != target.GetCsrf() {
 		return false
 	}
 

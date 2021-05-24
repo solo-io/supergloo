@@ -29,6 +29,7 @@ title: "virtual_gateway.proto"
   - [VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.ConnectionOptions.TlsTerminationOptions)
   - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes)
   - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions)
+  - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions)
   - [VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.RouteSpecifier)
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes)
   - [VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost](#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost)
@@ -130,7 +131,7 @@ VirtualGateway is the top-level object for configuring ingress into a Mesh or Vi
 | deployToIngressGateways | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway" >}}) |  | deploy this VirtualGateway to one or more Ingress Gateway workloads {{/* TODO: evaluate supporting multiple ingress gateway deployments per VG */}} |
   | deployToSidecars | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | deploy this VirtualGateway to one or more workload sidecars {{/* NOTE: unimplemented */}} |
   | connectionHandlers | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler" >}}) | repeated | Each Gateway must implement one or more ConnectionHandlers. A ConnectionHandler instructs the gateway how to handle clients  which have connected to the specified bind address. Typically `connectionHandlers` will consist of a single `http` handler which serves HTTP Routes defined in a set of VirtualHosts. Multiple `connectionHandlers` can be specified to provide different behavior on the same Gateway, e.g. one for TCP and one for HTTP traffic. |
-  | gatewayOptions | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions" >}}) |  | Options applied to all clients who connect to this gateway |
+  | options | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions" >}}) |  | Options applied to all clients who connect to this gateway |
   
 
 
@@ -224,6 +225,27 @@ TODO: Fill ConnectionOptions
 ### VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions
 TODO: Fill with HttpListenerOptions from gloo options.proto Team discussion topic
 
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| options | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions" >}}) |  |  |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions"></a>
+
+### VirtualGatewaySpec.ConnectionHandler.HttpRoutes.HttpOptions.FilterOptions
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| strictFilterManagement | bool |  | Restricts filter from being added to the filter chain unless explicitly enabled in FilterOptions |
+  | csrf | bool |  |  |
+  
 
 
 
@@ -420,7 +442,7 @@ Options for deploying the VirtualGateway to an Istio Ingress Gateway
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions"></a>
 
 ### VirtualGatewaySpec.GatewayOptions
-TODO: Fill in more options
+TODO: Fill in more options<br>gateway-level options (only apply to gateway/listener)
 
 
 | Field | Type | Label | Description |

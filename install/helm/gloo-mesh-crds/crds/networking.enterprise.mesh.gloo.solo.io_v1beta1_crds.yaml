@@ -2398,6 +2398,16 @@ spec:
                       routeOptions:
                         description: HTTP Listener Options // Root level RouteTable
                           + VirtualHost + routes level
+                        properties:
+                          options:
+                            properties:
+                              csrf:
+                                type: boolean
+                              strictFilterManagement:
+                                description: Restricts filter from being added to
+                                  the filter chain unless explicitly enabled in FilterOptions
+                                type: boolean
+                            type: object
                         type: object
                     type: object
                   tcp:
@@ -2788,7 +2798,7 @@ spec:
                     type: object
                 type: object
               type: array
-            gatewayOptions:
+            options:
               description: Options applied to all clients who connect to this gateway
               properties:
                 perConnectionBufferLimitBytes:
