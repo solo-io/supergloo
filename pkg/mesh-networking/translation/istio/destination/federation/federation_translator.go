@@ -113,8 +113,8 @@ func (t *translator) Translate(
 	var virtualServices []*networkingv1alpha3.VirtualService
 	var destinationRules []*networkingv1alpha3.DestinationRule
 
-	// translate remote resources
 	var remoteDestinationRule *networkingv1alpha3.DestinationRule
+	// translate remote resources
 	for _, meshRef := range destination.Status.AppliedFederation.GetFederatedToMeshes() {
 		remoteMesh, err := in.Meshes().Find(meshRef)
 		if err != nil {
@@ -140,7 +140,11 @@ func (t *translator) Translate(
 		virtualServices = append(virtualServices, virtualService)
 		destinationRules = append(destinationRules, destinationRule)
 
-		remoteDestinationRule = destinationRule
+		// take a reference to any translated remote DestinationRule so that we can copy over any necessary fields for the local DestinationRule for the federated FQDN
+		// this avoids re-translating the DestinationRule
+		if remoteDestinationRule == nil {
+			remoteDestinationRule = destinationRule
+		}
 	}
 
 	// translate local resources
