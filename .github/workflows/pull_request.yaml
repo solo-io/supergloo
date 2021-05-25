@@ -37,7 +37,6 @@ jobs:
       - name: Docker Backup Login
         uses: docker/login-action@v1
         with:
-          registry: hub
           username: soloiobot
           password: ${{ secrets.CI_ADMIN_DOCKER_HUB_PASSWORD }}
       - name: Push Images
