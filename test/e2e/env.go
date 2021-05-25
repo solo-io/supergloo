@@ -20,6 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 	istionetworkingv1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	observabilityv1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
@@ -65,19 +66,20 @@ func newSingleClusterEnv(mgmt string) SingleClusterEnv {
 }
 
 type KubeContext struct {
-	Context               string
-	Config                *rest.Config
-	Clientset             *kubernetes.Clientset
-	TrafficPolicyClient   networkingv1.TrafficPolicyClient
-	MeshClient            discoveryv1.MeshClient
-	DestinationClient     discoveryv1.DestinationClient
-	WorkloadClient        discoveryv1.WorkloadClient
-	SecretClient          kubernetes_core.SecretClient
-	VirtualMeshClient     networkingv1.VirtualMeshClient
-	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
-	VirtualServiceClient  istionetworkingv1alpha3.VirtualServiceClient
-	ServiceEntryClient    istionetworkingv1alpha3.ServiceEntryClient
-	AccessLogRecordClient observabilityv1.AccessLogRecordClient
+	Context                 string
+	Config                  *rest.Config
+	Clientset               *kubernetes.Clientset
+	TrafficPolicyClient     networkingv1.TrafficPolicyClient
+	MeshClient              discoveryv1.MeshClient
+	DestinationClient       discoveryv1.DestinationClient
+	WorkloadClient          discoveryv1.WorkloadClient
+	SecretClient            kubernetes_core.SecretClient
+	VirtualMeshClient       networkingv1.VirtualMeshClient
+	DestinationRuleClient   istionetworkingv1alpha3.DestinationRuleClient
+	VirtualServiceClient    istionetworkingv1alpha3.VirtualServiceClient
+	ServiceEntryClient      istionetworkingv1alpha3.ServiceEntryClient
+	AccessLogRecordClient   observabilityv1.AccessLogRecordClient
+	IssuedCertificateClient certificatesv1.IssuedCertificateClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -104,23 +106,27 @@ func NewKubeContext(kubecontext string) KubeContext {
 	discoveryClientset, err := discoveryv1.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
+	certificateClientset, err := certificatesv1.NewClientsetFromConfig(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
 	istioNetworkingClientset, err := istionetworkingv1alpha3.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{
-		Context:               kubecontext,
-		Config:                restcfg,
-		Clientset:             clientset,
-		TrafficPolicyClient:   networkingClientset.TrafficPolicies(),
-		VirtualMeshClient:     networkingClientset.VirtualMeshes(),
-		MeshClient:            discoveryClientset.Meshes(),
-		DestinationClient:     discoveryClientset.Destinations(),
-		WorkloadClient:        discoveryClientset.Workloads(),
-		SecretClient:          kubeCoreClientset.Secrets(),
-		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
-		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
-		ServiceEntryClient:    istioNetworkingClientset.ServiceEntries(),
-		AccessLogRecordClient: observabilityClientset.AccessLogRecords(),
+		Context:                 kubecontext,
+		Config:                  restcfg,
+		Clientset:               clientset,
+		TrafficPolicyClient:     networkingClientset.TrafficPolicies(),
+		VirtualMeshClient:       networkingClientset.VirtualMeshes(),
+		MeshClient:              discoveryClientset.Meshes(),
+		DestinationClient:       discoveryClientset.Destinations(),
+		WorkloadClient:          discoveryClientset.Workloads(),
+		SecretClient:            kubeCoreClientset.Secrets(),
+		DestinationRuleClient:   istioNetworkingClientset.DestinationRules(),
+		VirtualServiceClient:    istioNetworkingClientset.VirtualServices(),
+		ServiceEntryClient:      istioNetworkingClientset.ServiceEntries(),
+		AccessLogRecordClient:   observabilityClientset.AccessLogRecords(),
+		IssuedCertificateClient: certificateClientset.IssuedCertificates(),
 	}
 }
 
