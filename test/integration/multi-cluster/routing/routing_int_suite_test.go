@@ -504,7 +504,6 @@ func testWeightedRouting(ctx resource.Context, t *testing.T, deploymentCtx *cont
 	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(westCluster)))
 	backendHost := "http-subset.solo.io"
 
-	// submit a 500 error to kick the west cluster
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
 			Protocol:    "http",
