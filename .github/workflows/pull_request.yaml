@@ -7,6 +7,44 @@ on:
   pull_request: { }
 
 jobs:
+  docker-images:
+    name: Docker Images
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.0
+        with:
+          access_token: ${{ github.token }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - run: git fetch --prune --unshallow
+      - name: Set up Go 1.16
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.16
+      - name: Setup Cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.GC_GHA_SA_JSON_KEY }}
+      - name: Docker Backup Login
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: solo-io+solobot
+          password: ${{ secrets.QUAY_IO_PASSWORD }}
+      - name: Push Images
+        run: make push-all-images
+        env:
+          TAGGED_VERSION: dev
+
   check-code-gen:
     name: check-code-gen
     runs-on: ubuntu-18.04

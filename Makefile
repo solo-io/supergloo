@@ -137,7 +137,7 @@ gloo-mesh-image: gloo-mesh-linux-amd64
 .PHONY: gloo-mesh-image-push
 gloo-mesh-image-push: gloo-mesh-image
 ifeq ($(RELEASE),"true")
-	docker push $(GLOOMESH_IMAGE):$(VERSION)
+# 	docker push $(GLOOMESH_IMAGE):$(VERSION)
 	docker push $(BACKUP_GLOOMESH_IMAGE):$(VERSION) || true
 endif
 
@@ -172,7 +172,7 @@ cert-agent-image: cert-agent-linux-amd64
 .PHONY: cert-agent-image-push
 cert-agent-image-push: cert-agent-image
 ifeq ($(RELEASE),"true")
-	docker push $(CA_IMAGE):$(VERSION)
+# 	docker push $(CA_IMAGE):$(VERSION)
 	docker push $(BACKUP_CA_IMAGE):$(VERSION) || true
 endif
 
