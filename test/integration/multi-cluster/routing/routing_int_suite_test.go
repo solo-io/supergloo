@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"istio.io/istio/pkg/test/echo/client"
 	"net/http"
 	"os"
 	"testing"
+
+	"istio.io/istio/pkg/test/echo/client"
 
 	"istio.io/istio/pkg/test/framework/components/cluster"
 
@@ -158,7 +159,7 @@ func TestInMesh(t *testing.T) {
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-http-flat-network.yaml",
 							Folder:      "gloo-mesh/in-mesh",
-							Skip: flatNetworkingEnabled,
+							Skip:        flatNetworkingEnabled,
 						},
 						{
 							Name:        "different-cluster-https-flat-network",
@@ -167,7 +168,7 @@ func TestInMesh(t *testing.T) {
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-https-flat-network.yaml",
 							Folder:      "gloo-mesh/in-mesh",
-							Skip: flatNetworkingEnabled,
+							Skip:        flatNetworkingEnabled,
 						},
 						{
 							Name:        "different-cluster-tcp-flat-network",
@@ -176,7 +177,7 @@ func TestInMesh(t *testing.T) {
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-tcp-flat-network.yaml",
 							Folder:      "gloo-mesh/in-mesh",
-							Skip: flatNetworkingEnabled,
+							Skip:        flatNetworkingEnabled,
 						},
 					},
 				},
