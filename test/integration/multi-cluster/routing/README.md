@@ -5,7 +5,7 @@
 
 example run
 ```shell
-RUN_INTEGRATION=true GLOO_MESH_LICENSE_KEY=$GLOO_MESH_LICENSE_KEY go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
+FLAT_NETWORKING_ENABLED=false RUN_INTEGRATION=true GLOO_MESH_LICENSE_KEY=$GLOO_MESH_LICENSE_KEY go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
   -args --istio.test.kube.config=/users/nick/.kube/mp,/users/nick/.kube/cp-us-east \
   --istio.test.nocleanup=true \
   --istio.test.hub=docker.io/istio \
