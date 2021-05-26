@@ -133,14 +133,6 @@ func (t *translator) Translate(
 		}
 	}
 
-	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
-	if len(destinationRule.Spec.Subsets) == 0 &&
-		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE &&
-		destinationRule.Spec.GetTrafficPolicy().GetOutlierDetection() == nil {
-		// no need to create this DestinationRule as it has no effect
-		return nil
-	}
-
 	if t.userDestinationRules == nil {
 		return destinationRule
 	}
