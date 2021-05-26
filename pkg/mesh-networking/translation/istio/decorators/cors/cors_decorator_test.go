@@ -34,10 +34,10 @@ var _ = Describe("CorsDecorator", func() {
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					CorsPolicy: &v1.TrafficPolicySpec_Policy_CorsPolicy{
-						AllowOrigins: []*v1.TrafficPolicySpec_Policy_StringMatch{
-							{MatchType: &v1.TrafficPolicySpec_Policy_StringMatch_Exact{Exact: "exact"}},
-							{MatchType: &v1.TrafficPolicySpec_Policy_StringMatch_Prefix{Prefix: "prefix"}},
-							{MatchType: &v1.TrafficPolicySpec_Policy_StringMatch_Regex{Regex: "regex"}},
+						AllowOrigins: []*v1.StringMatch{
+							{MatchType: &v1.StringMatch_Exact{Exact: "exact"}},
+							{MatchType: &v1.StringMatch_Prefix{Prefix: "prefix"}},
+							{MatchType: &v1.StringMatch_Regex{Regex: "regex"}},
 						},
 						AllowMethods:     []string{"GET", "POST"},
 						AllowHeaders:     []string{"Header1", "Header2"},
