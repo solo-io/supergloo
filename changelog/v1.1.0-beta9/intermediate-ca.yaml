@@ -1,5 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/588
-    description: Add support for intermediate CA to mtls translator.
-    resolvesIssue: false
