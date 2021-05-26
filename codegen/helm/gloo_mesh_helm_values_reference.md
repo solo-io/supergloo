@@ -11,7 +11,7 @@ weight: 2
 |glooMeshOperatorArgs.settingsRef|struct|{"name":"settings","namespace":"gloo-mesh"}|Name/namespace of the Settings object.|
 |glooMeshOperatorArgs.settingsRef.name|string|settings|Name of the Settings object.|
 |glooMeshOperatorArgs.settingsRef.namespace|string|gloo-mesh|Namespace of the Settings object.|
-|settings|struct|{"mtls":{"istio":{"tlsMode":"ISTIO_MUTUAL"}},"networkingExtensionServers":[],"discovery":{"istio":{"ingressGatewayDetectors":{}}},"relay":{"enabled":false,"server":{"address":"","insecure":false,"reconnectOnNetworkFailures":false}},"dashboard":null}|Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details.|
+|settings|struct|{"mtls":{"istio":{"tlsMode":"ISTIO_MUTUAL"}},"networkingExtensionServers":[],"discovery":{"istio":{"ingressGatewayDetectors":{}}},"relay":{"enabled":false,"server":{"address":"","insecure":false,"reconnectOnNetworkFailures":false}},"dashboard":{"authConfigs":[]}}|Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details.|
 |settings.mtls|struct|{"istio":{"tls_mode":2}}||
 |settings.mtls.istio|struct|{"tls_mode":2}||
 |settings.mtls.istio.tls_mode|int32|2||
@@ -33,8 +33,8 @@ weight: 2
 |settings.relay.server.address|string| ||
 |settings.relay.server.insecure|bool|false||
 |settings.relay.server.reconnect_on_network_failures|bool|false||
-|settings.dashboard|struct| ||
-|settings.dashboard.auth_configs[]|[]ptr| ||
+|settings.dashboard|struct|{}||
+|settings.dashboard.auth_configs[]|[]ptr|null||
 |settings.dashboard.auth_configs[]|struct| ||
 |settings.dashboard.auth_configs[].name|struct| ||
 |settings.dashboard.auth_configs[].name.value|string| ||

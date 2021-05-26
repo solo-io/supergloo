@@ -9,12 +9,12 @@ import (
 
 // The schema for our Helm chart values. Struct members must be public for visibility to skv2 Helm generator.
 type ChartValues struct {
-	GlooMeshOperatorArgs       GlooMeshOperatorArgs `json:"glooMeshOperatorArgs" desc:"Command line argument to Gloo Mesh deployments."`
-	Settings                   SettingsValues       `json:"settings" desc:"Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details."`
+	GlooMeshOperatorArgs       GlooMeshOperatorArgs `json:"glooMeshOperatorArgs"       desc:"Command line argument to Gloo Mesh deployments."`
+	Settings                   SettingsValues       `json:"settings"                   desc:"Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details."`
 	DisallowIntersectingConfig bool                 `json:"disallowIntersectingConfig" desc:"If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh."`
-	WatchOutputTypes           bool                 `json:"watchOutputTypes" desc:"If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes."`
-	DefaultMetricsPort         uint32               `json:"defaultMetricsPort" desc:"The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable."`
-	Verbose                    bool                 `json:"verbose" desc:"If true, enables verbose/debug logging."`
+	WatchOutputTypes           bool                 `json:"watchOutputTypes"           desc:"If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes."`
+	DefaultMetricsPort         uint32               `json:"defaultMetricsPort"         desc:"The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable."`
+	Verbose                    bool                 `json:"verbose"                    desc:"If true, enables verbose/debug logging."`
 }
 
 type GlooMeshOperatorArgs struct {
@@ -22,7 +22,7 @@ type GlooMeshOperatorArgs struct {
 }
 
 type SettingsRef struct {
-	Name      string `json:"name" desc:"Name of the Settings object."`
+	Name      string `json:"name"      desc:"Name of the Settings object."`
 	Namespace string `json:"namespace" desc:"Namespace of the Settings object."`
 }
 
@@ -58,6 +58,7 @@ func DefaultValues() ChartValues {
 				Enabled: false,
 				Server:  &settingsv1.GrpcServer{},
 			},
+			Dashboard: &settingsv1.DashboardSettings{},
 		},
 		DefaultMetricsPort:         defaults.MetricsPort,
 		DisallowIntersectingConfig: false,
