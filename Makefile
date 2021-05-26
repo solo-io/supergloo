@@ -8,7 +8,7 @@ DOCKER_REPO ?= gcr.io/gloo-mesh
 GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
-BACKUP_DOCKER_REPO ?= soloio
+BACKUP_DOCKER_REPO ?= quay.io/solo-io
 BACKUP_GLOOMESH_IMAGE ?= $(BACKUP_DOCKER_REPO)/gloo-mesh
 BACKUP_CA_IMAGE ?= $(BACKUP_DOCKER_REPO)/cert-agent
 
