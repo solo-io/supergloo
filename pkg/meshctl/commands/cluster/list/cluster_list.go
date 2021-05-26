@@ -70,7 +70,6 @@ func enterpriseCommand(ctx context.Context) *cobra.Command {
 		Use:     "enterprise",
 		Short:   "List registered clusters for Gloo Mesh enterprise edition",
 		Example: " meshctl cluster list enterprise",
-		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
