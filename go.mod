@@ -39,6 +39,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.2.0 // indirect
 	github.com/fatih/color v1.10.0
 	github.com/gertd/go-pluralize v0.1.1
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-openapi/swag v0.19.6
 	github.com/go-test/deep v1.0.2
 	github.com/gobuffalo/packr v1.30.1
