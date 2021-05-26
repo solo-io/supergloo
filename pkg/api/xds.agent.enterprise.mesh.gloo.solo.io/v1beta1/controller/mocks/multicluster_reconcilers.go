@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMulticlusterXdsConfigReconciler is a mock of MulticlusterXdsConfigReconciler interface
+// MockMulticlusterXdsConfigReconciler is a mock of MulticlusterXdsConfigReconciler interface.
 type MockMulticlusterXdsConfigReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterXdsConfigReconcilerMockRecorder
 }
 
-// MockMulticlusterXdsConfigReconcilerMockRecorder is the mock recorder for MockMulticlusterXdsConfigReconciler
+// MockMulticlusterXdsConfigReconcilerMockRecorder is the mock recorder for MockMulticlusterXdsConfigReconciler.
 type MockMulticlusterXdsConfigReconcilerMockRecorder struct {
 	mock *MockMulticlusterXdsConfigReconciler
 }
 
-// NewMockMulticlusterXdsConfigReconciler creates a new mock instance
+// NewMockMulticlusterXdsConfigReconciler creates a new mock instance.
 func NewMockMulticlusterXdsConfigReconciler(ctrl *gomock.Controller) *MockMulticlusterXdsConfigReconciler {
 	mock := &MockMulticlusterXdsConfigReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterXdsConfigReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterXdsConfigReconciler) EXPECT() *MockMulticlusterXdsConfigReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileXdsConfig mocks base method
+// ReconcileXdsConfig mocks base method.
 func (m *MockMulticlusterXdsConfigReconciler) ReconcileXdsConfig(clusterName string, obj *v1beta1.XdsConfig) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileXdsConfig", clusterName, obj)
@@ -47,36 +47,36 @@ func (m *MockMulticlusterXdsConfigReconciler) ReconcileXdsConfig(clusterName str
 	return ret0, ret1
 }
 
-// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig
+// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig.
 func (mr *MockMulticlusterXdsConfigReconcilerMockRecorder) ReconcileXdsConfig(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfig", reflect.TypeOf((*MockMulticlusterXdsConfigReconciler)(nil).ReconcileXdsConfig), clusterName, obj)
 }
 
-// MockMulticlusterXdsConfigDeletionReconciler is a mock of MulticlusterXdsConfigDeletionReconciler interface
+// MockMulticlusterXdsConfigDeletionReconciler is a mock of MulticlusterXdsConfigDeletionReconciler interface.
 type MockMulticlusterXdsConfigDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterXdsConfigDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterXdsConfigDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterXdsConfigDeletionReconciler
+// MockMulticlusterXdsConfigDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterXdsConfigDeletionReconciler.
 type MockMulticlusterXdsConfigDeletionReconcilerMockRecorder struct {
 	mock *MockMulticlusterXdsConfigDeletionReconciler
 }
 
-// NewMockMulticlusterXdsConfigDeletionReconciler creates a new mock instance
+// NewMockMulticlusterXdsConfigDeletionReconciler creates a new mock instance.
 func NewMockMulticlusterXdsConfigDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterXdsConfigDeletionReconciler {
 	mock := &MockMulticlusterXdsConfigDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterXdsConfigDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterXdsConfigDeletionReconciler) EXPECT() *MockMulticlusterXdsConfigDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileXdsConfigDeletion mocks base method
+// ReconcileXdsConfigDeletion mocks base method.
 func (m *MockMulticlusterXdsConfigDeletionReconciler) ReconcileXdsConfigDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileXdsConfigDeletion", clusterName, req)
@@ -84,36 +84,36 @@ func (m *MockMulticlusterXdsConfigDeletionReconciler) ReconcileXdsConfigDeletion
 	return ret0
 }
 
-// ReconcileXdsConfigDeletion indicates an expected call of ReconcileXdsConfigDeletion
+// ReconcileXdsConfigDeletion indicates an expected call of ReconcileXdsConfigDeletion.
 func (mr *MockMulticlusterXdsConfigDeletionReconcilerMockRecorder) ReconcileXdsConfigDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfigDeletion", reflect.TypeOf((*MockMulticlusterXdsConfigDeletionReconciler)(nil).ReconcileXdsConfigDeletion), clusterName, req)
 }
 
-// MockMulticlusterXdsConfigReconcileLoop is a mock of MulticlusterXdsConfigReconcileLoop interface
+// MockMulticlusterXdsConfigReconcileLoop is a mock of MulticlusterXdsConfigReconcileLoop interface.
 type MockMulticlusterXdsConfigReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockMulticlusterXdsConfigReconcileLoopMockRecorder
 }
 
-// MockMulticlusterXdsConfigReconcileLoopMockRecorder is the mock recorder for MockMulticlusterXdsConfigReconcileLoop
+// MockMulticlusterXdsConfigReconcileLoopMockRecorder is the mock recorder for MockMulticlusterXdsConfigReconcileLoop.
 type MockMulticlusterXdsConfigReconcileLoopMockRecorder struct {
 	mock *MockMulticlusterXdsConfigReconcileLoop
 }
 
-// NewMockMulticlusterXdsConfigReconcileLoop creates a new mock instance
+// NewMockMulticlusterXdsConfigReconcileLoop creates a new mock instance.
 func NewMockMulticlusterXdsConfigReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterXdsConfigReconcileLoop {
 	mock := &MockMulticlusterXdsConfigReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockMulticlusterXdsConfigReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMulticlusterXdsConfigReconcileLoop) EXPECT() *MockMulticlusterXdsConfigReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterXdsConfigReconciler mocks base method
+// AddMulticlusterXdsConfigReconciler mocks base method.
 func (m *MockMulticlusterXdsConfigReconcileLoop) AddMulticlusterXdsConfigReconciler(ctx context.Context, rec controller.MulticlusterXdsConfigReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -123,7 +123,7 @@ func (m *MockMulticlusterXdsConfigReconcileLoop) AddMulticlusterXdsConfigReconci
 	m.ctrl.Call(m, "AddMulticlusterXdsConfigReconciler", varargs...)
 }
 
-// AddMulticlusterXdsConfigReconciler indicates an expected call of AddMulticlusterXdsConfigReconciler
+// AddMulticlusterXdsConfigReconciler indicates an expected call of AddMulticlusterXdsConfigReconciler.
 func (mr *MockMulticlusterXdsConfigReconcileLoopMockRecorder) AddMulticlusterXdsConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
