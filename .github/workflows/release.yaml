@@ -63,8 +63,9 @@ jobs:
       - name: Docker Backup Login
         uses: docker/login-action@v1
         with:
-          username: soloiobot
-          password: ${{ secrets.CI_ADMIN_DOCKER_HUB_PASSWORD }}
+          registry: quay.io
+          username: solo-io+solobot
+          password: ${{ secrets.QUAY_IO_PASSWORD }}
       - name: Push Images
         run: make push-all-images
         env:
