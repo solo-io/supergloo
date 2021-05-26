@@ -256,6 +256,206 @@ func (m *DashboardSettings) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *SessionConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SessionConfig)
+	if !ok {
+		that2, ok := that.(SessionConfig)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetCookieOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCookieOptions()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetCookieOptions(), target.GetCookieOptions()) {
+			return false
+		}
+	}
+
+	switch m.Backend.(type) {
+
+	case *SessionConfig_Cookie:
+		if _, ok := target.Backend.(*SessionConfig_Cookie); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetCookie()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetCookie()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetCookie(), target.GetCookie()) {
+				return false
+			}
+		}
+
+	case *SessionConfig_Redis:
+		if _, ok := target.Backend.(*SessionConfig_Redis); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetRedis()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRedis()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetRedis(), target.GetRedis()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.Backend != target.Backend {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *OidcConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*OidcConfig)
+	if !ok {
+		that2, ok := that.(OidcConfig)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetClientId(), target.GetClientId()) != 0 {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetClientSecret()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetClientSecret()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetClientSecret(), target.GetClientSecret()) {
+			return false
+		}
+	}
+
+	if strings.Compare(m.GetIssuerUrl(), target.GetIssuerUrl()) != 0 {
+		return false
+	}
+
+	if len(m.GetAuthEndpointQueryParams()) != len(target.GetAuthEndpointQueryParams()) {
+		return false
+	}
+	for k, v := range m.GetAuthEndpointQueryParams() {
+
+		if strings.Compare(v, target.GetAuthEndpointQueryParams()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetTokenEndpointQueryParams()) != len(target.GetTokenEndpointQueryParams()) {
+		return false
+	}
+	for k, v := range m.GetTokenEndpointQueryParams() {
+
+		if strings.Compare(v, target.GetTokenEndpointQueryParams()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if strings.Compare(m.GetAppUrl(), target.GetAppUrl()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetCallbackPath(), target.GetCallbackPath()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetLogoutPath(), target.GetLogoutPath()) != 0 {
+		return false
+	}
+
+	if len(m.GetScopes()) != len(target.GetScopes()) {
+		return false
+	}
+	for idx, v := range m.GetScopes() {
+
+		if strings.Compare(v, target.GetScopes()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if h, ok := interface{}(m.GetHeader()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetHeader()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetHeader(), target.GetHeader()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetDiscoveryOverride()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDiscoveryOverride()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDiscoveryOverride(), target.GetDiscoveryOverride()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetDiscoveryPollInterval()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDiscoveryPollInterval()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDiscoveryPollInterval(), target.GetDiscoveryPollInterval()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetJwksCacheRefreshPolicy()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetJwksCacheRefreshPolicy()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetJwksCacheRefreshPolicy(), target.GetJwksCacheRefreshPolicy()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *JwksOnDemandCacheRefreshPolicy) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -451,230 +651,6 @@ func (m *DiscoverySettings_Istio_IngressGatewayDetector) Equal(that interface{})
 }
 
 // Equal function
-func (m *DashboardSettings_SessionConfig) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DashboardSettings_SessionConfig)
-	if !ok {
-		that2, ok := that.(DashboardSettings_SessionConfig)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetCookieOptions()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetCookieOptions()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetCookieOptions(), target.GetCookieOptions()) {
-			return false
-		}
-	}
-
-	switch m.Backend.(type) {
-
-	case *DashboardSettings_SessionConfig_Cookie:
-		if _, ok := target.Backend.(*DashboardSettings_SessionConfig_Cookie); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetCookie()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetCookie()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetCookie(), target.GetCookie()) {
-				return false
-			}
-		}
-
-	case *DashboardSettings_SessionConfig_Redis:
-		if _, ok := target.Backend.(*DashboardSettings_SessionConfig_Redis); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetRedis()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetRedis()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetRedis(), target.GetRedis()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.Backend != target.Backend {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *DashboardSettings_NoAuth) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DashboardSettings_NoAuth)
-	if !ok {
-		that2, ok := that.(DashboardSettings_NoAuth)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *DashboardSettings_OidcConfig) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DashboardSettings_OidcConfig)
-	if !ok {
-		that2, ok := that.(DashboardSettings_OidcConfig)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetClientId(), target.GetClientId()) != 0 {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetClientSecret()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetClientSecret()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetClientSecret(), target.GetClientSecret()) {
-			return false
-		}
-	}
-
-	if strings.Compare(m.GetIssuerUrl(), target.GetIssuerUrl()) != 0 {
-		return false
-	}
-
-	if len(m.GetAuthEndpointQueryParams()) != len(target.GetAuthEndpointQueryParams()) {
-		return false
-	}
-	for k, v := range m.GetAuthEndpointQueryParams() {
-
-		if strings.Compare(v, target.GetAuthEndpointQueryParams()[k]) != 0 {
-			return false
-		}
-
-	}
-
-	if len(m.GetTokenEndpointQueryParams()) != len(target.GetTokenEndpointQueryParams()) {
-		return false
-	}
-	for k, v := range m.GetTokenEndpointQueryParams() {
-
-		if strings.Compare(v, target.GetTokenEndpointQueryParams()[k]) != 0 {
-			return false
-		}
-
-	}
-
-	if strings.Compare(m.GetAppUrl(), target.GetAppUrl()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetCallbackPath(), target.GetCallbackPath()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetLogoutPath(), target.GetLogoutPath()) != 0 {
-		return false
-	}
-
-	if len(m.GetScopes()) != len(target.GetScopes()) {
-		return false
-	}
-	for idx, v := range m.GetScopes() {
-
-		if strings.Compare(v, target.GetScopes()[idx]) != 0 {
-			return false
-		}
-
-	}
-
-	if h, ok := interface{}(m.GetHeader()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetHeader()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetHeader(), target.GetHeader()) {
-			return false
-		}
-	}
-
-	if h, ok := interface{}(m.GetDiscoveryOverride()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetDiscoveryOverride()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetDiscoveryOverride(), target.GetDiscoveryOverride()) {
-			return false
-		}
-	}
-
-	if h, ok := interface{}(m.GetDiscoveryPollInterval()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetDiscoveryPollInterval()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetDiscoveryPollInterval(), target.GetDiscoveryPollInterval()) {
-			return false
-		}
-	}
-
-	if h, ok := interface{}(m.GetJwksCacheRefreshPolicy()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetJwksCacheRefreshPolicy()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetJwksCacheRefreshPolicy(), target.GetJwksCacheRefreshPolicy()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *DashboardSettings_AuthConfig) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -707,21 +683,6 @@ func (m *DashboardSettings_AuthConfig) Equal(that interface{}) bool {
 
 	switch m.AuthConfig.(type) {
 
-	case *DashboardSettings_AuthConfig_None:
-		if _, ok := target.AuthConfig.(*DashboardSettings_AuthConfig_None); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetNone()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetNone()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetNone(), target.GetNone()) {
-				return false
-			}
-		}
-
 	case *DashboardSettings_AuthConfig_Oidc:
 		if _, ok := target.AuthConfig.(*DashboardSettings_AuthConfig_Oidc); !ok {
 			return false
@@ -748,14 +709,14 @@ func (m *DashboardSettings_AuthConfig) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *DashboardSettings_SessionConfig_CookieSession) Equal(that interface{}) bool {
+func (m *SessionConfig_CookieSession) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*DashboardSettings_SessionConfig_CookieSession)
+	target, ok := that.(*SessionConfig_CookieSession)
 	if !ok {
-		that2, ok := that.(DashboardSettings_SessionConfig_CookieSession)
+		that2, ok := that.(SessionConfig_CookieSession)
 		if ok {
 			target = &that2
 		} else {
@@ -772,14 +733,14 @@ func (m *DashboardSettings_SessionConfig_CookieSession) Equal(that interface{}) 
 }
 
 // Equal function
-func (m *DashboardSettings_SessionConfig_RedisSession) Equal(that interface{}) bool {
+func (m *SessionConfig_RedisSession) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*DashboardSettings_SessionConfig_RedisSession)
+	target, ok := that.(*SessionConfig_RedisSession)
 	if !ok {
-		that2, ok := that.(DashboardSettings_SessionConfig_RedisSession)
+		that2, ok := that.(SessionConfig_RedisSession)
 		if ok {
 			target = &that2
 		} else {
@@ -796,14 +757,14 @@ func (m *DashboardSettings_SessionConfig_RedisSession) Equal(that interface{}) b
 }
 
 // Equal function
-func (m *DashboardSettings_SessionConfig_CookieOptions) Equal(that interface{}) bool {
+func (m *SessionConfig_CookieOptions) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*DashboardSettings_SessionConfig_CookieOptions)
+	target, ok := that.(*SessionConfig_CookieOptions)
 	if !ok {
-		that2, ok := that.(DashboardSettings_SessionConfig_CookieOptions)
+		that2, ok := that.(SessionConfig_CookieOptions)
 		if ok {
 			target = &that2
 		} else {
@@ -848,14 +809,14 @@ func (m *DashboardSettings_SessionConfig_CookieOptions) Equal(that interface{}) 
 }
 
 // Equal function
-func (m *DashboardSettings_OidcConfig_HeaderConfig) Equal(that interface{}) bool {
+func (m *OidcConfig_HeaderConfig) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*DashboardSettings_OidcConfig_HeaderConfig)
+	target, ok := that.(*OidcConfig_HeaderConfig)
 	if !ok {
-		that2, ok := that.(DashboardSettings_OidcConfig_HeaderConfig)
+		that2, ok := that.(OidcConfig_HeaderConfig)
 		if ok {
 			target = &that2
 		} else {
@@ -880,14 +841,14 @@ func (m *DashboardSettings_OidcConfig_HeaderConfig) Equal(that interface{}) bool
 }
 
 // Equal function
-func (m *DashboardSettings_OidcConfig_DiscoveryOverride) Equal(that interface{}) bool {
+func (m *OidcConfig_DiscoveryOverride) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*DashboardSettings_OidcConfig_DiscoveryOverride)
+	target, ok := that.(*OidcConfig_DiscoveryOverride)
 	if !ok {
-		that2, ok := that.(DashboardSettings_OidcConfig_DiscoveryOverride)
+		that2, ok := that.(OidcConfig_DiscoveryOverride)
 		if ok {
 			target = &that2
 		} else {

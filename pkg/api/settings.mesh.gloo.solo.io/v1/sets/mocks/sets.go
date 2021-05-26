@@ -15,157 +15,30 @@ import (
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockSettingsSet is a mock of SettingsSet interface.
+// MockSettingsSet is a mock of SettingsSet interface
 type MockSettingsSet struct {
 	ctrl     *gomock.Controller
 	recorder *MockSettingsSetMockRecorder
 }
 
-// MockSettingsSetMockRecorder is the mock recorder for MockSettingsSet.
+// MockSettingsSetMockRecorder is the mock recorder for MockSettingsSet
 type MockSettingsSetMockRecorder struct {
 	mock *MockSettingsSet
 }
 
-// NewMockSettingsSet creates a new mock instance.
+// NewMockSettingsSet creates a new mock instance
 func NewMockSettingsSet(ctrl *gomock.Controller) *MockSettingsSet {
 	mock := &MockSettingsSet{ctrl: ctrl}
 	mock.recorder = &MockSettingsSetMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSettingsSet) EXPECT() *MockSettingsSetMockRecorder {
 	return m.recorder
 }
 
-// Delete mocks base method.
-func (m *MockSettingsSet) Delete(settings ezkube.ResourceId) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Delete", settings)
-}
-
-// Delete indicates an expected call of Delete.
-func (mr *MockSettingsSetMockRecorder) Delete(settings interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSettingsSet)(nil).Delete), settings)
-}
-
-// Delta mocks base method.
-func (m *MockSettingsSet) Delta(newSet v1sets.SettingsSet) sets.ResourceDelta {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delta", newSet)
-	ret0, _ := ret[0].(sets.ResourceDelta)
-	return ret0
-}
-
-// Delta indicates an expected call of Delta.
-func (mr *MockSettingsSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockSettingsSet)(nil).Delta), newSet)
-}
-
-// Difference mocks base method.
-func (m *MockSettingsSet) Difference(set v1sets.SettingsSet) v1sets.SettingsSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Difference", set)
-	ret0, _ := ret[0].(v1sets.SettingsSet)
-	return ret0
-}
-
-// Difference indicates an expected call of Difference.
-func (mr *MockSettingsSetMockRecorder) Difference(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockSettingsSet)(nil).Difference), set)
-}
-
-// Equal mocks base method.
-func (m *MockSettingsSet) Equal(settingsSet v1sets.SettingsSet) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Equal", settingsSet)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Equal indicates an expected call of Equal.
-func (mr *MockSettingsSetMockRecorder) Equal(settingsSet interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockSettingsSet)(nil).Equal), settingsSet)
-}
-
-// Find mocks base method.
-func (m *MockSettingsSet) Find(id ezkube.ResourceId) (*v1.Settings, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", id)
-	ret0, _ := ret[0].(*v1.Settings)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Find indicates an expected call of Find.
-func (mr *MockSettingsSetMockRecorder) Find(id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockSettingsSet)(nil).Find), id)
-}
-
-// Generic mocks base method.
-func (m *MockSettingsSet) Generic() sets.ResourceSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic")
-	ret0, _ := ret[0].(sets.ResourceSet)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic.
-func (mr *MockSettingsSetMockRecorder) Generic() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockSettingsSet)(nil).Generic))
-}
-
-// Has mocks base method.
-func (m *MockSettingsSet) Has(settings ezkube.ResourceId) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Has", settings)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// Has indicates an expected call of Has.
-func (mr *MockSettingsSetMockRecorder) Has(settings interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockSettingsSet)(nil).Has), settings)
-}
-
-// Insert mocks base method.
-func (m *MockSettingsSet) Insert(settings ...*v1.Settings) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range settings {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "Insert", varargs...)
-}
-
-// Insert indicates an expected call of Insert.
-func (mr *MockSettingsSetMockRecorder) Insert(settings ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockSettingsSet)(nil).Insert), settings...)
-}
-
-// Intersection mocks base method.
-func (m *MockSettingsSet) Intersection(set v1sets.SettingsSet) v1sets.SettingsSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Intersection", set)
-	ret0, _ := ret[0].(v1sets.SettingsSet)
-	return ret0
-}
-
-// Intersection indicates an expected call of Intersection.
-func (mr *MockSettingsSetMockRecorder) Intersection(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockSettingsSet)(nil).Intersection), set)
-}
-
-// Keys mocks base method.
+// Keys mocks base method
 func (m *MockSettingsSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
@@ -173,27 +46,13 @@ func (m *MockSettingsSet) Keys() sets0.String {
 	return ret0
 }
 
-// Keys indicates an expected call of Keys.
+// Keys indicates an expected call of Keys
 func (mr *MockSettingsSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockSettingsSet)(nil).Keys))
 }
 
-// Length mocks base method.
-func (m *MockSettingsSet) Length() int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Length")
-	ret0, _ := ret[0].(int)
-	return ret0
-}
-
-// Length indicates an expected call of Length.
-func (mr *MockSettingsSetMockRecorder) Length() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockSettingsSet)(nil).Length))
-}
-
-// List mocks base method.
+// List mocks base method
 func (m *MockSettingsSet) List(filterResource ...func(*v1.Settings) bool) []*v1.Settings {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -205,41 +64,13 @@ func (m *MockSettingsSet) List(filterResource ...func(*v1.Settings) bool) []*v1.
 	return ret0
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockSettingsSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSettingsSet)(nil).List), filterResource...)
 }
 
-// Map mocks base method.
-func (m *MockSettingsSet) Map() map[string]*v1.Settings {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1.Settings)
-	return ret0
-}
-
-// Map indicates an expected call of Map.
-func (mr *MockSettingsSetMockRecorder) Map() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockSettingsSet)(nil).Map))
-}
-
-// Union mocks base method.
-func (m *MockSettingsSet) Union(set v1sets.SettingsSet) v1sets.SettingsSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Union", set)
-	ret0, _ := ret[0].(v1sets.SettingsSet)
-	return ret0
-}
-
-// Union indicates an expected call of Union.
-func (mr *MockSettingsSetMockRecorder) Union(set interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockSettingsSet)(nil).Union), set)
-}
-
-// UnsortedList mocks base method.
+// UnsortedList mocks base method
 func (m *MockSettingsSet) UnsortedList(filterResource ...func(*v1.Settings) bool) []*v1.Settings {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
@@ -251,8 +82,177 @@ func (m *MockSettingsSet) UnsortedList(filterResource ...func(*v1.Settings) bool
 	return ret0
 }
 
-// UnsortedList indicates an expected call of UnsortedList.
+// UnsortedList indicates an expected call of UnsortedList
 func (mr *MockSettingsSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockSettingsSet)(nil).UnsortedList), filterResource...)
+}
+
+// Map mocks base method
+func (m *MockSettingsSet) Map() map[string]*v1.Settings {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1.Settings)
+	return ret0
+}
+
+// Map indicates an expected call of Map
+func (mr *MockSettingsSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockSettingsSet)(nil).Map))
+}
+
+// Insert mocks base method
+func (m *MockSettingsSet) Insert(settings ...*v1.Settings) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range settings {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert
+func (mr *MockSettingsSetMockRecorder) Insert(settings ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockSettingsSet)(nil).Insert), settings...)
+}
+
+// Equal mocks base method
+func (m *MockSettingsSet) Equal(settingsSet v1sets.SettingsSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", settingsSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal
+func (mr *MockSettingsSetMockRecorder) Equal(settingsSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockSettingsSet)(nil).Equal), settingsSet)
+}
+
+// Has mocks base method
+func (m *MockSettingsSet) Has(settings ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", settings)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has
+func (mr *MockSettingsSetMockRecorder) Has(settings interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockSettingsSet)(nil).Has), settings)
+}
+
+// Delete mocks base method
+func (m *MockSettingsSet) Delete(settings ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", settings)
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockSettingsSetMockRecorder) Delete(settings interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSettingsSet)(nil).Delete), settings)
+}
+
+// Union mocks base method
+func (m *MockSettingsSet) Union(set v1sets.SettingsSet) v1sets.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1sets.SettingsSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union
+func (mr *MockSettingsSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockSettingsSet)(nil).Union), set)
+}
+
+// Difference mocks base method
+func (m *MockSettingsSet) Difference(set v1sets.SettingsSet) v1sets.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1sets.SettingsSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference
+func (mr *MockSettingsSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockSettingsSet)(nil).Difference), set)
+}
+
+// Intersection mocks base method
+func (m *MockSettingsSet) Intersection(set v1sets.SettingsSet) v1sets.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1sets.SettingsSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection
+func (mr *MockSettingsSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockSettingsSet)(nil).Intersection), set)
+}
+
+// Find mocks base method
+func (m *MockSettingsSet) Find(id ezkube.ResourceId) (*v1.Settings, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Settings)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find
+func (mr *MockSettingsSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockSettingsSet)(nil).Find), id)
+}
+
+// Length mocks base method
+func (m *MockSettingsSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length
+func (mr *MockSettingsSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockSettingsSet)(nil).Length))
+}
+
+// Generic mocks base method
+func (m *MockSettingsSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockSettingsSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockSettingsSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockSettingsSet) Delta(newSet v1sets.SettingsSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockSettingsSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockSettingsSet)(nil).Delta), newSet)
 }

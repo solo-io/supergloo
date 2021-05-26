@@ -34,19 +34,13 @@ spec:
                     - not:
                         anyOf:
                         - required:
-                          - none
-                        - required:
                           - oidc
-                    - required:
-                      - none
                     - required:
                       - oidc
                     properties:
                       name:
                         nullable: true
                         type: string
-                      none:
-                        type: object
                       oidc:
                         properties:
                           appUrl:

@@ -20,16 +20,6 @@ title: "settings.proto"
 ## Table of Contents
   - [DashboardSettings](#settings.mesh.gloo.solo.io.DashboardSettings)
   - [DashboardSettings.AuthConfig](#settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig)
-  - [DashboardSettings.NoAuth](#settings.mesh.gloo.solo.io.DashboardSettings.NoAuth)
-  - [DashboardSettings.OidcConfig](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig)
-  - [DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry)
-  - [DashboardSettings.OidcConfig.DiscoveryOverride](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride)
-  - [DashboardSettings.OidcConfig.HeaderConfig](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig)
-  - [DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry](#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry)
-  - [DashboardSettings.SessionConfig](#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig)
-  - [DashboardSettings.SessionConfig.CookieOptions](#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieOptions)
-  - [DashboardSettings.SessionConfig.CookieSession](#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieSession)
-  - [DashboardSettings.SessionConfig.RedisSession](#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.RedisSession)
   - [DiscoverySettings](#settings.mesh.gloo.solo.io.DiscoverySettings)
   - [DiscoverySettings.Istio](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio)
   - [DiscoverySettings.Istio.IngressGatewayDetector](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector)
@@ -37,7 +27,16 @@ title: "settings.proto"
   - [DiscoverySettings.Istio.IngressGatewayDetectorsEntry](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry)
   - [GrpcServer](#settings.mesh.gloo.solo.io.GrpcServer)
   - [JwksOnDemandCacheRefreshPolicy](#settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy)
+  - [OidcConfig](#settings.mesh.gloo.solo.io.OidcConfig)
+  - [OidcConfig.AuthEndpointQueryParamsEntry](#settings.mesh.gloo.solo.io.OidcConfig.AuthEndpointQueryParamsEntry)
+  - [OidcConfig.DiscoveryOverride](#settings.mesh.gloo.solo.io.OidcConfig.DiscoveryOverride)
+  - [OidcConfig.HeaderConfig](#settings.mesh.gloo.solo.io.OidcConfig.HeaderConfig)
+  - [OidcConfig.TokenEndpointQueryParamsEntry](#settings.mesh.gloo.solo.io.OidcConfig.TokenEndpointQueryParamsEntry)
   - [RelaySettings](#settings.mesh.gloo.solo.io.RelaySettings)
+  - [SessionConfig](#settings.mesh.gloo.solo.io.SessionConfig)
+  - [SessionConfig.CookieOptions](#settings.mesh.gloo.solo.io.SessionConfig.CookieOptions)
+  - [SessionConfig.CookieSession](#settings.mesh.gloo.solo.io.SessionConfig.CookieSession)
+  - [SessionConfig.RedisSession](#settings.mesh.gloo.solo.io.SessionConfig.RedisSession)
   - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
   - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
 
@@ -71,172 +70,8 @@ title: "settings.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  |  |
-  | none | [settings.mesh.gloo.solo.io.DashboardSettings.NoAuth]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.NoAuth" >}}) |  |  |
-  | oidc | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig" >}}) |  |  |
+  | oidc | [settings.mesh.gloo.solo.io.OidcConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.OidcConfig" >}}) |  |  |
   
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.NoAuth"></a>
-
-### DashboardSettings.NoAuth
-
-
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig"></a>
-
-### DashboardSettings.OidcConfig
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| clientId | string |  | The client ID from the issuer |
-  | clientSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | THe client secret from the issuer |
-  | issuerUrl | string |  | The url of the issuer. We will look for OIDC information in:   {{ issuerURL }}/.well-known/openid-configuration |
-  | authEndpointQueryParams | [][settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry" >}}) | repeated | Extra query parameters to apply to the authorization request to the identity provider. For example, using the PKCE flow (https://www.oauth.com/oauth2-servers/pkce/authorization-request/) by setting `code_challenge` and `code_challenge_method`. |
-  | tokenEndpointQueryParams | [][settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry" >}}) | repeated | Extra query parameters to apply to the token request to the identity provider. For example, using the PKCE flow (https://www.oauth.com/oauth2-servers/pkce/authorization-request/) by setting `code_challenge` and `code_challenge_method`. |
-  | appUrl | string |  | URL to redirect to after successful auth. |
-  | callbackPath | string |  | Path to handle the OIDC callback. |
-  | logoutPath | string |  | Path used to logout. If not provided, logout will be disabled. |
-  | scopes | []string | repeated | Scopes to request in addition to 'openid'. |
-  | header | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig" >}}) |  | Additional headers. |
-  | discoveryOverride | [settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride" >}}) |  | Ensure that certain values are set regardless of what the OIDC provider returns. |
-  | discoveryPollInterval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | How often to poll the OIDC issuer for new configuration. |
-  | jwksCacheRefreshPolicy | [settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy" >}}) |  | If a user executes a request with a key that is not found in the JWKS, it could be that the keys have rotated on the remote source, and not yet in the local cache. This policy lets you define the behavior for how to refresh the local cache during a request where an invalid key is provided |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry"></a>
-
-### DashboardSettings.OidcConfig.AuthEndpointQueryParamsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.DiscoveryOverride"></a>
-
-### DashboardSettings.OidcConfig.DiscoveryOverride
-OIDC configuration is discovered at <issuerUrl>/.well-known/openid-configuration The discovery override defines any properties that should override this discovery configuration https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| authEndpoint | string |  | URL of the provider authorization endpoint. |
-  | tokenEndpoint | string |  | URL of the provider token endpoint. |
-  | jwksUri | string |  | URL of the provider JSON web key set. |
-  | scopes | []string | repeated | List of scope values that the provider supports. |
-  | responseTypes | []string | repeated | List of response types that the provider supports. |
-  | subjects | []string | repeated | List of subject identifier types that the provider supports. |
-  | idTokenAlgs | []string | repeated | List of json web signature signing algorithms that the provider supports for encoding claims in a JWT. |
-  | authMethods | []string | repeated | List of client authentication methods supported by the provider token endpoint. |
-  | claims | []string | repeated | List of claim types that the provider supports. |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.HeaderConfig"></a>
-
-### DashboardSettings.OidcConfig.HeaderConfig
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| idTokenHeader | string |  | If set, the ID token will be sent upstream with this header. |
-  | accessTokenHeader | string |  | If set, the access token will be sent upstream with this header. |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry"></a>
-
-### DashboardSettings.OidcConfig.TokenEndpointQueryParamsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig"></a>
-
-### DashboardSettings.SessionConfig
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| cookieOptions | [settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieOptions" >}}) |  | Set-Cookie options |
-  | cookie | [settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieSession]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieSession" >}}) |  | Store all session data in the cookie itself |
-  | redis | [settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.RedisSession]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.RedisSession" >}}) |  | Store the session data in a Redis instance. |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieOptions"></a>
-
-### DashboardSettings.SessionConfig.CookieOptions
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| maxAge | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Max age of the cookie. If unset, the default of 30 days will be used. To disable expiration, set explicitly to 0. |
-  | notSecure | bool |  | Use an insecure cookie. Should only be used for testing and in trusted environments. |
-  | path | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | Path of the cookie. Defaults to "/", set to "" to disable the option. |
-  | domain | string |  | Domain of the cookie. |
-  
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.CookieSession"></a>
-
-### DashboardSettings.SessionConfig.CookieSession
-
-
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.DashboardSettings.SessionConfig.RedisSession"></a>
-
-### DashboardSettings.SessionConfig.RedisSession
-
-
 
 
 
@@ -354,6 +189,104 @@ The json web key set (JWKS) (https://tools.ietf.org/html/rfc7517) is discovered 
 
 
 
+<a name="settings.mesh.gloo.solo.io.OidcConfig"></a>
+
+### OidcConfig
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| clientId | string |  | The client ID from the issuer |
+  | clientSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | THe client secret from the issuer |
+  | issuerUrl | string |  | The url of the issuer. We will look for OIDC information in:   {{ issuerURL }}/.well-known/openid-configuration |
+  | authEndpointQueryParams | [][settings.mesh.gloo.solo.io.OidcConfig.AuthEndpointQueryParamsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.OidcConfig.AuthEndpointQueryParamsEntry" >}}) | repeated | Extra query parameters to apply to the authorization request to the identity provider. For example, using the PKCE flow (https://www.oauth.com/oauth2-servers/pkce/authorization-request/) by setting `code_challenge` and `code_challenge_method`. |
+  | tokenEndpointQueryParams | [][settings.mesh.gloo.solo.io.OidcConfig.TokenEndpointQueryParamsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.OidcConfig.TokenEndpointQueryParamsEntry" >}}) | repeated | Extra query parameters to apply to the token request to the identity provider. For example, using the PKCE flow (https://www.oauth.com/oauth2-servers/pkce/authorization-request/) by setting `code_challenge` and `code_challenge_method`. |
+  | appUrl | string |  | URL to redirect to after successful auth. |
+  | callbackPath | string |  | Path to handle the OIDC callback. |
+  | logoutPath | string |  | Path used to logout. If not provided, logout will be disabled. |
+  | scopes | []string | repeated | Scopes to request in addition to 'openid'. |
+  | header | [settings.mesh.gloo.solo.io.OidcConfig.HeaderConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.OidcConfig.HeaderConfig" >}}) |  | Additional headers. |
+  | discoveryOverride | [settings.mesh.gloo.solo.io.OidcConfig.DiscoveryOverride]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.OidcConfig.DiscoveryOverride" >}}) |  | Ensure that certain values are set regardless of what the OIDC provider returns. |
+  | discoveryPollInterval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | How often to poll the OIDC issuer for new configuration. |
+  | jwksCacheRefreshPolicy | [settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.JwksOnDemandCacheRefreshPolicy" >}}) |  | If a user executes a request with a key that is not found in the JWKS, it could be that the keys have rotated on the remote source, and not yet in the local cache. This policy lets you define the behavior for how to refresh the local cache during a request where an invalid key is provided |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.OidcConfig.AuthEndpointQueryParamsEntry"></a>
+
+### OidcConfig.AuthEndpointQueryParamsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.OidcConfig.DiscoveryOverride"></a>
+
+### OidcConfig.DiscoveryOverride
+OIDC configuration is discovered at <issuerUrl>/.well-known/openid-configuration The discovery override defines any properties that should override this discovery configuration https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| authEndpoint | string |  | URL of the provider authorization endpoint. |
+  | tokenEndpoint | string |  | URL of the provider token endpoint. |
+  | jwksUri | string |  | URL of the provider JSON web key set. |
+  | scopes | []string | repeated | List of scope values that the provider supports. |
+  | responseTypes | []string | repeated | List of response types that the provider supports. |
+  | subjects | []string | repeated | List of subject identifier types that the provider supports. |
+  | idTokenAlgs | []string | repeated | List of json web signature signing algorithms that the provider supports for encoding claims in a JWT. |
+  | authMethods | []string | repeated | List of client authentication methods supported by the provider token endpoint. |
+  | claims | []string | repeated | List of claim types that the provider supports. |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.OidcConfig.HeaderConfig"></a>
+
+### OidcConfig.HeaderConfig
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| idTokenHeader | string |  | If set, the ID token will be sent upstream with this header. |
+  | accessTokenHeader | string |  | If set, the access token will be sent upstream with this header. |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.OidcConfig.TokenEndpointQueryParamsEntry"></a>
+
+### OidcConfig.TokenEndpointQueryParamsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
+  
+
+
+
+
+
 <a name="settings.mesh.gloo.solo.io.RelaySettings"></a>
 
 ### RelaySettings
@@ -365,6 +298,61 @@ RelaySettings contains options for configuring Gloo Mesh to use Relay for cluste
 | enabled | bool |  | Enable the use of Relay for cluster management. If relay is enabled, make sure to follow the [relay cluster registration guide]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}}) for registering your clusters. |
   | server | [settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) |  | Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server and push translated outputs to this server. Note: currently this field has no effect as the relay server runs in-process of the networking Pod. |
   
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SessionConfig"></a>
+
+### SessionConfig
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| cookieOptions | [settings.mesh.gloo.solo.io.SessionConfig.CookieOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.SessionConfig.CookieOptions" >}}) |  | Set-Cookie options |
+  | cookie | [settings.mesh.gloo.solo.io.SessionConfig.CookieSession]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.SessionConfig.CookieSession" >}}) |  | Store all session data in the cookie itself |
+  | redis | [settings.mesh.gloo.solo.io.SessionConfig.RedisSession]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.SessionConfig.RedisSession" >}}) |  | Store the session data in a Redis instance. |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SessionConfig.CookieOptions"></a>
+
+### SessionConfig.CookieOptions
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| maxAge | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Max age of the cookie. If unset, the default of 30 days will be used. To disable expiration, set explicitly to 0. |
+  | notSecure | bool |  | Use an insecure cookie. Should only be used for testing and in trusted environments. |
+  | path | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | Path of the cookie. Defaults to "/", set to "" to disable the option. |
+  | domain | string |  | Domain of the cookie. |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SessionConfig.CookieSession"></a>
+
+### SessionConfig.CookieSession
+
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SessionConfig.RedisSession"></a>
+
+### SessionConfig.RedisSession
+
+
 
 
 

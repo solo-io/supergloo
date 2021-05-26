@@ -12,30 +12,30 @@ import (
 	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 )
 
-// MockTranslator is a mock of Translator interface.
+// MockTranslator is a mock of Translator interface
 type MockTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTranslatorMockRecorder
 }
 
-// MockTranslatorMockRecorder is the mock recorder for MockTranslator.
+// MockTranslatorMockRecorder is the mock recorder for MockTranslator
 type MockTranslatorMockRecorder struct {
 	mock *MockTranslator
 }
 
-// NewMockTranslator creates a new mock instance.
+// NewMockTranslator creates a new mock instance
 func NewMockTranslator(ctrl *gomock.Controller) *MockTranslator {
 	mock := &MockTranslator{ctrl: ctrl}
 	mock.recorder = &MockTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
-// TranslateWorkloads mocks base method.
+// TranslateWorkloads mocks base method
 func (m *MockTranslator) TranslateWorkloads(deployments v1sets.DeploymentSet, daemonSets v1sets.DaemonSetSet, statefulSets v1sets.StatefulSetSet, meshes v1sets0.MeshSet) v1sets0.WorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateWorkloads", deployments, daemonSets, statefulSets, meshes)
@@ -43,7 +43,7 @@ func (m *MockTranslator) TranslateWorkloads(deployments v1sets.DeploymentSet, da
 	return ret0
 }
 
-// TranslateWorkloads indicates an expected call of TranslateWorkloads.
+// TranslateWorkloads indicates an expected call of TranslateWorkloads
 func (mr *MockTranslatorMockRecorder) TranslateWorkloads(deployments, daemonSets, statefulSets, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateWorkloads", reflect.TypeOf((*MockTranslator)(nil).TranslateWorkloads), deployments, daemonSets, statefulSets, meshes)

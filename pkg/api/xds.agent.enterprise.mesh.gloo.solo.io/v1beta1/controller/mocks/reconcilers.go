@@ -15,30 +15,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockXdsConfigReconciler is a mock of XdsConfigReconciler interface.
+// MockXdsConfigReconciler is a mock of XdsConfigReconciler interface
 type MockXdsConfigReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockXdsConfigReconcilerMockRecorder
 }
 
-// MockXdsConfigReconcilerMockRecorder is the mock recorder for MockXdsConfigReconciler.
+// MockXdsConfigReconcilerMockRecorder is the mock recorder for MockXdsConfigReconciler
 type MockXdsConfigReconcilerMockRecorder struct {
 	mock *MockXdsConfigReconciler
 }
 
-// NewMockXdsConfigReconciler creates a new mock instance.
+// NewMockXdsConfigReconciler creates a new mock instance
 func NewMockXdsConfigReconciler(ctrl *gomock.Controller) *MockXdsConfigReconciler {
 	mock := &MockXdsConfigReconciler{ctrl: ctrl}
 	mock.recorder = &MockXdsConfigReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockXdsConfigReconciler) EXPECT() *MockXdsConfigReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileXdsConfig mocks base method.
+// ReconcileXdsConfig mocks base method
 func (m *MockXdsConfigReconciler) ReconcileXdsConfig(obj *v1beta1.XdsConfig) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileXdsConfig", obj)
@@ -47,36 +47,36 @@ func (m *MockXdsConfigReconciler) ReconcileXdsConfig(obj *v1beta1.XdsConfig) (re
 	return ret0, ret1
 }
 
-// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig.
+// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig
 func (mr *MockXdsConfigReconcilerMockRecorder) ReconcileXdsConfig(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfig", reflect.TypeOf((*MockXdsConfigReconciler)(nil).ReconcileXdsConfig), obj)
 }
 
-// MockXdsConfigDeletionReconciler is a mock of XdsConfigDeletionReconciler interface.
+// MockXdsConfigDeletionReconciler is a mock of XdsConfigDeletionReconciler interface
 type MockXdsConfigDeletionReconciler struct {
 	ctrl     *gomock.Controller
 	recorder *MockXdsConfigDeletionReconcilerMockRecorder
 }
 
-// MockXdsConfigDeletionReconcilerMockRecorder is the mock recorder for MockXdsConfigDeletionReconciler.
+// MockXdsConfigDeletionReconcilerMockRecorder is the mock recorder for MockXdsConfigDeletionReconciler
 type MockXdsConfigDeletionReconcilerMockRecorder struct {
 	mock *MockXdsConfigDeletionReconciler
 }
 
-// NewMockXdsConfigDeletionReconciler creates a new mock instance.
+// NewMockXdsConfigDeletionReconciler creates a new mock instance
 func NewMockXdsConfigDeletionReconciler(ctrl *gomock.Controller) *MockXdsConfigDeletionReconciler {
 	mock := &MockXdsConfigDeletionReconciler{ctrl: ctrl}
 	mock.recorder = &MockXdsConfigDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockXdsConfigDeletionReconciler) EXPECT() *MockXdsConfigDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileXdsConfigDeletion mocks base method.
+// ReconcileXdsConfigDeletion mocks base method
 func (m *MockXdsConfigDeletionReconciler) ReconcileXdsConfigDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileXdsConfigDeletion", req)
@@ -84,50 +84,36 @@ func (m *MockXdsConfigDeletionReconciler) ReconcileXdsConfigDeletion(req reconci
 	return ret0
 }
 
-// ReconcileXdsConfigDeletion indicates an expected call of ReconcileXdsConfigDeletion.
+// ReconcileXdsConfigDeletion indicates an expected call of ReconcileXdsConfigDeletion
 func (mr *MockXdsConfigDeletionReconcilerMockRecorder) ReconcileXdsConfigDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfigDeletion", reflect.TypeOf((*MockXdsConfigDeletionReconciler)(nil).ReconcileXdsConfigDeletion), req)
 }
 
-// MockXdsConfigFinalizer is a mock of XdsConfigFinalizer interface.
+// MockXdsConfigFinalizer is a mock of XdsConfigFinalizer interface
 type MockXdsConfigFinalizer struct {
 	ctrl     *gomock.Controller
 	recorder *MockXdsConfigFinalizerMockRecorder
 }
 
-// MockXdsConfigFinalizerMockRecorder is the mock recorder for MockXdsConfigFinalizer.
+// MockXdsConfigFinalizerMockRecorder is the mock recorder for MockXdsConfigFinalizer
 type MockXdsConfigFinalizerMockRecorder struct {
 	mock *MockXdsConfigFinalizer
 }
 
-// NewMockXdsConfigFinalizer creates a new mock instance.
+// NewMockXdsConfigFinalizer creates a new mock instance
 func NewMockXdsConfigFinalizer(ctrl *gomock.Controller) *MockXdsConfigFinalizer {
 	mock := &MockXdsConfigFinalizer{ctrl: ctrl}
 	mock.recorder = &MockXdsConfigFinalizerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockXdsConfigFinalizer) EXPECT() *MockXdsConfigFinalizerMockRecorder {
 	return m.recorder
 }
 
-// FinalizeXdsConfig mocks base method.
-func (m *MockXdsConfigFinalizer) FinalizeXdsConfig(obj *v1beta1.XdsConfig) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeXdsConfig", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FinalizeXdsConfig indicates an expected call of FinalizeXdsConfig.
-func (mr *MockXdsConfigFinalizerMockRecorder) FinalizeXdsConfig(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeXdsConfig", reflect.TypeOf((*MockXdsConfigFinalizer)(nil).FinalizeXdsConfig), obj)
-}
-
-// ReconcileXdsConfig mocks base method.
+// ReconcileXdsConfig mocks base method
 func (m *MockXdsConfigFinalizer) ReconcileXdsConfig(obj *v1beta1.XdsConfig) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileXdsConfig", obj)
@@ -136,13 +122,13 @@ func (m *MockXdsConfigFinalizer) ReconcileXdsConfig(obj *v1beta1.XdsConfig) (rec
 	return ret0, ret1
 }
 
-// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig.
+// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig
 func (mr *MockXdsConfigFinalizerMockRecorder) ReconcileXdsConfig(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfig", reflect.TypeOf((*MockXdsConfigFinalizer)(nil).ReconcileXdsConfig), obj)
 }
 
-// XdsConfigFinalizerName mocks base method.
+// XdsConfigFinalizerName mocks base method
 func (m *MockXdsConfigFinalizer) XdsConfigFinalizerName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "XdsConfigFinalizerName")
@@ -150,36 +136,50 @@ func (m *MockXdsConfigFinalizer) XdsConfigFinalizerName() string {
 	return ret0
 }
 
-// XdsConfigFinalizerName indicates an expected call of XdsConfigFinalizerName.
+// XdsConfigFinalizerName indicates an expected call of XdsConfigFinalizerName
 func (mr *MockXdsConfigFinalizerMockRecorder) XdsConfigFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "XdsConfigFinalizerName", reflect.TypeOf((*MockXdsConfigFinalizer)(nil).XdsConfigFinalizerName))
 }
 
-// MockXdsConfigReconcileLoop is a mock of XdsConfigReconcileLoop interface.
+// FinalizeXdsConfig mocks base method
+func (m *MockXdsConfigFinalizer) FinalizeXdsConfig(obj *v1beta1.XdsConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeXdsConfig", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeXdsConfig indicates an expected call of FinalizeXdsConfig
+func (mr *MockXdsConfigFinalizerMockRecorder) FinalizeXdsConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeXdsConfig", reflect.TypeOf((*MockXdsConfigFinalizer)(nil).FinalizeXdsConfig), obj)
+}
+
+// MockXdsConfigReconcileLoop is a mock of XdsConfigReconcileLoop interface
 type MockXdsConfigReconcileLoop struct {
 	ctrl     *gomock.Controller
 	recorder *MockXdsConfigReconcileLoopMockRecorder
 }
 
-// MockXdsConfigReconcileLoopMockRecorder is the mock recorder for MockXdsConfigReconcileLoop.
+// MockXdsConfigReconcileLoopMockRecorder is the mock recorder for MockXdsConfigReconcileLoop
 type MockXdsConfigReconcileLoopMockRecorder struct {
 	mock *MockXdsConfigReconcileLoop
 }
 
-// NewMockXdsConfigReconcileLoop creates a new mock instance.
+// NewMockXdsConfigReconcileLoop creates a new mock instance
 func NewMockXdsConfigReconcileLoop(ctrl *gomock.Controller) *MockXdsConfigReconcileLoop {
 	mock := &MockXdsConfigReconcileLoop{ctrl: ctrl}
 	mock.recorder = &MockXdsConfigReconcileLoopMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockXdsConfigReconcileLoop) EXPECT() *MockXdsConfigReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunXdsConfigReconciler mocks base method.
+// RunXdsConfigReconciler mocks base method
 func (m *MockXdsConfigReconcileLoop) RunXdsConfigReconciler(ctx context.Context, rec controller.XdsConfigReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
@@ -191,7 +191,7 @@ func (m *MockXdsConfigReconcileLoop) RunXdsConfigReconciler(ctx context.Context,
 	return ret0
 }
 
-// RunXdsConfigReconciler indicates an expected call of RunXdsConfigReconciler.
+// RunXdsConfigReconciler indicates an expected call of RunXdsConfigReconciler
 func (mr *MockXdsConfigReconcileLoopMockRecorder) RunXdsConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
