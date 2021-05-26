@@ -49,9 +49,9 @@ weight: 2
 |tokenSecret.namespace|string| |Namespace of the Kubernetes Secret|
 |tokenSecret.key|string|token|Key value of the data within the Kubernetes Secret|
 |maxGrpcMessageSize|string|4294967295|Specify to set a custom maximum message size for grpc messages sent and received by the Relay server|
-|metricsBackend|struct|{"prometheus":{"enabled":true,"url":"http://prometheus-server"}}|Specify a metrics backend for persisting and querying aggregated metrics|
-|metricsBackend.prometheus|struct|{"enabled":true,"url":"http://prometheus-server"}|Specify settings for using Prometheus as the metrics storage backend.|
-|metricsBackend.prometheus.enabled|bool|true|If true, use Prometheus as the metrics storage backend.|
+|metricsBackend|struct|{"prometheus":{"enabled":false,"url":"http://prometheus-server"}}|Specify a metrics backend for persisting and querying aggregated metrics|
+|metricsBackend.prometheus|struct|{"enabled":false,"url":"http://prometheus-server"}|Specify settings for using Prometheus as the metrics storage backend.|
+|metricsBackend.prometheus.enabled|bool|false|If true, use Prometheus as the metrics storage backend.|
 |metricsBackend.prometheus.url|string|http://prometheus-server|Specify the URL of the Prometheus server.|
 |Prometheus|map| |Helm values for configuring Prometheus. See the [Prometheus Helm chart](https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml) for the complete set of values.|
 |selfSigned|bool|true|Provision self signed certificates and bootstrap token for the relay server.|
