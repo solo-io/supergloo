@@ -75,7 +75,7 @@ func FederateClusters(vm *networkingv1.VirtualMesh) {
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
 	// which can take several minutes
-	Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
+	Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "10m", "2s").Should(ContainSubstring("200 OK"))
 }
 
 func TeardownFederationAndClusters() {
