@@ -337,6 +337,8 @@ func makeDestinationRuleSubsets(
 					switch destType := dest.DestinationType.(type) {
 					case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
 						appendUniqueSubset(destType.KubeService.Subset)
+					case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
+						appendUniqueSubset(destType.VirtualDestination.Subset)
 					}
 				}
 			}
