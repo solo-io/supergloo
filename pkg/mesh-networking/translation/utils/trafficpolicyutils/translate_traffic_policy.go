@@ -96,11 +96,11 @@ func TranslateCorsPolicy(
 	for i, allowOrigin := range corsPolicy.GetAllowOrigins() {
 		var stringMatch *networkingv1alpha3spec.StringMatch
 		switch matchType := allowOrigin.GetMatchType().(type) {
-		case *v1.TrafficPolicySpec_Policy_StringMatch_Exact:
+		case *v1.StringMatch_Exact:
 			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: allowOrigin.GetExact()}}
-		case *v1.TrafficPolicySpec_Policy_StringMatch_Prefix:
+		case *v1.StringMatch_Prefix:
 			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: allowOrigin.GetPrefix()}}
-		case *v1.TrafficPolicySpec_Policy_StringMatch_Regex:
+		case *v1.StringMatch_Regex:
 			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: allowOrigin.GetRegex()}}
 		default:
 			return nil, eris.Errorf("AllowOrigins[%d].MatchType has unexpected type %T", i, matchType)

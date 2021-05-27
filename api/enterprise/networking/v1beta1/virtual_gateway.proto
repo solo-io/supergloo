@@ -43,7 +43,7 @@ message VirtualGatewaySpec {
     repeated ConnectionHandler connection_handlers = 3;
 
     // Options applied to all clients who connect to this gateway
-    GatewayOptions gateway_options = 5;
+    GatewayOptions options = 5;
 
     // Options for deploying the VirtualGateway to an Istio Ingress Gateway
     message DeployToIngressGateway {
@@ -109,6 +109,9 @@ message VirtualGatewaySpec {
             // TODO
             TlsTerminationOptions tls_context = 1;
 
+            // Restricts filter from being added to the corresponding Envoy Listener unless they are explicitly configured
+            // in the connection handler options
+            bool strict_filter_management = 8;
 
             // enable PROXY protocol for this connection handler.
             bool enable_proxy_protocol = 4;
@@ -143,18 +146,22 @@ message VirtualGatewaySpec {
             }
 
             message HttpOptions {
+
                 // TODO: Fill with HttpListenerOptions from gloo options.proto
                 // Team discussion topic
 
                 // TODO: Move HTTP-specific Gateway Options to here
 
                 // ExtAuth, Rate-Limiting, etc.
-                
+
                 // grpc_web.options.gloo.solo.io.GrpcWeb grpc_web = 1;
                 // hcm.options.gloo.solo.io.HttpConnectionManagerSettings http_connection_manager_settings = 2;
                 // enable [Envoy health checks](https://www.envoyproxy.io/docs/envoy/v1.7.0/api-v2/config/filter/http/health_check/v2/health_check.proto) on this listener
                 // healthcheck.options.gloo.solo.io.HealthCheck health_check = 4;
-            
+
+                // Configure the Envoy based CSRF filter for this Gateway.
+                .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
+
             }
         }
 
@@ -295,7 +302,6 @@ message VirtualGatewaySpec {
 
     // TODO: Fill in more options 
     message GatewayOptions {
-
         // gateway-level options (only apply to gateway/listener)
         
         // configure access logging service for all traffic on this gateway
@@ -303,7 +309,7 @@ message VirtualGatewaySpec {
 
         // Soft limit on size of the listener's new connection read and write buffers. If unspecified, defaults to 1MiB
         // For more info, check out the [Envoy docs](https://www.envoyproxy.io/docs/envoy/v1.17.1/api-v3/config/listener/v3/listener.proto)
-        google.protobuf.UInt32Value per_connection_buffer_limit_bytes = 2;
+        google.protobuf.UInt32Value per_connection_buffer_limit_bytes = 1;
 
     }
 
@@ -354,7 +360,9 @@ message SelectedGatewayWorkload {
     // the namespace where the gateway workload is running
     string namespace = 2;
     // the cluster where the gateway workload is running
-    string clusterName = 3;
+    string cluster_name = 3;
+    // the labels used to identify the gateway workload
+    map<string, string> labels = 5;
 
     // the external URL by which the gateway can be accessed on the given workload, if it exists
     string external_url = 4;

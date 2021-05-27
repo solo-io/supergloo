@@ -39,23 +39,6 @@ message TrafficPolicySpec {
     // Specify L7 routing and post-routing configuration.
     message Policy {
 
-        // Describes how to match a given string in HTTP headers. Match is case-sensitive.
-        message StringMatch {
-
-            // The string match type.
-            oneof match_type {
-
-                // Exact string match.
-                string exact = 1;
-
-                // Prefix-based match.
-                string prefix = 2;
-
-                // ECMAscript style regex-based match.
-                string regex = 3;
-            }
-        }
-
         // Shift traffic to a different destination.
         MultiDestination traffic_shift = 4;
 
@@ -234,32 +217,6 @@ message TrafficPolicySpec {
             }
         }
 
-        // CSRF filter config.
-        message CsrfPolicy {
-
-            // Specifies that CSRF policies will be evaluated, tracked and enforced.
-            bool filter_enabled = 1;
-
-            // Specifies that CSRF policies will be evaluated and tracked, but not enforced.
-            //
-            // This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
-            bool shadow_enabled = 2;
-
-            // Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
-            // evaluated and tracked, but not enforced.
-            //
-            // If filter_enabled or shadow_enabled is true.
-            // Envoy will lookup the runtime key to get the percentage of requests to filter.
-            //
-            // .. note:: This field defaults to 100
-            double percentage = 3;
-
-            // Specifies additional source origins that will be allowed in addition to
-            // the destination origin.
-            repeated StringMatch additional_origins = 4;
-
-        }
-
         // Transform filter config.
         message Transform {
             // TODO: implement
@@ -307,4 +264,49 @@ message TrafficPolicyStatus {
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
+}
+
+// needed to extract for CUE
+
+// CSRF filter config.
+message CsrfPolicy {
+
+    // Specifies that CSRF policies will be evaluated, tracked and enforced.
+    bool filter_enabled = 1;
+
+    // Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+    //
+    // This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+    bool shadow_enabled = 2;
+
+    // Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+    // evaluated and tracked, but not enforced.
+    //
+    // If filter_enabled or shadow_enabled is true.
+    // Envoy will lookup the runtime key to get the percentage of requests to filter.
+    //
+    // .. note:: This field defaults to 100
+    double percentage = 3;
+
+    // Specifies additional source origins that will be allowed in addition to
+    // the destination origin.
+    repeated StringMatch additional_origins = 4;
+
+}
+
+// Describes how to match a given string in HTTP headers. Match is case-sensitive.
+message StringMatch {
+
+    // The string match type.
+    oneof match_type {
+
+        // Exact string match.
+        string exact = 1;
+
+        // Prefix-based match.
+        string prefix = 2;
+
+        // ECMAscript style regex-based match.
+        string regex = 3;
+    }
 }

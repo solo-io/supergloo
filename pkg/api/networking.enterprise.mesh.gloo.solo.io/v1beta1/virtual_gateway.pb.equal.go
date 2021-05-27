@@ -90,12 +90,12 @@ func (m *VirtualGatewaySpec) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetGatewayOptions()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetGatewayOptions()) {
+	if h, ok := interface{}(m.GetOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetOptions()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetGatewayOptions(), target.GetGatewayOptions()) {
+		if !proto.Equal(m.GetOptions(), target.GetOptions()) {
 			return false
 		}
 	}
@@ -252,6 +252,17 @@ func (m *SelectedGatewayWorkload) Equal(that interface{}) bool {
 
 	if strings.Compare(m.GetClusterName(), target.GetClusterName()) != 0 {
 		return false
+	}
+
+	if len(m.GetLabels()) != len(target.GetLabels()) {
+		return false
+	}
+	for k, v := range m.GetLabels() {
+
+		if strings.Compare(v, target.GetLabels()[k]) != 0 {
+			return false
+		}
+
 	}
 
 	if strings.Compare(m.GetExternalUrl(), target.GetExternalUrl()) != 0 {
@@ -566,6 +577,10 @@ func (m *VirtualGatewaySpec_ConnectionHandler_ConnectionOptions) Equal(that inte
 		}
 	}
 
+	if m.GetStrictFilterManagement() != target.GetStrictFilterManagement() {
+		return false
+	}
+
 	if m.GetEnableProxyProtocol() != target.GetEnableProxyProtocol() {
 		return false
 	}
@@ -801,6 +816,16 @@ func (m *VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) Equal(that
 		return m == nil
 	} else if m == nil {
 		return false
+	}
+
+	if h, ok := interface{}(m.GetCsrf()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCsrf()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetCsrf(), target.GetCsrf()) {
+			return false
+		}
 	}
 
 	return true
