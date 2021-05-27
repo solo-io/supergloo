@@ -308,5 +308,11 @@ message StringMatch {
 
         // ECMAscript style regex-based match.
         string regex = 3;
+
+        // Suffix-based match.
+        string suffix = 4;
     }
+
+      //If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match.
+      bool ignore_case = 5;
 }

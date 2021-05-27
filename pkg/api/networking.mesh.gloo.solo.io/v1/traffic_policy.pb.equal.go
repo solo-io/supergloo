@@ -255,6 +255,10 @@ func (m *StringMatch) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetIgnoreCase() != target.GetIgnoreCase() {
+		return false
+	}
+
 	switch m.MatchType.(type) {
 
 	case *StringMatch_Exact:
@@ -281,6 +285,15 @@ func (m *StringMatch) Equal(that interface{}) bool {
 		}
 
 		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
+			return false
+		}
+
+	case *StringMatch_Suffix:
+		if _, ok := target.MatchType.(*StringMatch_Suffix); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetSuffix(), target.GetSuffix()) != 0 {
 			return false
 		}
 

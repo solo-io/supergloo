@@ -972,22 +972,36 @@ spec:
                                                       - prefix
                                                     - required:
                                                       - regex
+                                                    - required:
+                                                      - suffix
                                                 - required:
                                                   - exact
                                                 - required:
                                                   - prefix
                                                 - required:
                                                   - regex
+                                                - required:
+                                                  - suffix
                                                 properties:
                                                   exact:
                                                     description: Exact string match.
                                                     type: string
+                                                  ignoreCase:
+                                                    description: If true, indicates
+                                                      the exact/prefix/suffix matching
+                                                      should be case insensitive.
+                                                      This has no effect for the regex
+                                                      match.
+                                                    type: boolean
                                                   prefix:
                                                     description: Prefix-based match.
                                                     type: string
                                                   regex:
                                                     description: ECMAscript style
                                                       regex-based match.
+                                                    type: string
+                                                  suffix:
+                                                    description: Suffix-based match.
                                                     type: string
                                                 type: object
                                               type: array
@@ -1022,22 +1036,36 @@ spec:
                                                       - prefix
                                                     - required:
                                                       - regex
+                                                    - required:
+                                                      - suffix
                                                 - required:
                                                   - exact
                                                 - required:
                                                   - prefix
                                                 - required:
                                                   - regex
+                                                - required:
+                                                  - suffix
                                                 properties:
                                                   exact:
                                                     description: Exact string match.
                                                     type: string
+                                                  ignoreCase:
+                                                    description: If true, indicates
+                                                      the exact/prefix/suffix matching
+                                                      should be case insensitive.
+                                                      This has no effect for the regex
+                                                      match.
+                                                    type: boolean
                                                   prefix:
                                                     description: Prefix-based match.
                                                     type: string
                                                   regex:
                                                     description: ECMAscript style
                                                       regex-based match.
+                                                    type: string
+                                                  suffix:
+                                                    description: Suffix-based match.
                                                     type: string
                                                 type: object
                                               type: array
@@ -1705,22 +1733,36 @@ spec:
                                                         - prefix
                                                       - required:
                                                         - regex
+                                                      - required:
+                                                        - suffix
                                                   - required:
                                                     - exact
                                                   - required:
                                                     - prefix
                                                   - required:
                                                     - regex
+                                                  - required:
+                                                    - suffix
                                                   properties:
                                                     exact:
                                                       description: Exact string match.
                                                       type: string
+                                                    ignoreCase:
+                                                      description: If true, indicates
+                                                        the exact/prefix/suffix matching
+                                                        should be case insensitive.
+                                                        This has no effect for the
+                                                        regex match.
+                                                      type: boolean
                                                     prefix:
                                                       description: Prefix-based match.
                                                       type: string
                                                     regex:
                                                       description: ECMAscript style
                                                         regex-based match.
+                                                      type: string
+                                                    suffix:
+                                                      description: Suffix-based match.
                                                       type: string
                                                   type: object
                                                 type: array
@@ -1755,22 +1797,36 @@ spec:
                                                         - prefix
                                                       - required:
                                                         - regex
+                                                      - required:
+                                                        - suffix
                                                   - required:
                                                     - exact
                                                   - required:
                                                     - prefix
                                                   - required:
                                                     - regex
+                                                  - required:
+                                                    - suffix
                                                   properties:
                                                     exact:
                                                       description: Exact string match.
                                                       type: string
+                                                    ignoreCase:
+                                                      description: If true, indicates
+                                                        the exact/prefix/suffix matching
+                                                        should be case insensitive.
+                                                        This has no effect for the
+                                                        regex match.
+                                                      type: boolean
                                                     prefix:
                                                       description: Prefix-based match.
                                                       type: string
                                                     regex:
                                                       description: ECMAscript style
                                                         regex-based match.
+                                                      type: string
+                                                    suffix:
+                                                      description: Suffix-based match.
                                                       type: string
                                                   type: object
                                                 type: array
@@ -2422,21 +2478,33 @@ spec:
                                         - prefix
                                       - required:
                                         - regex
+                                      - required:
+                                        - suffix
                                   - required:
                                     - exact
                                   - required:
                                     - prefix
                                   - required:
                                     - regex
+                                  - required:
+                                    - suffix
                                   properties:
                                     exact:
                                       description: Exact string match.
                                       type: string
+                                    ignoreCase:
+                                      description: If true, indicates the exact/prefix/suffix
+                                        matching should be case insensitive. This
+                                        has no effect for the regex match.
+                                      type: boolean
                                     prefix:
                                       description: Prefix-based match.
                                       type: string
                                     regex:
                                       description: ECMAscript style regex-based match.
+                                      type: string
+                                    suffix:
+                                      description: Suffix-based match.
                                       type: string
                                   type: object
                                 type: array
@@ -3045,21 +3113,33 @@ spec:
                                   - prefix
                                 - required:
                                   - regex
+                                - required:
+                                  - suffix
                             - required:
                               - exact
                             - required:
                               - prefix
                             - required:
                               - regex
+                            - required:
+                              - suffix
                             properties:
                               exact:
                                 description: Exact string match.
                                 type: string
+                              ignoreCase:
+                                description: If true, indicates the exact/prefix/suffix
+                                  matching should be case insensitive. This has no
+                                  effect for the regex match.
+                                type: boolean
                               prefix:
                                 description: Prefix-based match.
                                 type: string
                               regex:
                                 description: ECMAscript style regex-based match.
+                                type: string
+                              suffix:
+                                description: Suffix-based match.
                                 type: string
                             type: object
                           type: array
@@ -3093,21 +3173,33 @@ spec:
                                   - prefix
                                 - required:
                                   - regex
+                                - required:
+                                  - suffix
                             - required:
                               - exact
                             - required:
                               - prefix
                             - required:
                               - regex
+                            - required:
+                              - suffix
                             properties:
                               exact:
                                 description: Exact string match.
                                 type: string
+                              ignoreCase:
+                                description: If true, indicates the exact/prefix/suffix
+                                  matching should be case insensitive. This has no
+                                  effect for the regex match.
+                                type: boolean
                               prefix:
                                 description: Prefix-based match.
                                 type: string
                               regex:
                                 description: ECMAscript style regex-based match.
+                                type: string
+                              suffix:
+                                description: Suffix-based match.
                                 type: string
                             type: object
                           type: array
@@ -3719,21 +3811,33 @@ spec:
                                     - prefix
                                   - required:
                                     - regex
+                                  - required:
+                                    - suffix
                               - required:
                                 - exact
                               - required:
                                 - prefix
                               - required:
                                 - regex
+                              - required:
+                                - suffix
                               properties:
                                 exact:
                                   description: Exact string match.
                                   type: string
+                                ignoreCase:
+                                  description: If true, indicates the exact/prefix/suffix
+                                    matching should be case insensitive. This has
+                                    no effect for the regex match.
+                                  type: boolean
                                 prefix:
                                   description: Prefix-based match.
                                   type: string
                                 regex:
                                   description: ECMAscript style regex-based match.
+                                  type: string
+                                suffix:
+                                  description: Suffix-based match.
                                   type: string
                               type: object
                             type: array
@@ -3767,21 +3871,33 @@ spec:
                                     - prefix
                                   - required:
                                     - regex
+                                  - required:
+                                    - suffix
                               - required:
                                 - exact
                               - required:
                                 - prefix
                               - required:
                                 - regex
+                              - required:
+                                - suffix
                               properties:
                                 exact:
                                   description: Exact string match.
                                   type: string
+                                ignoreCase:
+                                  description: If true, indicates the exact/prefix/suffix
+                                    matching should be case insensitive. This has
+                                    no effect for the regex match.
+                                  type: boolean
                                 prefix:
                                   description: Prefix-based match.
                                   type: string
                                 regex:
                                   description: ECMAscript style regex-based match.
+                                  type: string
+                                suffix:
+                                  description: Suffix-based match.
                                   type: string
                               type: object
                             type: array
@@ -4659,21 +4775,33 @@ spec:
                                     - prefix
                                   - required:
                                     - regex
+                                  - required:
+                                    - suffix
                               - required:
                                 - exact
                               - required:
                                 - prefix
                               - required:
                                 - regex
+                              - required:
+                                - suffix
                               properties:
                                 exact:
                                   description: Exact string match.
                                   type: string
+                                ignoreCase:
+                                  description: If true, indicates the exact/prefix/suffix
+                                    matching should be case insensitive. This has
+                                    no effect for the regex match.
+                                  type: boolean
                                 prefix:
                                   description: Prefix-based match.
                                   type: string
                                 regex:
                                   description: ECMAscript style regex-based match.
+                                  type: string
+                                suffix:
+                                  description: Suffix-based match.
                                   type: string
                               type: object
                             type: array
@@ -4707,21 +4835,33 @@ spec:
                                     - prefix
                                   - required:
                                     - regex
+                                  - required:
+                                    - suffix
                               - required:
                                 - exact
                               - required:
                                 - prefix
                               - required:
                                 - regex
+                              - required:
+                                - suffix
                               properties:
                                 exact:
                                   description: Exact string match.
                                   type: string
+                                ignoreCase:
+                                  description: If true, indicates the exact/prefix/suffix
+                                    matching should be case insensitive. This has
+                                    no effect for the regex match.
+                                  type: boolean
                                 prefix:
                                   description: Prefix-based match.
                                   type: string
                                 regex:
                                   description: ECMAscript style regex-based match.
+                                  type: string
+                                suffix:
+                                  description: Suffix-based match.
                                   type: string
                               type: object
                             type: array
