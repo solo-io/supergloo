@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1591
+    description: On the Istio e2e test, allow initial federation timeout to be configurable.
