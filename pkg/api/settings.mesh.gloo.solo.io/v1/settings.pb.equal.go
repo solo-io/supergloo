@@ -252,6 +252,16 @@ func (m *DashboardSettings) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetBooleanExpr()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetBooleanExpr()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetBooleanExpr(), target.GetBooleanExpr()) {
+			return false
+		}
+	}
+
 	return true
 }
 

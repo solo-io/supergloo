@@ -39,6 +39,8 @@ weight: 2
 |settings.dashboard.auth_configs[].name|struct| ||
 |settings.dashboard.auth_configs[].name.value|string| ||
 |settings.dashboard.auth_configs[]|interface| ||
+|settings.dashboard.boolean_expr|struct| ||
+|settings.dashboard.boolean_expr.value|string| ||
 |disallowIntersectingConfig|bool|false|If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh.|
 |watchOutputTypes|bool|false|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|0|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|

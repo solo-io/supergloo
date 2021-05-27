@@ -54,7 +54,8 @@ title: "settings.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| authConfigs | [][settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig" >}}) | repeated |  |
+| authConfigs | [][settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DashboardSettings.AuthConfig" >}}) | repeated | List of auth configs to be checked for requests on a route referencing this auth config, By default, every config must be authorized for the entire request to be authorized. This behavior can be changed by defining names for each config and defining `boolean_expr` below.<br>State is shared between successful requests on the chain, i.e., the headers returned from each successful auth service get appended into the final auth response. |
+  | booleanExpr | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | How to handle processing of named configs within an auth config chain. An example config might be: `( basic1 || basic2 || (oidc1 && !oidc2) )` The boolean expression is evaluated left to right but honors parenthesis and short-circuiting. |
   
 
 
@@ -69,7 +70,7 @@ title: "settings.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  |  |
+| name | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | optional: used when defining complex boolean logic, if `boolean_expr` is defined below. Also used in logging. If omitted, an automatically generated name will be used (e.g. config_0, of the pattern 'config_$INDEX_IN_CHAIN'). |
   | oidc | [settings.mesh.gloo.solo.io.OidcConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.OidcConfig" >}}) |  |  |
   
 
