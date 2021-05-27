@@ -365,9 +365,6 @@ spec:
       proxyMetadata:
         # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
         GLOO_MESH_CLUSTER_NAME: ${cluster}
-      proxyStatsMatcher:
-        inclusionPrefixes:
-        - "http"
   values:
     prometheus:
       enabled: false
