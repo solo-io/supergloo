@@ -43,6 +43,11 @@ const (
 	// copied from https://github.com/istio/istio/blob/88a2bfb/pilot/pkg/serviceregistry/kube/controller/namespacecontroller.go#L39
 	// not imported due to issues with dependeny imports
 	istioCaConfigMapName = "istio-ca-root-cert"
+
+	defaultRootCertTTLDays                = 365
+	defaultRootCertRsaKeySize             = 4096
+	defaultOrgName                        = "gloo-mesh"
+	defaultSecretRotationGracePeriodRatio = 0.10
 )
 
 var (
@@ -378,14 +383,6 @@ func buildDefaultCertOptions(
 	}
 	return result
 }
-
-const (
-	defaultRootCertTTLDays                = 365
-	defaultRootCertTTLDuration            = defaultRootCertTTLDays * 24 * time.Hour
-	defaultRootCertRsaKeySize             = 4096
-	defaultOrgName                        = "gloo-mesh"
-	defaultSecretRotationGracePeriodRatio = 0.10
-)
 
 func generateSelfSignedCert(
 	builtinCA *certificatesv1.CommonCertOptions,
