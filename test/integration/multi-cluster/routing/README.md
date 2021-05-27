@@ -28,8 +28,8 @@ k3d cluster create mp --image "rancher/k3s:v1.20.2-k3s1"  --k3s-server-arg "--di
 kube_ctx=k3d-mp
 k3d kubeconfig get mp > ~/.kube/mp
 
-kubectl label node $kube_ctx-server-0 topology.kubernetes.io/region=us-east-1 --context $kube_ctx
-kubectl label node $kube_ctx-server-0 topology.kubernetes.io/zone=us-east-1a --context $kube_ctx
+kubectl label node $kube_ctx-server-0 topology.kubernetes.io/region=us-west-1 --context $kube_ctx
+kubectl label node $kube_ctx-server-0 topology.kubernetes.io/zone=us-west-1b --context $kube_ctx
 
 ## control plane cluster (us-east) exposes port 9010 (unused currently)
 k3d cluster create cp-us-east --image "rancher/k3s:v1.20.2-k3s1"  --k3s-server-arg "--disable=traefik" --network $network
