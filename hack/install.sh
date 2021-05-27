@@ -3,11 +3,11 @@
 set -eu
 
 if [ -x "$(command -v python3)" ]; then
-  echo Using Python3 to install meshctl
   alias any_python='python3'
 elif [ -x "$(command -v python)" ]; then
-  echo Using Python2 to install meshctl
   alias any_python='python'    
+elif [ -x "$(command -v python2)" ]; then
+  alias any_python='python2'    
 else
   echo Python 2 or 3 is required to install meshctl
   exit 1
