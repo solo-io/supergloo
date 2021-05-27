@@ -1,5 +1,5 @@
 changelog:
-  - type: BUG_FIX
+  - type: FIX
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1386
     description: >
       Fix the meshctl install script to use either python3 or python2 for installation, instead of
