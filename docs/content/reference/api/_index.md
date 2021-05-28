@@ -78,6 +78,8 @@ These docs describe Gloo Mesh CRDs.
 
 ### settings.mesh.gloo.solo.io
 
+  - [Dashboard]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.DashboardSpec" >}})
+
   - [Settings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.SettingsSpec" >}})
 
 

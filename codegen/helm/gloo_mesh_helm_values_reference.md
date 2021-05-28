@@ -11,7 +11,7 @@ weight: 2
 |glooMeshOperatorArgs.settingsRef|struct|{"name":"settings","namespace":"gloo-mesh"}|Name/namespace of the Settings object.|
 |glooMeshOperatorArgs.settingsRef.name|string|settings|Name of the Settings object.|
 |glooMeshOperatorArgs.settingsRef.namespace|string|gloo-mesh|Namespace of the Settings object.|
-|settings|struct|{"mtls":{"istio":{"tlsMode":"ISTIO_MUTUAL"}},"networkingExtensionServers":[],"discovery":{"istio":{"ingressGatewayDetectors":{}}},"relay":{"enabled":false,"server":{"address":"","insecure":false,"reconnectOnNetworkFailures":false}},"dashboard":{"authConfigs":[],"booleanExpr":null}}|Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details.|
+|settings|struct|{"mtls":{"istio":{"tlsMode":"ISTIO_MUTUAL"}},"networkingExtensionServers":[],"discovery":{"istio":{"ingressGatewayDetectors":{}}},"relay":{"enabled":false,"server":{"address":"","insecure":false,"reconnectOnNetworkFailures":false}}}|Values for the Settings object. See the [Settings API doc](../../../../api/github.com.solo-io.gloo-mesh.api.settings.v1.settings) for details.|
 |settings.mtls|struct|{"istio":{"tls_mode":2}}||
 |settings.mtls.istio|struct|{"tls_mode":2}||
 |settings.mtls.istio.tls_mode|int32|2||
@@ -33,14 +33,6 @@ weight: 2
 |settings.relay.server.address|string| ||
 |settings.relay.server.insecure|bool|false||
 |settings.relay.server.reconnect_on_network_failures|bool|false||
-|settings.dashboard|struct|{}||
-|settings.dashboard.auth_configs[]|[]ptr|null||
-|settings.dashboard.auth_configs[]|struct| ||
-|settings.dashboard.auth_configs[].name|struct| ||
-|settings.dashboard.auth_configs[].name.value|string| ||
-|settings.dashboard.auth_configs[]|interface| ||
-|settings.dashboard.boolean_expr|struct| ||
-|settings.dashboard.boolean_expr.value|string| ||
 |disallowIntersectingConfig|bool|false|If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh.|
 |watchOutputTypes|bool|true|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|9091|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|

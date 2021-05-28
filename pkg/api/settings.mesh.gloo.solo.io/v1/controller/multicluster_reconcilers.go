@@ -88,3 +88,74 @@ func (g genericSettingsMulticlusterReconciler) Reconcile(cluster string, object 
 	}
 	return g.reconciler.ReconcileSettings(cluster, obj)
 }
+
+// Reconcile Upsert events for the Dashboard Resource across clusters.
+// implemented by the user
+type MulticlusterDashboardReconciler interface {
+	ReconcileDashboard(clusterName string, obj *settings_mesh_gloo_solo_io_v1.Dashboard) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the Dashboard Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterDashboardDeletionReconciler interface {
+	ReconcileDashboardDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterDashboardReconcilerFuncs struct {
+	OnReconcileDashboard         func(clusterName string, obj *settings_mesh_gloo_solo_io_v1.Dashboard) (reconcile.Result, error)
+	OnReconcileDashboardDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterDashboardReconcilerFuncs) ReconcileDashboard(clusterName string, obj *settings_mesh_gloo_solo_io_v1.Dashboard) (reconcile.Result, error) {
+	if f.OnReconcileDashboard == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDashboard(clusterName, obj)
+}
+
+func (f *MulticlusterDashboardReconcilerFuncs) ReconcileDashboardDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileDashboardDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileDashboardDeletion(clusterName, req)
+}
+
+type MulticlusterDashboardReconcileLoop interface {
+	// AddMulticlusterDashboardReconciler adds a MulticlusterDashboardReconciler to the MulticlusterDashboardReconcileLoop.
+	AddMulticlusterDashboardReconciler(ctx context.Context, rec MulticlusterDashboardReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterDashboardReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterDashboardReconcileLoop) AddMulticlusterDashboardReconciler(ctx context.Context, rec MulticlusterDashboardReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericDashboardMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterDashboardReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterDashboardReconcileLoop {
+	return &multiclusterDashboardReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &settings_mesh_gloo_solo_io_v1.Dashboard{}, options)}
+}
+
+type genericDashboardMulticlusterReconciler struct {
+	reconciler MulticlusterDashboardReconciler
+}
+
+func (g genericDashboardMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterDashboardDeletionReconciler); ok {
+		return deletionReconciler.ReconcileDashboardDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericDashboardMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Dashboard handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileDashboard(cluster, obj)
+}

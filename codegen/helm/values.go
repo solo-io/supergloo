@@ -58,7 +58,6 @@ func DefaultValues() ChartValues {
 				Enabled: false,
 				Server:  &settingsv1.GrpcServer{},
 			},
-			Dashboard: &settingsv1.DashboardSettings{},
 		},
 		DefaultMetricsPort:         defaults.MetricsPort,
 		DisallowIntersectingConfig: false,

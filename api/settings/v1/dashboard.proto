@@ -1,0 +1,221 @@
+syntax = "proto3";
+package settings.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1";
+
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+// Configure settings for the dashboard.
+message DashboardSpec {
+  message AuthConfig {
+    // optional: used when defining complex boolean logic, if `boolean_expr` is defined below. Also used
+    // in logging. If omitted, an automatically generated name will be used (e.g. config_0, of the
+    // pattern 'config_$INDEX_IN_CHAIN').
+    google.protobuf.StringValue name = 1;
+
+    oneof auth_config {
+      OidcConfig oidc = 2;
+    }
+  }
+
+  // List of auth configs to be checked for requests on a route referencing this auth config,
+  // By default, every config must be authorized for the entire request to be authorized. This
+  // behavior can be changed by defining names for each config and defining `boolean_expr` below.
+  //
+  // State is shared between successful requests on the chain, i.e., the headers returned from each
+  // successful auth service get appended into the final auth response.
+  repeated AuthConfig auth_configs = 1;
+
+  // How to handle processing of named configs within an auth config chain.
+  // An example config might be: `( basic1 || basic2 || (oidc1 && !oidc2) )`
+  // The boolean expression is evaluated left to right but honors parenthesis and short-circuiting.
+  google.protobuf.StringValue boolean_expr = 10;
+}
+
+message SessionConfig {
+  message CookieSession {}
+
+  message RedisSession {}
+
+  message CookieOptions {
+    // Max age of the cookie. If unset, the default of 30 days will be
+    // used. To disable expiration, set explicitly to 0.
+    google.protobuf.UInt32Value max_age = 1;
+
+    // Use an insecure cookie.
+    // Should only be used for testing and in trusted environments.
+    bool not_secure = 2;
+
+    // Path of the cookie. Defaults to "/", set to "" to disable the
+    // option.
+    google.protobuf.StringValue path = 3;
+
+    // Domain of the cookie.
+    string domain = 4;
+  }
+
+  // Set-Cookie options
+  CookieOptions cookie_options = 1;
+
+  oneof backend {
+    // Store all session data in the cookie itself
+    CookieSession cookie = 2;
+
+    // Store the session data in a Redis instance.
+    RedisSession redis = 3;
+  }
+}
+
+message OidcConfig {
+  // The client ID from the issuer
+  string client_id = 1;
+
+  // THe client secret from the issuer
+  core.skv2.solo.io.ObjectRef client_secret = 2;
+
+  // The url of the issuer. We will look for OIDC information in:
+  //   {{ issuerURL }}/.well-known/openid-configuration
+  string issuer_url = 3;
+
+  // Extra query parameters to apply to the authorization request to the
+  // identity provider. For example, using the PKCE flow
+  // (https://www.oauth.com/oauth2-servers/pkce/authorization-request/) by
+  // setting `code_challenge` and `code_challenge_method`.
+  map<string, string> auth_endpoint_query_params = 4;
+
+  // Extra query parameters to apply to the token request to the identity
+  // provider. For example, using the PKCE flow
+  // (https://www.oauth.com/oauth2-servers/pkce/authorization-request/) by
+  // setting `code_challenge` and `code_challenge_method`.
+  map<string, string> token_endpoint_query_params = 5;
+
+  // URL to redirect to after successful auth.
+  string app_url = 6;
+
+  // Path to handle the OIDC callback.
+  string callback_path = 7;
+
+  // Path used to logout. If not provided, logout will be disabled.
+  string logout_path = 8;
+
+  // Scopes to request in addition to 'openid'.
+  repeated string scopes = 9;
+
+  message HeaderConfig {
+    // If set, the ID token will be sent upstream with this header.
+    string id_token_header = 1;
+
+    // If set, the access token will be sent upstream with this header.
+    string access_token_header = 2;
+  }
+
+  // Additional headers.
+  HeaderConfig header = 10;
+
+  // OIDC configuration is discovered at
+  // <issuerUrl>/.well-known/openid-configuration The discovery override
+  // defines any properties that should override this discovery
+  // configuration
+  // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+  message DiscoveryOverride {
+    // URL of the provider authorization endpoint.
+    string auth_endpoint = 1;
+
+    // URL of the provider token endpoint.
+    string token_endpoint = 2;
+
+    // URL of the provider JSON web key set.
+    string jwks_uri = 3;
+
+    // List of scope values that the provider supports.
+    repeated string scopes = 4;
+
+    // List of response types that the provider supports.
+    repeated string response_types = 5;
+
+    // List of subject identifier types that the provider supports.
+    repeated string subjects = 6;
+
+    // List of json web signature signing algorithms that the provider
+    // supports for encoding claims in a JWT.
+    repeated string id_token_algs = 7;
+
+    // List of client authentication methods supported by the provider
+    // token endpoint.
+    repeated string auth_methods = 8;
+
+    // List of claim types that the provider supports.
+    repeated string claims = 9;
+  }
+
+  // Ensure that certain values are set regardless of what the OIDC
+  // provider returns.
+  DiscoveryOverride discovery_override = 11;
+
+  // How often to poll the OIDC issuer for new configuration.
+  google.protobuf.Duration discovery_poll_interval = 12;
+
+  // If a user executes a request with a key that is not found in the
+  // JWKS, it could be that the keys have rotated on the remote source,
+  // and not yet in the local cache. This policy lets you define the
+  // behavior for how to refresh the local cache during a request where an
+  // invalid key is provided
+  JwksOnDemandCacheRefreshPolicy jwks_cache_refresh_policy = 13;
+}
+
+// The json web key set (JWKS) (https://tools.ietf.org/html/rfc7517) is
+// discovered at an interval from a remote source. When keys rotate in
+// the remote source, there may be a delay in the local source picking
+// up those new keys. Therefore, a user could execute a request with a
+// token that has been signed by a key in the remote JWKS, but the local
+// cache doesn't have the key yet. The request would fail because the
+// key isn't contained in the local set. Since most IdPs publish key
+// keys in their remote JWKS before they are used, this is not an issue
+// most of the time. This policy lets you define the behavior for when a
+// user has a token with a key not yet in the local cache.
+message JwksOnDemandCacheRefreshPolicy {
+  oneof policy {
+    // Never refresh the local JWKS cache on demand. If a key is not
+    // in the cache, it is assumed to be malicious. This is the
+    // default policy since we assume that IdPs publish keys before
+    // they rotate them, and frequent polling finds the newest keys.
+    google.protobuf.Empty never = 1;
+
+    // If a key is not in the cache, fetch the most recent keys from
+    // the IdP and update the cache. NOTE: This should only be done
+    // in trusted environments, since missing keys will each trigger
+    // a request to the IdP. Using this in an environment exposed to
+    // the internet will allow malicious agents to execute a DDoS
+    // attack by spamming protected endpoints with tokens signed by
+    // invalid keys.
+    google.protobuf.Empty always = 2;
+
+    // If a key is not in the cache, fetch the most recent keys from
+    // the IdP and update the cache. This value sets the number of
+    // requests to the IdP per polling interval. If that limit is
+    // exceeded, we will stop fetching from the IdP for the
+    // remainder of the polling interval.
+    uint32 max_idp_req_per_polling_interval = 3;
+  }
+}
+
+message DashboardStatus {
+
+  // The most recent generation observed in the the Dashboard metadata.
+  // If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
+  // recent version of this resource.
+  int64 observed_generation = 1;
+
+  // The state of the overall resource.
+  // It will only show accepted if no processing errors encountered.
+  .common.mesh.gloo.solo.io.ApprovalState state = 2;
+
+  // Any errors encountered while processing Settings object.
+  repeated string errors = 3;
+}
