@@ -551,3 +551,110 @@ func (h genericRouteTableHandler) Generic(object client.Object) error {
 	}
 	return h.handler.GenericRouteTable(obj)
 }
+
+// Handle events for the ServiceDependency Resource
+// DEPRECATED: Prefer reconciler pattern.
+type ServiceDependencyEventHandler interface {
+	CreateServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+	UpdateServiceDependency(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+	DeleteServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+	GenericServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+}
+
+type ServiceDependencyEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error
+}
+
+func (f *ServiceDependencyEventHandlerFuncs) CreateServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *ServiceDependencyEventHandlerFuncs) DeleteServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *ServiceDependencyEventHandlerFuncs) UpdateServiceDependency(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *ServiceDependencyEventHandlerFuncs) GenericServiceDependency(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type ServiceDependencyEventWatcher interface {
+	AddEventHandler(ctx context.Context, h ServiceDependencyEventHandler, predicates ...predicate.Predicate) error
+}
+
+type serviceDependencyEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewServiceDependencyEventWatcher(name string, mgr manager.Manager) ServiceDependencyEventWatcher {
+	return &serviceDependencyEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency{}),
+	}
+}
+
+func (c *serviceDependencyEventWatcher) AddEventHandler(ctx context.Context, h ServiceDependencyEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericServiceDependencyHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericServiceDependencyHandler implements a generic events.EventHandler
+type genericServiceDependencyHandler struct {
+	handler ServiceDependencyEventHandler
+}
+
+func (h genericServiceDependencyHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return errors.Errorf("internal error: ServiceDependency handler received event for %T", object)
+	}
+	return h.handler.CreateServiceDependency(obj)
+}
+
+func (h genericServiceDependencyHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return errors.Errorf("internal error: ServiceDependency handler received event for %T", object)
+	}
+	return h.handler.DeleteServiceDependency(obj)
+}
+
+func (h genericServiceDependencyHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return errors.Errorf("internal error: ServiceDependency handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return errors.Errorf("internal error: ServiceDependency handler received event for %T", new)
+	}
+	return h.handler.UpdateServiceDependency(objOld, objNew)
+}
+
+func (h genericServiceDependencyHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return errors.Errorf("internal error: ServiceDependency handler received event for %T", object)
+	}
+	return h.handler.GenericServiceDependency(obj)
+}

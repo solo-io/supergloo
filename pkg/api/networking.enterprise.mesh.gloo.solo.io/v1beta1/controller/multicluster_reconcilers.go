@@ -372,3 +372,74 @@ func (g genericRouteTableMulticlusterReconciler) Reconcile(cluster string, objec
 	}
 	return g.reconciler.ReconcileRouteTable(cluster, obj)
 }
+
+// Reconcile Upsert events for the ServiceDependency Resource across clusters.
+// implemented by the user
+type MulticlusterServiceDependencyReconciler interface {
+	ReconcileServiceDependency(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the ServiceDependency Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterServiceDependencyDeletionReconciler interface {
+	ReconcileServiceDependencyDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterServiceDependencyReconcilerFuncs struct {
+	OnReconcileServiceDependency         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error)
+	OnReconcileServiceDependencyDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterServiceDependencyReconcilerFuncs) ReconcileServiceDependency(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) (reconcile.Result, error) {
+	if f.OnReconcileServiceDependency == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileServiceDependency(clusterName, obj)
+}
+
+func (f *MulticlusterServiceDependencyReconcilerFuncs) ReconcileServiceDependencyDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileServiceDependencyDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileServiceDependencyDeletion(clusterName, req)
+}
+
+type MulticlusterServiceDependencyReconcileLoop interface {
+	// AddMulticlusterServiceDependencyReconciler adds a MulticlusterServiceDependencyReconciler to the MulticlusterServiceDependencyReconcileLoop.
+	AddMulticlusterServiceDependencyReconciler(ctx context.Context, rec MulticlusterServiceDependencyReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterServiceDependencyReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterServiceDependencyReconcileLoop) AddMulticlusterServiceDependencyReconciler(ctx context.Context, rec MulticlusterServiceDependencyReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericServiceDependencyMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterServiceDependencyReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterServiceDependencyReconcileLoop {
+	return &multiclusterServiceDependencyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency{}, options)}
+}
+
+type genericServiceDependencyMulticlusterReconciler struct {
+	reconciler MulticlusterServiceDependencyReconciler
+}
+
+func (g genericServiceDependencyMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterServiceDependencyDeletionReconciler); ok {
+		return deletionReconciler.ReconcileServiceDependencyDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericServiceDependencyMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ServiceDependency handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileServiceDependency(cluster, obj)
+}

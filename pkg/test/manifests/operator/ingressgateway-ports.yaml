@@ -1,0 +1,29 @@
+# deploy the ingress gateway with non root ports ports
+components:
+  egressGateways:
+    - enabled: false
+      name: istio-egressgateway
+  ingressGateways:
+    - name: istio-eastwestgateway
+      enabled: false
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        service:
+          ports:
+            - port: 8080
+              targetPort: 8080
+              name: http2
+            - port: 8443
+              targetPort: 8443
+              name: https
+        hpaSpec:
+          maxReplicas: 3
+          minReplicas: 1
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi

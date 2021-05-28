@@ -15,6 +15,7 @@
 // * VirtualGateways
 // * VirtualHosts
 // * RouteTables
+// * ServiceDependencies
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -140,6 +141,11 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "RouteTable",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "ServiceDependency",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -190,6 +196,8 @@ type LocalSnapshot interface {
 	VirtualHosts() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
 	// return the set of input RouteTables
 	RouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	// return the set of input ServiceDependencies
+	ServiceDependencies() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	// return the set of input AccessLogRecords
 	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
@@ -239,6 +247,8 @@ type LocalSyncStatusOptions struct {
 	VirtualHost bool
 	// sync status of RouteTable objects
 	RouteTable bool
+	// sync status of ServiceDependency objects
+	ServiceDependency bool
 
 	// sync status of AccessLogRecord objects
 	AccessLogRecord bool
@@ -268,6 +278,7 @@ type snapshotLocal struct {
 	virtualGateways     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
 	virtualHosts        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
 	routeTables         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -294,6 +305,7 @@ func NewLocalSnapshot(
 	virtualGateways networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet,
 	virtualHosts networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet,
 	routeTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet,
+	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet,
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
 
@@ -317,6 +329,7 @@ func NewLocalSnapshot(
 		virtualGateways:     virtualGateways,
 		virtualHosts:        virtualHosts,
 		routeTables:         routeTables,
+		serviceDependencies: serviceDependencies,
 		accessLogRecords:    accessLogRecords,
 		secrets:             secrets,
 		kubernetesClusters:  kubernetesClusters,
@@ -343,6 +356,7 @@ func NewLocalSnapshotFromGeneric(
 	virtualGatewaySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHostSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTableSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	serviceDependencySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -463,6 +477,15 @@ func NewLocalSnapshotFromGeneric(
 		for _, routeTable := range routeTables {
 			routeTableSet.Insert(routeTable.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RouteTable))
 		}
+		serviceDependencies := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "ServiceDependency",
+		}]
+
+		for _, serviceDependency := range serviceDependencies {
+			serviceDependencySet.Insert(serviceDependency.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency))
+		}
 
 		accessLogRecords := snapshot[schema.GroupVersionKind{
 			Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -509,6 +532,7 @@ func NewLocalSnapshotFromGeneric(
 		virtualGatewaySet,
 		virtualHostSet,
 		routeTableSet,
+		serviceDependencySet,
 		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
@@ -561,6 +585,10 @@ func (s snapshotLocal) VirtualHosts() networking_enterprise_mesh_gloo_solo_io_v1
 
 func (s snapshotLocal) RouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet {
 	return s.routeTables
+}
+
+func (s snapshotLocal) ServiceDependencies() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet {
+	return s.serviceDependencies
 }
 
 func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet {
@@ -725,6 +753,18 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 			}
 		}
 	}
+	if opts.ServiceDependency {
+		for _, obj := range s.ServiceDependencies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
@@ -844,6 +884,13 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
+	if opts.ServiceDependency {
+		for _, obj := range s.ServiceDependencies().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
@@ -878,6 +925,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["virtualGateways"] = s.virtualGateways.List()
 	snapshotMap["virtualHosts"] = s.virtualHosts.List()
 	snapshotMap["routeTables"] = s.routeTables.List()
+	snapshotMap["serviceDependencies"] = s.serviceDependencies.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
@@ -919,6 +967,8 @@ type LocalBuildOptions struct {
 	VirtualHosts ResourceLocalBuildOptions
 	// List options for composing a snapshot from RouteTables
 	RouteTables ResourceLocalBuildOptions
+	// List options for composing a snapshot from ServiceDependencies
+	ServiceDependencies ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from AccessLogRecords
 	AccessLogRecords ResourceLocalBuildOptions
@@ -974,6 +1024,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1021,6 +1072,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertRouteTablesFromCluster(ctx, cluster, routeTables, opts.RouteTables); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertServiceDependenciesFromCluster(ctx, cluster, serviceDependencies, opts.ServiceDependencies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -1048,6 +1102,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		virtualGateways,
 		virtualHosts,
 		routeTables,
+		serviceDependencies,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -1563,6 +1618,48 @@ func (b *multiClusterLocalBuilder) insertRouteTablesFromCluster(ctx context.Cont
 
 	return nil
 }
+func (b *multiClusterLocalBuilder) insertServiceDependenciesFromCluster(ctx context.Context, cluster string, serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet, opts ResourceLocalBuildOptions) error {
+	serviceDependencyClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterServiceDependencyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "ServiceDependency",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceDependencyList, err := serviceDependencyClient.ListServiceDependency(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceDependencyList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		serviceDependencies.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context.Context, cluster string, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 	accessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
@@ -1735,6 +1832,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1780,6 +1878,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertRouteTables(ctx, routeTables, opts.RouteTables); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertServiceDependencies(ctx, serviceDependencies, opts.ServiceDependencies); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1805,6 +1906,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		virtualGateways,
 		virtualHosts,
 		routeTables,
+		serviceDependencies,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -2212,6 +2314,39 @@ func (b *singleClusterLocalBuilder) insertRouteTables(ctx context.Context, route
 
 	return nil
 }
+func (b *singleClusterLocalBuilder) insertServiceDependencies(ctx context.Context, serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "ServiceDependency",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceDependencyList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewServiceDependencyClient(b.mgr.GetClient()).ListServiceDependency(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceDependencyList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		serviceDependencies.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 
@@ -2350,6 +2485,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -2395,6 +2531,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert RouteTables
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RouteTable:
 			i.insertRouteTable(ctx, obj, routeTables, opts)
+		// insert ServiceDependencies
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency:
+			i.insertServiceDependency(ctx, obj, serviceDependencies, opts)
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
 			i.insertAccessLogRecord(ctx, obj, accessLogRecords, opts)
@@ -2422,6 +2561,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		virtualGateways,
 		virtualHosts,
 		routeTables,
+		serviceDependencies,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -2777,6 +2917,35 @@ func (i *inMemoryLocalBuilder) insertRouteTable(
 
 	if !filteredOut {
 		routeTableSet.Insert(routeTable)
+	}
+}
+func (i *inMemoryLocalBuilder) insertServiceDependency(
+	ctx context.Context,
+	serviceDependency *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency,
+	serviceDependencySet networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.ServiceDependencies.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = serviceDependency.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(serviceDependency.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		serviceDependencySet.Insert(serviceDependency)
 	}
 }
 

@@ -2,6 +2,7 @@ syntax = "proto3";
 package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
 
+import "github.com/solo-io/gloo-mesh/api/certificates/v1/ca_options.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -37,13 +38,15 @@ message IssuedCertificateSpec {
      */
     repeated string hosts = 1;
 
-    // The organization for this certificate.
+    // DEPRECATED: in favor of `common_cert_options.org_name`
     string org = 2;
 
+    // DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret`
     // The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
     .core.skv2.solo.io.ObjectRef signing_certificate_secret = 3;
 
     // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
+    // If nil, the sidecar agent stores the signing certificate in memory. (Enterprise only)
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 
     // A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
@@ -56,6 +59,26 @@ message IssuedCertificateSpec {
     // which share a data plane with the target mesh.
     .core.skv2.solo.io.ObjectRef pod_bounce_directive = 5;
 
+    // Set of options to configure the intermediate certificate being generated
+    CommonCertOptions cert_options = 6;
+
+    // The location of the certificate authority to sign this certificate
+    oneof certificate_authority {
+        // Gloo Mesh CA options
+        RootCertificateAuthority gloo_mesh_ca = 7;        
+        // Agent CA options
+        IntermediateCertificateAuthority agent_ca = 8;
+    }
+
+}
+
+// Set of options which represent the certificate authorities the management cluster can use
+// to sign the intermediate certs.
+message RootCertificateAuthority {
+    // Certificate authority which gloo-mesh management will use to sign the intermediate cert
+    oneof certificate_authority {
+        .core.skv2.solo.io.ObjectRef signing_certificate_secret = 1;
+    }
 }
 
 // The IssuedCertificate status is written by the CertificateRequesting agent.

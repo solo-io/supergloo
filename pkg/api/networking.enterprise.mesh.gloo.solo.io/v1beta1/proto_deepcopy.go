@@ -67,3 +67,15 @@ func (in *RouteTableStatus) DeepCopyInto(out *RouteTableStatus) {
 	p := proto.Clone(in).(*RouteTableStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the ServiceDependency.Spec
+func (in *ServiceDependencySpec) DeepCopyInto(out *ServiceDependencySpec) {
+	p := proto.Clone(in).(*ServiceDependencySpec)
+	*out = *p
+}
+
+// DeepCopyInto for the ServiceDependency.Status
+func (in *ServiceDependencyStatus) DeepCopyInto(out *ServiceDependencyStatus) {
+	p := proto.Clone(in).(*ServiceDependencyStatus)
+	*out = *p
+}
