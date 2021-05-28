@@ -178,10 +178,9 @@ func (t *translator) configureSharedTrust(
 	// Construct the skeleton of the issuedCertificate
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
-		sharedTrust.GetIntermediateCertOptions(),
+		sharedTrust,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
-		sharedTrust.GetIntermediateCertificateAuthority() != nil,
 	)
 
 	switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
@@ -290,9 +289,9 @@ func (t *translator) getOrCreateGeneratedCaSecret(
 
 func (t *translator) constructIssuedCertificate(
 	mesh *discoveryv1.Mesh,
-	options *certificatesv1.CommonCertOptions,
+	sharedTrust *networkingv1.SharedTrust,
 	agentNamespace string,
-	autoRestartPods, agentCa bool,
+	autoRestartPods bool,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
@@ -309,18 +308,6 @@ func (t *translator) constructIssuedCertificate(
 		istioNamespace = defaultIstioNamespace
 	}
 
-	// the default location of the istio CA Certs secret
-	// the certificate workflow will produce a cert with this ref
-	var istioCaCerts *skv2corev1.ObjectRef
-	// TODO: Cleanup this logic, make it more clear why we are not setting it
-	// Don't set issuedCertSecret
-	if !agentCa {
-		istioCaCerts = &skv2corev1.ObjectRef{
-			Name:      istioCaSecretName,
-			Namespace: istioNamespace,
-		}
-	}
-
 	clusterName := istioMesh.GetInstallation().GetCluster()
 	issuedCertificateMeta := metav1.ObjectMeta{
 		Name: mesh.Name,
@@ -332,7 +319,7 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods, agentCa)
+	podsToBounce := getPodsToBounce(mesh, sharedTrust, t.workloads, autoRestartPods)
 	var (
 		podBounceDirective *certificatesv1.PodBounceDirective
 		podBounceRef       *skv2corev1.ObjectRef
@@ -347,18 +334,32 @@ func (t *translator) constructIssuedCertificate(
 		podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
 	}
 
-	// issue a certificate to the mesh agent
-	return &certificatesv1.IssuedCertificate{
+	issuedCert := &certificatesv1.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1.IssuedCertificateSpec{
-			Hosts:       []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
-			CertOptions: buildDefaultCertOptions(options, defaultIstioOrg),
+			Hosts: []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
+			CertOptions: buildDefaultCertOptions(
+				sharedTrust.GetIntermediateCertOptions(),
+				defaultIstioOrg,
+			),
 			// Set deprecated field for backwards compatibility
-			Org:                     defaultIstioOrg,
-			IssuedCertificateSecret: istioCaCerts,
-			PodBounceDirective:      podBounceRef,
+			Org:                defaultIstioOrg,
+			PodBounceDirective: podBounceRef,
 		},
-	}, podBounceDirective
+	}
+
+	// Only set issuedCert when not using vault CA
+	if sharedTrust.GetIntermediateCertificateAuthority().GetVault() == nil {
+		// the default location of the istio CA Certs secret
+		// the certificate workflow will produce a cert with this ref
+		issuedCert.Spec.IssuedCertificateSecret = &skv2corev1.ObjectRef{
+			Name:      istioCaSecretName,
+			Namespace: istioNamespace,
+		}
+	}
+
+	// issue a certificate to the mesh agent
+	return issuedCert, podBounceDirective
 }
 
 func buildDefaultCertOptions(
@@ -414,8 +415,9 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
 func getPodsToBounce(
 	mesh *discoveryv1.Mesh,
+	sharedTrust *networkingv1.SharedTrust,
 	allWorkloads discoveryv1sets.WorkloadSet,
-	autoRestartPods, agentCa bool,
+	autoRestartPods bool,
 ) []*certificatesv1.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
@@ -429,7 +431,7 @@ func getPodsToBounce(
 	var podsToBounce []*certificatesv1.PodBounceDirectiveSpec_PodSelector
 	// If the pki-sidecar is fulfilling the issued certificate request,
 	// then the control-plane should not be bounced.
-	if !agentCa {
+	if sharedTrust.GetIntermediateCertificateAuthority().GetVault() == nil {
 		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,
