@@ -284,8 +284,13 @@ NAME      TYPE                                          DATA   AGE
 cacerts   certificates.mesh.gloo.solo.io/issued_certificate   5      5m3s
 ```
 
-In the previous section, we bounced the Istio control plane to pick up these intermediate certs. Again, this is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
+In the previous section, we bounced the Istio control plane to pick up these intermediate certs. Again, this is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993).
 
+##### Disabling Shared Trust Process
+
+The automated trust process described above can be disabled by simply omitting the `mtlsConfig` field from the VirtualMesh. Doing so
+will prevent Gloo Mesh from managing Istio's certificates. This is useful in scenarios where establishing shared trust between 
+service mesh deployments is performed manually or by some external process.
 
 ##### Multi-cluster mesh federation
 
