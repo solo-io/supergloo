@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Added weighted routing field integration tests
-    resolvesIssue: false
