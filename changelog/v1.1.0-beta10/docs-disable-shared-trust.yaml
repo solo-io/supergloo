@@ -2,3 +2,6 @@ changelog:
   - type: NON_USER_FACING
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1595
     description: Document how to disable automated shared trust process on VirtualMesh.
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1580
+    description: Document how to perform selective federation.
