@@ -5,7 +5,7 @@
 
 example run
 ```shell
-RUN_INTEGRATION=true GLOO_MESH_LICENSE_KEY=$GLOO_MESH_LICENSE_KEY go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
+FLAT_NETWORKING_ENABLED=false RUN_INTEGRATION=true GLOO_MESH_LICENSE_KEY=$GLOO_MESH_LICENSE_KEY go test -v github.com/solo-io/gloo-mesh/test/integration/multi-cluster/routing \
   -args --istio.test.kube.config=/users/nick/.kube/mp,/users/nick/.kube/cp-us-east \
   --istio.test.nocleanup=true \
   --istio.test.hub=docker.io/istio \
@@ -28,8 +28,8 @@ k3d cluster create mp --image "rancher/k3s:v1.20.2-k3s1"  --k3s-server-arg "--di
 kube_ctx=k3d-mp
 k3d kubeconfig get mp > ~/.kube/mp
 
-kubectl label node $kube_ctx-server-0 topology.kubernetes.io/region=us-east-1 --context $kube_ctx
-kubectl label node $kube_ctx-server-0 topology.kubernetes.io/zone=us-east-1a --context $kube_ctx
+kubectl label node $kube_ctx-server-0 topology.kubernetes.io/region=us-west-1 --context $kube_ctx
+kubectl label node $kube_ctx-server-0 topology.kubernetes.io/zone=us-west-1b --context $kube_ctx
 
 ## control plane cluster (us-east) exposes port 9010 (unused currently)
 k3d cluster create cp-us-east --image "rancher/k3s:v1.20.2-k3s1"  --k3s-server-arg "--disable=traefik" --network $network
