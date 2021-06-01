@@ -27,11 +27,11 @@ Istio's [default behavior](https://istio.io/latest/docs/reference/config/network
 is to configure all sidecar proxies in the mesh with all
 necessary information required to send traffic to any destination in the mesh. While useful
 for day one operations, this comes with a performance tradeoff that scales with the number of workloads and destinations—
-proxies may be maintaining unnecessary routing information in memory, which in aggregate may lead
+proxies may be maintaining unnecessary information in memory, which in aggregate may lead
 to a large memory footprint for the entire data plane.
 
 If the operator of a service mesh has a priori knowledge of which destinations a particular workload
-needs to reach, this information can be provided to Istio as a way to prune away unneeded routing information,
+needs to reach, this information can be provided to Istio as a way to prune away unneeded information,
 thereby alleviating memory consumption of the data plane.
 
 #### ServiceDependency CRD
@@ -97,3 +97,9 @@ spec:
 2. Depending on the underlying mesh (such as Istio), declaring a ServiceDependency for a 
    workload may prevent that workload from sending traffic to any destination other than those 
    explicitly declared. Keep this in mind as you create these objects.
+   
+3. The ServiceDependency API *does not provide security guarantees*. Even if a destination
+   is not declared as a dependency for a given workload, dependending on the behavior of the underyling service mesh,
+   that workload might still be able to communicate with that destination.
+   [This holds for Istio](https://istio.io/latest/blog/2019/monitoring-external-service-traffic/#what-are-blackhole-and-passthrough-clusters)
+   if `global.outboundTrafficPolicy.mode` is set to `ALLOW_ANY`.
