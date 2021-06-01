@@ -213,7 +213,7 @@ that unifies the trust root between Meshes in the VirtualMesh.
 
 ##### Destination Federation
 
-We also specify which destinations to federate to remote service meshes through the `federation` field. In the example we set provide a single empty selector,
+We also specify which destinations to federate to remote service meshes through the `federation` field. In the example we provide a single empty selector,
 which expresses permissive federation, i.e. exposes all destinations from each mesh to the other mesh.
 
 Alternatively, we can fine tune which destinations are exposed to which service meshes by specifying selection criteria.
