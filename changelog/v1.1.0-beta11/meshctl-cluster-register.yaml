@@ -1,3 +1,4 @@
 changelog:
   - type: FIX
     description: Exposes --mgmt-kubeconfig as an option when registering a cluster using meshctl cluster register
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1547
