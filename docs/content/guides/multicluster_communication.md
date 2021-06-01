@@ -9,12 +9,10 @@ In the [previous guides]({{% versioned_link_path fromRoot="/guides/federate_iden
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* There is another cluster called the `remote-cluster`. In this example, both the `mgmt-cluster` and `remote-cluster`
-  are client clusters that are watched by Gloo Mesh, and the `mgmt-cluster` is performing
-  double-duty as both a watched cluster, and the cluster with Gloo Mesh itself installed.
+* There are two clusters registered under Gloo Mesh named `cluster1` and `cluster2`. This marks both of them as client clusters that are managed by Gloo Mesh.
+* Gloo Mesh is [installed and running on `cluster1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}}). This means that `cluster1` is performing
+  double-duty; it is a client cluster, and it is the management cluster with Gloo Mesh installed.
 * Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* Both client clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
