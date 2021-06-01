@@ -14,14 +14,14 @@ import (
 )
 
 func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
-	opts := &options{}
+	opts := &Options{}
 
 	cmd := &cobra.Command{
 		Use:   "uninstall",
 		Short: "Uninstall Gloo Mesh from the referenced cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.verbose = globalFlags.Verbose
-			return uninstall(ctx, opts)
+			opts.Verbose = globalFlags.Verbose
+			return Uninstall(ctx, opts)
 		},
 	}
 	opts.addToFlags(cmd.Flags())
@@ -29,32 +29,32 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 	return cmd
 }
 
-type options struct {
-	verbose bool
-	dryRun  bool
+type Options struct {
+	Verbose bool
+	DryRun  bool
 
-	kubeCfgPath string
-	kubeContext string
-	namespace   string
-	releaseName string
+	KubeCfgPath string
+	KubeContext string
+	Namespace   string
+	ReleaseName string
 }
 
-func (o *options) addToFlags(flags *pflag.FlagSet) {
-	utils.AddManagementKubeconfigFlags(&o.kubeCfgPath, &o.kubeContext, flags)
-	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
-	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to uninstall Gloo Mesh from")
-	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
+func (o *Options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.KubeCfgPath, &o.KubeContext, flags)
+	flags.BoolVarP(&o.DryRun, "dry-run", "d", false, "Output installation manifest")
+	flags.StringVar(&o.Namespace, "namespace", defaults.DefaultPodNamespace, "Namespace in which to uninstall Gloo Mesh from")
+	flags.StringVar(&o.ReleaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
 }
 
-func uninstall(ctx context.Context, opts *options) error {
+func Uninstall(ctx context.Context, opts *Options) error {
 	logrus.Info("Uninstalling Helm chart")
 	if err := (helm.Uninstaller{
-		KubeConfig:  opts.kubeCfgPath,
-		KubeContext: opts.kubeContext,
-		Namespace:   opts.namespace,
-		ReleaseName: opts.releaseName,
-		Verbose:     opts.verbose,
-		DryRun:      opts.dryRun,
+		KubeConfig:  opts.KubeCfgPath,
+		KubeContext: opts.KubeContext,
+		Namespace:   opts.Namespace,
+		ReleaseName: opts.ReleaseName,
+		Verbose:     opts.Verbose,
+		DryRun:      opts.DryRun,
 	}).UninstallChart(ctx); err != nil {
 		return eris.Wrap(err, "uninstalling gloo-mesh")
 	}

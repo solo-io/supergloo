@@ -307,3 +307,63 @@ func (in *RouteTableList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+// Generated Deepcopy methods for ServiceDependency
+
+func (in *ServiceDependency) DeepCopyInto(out *ServiceDependency) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
+
+	return
+}
+
+func (in *ServiceDependency) DeepCopy() *ServiceDependency {
+	if in == nil {
+		return nil
+	}
+	out := new(ServiceDependency)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *ServiceDependency) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *ServiceDependencyList) DeepCopyInto(out *ServiceDependencyList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]ServiceDependency, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *ServiceDependencyList) DeepCopy() *ServiceDependencyList {
+	if in == nil {
+		return nil
+	}
+	out := new(ServiceDependencyList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *ServiceDependencyList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}

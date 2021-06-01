@@ -21,198 +21,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockLocalSnapshot is a mock of LocalSnapshot interface
+// MockLocalSnapshot is a mock of LocalSnapshot interface.
 type MockLocalSnapshot struct {
 	ctrl     *gomock.Controller
 	recorder *MockLocalSnapshotMockRecorder
 }
 
-// MockLocalSnapshotMockRecorder is the mock recorder for MockLocalSnapshot
+// MockLocalSnapshotMockRecorder is the mock recorder for MockLocalSnapshot.
 type MockLocalSnapshotMockRecorder struct {
 	mock *MockLocalSnapshot
 }
 
-// NewMockLocalSnapshot creates a new mock instance
+// NewMockLocalSnapshot creates a new mock instance.
 func NewMockLocalSnapshot(ctrl *gomock.Controller) *MockLocalSnapshot {
 	mock := &MockLocalSnapshot{ctrl: ctrl}
 	mock.recorder = &MockLocalSnapshotMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockLocalSnapshot) EXPECT() *MockLocalSnapshotMockRecorder {
 	return m.recorder
 }
 
-// Settings mocks base method
-func (m *MockLocalSnapshot) Settings() v1sets3.SettingsSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Settings")
-	ret0, _ := ret[0].(v1sets3.SettingsSet)
-	return ret0
-}
-
-// Settings indicates an expected call of Settings
-func (mr *MockLocalSnapshotMockRecorder) Settings() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockLocalSnapshot)(nil).Settings))
-}
-
-// Destinations mocks base method
-func (m *MockLocalSnapshot) Destinations() v1sets0.DestinationSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Destinations")
-	ret0, _ := ret[0].(v1sets0.DestinationSet)
-	return ret0
-}
-
-// Destinations indicates an expected call of Destinations
-func (mr *MockLocalSnapshotMockRecorder) Destinations() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destinations", reflect.TypeOf((*MockLocalSnapshot)(nil).Destinations))
-}
-
-// Workloads mocks base method
-func (m *MockLocalSnapshot) Workloads() v1sets0.WorkloadSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Workloads")
-	ret0, _ := ret[0].(v1sets0.WorkloadSet)
-	return ret0
-}
-
-// Workloads indicates an expected call of Workloads
-func (mr *MockLocalSnapshotMockRecorder) Workloads() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockLocalSnapshot)(nil).Workloads))
-}
-
-// Meshes mocks base method
-func (m *MockLocalSnapshot) Meshes() v1sets0.MeshSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Meshes")
-	ret0, _ := ret[0].(v1sets0.MeshSet)
-	return ret0
-}
-
-// Meshes indicates an expected call of Meshes
-func (mr *MockLocalSnapshotMockRecorder) Meshes() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockLocalSnapshot)(nil).Meshes))
-}
-
-// TrafficPolicies mocks base method
-func (m *MockLocalSnapshot) TrafficPolicies() v1sets1.TrafficPolicySet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrafficPolicies")
-	ret0, _ := ret[0].(v1sets1.TrafficPolicySet)
-	return ret0
-}
-
-// TrafficPolicies indicates an expected call of TrafficPolicies
-func (mr *MockLocalSnapshotMockRecorder) TrafficPolicies() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficPolicies", reflect.TypeOf((*MockLocalSnapshot)(nil).TrafficPolicies))
-}
-
-// AccessPolicies mocks base method
-func (m *MockLocalSnapshot) AccessPolicies() v1sets1.AccessPolicySet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccessPolicies")
-	ret0, _ := ret[0].(v1sets1.AccessPolicySet)
-	return ret0
-}
-
-// AccessPolicies indicates an expected call of AccessPolicies
-func (mr *MockLocalSnapshotMockRecorder) AccessPolicies() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessPolicies", reflect.TypeOf((*MockLocalSnapshot)(nil).AccessPolicies))
-}
-
-// VirtualMeshes mocks base method
-func (m *MockLocalSnapshot) VirtualMeshes() v1sets1.VirtualMeshSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualMeshes")
-	ret0, _ := ret[0].(v1sets1.VirtualMeshSet)
-	return ret0
-}
-
-// VirtualMeshes indicates an expected call of VirtualMeshes
-func (mr *MockLocalSnapshotMockRecorder) VirtualMeshes() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualMeshes", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualMeshes))
-}
-
-// WasmDeployments mocks base method
-func (m *MockLocalSnapshot) WasmDeployments() v1beta1sets.WasmDeploymentSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WasmDeployments")
-	ret0, _ := ret[0].(v1beta1sets.WasmDeploymentSet)
-	return ret0
-}
-
-// WasmDeployments indicates an expected call of WasmDeployments
-func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).WasmDeployments))
-}
-
-// VirtualDestinations mocks base method
-func (m *MockLocalSnapshot) VirtualDestinations() v1beta1sets.VirtualDestinationSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualDestinations")
-	ret0, _ := ret[0].(v1beta1sets.VirtualDestinationSet)
-	return ret0
-}
-
-// VirtualDestinations indicates an expected call of VirtualDestinations
-func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
-}
-
-// VirtualGateways mocks base method
-func (m *MockLocalSnapshot) VirtualGateways() v1beta1sets.VirtualGatewaySet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualGateways")
-	ret0, _ := ret[0].(v1beta1sets.VirtualGatewaySet)
-	return ret0
-}
-
-// VirtualGateways indicates an expected call of VirtualGateways
-func (mr *MockLocalSnapshotMockRecorder) VirtualGateways() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualGateways", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualGateways))
-}
-
-// VirtualHosts mocks base method
-func (m *MockLocalSnapshot) VirtualHosts() v1beta1sets.VirtualHostSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualHosts")
-	ret0, _ := ret[0].(v1beta1sets.VirtualHostSet)
-	return ret0
-}
-
-// VirtualHosts indicates an expected call of VirtualHosts
-func (mr *MockLocalSnapshotMockRecorder) VirtualHosts() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualHosts", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualHosts))
-}
-
-// RouteTables mocks base method
-func (m *MockLocalSnapshot) RouteTables() v1beta1sets.RouteTableSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteTables")
-	ret0, _ := ret[0].(v1beta1sets.RouteTableSet)
-	return ret0
-}
-
-// RouteTables indicates an expected call of RouteTables
-func (mr *MockLocalSnapshotMockRecorder) RouteTables() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).RouteTables))
-}
-
-// AccessLogRecords mocks base method
+// AccessLogRecords mocks base method.
 func (m *MockLocalSnapshot) AccessLogRecords() v1sets2.AccessLogRecordSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccessLogRecords")
@@ -220,27 +52,41 @@ func (m *MockLocalSnapshot) AccessLogRecords() v1sets2.AccessLogRecordSet {
 	return ret0
 }
 
-// AccessLogRecords indicates an expected call of AccessLogRecords
+// AccessLogRecords indicates an expected call of AccessLogRecords.
 func (mr *MockLocalSnapshotMockRecorder) AccessLogRecords() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogRecords", reflect.TypeOf((*MockLocalSnapshot)(nil).AccessLogRecords))
 }
 
-// Secrets mocks base method
-func (m *MockLocalSnapshot) Secrets() v1sets.SecretSet {
+// AccessPolicies mocks base method.
+func (m *MockLocalSnapshot) AccessPolicies() v1sets1.AccessPolicySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Secrets")
-	ret0, _ := ret[0].(v1sets.SecretSet)
+	ret := m.ctrl.Call(m, "AccessPolicies")
+	ret0, _ := ret[0].(v1sets1.AccessPolicySet)
 	return ret0
 }
 
-// Secrets indicates an expected call of Secrets
-func (mr *MockLocalSnapshotMockRecorder) Secrets() *gomock.Call {
+// AccessPolicies indicates an expected call of AccessPolicies.
+func (mr *MockLocalSnapshotMockRecorder) AccessPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockLocalSnapshot)(nil).Secrets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessPolicies", reflect.TypeOf((*MockLocalSnapshot)(nil).AccessPolicies))
 }
 
-// KubernetesClusters mocks base method
+// Destinations mocks base method.
+func (m *MockLocalSnapshot) Destinations() v1sets0.DestinationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Destinations")
+	ret0, _ := ret[0].(v1sets0.DestinationSet)
+	return ret0
+}
+
+// Destinations indicates an expected call of Destinations.
+func (mr *MockLocalSnapshotMockRecorder) Destinations() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destinations", reflect.TypeOf((*MockLocalSnapshot)(nil).Destinations))
+}
+
+// KubernetesClusters mocks base method.
 func (m *MockLocalSnapshot) KubernetesClusters() v1alpha1sets.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "KubernetesClusters")
@@ -248,41 +94,13 @@ func (m *MockLocalSnapshot) KubernetesClusters() v1alpha1sets.KubernetesClusterS
 	return ret0
 }
 
-// KubernetesClusters indicates an expected call of KubernetesClusters
+// KubernetesClusters indicates an expected call of KubernetesClusters.
 func (mr *MockLocalSnapshotMockRecorder) KubernetesClusters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KubernetesClusters", reflect.TypeOf((*MockLocalSnapshot)(nil).KubernetesClusters))
 }
 
-// SyncStatusesMultiCluster mocks base method
-func (m *MockLocalSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.LocalSyncStatusOptions) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster
-func (mr *MockLocalSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockLocalSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
-}
-
-// SyncStatuses mocks base method
-func (m *MockLocalSnapshot) SyncStatuses(ctx context.Context, c client.Client, opts input.LocalSyncStatusOptions) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c, opts)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SyncStatuses indicates an expected call of SyncStatuses
-func (mr *MockLocalSnapshotMockRecorder) SyncStatuses(ctx, c, opts interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockLocalSnapshot)(nil).SyncStatuses), ctx, c, opts)
-}
-
-// MarshalJSON mocks base method
+// MarshalJSON mocks base method.
 func (m *MockLocalSnapshot) MarshalJSON() ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarshalJSON")
@@ -291,36 +109,232 @@ func (m *MockLocalSnapshot) MarshalJSON() ([]byte, error) {
 	return ret0, ret1
 }
 
-// MarshalJSON indicates an expected call of MarshalJSON
+// MarshalJSON indicates an expected call of MarshalJSON.
 func (mr *MockLocalSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockLocalSnapshot)(nil).MarshalJSON))
 }
 
-// MockLocalBuilder is a mock of LocalBuilder interface
+// Meshes mocks base method.
+func (m *MockLocalSnapshot) Meshes() v1sets0.MeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Meshes")
+	ret0, _ := ret[0].(v1sets0.MeshSet)
+	return ret0
+}
+
+// Meshes indicates an expected call of Meshes.
+func (mr *MockLocalSnapshotMockRecorder) Meshes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockLocalSnapshot)(nil).Meshes))
+}
+
+// RouteTables mocks base method.
+func (m *MockLocalSnapshot) RouteTables() v1beta1sets.RouteTableSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteTables")
+	ret0, _ := ret[0].(v1beta1sets.RouteTableSet)
+	return ret0
+}
+
+// RouteTables indicates an expected call of RouteTables.
+func (mr *MockLocalSnapshotMockRecorder) RouteTables() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).RouteTables))
+}
+
+// Secrets mocks base method.
+func (m *MockLocalSnapshot) Secrets() v1sets.SecretSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Secrets")
+	ret0, _ := ret[0].(v1sets.SecretSet)
+	return ret0
+}
+
+// Secrets indicates an expected call of Secrets.
+func (mr *MockLocalSnapshotMockRecorder) Secrets() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockLocalSnapshot)(nil).Secrets))
+}
+
+// ServiceDependencies mocks base method.
+func (m *MockLocalSnapshot) ServiceDependencies() v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceDependencies")
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// ServiceDependencies indicates an expected call of ServiceDependencies.
+func (mr *MockLocalSnapshotMockRecorder) ServiceDependencies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceDependencies", reflect.TypeOf((*MockLocalSnapshot)(nil).ServiceDependencies))
+}
+
+// Settings mocks base method.
+func (m *MockLocalSnapshot) Settings() v1sets3.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Settings")
+	ret0, _ := ret[0].(v1sets3.SettingsSet)
+	return ret0
+}
+
+// Settings indicates an expected call of Settings.
+func (mr *MockLocalSnapshotMockRecorder) Settings() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockLocalSnapshot)(nil).Settings))
+}
+
+// SyncStatuses mocks base method.
+func (m *MockLocalSnapshot) SyncStatuses(ctx context.Context, c client.Client, opts input.LocalSyncStatusOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatuses indicates an expected call of SyncStatuses.
+func (mr *MockLocalSnapshotMockRecorder) SyncStatuses(ctx, c, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockLocalSnapshot)(nil).SyncStatuses), ctx, c, opts)
+}
+
+// SyncStatusesMultiCluster mocks base method.
+func (m *MockLocalSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.LocalSyncStatusOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster.
+func (mr *MockLocalSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockLocalSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
+}
+
+// TrafficPolicies mocks base method.
+func (m *MockLocalSnapshot) TrafficPolicies() v1sets1.TrafficPolicySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrafficPolicies")
+	ret0, _ := ret[0].(v1sets1.TrafficPolicySet)
+	return ret0
+}
+
+// TrafficPolicies indicates an expected call of TrafficPolicies.
+func (mr *MockLocalSnapshotMockRecorder) TrafficPolicies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficPolicies", reflect.TypeOf((*MockLocalSnapshot)(nil).TrafficPolicies))
+}
+
+// VirtualDestinations mocks base method.
+func (m *MockLocalSnapshot) VirtualDestinations() v1beta1sets.VirtualDestinationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualDestinations")
+	ret0, _ := ret[0].(v1beta1sets.VirtualDestinationSet)
+	return ret0
+}
+
+// VirtualDestinations indicates an expected call of VirtualDestinations.
+func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
+}
+
+// VirtualGateways mocks base method.
+func (m *MockLocalSnapshot) VirtualGateways() v1beta1sets.VirtualGatewaySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualGateways")
+	ret0, _ := ret[0].(v1beta1sets.VirtualGatewaySet)
+	return ret0
+}
+
+// VirtualGateways indicates an expected call of VirtualGateways.
+func (mr *MockLocalSnapshotMockRecorder) VirtualGateways() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualGateways", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualGateways))
+}
+
+// VirtualHosts mocks base method.
+func (m *MockLocalSnapshot) VirtualHosts() v1beta1sets.VirtualHostSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualHosts")
+	ret0, _ := ret[0].(v1beta1sets.VirtualHostSet)
+	return ret0
+}
+
+// VirtualHosts indicates an expected call of VirtualHosts.
+func (mr *MockLocalSnapshotMockRecorder) VirtualHosts() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualHosts", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualHosts))
+}
+
+// VirtualMeshes mocks base method.
+func (m *MockLocalSnapshot) VirtualMeshes() v1sets1.VirtualMeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualMeshes")
+	ret0, _ := ret[0].(v1sets1.VirtualMeshSet)
+	return ret0
+}
+
+// VirtualMeshes indicates an expected call of VirtualMeshes.
+func (mr *MockLocalSnapshotMockRecorder) VirtualMeshes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualMeshes", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualMeshes))
+}
+
+// WasmDeployments mocks base method.
+func (m *MockLocalSnapshot) WasmDeployments() v1beta1sets.WasmDeploymentSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WasmDeployments")
+	ret0, _ := ret[0].(v1beta1sets.WasmDeploymentSet)
+	return ret0
+}
+
+// WasmDeployments indicates an expected call of WasmDeployments.
+func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).WasmDeployments))
+}
+
+// Workloads mocks base method.
+func (m *MockLocalSnapshot) Workloads() v1sets0.WorkloadSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Workloads")
+	ret0, _ := ret[0].(v1sets0.WorkloadSet)
+	return ret0
+}
+
+// Workloads indicates an expected call of Workloads.
+func (mr *MockLocalSnapshotMockRecorder) Workloads() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockLocalSnapshot)(nil).Workloads))
+}
+
+// MockLocalBuilder is a mock of LocalBuilder interface.
 type MockLocalBuilder struct {
 	ctrl     *gomock.Controller
 	recorder *MockLocalBuilderMockRecorder
 }
 
-// MockLocalBuilderMockRecorder is the mock recorder for MockLocalBuilder
+// MockLocalBuilderMockRecorder is the mock recorder for MockLocalBuilder.
 type MockLocalBuilderMockRecorder struct {
 	mock *MockLocalBuilder
 }
 
-// NewMockLocalBuilder creates a new mock instance
+// NewMockLocalBuilder creates a new mock instance.
 func NewMockLocalBuilder(ctrl *gomock.Controller) *MockLocalBuilder {
 	mock := &MockLocalBuilder{ctrl: ctrl}
 	mock.recorder = &MockLocalBuilderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockLocalBuilder) EXPECT() *MockLocalBuilderMockRecorder {
 	return m.recorder
 }
 
-// BuildSnapshot mocks base method
+// BuildSnapshot mocks base method.
 func (m *MockLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts input.LocalBuildOptions) (input.LocalSnapshot, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildSnapshot", ctx, name, opts)
@@ -329,7 +343,7 @@ func (m *MockLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts 
 	return ret0, ret1
 }
 
-// BuildSnapshot indicates an expected call of BuildSnapshot
+// BuildSnapshot indicates an expected call of BuildSnapshot.
 func (mr *MockLocalBuilderMockRecorder) BuildSnapshot(ctx, name, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSnapshot", reflect.TypeOf((*MockLocalBuilder)(nil).BuildSnapshot), ctx, name, opts)

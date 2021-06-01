@@ -134,14 +134,6 @@ func (t *translator) Translate(
 		}
 	}
 
-	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
-	if len(destinationRule.Spec.Subsets) == 0 &&
-		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE &&
-		destinationRule.Spec.GetTrafficPolicy().GetOutlierDetection() == nil {
-		// no need to create this DestinationRule as it has no effect
-		return nil
-	}
-
 	if t.userDestinationRules == nil {
 		return destinationRule
 	}
@@ -240,7 +232,12 @@ func conflictsWithUserDestinationRule(
 	var errs []error
 
 	// destination rules from RemoteSnapshot only contain non-translated objects
-	userDestinationRules.List(func(dr *networkingv1alpha3.DestinationRule) bool {
+	userDestinationRules.List(func(dr *networkingv1alpha3.DestinationRule) (_ bool) {
+		// different cluster, no conflict
+		if dr.ClusterName != translatedDestinationRule.ClusterName {
+			return
+		}
+
 		// check if common hostnames exist
 		commonHostname := utils.CommonHostnames([]string{dr.Spec.Host}, []string{translatedDestinationRule.Spec.Host})
 		if len(commonHostname) > 0 {
@@ -249,7 +246,7 @@ func conflictsWithUserDestinationRule(
 				eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s", commonHostname[0], sets.Key(dr)),
 			)
 		}
-		return false
+		return
 	})
 
 	return errs

@@ -40,6 +40,7 @@ var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1be
 	{Kind: "VirtualGateway"},
 	{Kind: "VirtualHost"},
 	{Kind: "RouteTable"},
+	{Kind: "ServiceDependency"},
 })
 
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1", []ResourceToGenerate{

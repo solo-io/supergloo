@@ -8,6 +8,10 @@ DOCKER_REPO ?= gcr.io/gloo-mesh
 GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
+BACKUP_DOCKER_REPO ?= quay.io/solo-io
+BACKUP_GLOOMESH_IMAGE ?= $(BACKUP_DOCKER_REPO)/gloo-mesh
+BACKUP_CA_IMAGE ?= $(BACKUP_DOCKER_REPO)/cert-agent
+
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 export RELEASE ?= "true"
 ifeq ($(TAGGED_VERSION),)
@@ -127,12 +131,14 @@ $(OUTDIR)/gloo-mesh-linux-amd64: $(SOURCES)
 gloo-mesh-image: gloo-mesh-linux-amd64
 	cp $(OUTDIR)/gloo-mesh-linux-amd64 build/gloo-mesh/ && \
 	docker build -t $(GLOOMESH_IMAGE):$(VERSION) build/gloo-mesh/
+	docker tag $(GLOOMESH_IMAGE):$(VERSION) $(BACKUP_GLOOMESH_IMAGE):$(VERSION) || true
 	rm build/gloo-mesh/gloo-mesh-linux-amd64
 
 .PHONY: gloo-mesh-image-push
 gloo-mesh-image-push: gloo-mesh-image
 ifeq ($(RELEASE),"true")
 	docker push $(GLOOMESH_IMAGE):$(VERSION)
+	docker push $(BACKUP_GLOOMESH_IMAGE):$(VERSION) || true
 endif
 
 .PHONY: gloo-mesh-image-load
@@ -160,12 +166,14 @@ $(OUTDIR)/cert-agent-linux-amd64: $(SOURCES)
 cert-agent-image: cert-agent-linux-amd64
 	cp $(OUTDIR)/cert-agent-linux-amd64 build/cert-agent/ && \
 	docker build -t $(CA_IMAGE):$(VERSION) build/cert-agent/
+	docker tag $(CA_IMAGE):$(VERSION) $(BACKUP_CA_IMAGE):$(VERSION) || true
 	rm build/cert-agent/cert-agent-linux-amd64
 
 .PHONY: cert-agent-image-push
 cert-agent-image-push: cert-agent-image
 ifeq ($(RELEASE),"true")
 	docker push $(CA_IMAGE):$(VERSION)
+	docker push $(BACKUP_CA_IMAGE):$(VERSION) || true
 endif
 
 .PHONY: cert-agent-image-load

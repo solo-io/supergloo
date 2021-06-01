@@ -17,7 +17,7 @@ meshctl uninstall [flags]
   -h, --help                  help for uninstall
       --kubeconfig string     Path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string    Name of the kubeconfig context to use for the management cluster
-      --namespace string      namespace in which to uninstall Gloo Mesh from (default "gloo-mesh")
+      --namespace string      Namespace in which to uninstall Gloo Mesh from (default "gloo-mesh")
       --release-name string   Helm release name (default "gloo-mesh")
 ```
 

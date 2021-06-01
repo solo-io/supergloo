@@ -85,6 +85,11 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1alpha3",
 		Kind:    "VirtualService",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "Sidecar",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "security.istio.io",
@@ -112,6 +117,8 @@ type Snapshot interface {
 	ServiceEntries() []LabeledServiceEntrySet
 	// return the set of VirtualServices with a given set of labels
 	VirtualServices() []LabeledVirtualServiceSet
+	// return the set of Sidecars with a given set of labels
+	Sidecars() []LabeledSidecarSet
 	// return the set of AuthorizationPolicies with a given set of labels
 	AuthorizationPolicies() []LabeledAuthorizationPolicySet
 
@@ -136,6 +143,7 @@ type snapshot struct {
 	gateways              []LabeledGatewaySet
 	serviceEntries        []LabeledServiceEntrySet
 	virtualServices       []LabeledVirtualServiceSet
+	sidecars              []LabeledSidecarSet
 	authorizationPolicies []LabeledAuthorizationPolicySet
 	clusters              []string
 }
@@ -151,6 +159,7 @@ func NewSnapshot(
 	gateways []LabeledGatewaySet,
 	serviceEntries []LabeledServiceEntrySet,
 	virtualServices []LabeledVirtualServiceSet,
+	sidecars []LabeledSidecarSet,
 	authorizationPolicies []LabeledAuthorizationPolicySet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
@@ -165,6 +174,7 @@ func NewSnapshot(
 		gateways:              gateways,
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
+		sidecars:              sidecars,
 		authorizationPolicies: authorizationPolicies,
 		clusters:              clusters,
 	}
@@ -186,6 +196,7 @@ func NewLabelPartitionedSnapshot(
 	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
 	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
@@ -223,6 +234,10 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	partitionedSidecars, err := partitionSidecarsByLabel(labelKey, sidecars)
+	if err != nil {
+		return nil, err
+	}
 	partitionedAuthorizationPolicies, err := partitionAuthorizationPoliciesByLabel(labelKey, authorizationPolicies)
 	if err != nil {
 		return nil, err
@@ -239,6 +254,7 @@ func NewLabelPartitionedSnapshot(
 		partitionedGateways,
 		partitionedServiceEntries,
 		partitionedVirtualServices,
+		partitionedSidecars,
 		partitionedAuthorizationPolicies,
 		clusters...,
 	), nil
@@ -260,6 +276,7 @@ func NewSinglePartitionedSnapshot(
 	gateways networking_istio_io_v1alpha3_sets.GatewaySet,
 	serviceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	sidecars networking_istio_io_v1alpha3_sets.SidecarSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
@@ -297,6 +314,10 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
+	labeledSidecars, err := NewLabeledSidecarSet(sidecars, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
 	labeledAuthorizationPolicies, err := NewLabeledAuthorizationPolicySet(authorizationPolicies, snapshotLabels)
 	if err != nil {
 		return nil, err
@@ -313,6 +334,7 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledGatewaySet{labeledGateways},
 		[]LabeledServiceEntrySet{labeledServiceEntries},
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
+		[]LabeledSidecarSet{labeledSidecars},
 		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
 		clusters...,
 	), nil
@@ -344,6 +366,9 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.virtualServices {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.sidecars {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
@@ -382,6 +407,9 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.virtualServices {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.sidecars {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
@@ -747,6 +775,50 @@ func partitionVirtualServicesByLabel(labelKey string, set networking_istio_io_v1
 	return partitionedVirtualServices, nil
 }
 
+func partitionSidecarsByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.SidecarSet) ([]LabeledSidecarSet, error) {
+	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.SidecarSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "Sidecar", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "Sidecar", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = networking_istio_io_v1alpha3_sets.NewSidecarSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedSidecars []LabeledSidecarSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledSidecarSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedSidecars = append(partitionedSidecars, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedSidecars, func(i, j int) bool {
+		leftLabelValue := partitionedSidecars[i].Labels()[labelKey]
+		rightLabelValue := partitionedSidecars[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedSidecars, nil
+}
+
 func partitionAuthorizationPoliciesByLabel(labelKey string, set security_istio_io_v1beta1_sets.AuthorizationPolicySet) ([]LabeledAuthorizationPolicySet, error) {
 	setsByLabel := map[string]security_istio_io_v1beta1_sets.AuthorizationPolicySet{}
 
@@ -823,6 +895,10 @@ func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
 	return s.virtualServices
 }
 
+func (s snapshot) Sidecars() []LabeledSidecarSet {
+	return s.sidecars
+}
+
 func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
 	return s.authorizationPolicies
 }
@@ -872,6 +948,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		virtualServiceSet = virtualServiceSet.Union(set.Set())
 	}
 	snapshotMap["virtualServices"] = virtualServiceSet.List()
+	sidecarSet := networking_istio_io_v1alpha3_sets.NewSidecarSet()
+	for _, set := range s.sidecars {
+		sidecarSet = sidecarSet.Union(set.Set())
+	}
+	snapshotMap["sidecars"] = sidecarSet.List()
 
 	authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 	for _, set := range s.authorizationPolicies {
@@ -1428,6 +1509,74 @@ func (l labeledVirtualServiceSet) Generic() output.ResourceList {
 	}
 }
 
+// LabeledSidecarSet represents a set of sidecars
+// which share a common set of labels.
+// These labels are used to find diffs between SidecarSets.
+type LabeledSidecarSet interface {
+	// returns the set of Labels shared by this SidecarSet
+	Labels() map[string]string
+
+	// returns the set of Sidecares with the given labels
+	Set() networking_istio_io_v1alpha3_sets.SidecarSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledSidecarSet struct {
+	set    networking_istio_io_v1alpha3_sets.SidecarSet
+	labels map[string]string
+}
+
+func NewLabeledSidecarSet(set networking_istio_io_v1alpha3_sets.SidecarSet, labels map[string]string) (LabeledSidecarSet, error) {
+	// validate that each Sidecar contains the labels, else this is not a valid LabeledSidecarSet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on Sidecar %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledSidecarSet{set: set, labels: labels}, nil
+}
+
+func (l *labeledSidecarSet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledSidecarSet) Set() networking_istio_io_v1alpha3_sets.SidecarSet {
+	return l.set
+}
+
+func (l labeledSidecarSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list networking_istio_io_v1alpha3.SidecarList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "Sidecar",
+	}
+}
+
 // LabeledAuthorizationPolicySet represents a set of authorizationPolicies
 // which share a common set of labels.
 // These labels are used to find diffs between AuthorizationPolicySets.
@@ -1511,6 +1660,7 @@ type builder struct {
 	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
 	serviceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	sidecars         networking_istio_io_v1alpha3_sets.SidecarSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 }
@@ -1530,6 +1680,7 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
 		serviceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+		sidecars:         networking_istio_io_v1alpha3_sets.NewSidecarSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
 	}
@@ -1586,6 +1737,12 @@ type Builder interface {
 
 	// get the collected VirtualServices
 	GetVirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
+	// add Sidecars to the collected outputs
+	AddSidecars(sidecars ...*networking_istio_io_v1alpha3.Sidecar)
+
+	// get the collected Sidecars
+	GetSidecars() networking_istio_io_v1alpha3_sets.SidecarSet
 
 	// add AuthorizationPolicies to the collected outputs
 	AddAuthorizationPolicies(authorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy)
@@ -1688,6 +1845,15 @@ func (b *builder) AddVirtualServices(virtualServices ...*networking_istio_io_v1a
 		b.virtualServices.Insert(obj)
 	}
 }
+func (b *builder) AddSidecars(sidecars ...*networking_istio_io_v1alpha3.Sidecar) {
+	for _, obj := range sidecars {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output Sidecar %v", sets.Key(obj))
+		b.sidecars.Insert(obj)
+	}
+}
 func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy) {
 	for _, obj := range authorizationPolicies {
 		if obj == nil {
@@ -1724,6 +1890,9 @@ func (b *builder) GetServiceEntries() networking_istio_io_v1alpha3_sets.ServiceE
 func (b *builder) GetVirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
 	return b.virtualServices
 }
+func (b *builder) GetSidecars() networking_istio_io_v1alpha3_sets.SidecarSet {
+	return b.sidecars
+}
 
 func (b *builder) GetAuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
 	return b.authorizationPolicies
@@ -1744,6 +1913,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.gateways,
 		b.serviceEntries,
 		b.virtualServices,
+		b.sidecars,
 
 		b.authorizationPolicies,
 		b.clusters...,
@@ -1765,6 +1935,7 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.gateways,
 		b.serviceEntries,
 		b.virtualServices,
+		b.sidecars,
 
 		b.authorizationPolicies,
 		b.clusters...,
@@ -1794,6 +1965,7 @@ func (b *builder) Merge(other Builder) {
 	b.AddGateways(other.GetGateways().List()...)
 	b.AddServiceEntries(other.GetServiceEntries().List()...)
 	b.AddVirtualServices(other.GetVirtualServices().List()...)
+	b.AddSidecars(other.GetSidecars().List()...)
 
 	b.AddAuthorizationPolicies(other.GetAuthorizationPolicies().List()...)
 	for _, cluster := range other.Clusters() {
@@ -1832,6 +2004,9 @@ func (b *builder) Clone() Builder {
 	}
 	for _, virtualService := range b.GetVirtualServices().List() {
 		clone.AddVirtualServices(virtualService.DeepCopy())
+	}
+	for _, sidecar := range b.GetSidecars().List() {
+		clone.AddSidecars(sidecar.DeepCopy())
 	}
 
 	for _, authorizationPolicy := range b.GetAuthorizationPolicies().List() {
@@ -1921,6 +2096,15 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Group:   "networking.istio.io",
 			Version: "v1alpha3",
 			Kind:    "VirtualService",
+		}
+		clusterSnapshots.Insert(cluster, gvk, obj)
+	}
+	for _, obj := range b.GetSidecars().List() {
+		cluster := obj.GetClusterName()
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "Sidecar",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
