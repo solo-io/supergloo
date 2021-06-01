@@ -74,6 +74,8 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | exact | string |  | Exact string match. |
   | prefix | string |  | Prefix-based match. |
   | regex | string |  | ECMAscript style regex-based match. |
+  | suffix | string |  | Suffix-based match. |
+  | ignoreCase | bool |  | If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match. |
   
 
 
