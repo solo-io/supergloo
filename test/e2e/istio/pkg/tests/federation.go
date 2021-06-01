@@ -17,6 +17,7 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	. "github.com/onsi/ginkgo"
@@ -89,20 +90,40 @@ func FederationTest() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			// on the mgmt cluster, only ServiceEntry for remote reviews should exist
+			// on the mgmt cluster, only ServiceEntry for remote reviews and federated local reviews should exist
 			Eventually(func() bool {
 				serviceEntries, err := env.Management.ServiceEntryClient.ListServiceEntry(context.TODO())
 				Expect(err).NotTo(HaveOccurred())
 
-				return len(serviceEntries.Items) == 1 && serviceEntries.Items[0].GetName() == remoteReviews.Status.AppliedFederation.GetFederatedHostname()
+				serviceEntryNames := sets.NewString()
+				for _, serviceEntry := range serviceEntries.Items {
+					serviceEntryNames.Insert(serviceEntry.Name)
+				}
+
+				expectedServiceEntryNames := sets.NewString(
+					remoteReviews.Status.AppliedFederation.GetFederatedHostname(),
+					mgmtReviews.Status.AppliedFederation.GetFederatedHostname(),
+				)
+
+				return serviceEntryNames.Equal(expectedServiceEntryNames)
 			}, "1m", "1s").Should(BeTrue())
 
-			// on the remote cluster, only ServiceEntry for mgmt reviews should exist
+			// on the remote cluster, only ServiceEntry for mgmt reviews and federated local reviews should exist
 			Eventually(func() bool {
 				serviceEntries, err := env.Remote.ServiceEntryClient.ListServiceEntry(context.TODO())
 				Expect(err).NotTo(HaveOccurred())
 
-				return len(serviceEntries.Items) == 1 && serviceEntries.Items[0].GetName() == mgmtReviews.Status.AppliedFederation.GetFederatedHostname()
+				serviceEntryNames := sets.NewString()
+				for _, serviceEntry := range serviceEntries.Items {
+					serviceEntryNames.Insert(serviceEntry.Name)
+				}
+
+				expectedServiceEntryNames := sets.NewString(
+					remoteReviews.Status.AppliedFederation.GetFederatedHostname(),
+					mgmtReviews.Status.AppliedFederation.GetFederatedHostname(),
+				)
+
+				return serviceEntryNames.Equal(expectedServiceEntryNames)
 			}, "1m", "1s").Should(BeTrue())
 		})
 
@@ -119,7 +140,7 @@ func FederationTest() {
 				serviceEntries, err := env.Management.ServiceEntryClient.ListServiceEntry(context.TODO())
 				Expect(err).NotTo(HaveOccurred())
 
-				return len(serviceEntries.Items) > 1
+				return len(serviceEntries.Items) > 2
 			}, "1m", "1s").Should(BeTrue())
 
 			// all service entries for remote destinations should be restored on remote cluster
@@ -127,7 +148,7 @@ func FederationTest() {
 				serviceEntries, err := env.Remote.ServiceEntryClient.ListServiceEntry(context.TODO())
 				Expect(err).NotTo(HaveOccurred())
 
-				return len(serviceEntries.Items) > 1
+				return len(serviceEntries.Items) > 2
 			}, "1m", "1s").Should(BeTrue())
 		})
 	})
@@ -218,7 +239,7 @@ func FederationTest() {
 			manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")
 			Expect(err).NotTo(HaveOccurred())
 
-			// Create TrafficPolicy with fault injection applied to remote cluster
+			// Create TrafficPolicy with mirror and traffic shift applied to service entry of federated remote destination
 			trafficPolicy := &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "remote-mirror-and-shift",

@@ -3,8 +3,9 @@ package data
 import (
 	"context"
 
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -15,34 +16,38 @@ func SelfSignedVirtualMesh(
 	name, namespace string,
 	meshes []*skv2corev1.ObjectRef,
 	flatNetwork bool,
-) (*v1.VirtualMesh, error) {
+) (*networkingv1.VirtualMesh, error) {
 	hostnameSuffix, err := getTestHostnameSuffix(dynamicClient, meshes)
 	if err != nil {
 		return nil, err
 	}
-	return &v1.VirtualMesh{
+	return &networkingv1.VirtualMesh{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "VirtualMesh",
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: networkingv1.SchemeGroupVersion.String(),
 		},
-		Spec: v1.VirtualMeshSpec{
+		Spec: networkingv1.VirtualMeshSpec{
 			Meshes: meshes,
-			MtlsConfig: &v1.VirtualMeshSpec_MTLSConfig{
-				TrustModel: &v1.VirtualMeshSpec_MTLSConfig_Shared{Shared: &v1.VirtualMeshSpec_MTLSConfig_SharedTrust{
-					RootCertificateAuthority: &v1.VirtualMeshSpec_RootCertificateAuthority{
-						CaSource: &v1.VirtualMeshSpec_RootCertificateAuthority_Generated{
-							Generated: &v1.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{},
+			MtlsConfig: &networkingv1.VirtualMeshSpec_MTLSConfig{
+				TrustModel: &networkingv1.VirtualMeshSpec_MTLSConfig_Shared{
+					Shared: &networkingv1.SharedTrust{
+						CertificateAuthority: &networkingv1.SharedTrust_RootCertificateAuthority{
+							RootCertificateAuthority: &networkingv1.RootCertificateAuthority{
+								CaSource: &networkingv1.RootCertificateAuthority_Generated{
+									Generated: &certificatesv1.CommonCertOptions{},
+								},
+							},
 						},
 					},
-				}},
+				},
 				AutoRestartPods: true,
 			},
-			Federation: &v1.VirtualMeshSpec_Federation{
-				Selectors: []*v1.VirtualMeshSpec_Federation_FederationSelector{
+			Federation: &networkingv1.VirtualMeshSpec_Federation{
+				Selectors: []*networkingv1.VirtualMeshSpec_Federation_FederationSelector{
 					{}, // permissive federation
 				},
 				FlatNetwork:    flatNetwork,

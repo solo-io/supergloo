@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -43,12 +44,7 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	dynamicClient, err := client.New(GetEnv().Management.Config, client.Options{})
 	Expect(err).NotTo(HaveOccurred())
 
-	FederateClusters(dynamicClient, false)
-}
-
-// exported for use in enterprise
-func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
-	VirtualMesh, err = data.SelfSignedVirtualMesh(
+	vm, err := data.SelfSignedVirtualMesh(
 		dynamicClient,
 		"bookinfo-federation",
 		BookinfoNamespace,
@@ -56,10 +52,17 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 			MgmtMesh,
 			RemoteMesh,
 		},
-		flatNetwork,
+		false,
 	)
 	Expect(err).NotTo(HaveOccurred())
 
+	// wait 5 minutes for Gloo Mesh to initialize and federate traffic across clusters
+	FederateClusters(vm, 5)
+}
+
+// exported for use in enterprise
+func FederateClusters(vm *networkingv1.VirtualMesh, timeoutMinutes int) {
+	VirtualMesh = vm
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -74,7 +77,11 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
 	// which can take several minutes
-	Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
+	Eventually(
+		CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)),
+		fmt.Sprintf("%dm", timeoutMinutes),
+		"2s",
+	).Should(ContainSubstring("200 OK"))
 }
 
 func TeardownFederationAndClusters() {
@@ -101,6 +108,7 @@ func InitializeTests() bool {
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
 		_ = Describe("DiscoveryRegression", DiscoveryTest)
+		_ = Describe("Conflict Detection", ConflictDetectionTest)
 	)
 	return true
 }

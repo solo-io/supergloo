@@ -46,6 +46,7 @@ type InputLocalSnapshotManualBuilder struct {
 	virtualGateways     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
 	virtualHosts        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
 	routeTables         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -73,6 +74,7 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		virtualGateways:     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet(),
 		virtualHosts:        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet(),
 		routeTables:         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet(),
+		serviceDependencies: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet(),
 
 		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet(),
 
@@ -101,6 +103,7 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.virtualGateways,
 		i.virtualHosts,
 		i.routeTables,
+		i.serviceDependencies,
 
 		i.accessLogRecords,
 
@@ -155,6 +158,10 @@ func (i *InputLocalSnapshotManualBuilder) AddVirtualHosts(virtualHosts []*networ
 }
 func (i *InputLocalSnapshotManualBuilder) AddRouteTables(routeTables []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) *InputLocalSnapshotManualBuilder {
 	i.routeTables.Insert(routeTables...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddServiceDependencies(serviceDependencies []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) *InputLocalSnapshotManualBuilder {
+	i.serviceDependencies.Insert(serviceDependencies...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) *InputLocalSnapshotManualBuilder {

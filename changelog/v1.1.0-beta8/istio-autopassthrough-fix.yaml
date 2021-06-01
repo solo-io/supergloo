@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1560
+    description: Fix cross cluster federation implementation to account for Istio's [new implementation of Gateway `AUTO_PASSTHROUGH`](https://istio.io/latest/news/security/istio-security-2021-006/).

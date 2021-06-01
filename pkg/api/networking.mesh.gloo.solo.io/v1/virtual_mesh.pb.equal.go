@@ -91,6 +91,142 @@ func (m *VirtualMeshSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *RootCertificateAuthority) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*RootCertificateAuthority)
+	if !ok {
+		that2, ok := that.(RootCertificateAuthority)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.CaSource.(type) {
+
+	case *RootCertificateAuthority_Generated:
+		if _, ok := target.CaSource.(*RootCertificateAuthority_Generated); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetGenerated()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGenerated()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetGenerated(), target.GetGenerated()) {
+				return false
+			}
+		}
+
+	case *RootCertificateAuthority_Secret:
+		if _, ok := target.CaSource.(*RootCertificateAuthority_Secret); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetSecret()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSecret()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetSecret(), target.GetSecret()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.CaSource != target.CaSource {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *SharedTrust) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SharedTrust)
+	if !ok {
+		that2, ok := that.(SharedTrust)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetIntermediateCertOptions()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetIntermediateCertOptions()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetIntermediateCertOptions(), target.GetIntermediateCertOptions()) {
+			return false
+		}
+	}
+
+	switch m.CertificateAuthority.(type) {
+
+	case *SharedTrust_RootCertificateAuthority:
+		if _, ok := target.CertificateAuthority.(*SharedTrust_RootCertificateAuthority); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetRootCertificateAuthority()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRootCertificateAuthority()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetRootCertificateAuthority(), target.GetRootCertificateAuthority()) {
+				return false
+			}
+		}
+
+	case *SharedTrust_IntermediateCertificateAuthority:
+		if _, ok := target.CertificateAuthority.(*SharedTrust_IntermediateCertificateAuthority); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetIntermediateCertificateAuthority()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetIntermediateCertificateAuthority()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetIntermediateCertificateAuthority(), target.GetIntermediateCertificateAuthority()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.CertificateAuthority != target.CertificateAuthority {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -235,69 +371,6 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *VirtualMeshSpec_RootCertificateAuthority) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshSpec_RootCertificateAuthority)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_RootCertificateAuthority)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.CaSource.(type) {
-
-	case *VirtualMeshSpec_RootCertificateAuthority_Generated:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Generated); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetGenerated()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetGenerated()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetGenerated(), target.GetGenerated()) {
-				return false
-			}
-		}
-
-	case *VirtualMeshSpec_RootCertificateAuthority_Secret:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Secret); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetSecret()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSecret()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetSecret(), target.GetSecret()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.CaSource != target.CaSource {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -371,40 +444,6 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *VirtualMeshSpec_MTLSConfig_SharedTrust) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshSpec_MTLSConfig_SharedTrust)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_MTLSConfig_SharedTrust)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetRootCertificateAuthority()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRootCertificateAuthority()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetRootCertificateAuthority(), target.GetRootCertificateAuthority()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -422,42 +461,6 @@ func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) Equal(that interface{}) bool {
 	if target == nil {
 		return m == nil
 	} else if m == nil {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert)
-	if !ok {
-		that2, ok := that.(VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if m.GetTtlDays() != target.GetTtlDays() {
-		return false
-	}
-
-	if m.GetRsaKeySizeBytes() != target.GetRsaKeySizeBytes() {
-		return false
-	}
-
-	if strings.Compare(m.GetOrgName(), target.GetOrgName()) != 0 {
 		return false
 	}
 

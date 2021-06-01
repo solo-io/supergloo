@@ -18,6 +18,7 @@ rules:
   - secrets
   - pods
   - configmaps
+  - serviceaccounts
   verbs:
   - get
   - list
@@ -38,6 +39,7 @@ rules:
   - secrets/status
   - pods/status
   - configmaps/status
+  - serviceaccounts/status
   verbs:
   - get
   - update

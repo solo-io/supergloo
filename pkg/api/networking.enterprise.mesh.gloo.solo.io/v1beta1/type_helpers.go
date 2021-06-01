@@ -17,3 +17,6 @@ type VirtualHostSlice []*VirtualHost
 
 // RouteTableSlice represents a slice of *RouteTable
 type RouteTableSlice []*RouteTable
+
+// ServiceDependencySlice represents a slice of *ServiceDependency
+type ServiceDependencySlice []*ServiceDependency
