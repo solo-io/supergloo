@@ -18,6 +18,7 @@ title: "route.proto"
 
 
 ## Table of Contents
+  - [DataSource](#networking.enterprise.mesh.gloo.solo.io.DataSource)
   - [DelegateAction](#networking.enterprise.mesh.gloo.solo.io.DelegateAction)
   - [DirectResponseAction](#networking.enterprise.mesh.gloo.solo.io.DirectResponseAction)
   - [RedirectAction](#networking.enterprise.mesh.gloo.solo.io.RedirectAction)
@@ -26,6 +27,23 @@ title: "route.proto"
 
   - [RedirectAction.RedirectResponseCode](#networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode)
 
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.DataSource"></a>
+
+### DataSource
+Data source consisting of either a file or an inline value.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| filename | string |  | Local filesystem data source. |
+  | inlineBytes | bytes |  | Bytes inlined in the configuration. |
+  | inlineString | string |  | String inlined in the configuration. |
+  
 
 
 
@@ -56,7 +74,7 @@ TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | status | uint32 |  | Specifies the HTTP response status to be returned. |
-  | body | string |  | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response.<br>  Note: Headers can be specified using the Header Modification feature in the enclosing   Route, ConnectionHandler, or Gateway options. |
+  | body | [networking.enterprise.mesh.gloo.solo.io.DataSource]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DataSource" >}}) |  | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response.<br>.. note::<br>  Headers can be specified using *response_headers_to_add* in the enclosing   :ref:`envoy_api_msg_config.route.v4alpha.Route`, :ref:`envoy_api_msg_config.route.v4alpha.RouteConfiguration` or   :ref:`envoy_api_msg_config.route.v4alpha.VirtualHost`. |
   
 
 
