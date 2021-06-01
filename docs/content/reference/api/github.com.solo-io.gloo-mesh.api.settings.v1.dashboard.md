@@ -46,8 +46,7 @@ Configure settings for the dashboard.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| authConfigs | [][settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig" >}}) | repeated | List of auth configs to be checked for requests on a route referencing this auth config, By default, every config must be authorized for the entire request to be authorized. This behavior can be changed by defining names for each config and defining `boolean_expr` below.<br>State is shared between successful requests on the chain, i.e., the headers returned from each successful auth service get appended into the final auth response. |
-  | booleanExpr | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | How to handle processing of named configs within an auth config chain. An example config might be: `( basic1 || basic2 || (oidc1 && !oidc2) )` The boolean expression is evaluated left to right but honors parenthesis and short-circuiting. |
+| authConfig | [settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig" >}}) |  | Configuration used to authenticate incoming requests. |
   
 
 
@@ -62,8 +61,7 @@ Configure settings for the dashboard.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | optional: used when defining complex boolean logic, if `boolean_expr` is defined below. Also used in logging. If omitted, an automatically generated name will be used (e.g. config_0, of the pattern 'config_$INDEX_IN_CHAIN'). |
-  | oidc | [settings.mesh.gloo.solo.io.OidcConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.OidcConfig" >}}) |  |  |
+| oidc | [settings.mesh.gloo.solo.io.OidcConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.OidcConfig" >}}) |  |  |
   
 
 
@@ -121,6 +119,7 @@ The json web key set (JWKS) (https://tools.ietf.org/html/rfc7517) is discovered 
   | callbackPath | string |  | Path to handle the OIDC callback. |
   | logoutPath | string |  | Path used to logout. If not provided, logout will be disabled. |
   | scopes | []string | repeated | Scopes to request in addition to 'openid'. |
+  | session | [settings.mesh.gloo.solo.io.SessionConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.SessionConfig" >}}) |  | Configuration for session storage. |
   | header | [settings.mesh.gloo.solo.io.OidcConfig.HeaderConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.OidcConfig.HeaderConfig" >}}) |  | Additional headers. |
   | discoveryOverride | [settings.mesh.gloo.solo.io.OidcConfig.DiscoveryOverride]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.OidcConfig.DiscoveryOverride" >}}) |  | Ensure that certain values are set regardless of what the OIDC provider returns. |
   | discoveryPollInterval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | How often to poll the OIDC issuer for new configuration. |

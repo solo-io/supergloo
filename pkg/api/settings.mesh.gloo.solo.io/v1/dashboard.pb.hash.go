@@ -38,42 +38,18 @@ func (m *DashboardSpec) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
-	for _, v := range m.GetAuthConfigs() {
-
-		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
-			if _, err = h.Hash(hasher); err != nil {
-				return 0, err
-			}
-		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
-				return 0, err
-			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-					return 0, err
-				}
-			}
-		}
-
-	}
-
-	if h, ok := interface{}(m.GetBooleanExpr()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("BooleanExpr")); err != nil {
+	if h, ok := interface{}(m.GetAuthConfig()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("AuthConfig")); err != nil {
 			return 0, err
 		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetBooleanExpr(), nil); err != nil {
+		if fieldValue, err := hashstructure.Hash(m.GetAuthConfig(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("BooleanExpr")); err != nil {
+			if _, err = hasher.Write([]byte("AuthConfig")); err != nil {
 				return 0, err
 			}
 			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
@@ -276,6 +252,26 @@ func (m *OidcConfig) Hash(hasher hash.Hash64) (uint64, error) {
 
 	}
 
+	if h, ok := interface{}(m.GetSession()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("Session")); err != nil {
+			return 0, err
+		}
+		if _, err = h.Hash(hasher); err != nil {
+			return 0, err
+		}
+	} else {
+		if fieldValue, err := hashstructure.Hash(m.GetSession(), nil); err != nil {
+			return 0, err
+		} else {
+			if _, err = hasher.Write([]byte("Session")); err != nil {
+				return 0, err
+			}
+			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				return 0, err
+			}
+		}
+	}
+
 	if h, ok := interface{}(m.GetHeader()).(safe_hasher.SafeHasher); ok {
 		if _, err = hasher.Write([]byte("Header")); err != nil {
 			return 0, err
@@ -475,26 +471,6 @@ func (m *DashboardSpec_AuthConfig) Hash(hasher hash.Hash64) (uint64, error) {
 	var err error
 	if _, err = hasher.Write([]byte("settings.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1.DashboardSpec_AuthConfig")); err != nil {
 		return 0, err
-	}
-
-	if h, ok := interface{}(m.GetName()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("Name")); err != nil {
-			return 0, err
-		}
-		if _, err = h.Hash(hasher); err != nil {
-			return 0, err
-		}
-	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetName(), nil); err != nil {
-			return 0, err
-		} else {
-			if _, err = hasher.Write([]byte("Name")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	switch m.AuthConfig.(type) {

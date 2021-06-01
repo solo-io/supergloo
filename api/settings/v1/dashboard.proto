@@ -14,28 +14,13 @@ import "google/protobuf/empty.proto";
 // Configure settings for the dashboard.
 message DashboardSpec {
   message AuthConfig {
-    // optional: used when defining complex boolean logic, if `boolean_expr` is defined below. Also used
-    // in logging. If omitted, an automatically generated name will be used (e.g. config_0, of the
-    // pattern 'config_$INDEX_IN_CHAIN').
-    google.protobuf.StringValue name = 1;
-
     oneof auth_config {
       OidcConfig oidc = 2;
     }
   }
 
-  // List of auth configs to be checked for requests on a route referencing this auth config,
-  // By default, every config must be authorized for the entire request to be authorized. This
-  // behavior can be changed by defining names for each config and defining `boolean_expr` below.
-  //
-  // State is shared between successful requests on the chain, i.e., the headers returned from each
-  // successful auth service get appended into the final auth response.
-  repeated AuthConfig auth_configs = 1;
-
-  // How to handle processing of named configs within an auth config chain.
-  // An example config might be: `( basic1 || basic2 || (oidc1 && !oidc2) )`
-  // The boolean expression is evaluated left to right but honors parenthesis and short-circuiting.
-  google.protobuf.StringValue boolean_expr = 10;
+  // Configuration used to authenticate incoming requests.
+  AuthConfig auth_config = 1;
 }
 
 message SessionConfig {
@@ -107,6 +92,9 @@ message OidcConfig {
   // Scopes to request in addition to 'openid'.
   repeated string scopes = 9;
 
+  // Configuration for session storage.
+  SessionConfig session = 10;
+
   message HeaderConfig {
     // If set, the ID token will be sent upstream with this header.
     string id_token_header = 1;
@@ -116,7 +104,7 @@ message OidcConfig {
   }
 
   // Additional headers.
-  HeaderConfig header = 10;
+  HeaderConfig header = 11;
 
   // OIDC configuration is discovered at
   // <issuerUrl>/.well-known/openid-configuration The discovery override
@@ -156,17 +144,17 @@ message OidcConfig {
 
   // Ensure that certain values are set regardless of what the OIDC
   // provider returns.
-  DiscoveryOverride discovery_override = 11;
+  DiscoveryOverride discovery_override = 12;
 
   // How often to poll the OIDC issuer for new configuration.
-  google.protobuf.Duration discovery_poll_interval = 12;
+  google.protobuf.Duration discovery_poll_interval = 13;
 
   // If a user executes a request with a key that is not found in the
   // JWKS, it could be that the keys have rotated on the remote source,
   // and not yet in the local cache. This policy lets you define the
   // behavior for how to refresh the local cache during a request where an
   // invalid key is provided
-  JwksOnDemandCacheRefreshPolicy jwks_cache_refresh_policy = 13;
+  JwksOnDemandCacheRefreshPolicy jwks_cache_refresh_policy = 14;
 }
 
 // The json web key set (JWKS) (https://tools.ietf.org/html/rfc7517) is
