@@ -173,7 +173,7 @@ spec:
         spec:
           description: Configure settings for the dashboard.
           properties:
-            authConfig:
+            auth:
               description: Configuration used to authenticate incoming requests.
               oneOf:
               - not:

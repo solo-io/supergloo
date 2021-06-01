@@ -46,7 +46,7 @@ Configure settings for the dashboard.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| authConfig | [settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig" >}}) |  | Configuration used to authenticate incoming requests. |
+| auth | [settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.dashboard#settings.mesh.gloo.solo.io.DashboardSpec.AuthConfig" >}}) |  | Configuration used to authenticate incoming requests. |
   
 
 

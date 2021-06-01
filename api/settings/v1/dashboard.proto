@@ -14,13 +14,13 @@ import "google/protobuf/empty.proto";
 // Configure settings for the dashboard.
 message DashboardSpec {
   message AuthConfig {
-    oneof auth_config {
+    oneof backend {
       OidcConfig oidc = 2;
     }
   }
 
   // Configuration used to authenticate incoming requests.
-  AuthConfig auth_config = 1;
+  AuthConfig auth = 1;
 }
 
 message SessionConfig {

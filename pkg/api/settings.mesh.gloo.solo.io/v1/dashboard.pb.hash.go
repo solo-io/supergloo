@@ -38,18 +38,18 @@ func (m *DashboardSpec) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
-	if h, ok := interface{}(m.GetAuthConfig()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("AuthConfig")); err != nil {
+	if h, ok := interface{}(m.GetAuth()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("Auth")); err != nil {
 			return 0, err
 		}
 		if _, err = h.Hash(hasher); err != nil {
 			return 0, err
 		}
 	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetAuthConfig(), nil); err != nil {
+		if fieldValue, err := hashstructure.Hash(m.GetAuth(), nil); err != nil {
 			return 0, err
 		} else {
-			if _, err = hasher.Write([]byte("AuthConfig")); err != nil {
+			if _, err = hasher.Write([]byte("Auth")); err != nil {
 				return 0, err
 			}
 			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
@@ -473,7 +473,7 @@ func (m *DashboardSpec_AuthConfig) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
-	switch m.AuthConfig.(type) {
+	switch m.Backend.(type) {
 
 	case *DashboardSpec_AuthConfig_Oidc:
 
