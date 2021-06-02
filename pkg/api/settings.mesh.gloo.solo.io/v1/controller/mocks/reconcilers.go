@@ -197,3 +197,186 @@ func (mr *MockSettingsReconcileLoopMockRecorder) RunSettingsReconciler(ctx, rec 
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunSettingsReconciler", reflect.TypeOf((*MockSettingsReconcileLoop)(nil).RunSettingsReconciler), varargs...)
 }
+
+// MockDashboardReconciler is a mock of DashboardReconciler interface.
+type MockDashboardReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardReconcilerMockRecorder
+}
+
+// MockDashboardReconcilerMockRecorder is the mock recorder for MockDashboardReconciler.
+type MockDashboardReconcilerMockRecorder struct {
+	mock *MockDashboardReconciler
+}
+
+// NewMockDashboardReconciler creates a new mock instance.
+func NewMockDashboardReconciler(ctrl *gomock.Controller) *MockDashboardReconciler {
+	mock := &MockDashboardReconciler{ctrl: ctrl}
+	mock.recorder = &MockDashboardReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardReconciler) EXPECT() *MockDashboardReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileDashboard mocks base method.
+func (m *MockDashboardReconciler) ReconcileDashboard(obj *v1.Dashboard) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDashboard", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileDashboard indicates an expected call of ReconcileDashboard.
+func (mr *MockDashboardReconcilerMockRecorder) ReconcileDashboard(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDashboard", reflect.TypeOf((*MockDashboardReconciler)(nil).ReconcileDashboard), obj)
+}
+
+// MockDashboardDeletionReconciler is a mock of DashboardDeletionReconciler interface.
+type MockDashboardDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardDeletionReconcilerMockRecorder
+}
+
+// MockDashboardDeletionReconcilerMockRecorder is the mock recorder for MockDashboardDeletionReconciler.
+type MockDashboardDeletionReconcilerMockRecorder struct {
+	mock *MockDashboardDeletionReconciler
+}
+
+// NewMockDashboardDeletionReconciler creates a new mock instance.
+func NewMockDashboardDeletionReconciler(ctrl *gomock.Controller) *MockDashboardDeletionReconciler {
+	mock := &MockDashboardDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockDashboardDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardDeletionReconciler) EXPECT() *MockDashboardDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileDashboardDeletion mocks base method.
+func (m *MockDashboardDeletionReconciler) ReconcileDashboardDeletion(req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDashboardDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileDashboardDeletion indicates an expected call of ReconcileDashboardDeletion.
+func (mr *MockDashboardDeletionReconcilerMockRecorder) ReconcileDashboardDeletion(req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDashboardDeletion", reflect.TypeOf((*MockDashboardDeletionReconciler)(nil).ReconcileDashboardDeletion), req)
+}
+
+// MockDashboardFinalizer is a mock of DashboardFinalizer interface.
+type MockDashboardFinalizer struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardFinalizerMockRecorder
+}
+
+// MockDashboardFinalizerMockRecorder is the mock recorder for MockDashboardFinalizer.
+type MockDashboardFinalizerMockRecorder struct {
+	mock *MockDashboardFinalizer
+}
+
+// NewMockDashboardFinalizer creates a new mock instance.
+func NewMockDashboardFinalizer(ctrl *gomock.Controller) *MockDashboardFinalizer {
+	mock := &MockDashboardFinalizer{ctrl: ctrl}
+	mock.recorder = &MockDashboardFinalizerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardFinalizer) EXPECT() *MockDashboardFinalizerMockRecorder {
+	return m.recorder
+}
+
+// DashboardFinalizerName mocks base method.
+func (m *MockDashboardFinalizer) DashboardFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DashboardFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// DashboardFinalizerName indicates an expected call of DashboardFinalizerName.
+func (mr *MockDashboardFinalizerMockRecorder) DashboardFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DashboardFinalizerName", reflect.TypeOf((*MockDashboardFinalizer)(nil).DashboardFinalizerName))
+}
+
+// FinalizeDashboard mocks base method.
+func (m *MockDashboardFinalizer) FinalizeDashboard(obj *v1.Dashboard) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeDashboard", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeDashboard indicates an expected call of FinalizeDashboard.
+func (mr *MockDashboardFinalizerMockRecorder) FinalizeDashboard(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeDashboard", reflect.TypeOf((*MockDashboardFinalizer)(nil).FinalizeDashboard), obj)
+}
+
+// ReconcileDashboard mocks base method.
+func (m *MockDashboardFinalizer) ReconcileDashboard(obj *v1.Dashboard) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDashboard", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileDashboard indicates an expected call of ReconcileDashboard.
+func (mr *MockDashboardFinalizerMockRecorder) ReconcileDashboard(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDashboard", reflect.TypeOf((*MockDashboardFinalizer)(nil).ReconcileDashboard), obj)
+}
+
+// MockDashboardReconcileLoop is a mock of DashboardReconcileLoop interface.
+type MockDashboardReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardReconcileLoopMockRecorder
+}
+
+// MockDashboardReconcileLoopMockRecorder is the mock recorder for MockDashboardReconcileLoop.
+type MockDashboardReconcileLoopMockRecorder struct {
+	mock *MockDashboardReconcileLoop
+}
+
+// NewMockDashboardReconcileLoop creates a new mock instance.
+func NewMockDashboardReconcileLoop(ctrl *gomock.Controller) *MockDashboardReconcileLoop {
+	mock := &MockDashboardReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockDashboardReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardReconcileLoop) EXPECT() *MockDashboardReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// RunDashboardReconciler mocks base method.
+func (m *MockDashboardReconcileLoop) RunDashboardReconciler(ctx context.Context, rec controller.DashboardReconciler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RunDashboardReconciler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunDashboardReconciler indicates an expected call of RunDashboardReconciler.
+func (mr *MockDashboardReconcileLoopMockRecorder) RunDashboardReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunDashboardReconciler", reflect.TypeOf((*MockDashboardReconcileLoop)(nil).RunDashboardReconciler), varargs...)
+}

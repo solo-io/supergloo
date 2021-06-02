@@ -133,3 +133,120 @@ func (r genericSettingsFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizeSettings(obj)
 }
+
+// Reconcile Upsert events for the Dashboard Resource.
+// implemented by the user
+type DashboardReconciler interface {
+	ReconcileDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the Dashboard Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type DashboardDeletionReconciler interface {
+	ReconcileDashboardDeletion(req reconcile.Request) error
+}
+
+type DashboardReconcilerFuncs struct {
+	OnReconcileDashboard         func(obj *settings_mesh_gloo_solo_io_v1.Dashboard) (reconcile.Result, error)
+	OnReconcileDashboardDeletion func(req reconcile.Request) error
+}
+
+func (f *DashboardReconcilerFuncs) ReconcileDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) (reconcile.Result, error) {
+	if f.OnReconcileDashboard == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDashboard(obj)
+}
+
+func (f *DashboardReconcilerFuncs) ReconcileDashboardDeletion(req reconcile.Request) error {
+	if f.OnReconcileDashboardDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileDashboardDeletion(req)
+}
+
+// Reconcile and finalize the Dashboard Resource
+// implemented by the user
+type DashboardFinalizer interface {
+	DashboardReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	DashboardFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+}
+
+type DashboardReconcileLoop interface {
+	RunDashboardReconciler(ctx context.Context, rec DashboardReconciler, predicates ...predicate.Predicate) error
+}
+
+type dashboardReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewDashboardReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) DashboardReconcileLoop {
+	return &dashboardReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &settings_mesh_gloo_solo_io_v1.Dashboard{}, options),
+	}
+}
+
+func (c *dashboardReconcileLoop) RunDashboardReconciler(ctx context.Context, reconciler DashboardReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericDashboardReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(DashboardFinalizer); ok {
+		reconcilerWrapper = genericDashboardFinalizer{
+			genericDashboardReconciler: genericReconciler,
+			finalizingReconciler:       finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericDashboardHandler implements a generic reconcile.Reconciler
+type genericDashboardReconciler struct {
+	reconciler DashboardReconciler
+}
+
+func (r genericDashboardReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: Dashboard handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileDashboard(obj)
+}
+
+func (r genericDashboardReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(DashboardDeletionReconciler); ok {
+		return deletionReconciler.ReconcileDashboardDeletion(request)
+	}
+	return nil
+}
+
+// genericDashboardFinalizer implements a generic reconcile.FinalizingReconciler
+type genericDashboardFinalizer struct {
+	genericDashboardReconciler
+	finalizingReconciler DashboardFinalizer
+}
+
+func (r genericDashboardFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.DashboardFinalizerName()
+}
+
+func (r genericDashboardFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return errors.Errorf("internal error: Dashboard handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeDashboard(obj)
+}

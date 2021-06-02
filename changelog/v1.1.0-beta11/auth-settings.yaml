@@ -1,0 +1,6 @@
+changelog:
+- type: NEW_FEATURE
+  issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/544
+  resolvesIssue: false
+  description: Updates the settings CRD with settings to configure authentication on the dashboard.
+
