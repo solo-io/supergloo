@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -55,11 +56,12 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	)
 	Expect(err).NotTo(HaveOccurred())
 
-	FederateClusters(vm)
+	// wait 5 minutes for Gloo Mesh to initialize and federate traffic across clusters
+	FederateClusters(vm, 5)
 }
 
 // exported for use in enterprise
-func FederateClusters(vm *networkingv1.VirtualMesh) {
+func FederateClusters(vm *networkingv1.VirtualMesh, timeoutMinutes int) {
 	VirtualMesh = vm
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
@@ -75,7 +77,11 @@ func FederateClusters(vm *networkingv1.VirtualMesh) {
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
 	// which can take several minutes
-	Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
+	Eventually(
+		CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)),
+		fmt.Sprintf("%dm", timeoutMinutes),
+		"2s",
+	).Should(ContainSubstring("200 OK"))
 }
 
 func TeardownFederationAndClusters() {

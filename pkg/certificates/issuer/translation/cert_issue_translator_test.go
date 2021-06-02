@@ -82,7 +82,9 @@ var _ = Describe("CertIssueTranslator", func() {
 
 			issuedCert := issuedCertFactory(secret)
 
-			mockSecretClient.EXPECT().GetSecret(gomock.Any(), ezkube.MakeClientObjectKey(secret)).Return(secret, nil)
+			mockSecretClient.EXPECT().
+				GetSecret(gomock.Any(), ezkube.MakeClientObjectKey(secret)).
+				Return(secret, nil)
 
 			output, err := translator.Translate(ctx, certRequest, issuedCert)
 			Expect(err).NotTo(HaveOccurred())

@@ -2,6 +2,7 @@ package matchers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-test/deep"
 	"github.com/golang/mock/gomock"
@@ -27,5 +28,17 @@ func (p *gomockPublicFieldMatcher) Matches(actual interface{}) bool {
 }
 
 func (p *gomockPublicFieldMatcher) String() string {
-	return fmt.Sprintf("equals proto %v", p.actual)
+	return fmt.Sprintf("%+v", p.actual)
+}
+
+func (p *gomockPublicFieldMatcher) Got(got interface{}) string {
+
+	if interfaceList, ok := got.([]interface{}); ok {
+		var items = []string{"Items:"}
+		for _, v := range interfaceList {
+			items = append(items, fmt.Sprintf("%+v", v))
+		}
+		return strings.Join(items, "\n")
+	}
+	return fmt.Sprintf("%+v", got)
 }

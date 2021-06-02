@@ -43,6 +43,7 @@ meshctl cluster register enterprise [cluster name] [flags]
       --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
+      --mgmt-kubeconfig string                 path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location
       --relay-server-address string            The address via which the enterprise agent will communicate with the relay server.
       --relay-server-insecure                  Communicate with the relay server over an insecure connection.
       --root-ca-secret-name string             Secret name for the root CA for communication with relay server.
