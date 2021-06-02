@@ -142,6 +142,10 @@ bootstrap token from the gloo-mesh cluster, if these are not explicitly provided
 type EnterpriseOptions enterprise.RegistrationOptions
 
 func (o *EnterpriseOptions) addToFlags(flags *pflag.FlagSet) {
+
+	flags.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "",
+		"path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location")
+
 	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
 	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", false, "Communicate with the relay server over an insecure connection.")
 
