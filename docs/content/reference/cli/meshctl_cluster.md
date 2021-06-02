@@ -21,6 +21,8 @@ Manage Kubernetes clusters registered to Gloo Mesh
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.
+* [meshctl cluster configure](../meshctl_cluster_configure)	 - Configure Kubernetes Cluster registered with Gloo Mesh.
 * [meshctl cluster deregister](../meshctl_cluster_deregister)	 - Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources
+* [meshctl cluster list](../meshctl_cluster_list)	 - List all Kubernetes cluster registered with Gloo Mesh
 * [meshctl cluster register](../meshctl_cluster_register)	 - Register a Kubernetes cluster with Gloo Mesh
 

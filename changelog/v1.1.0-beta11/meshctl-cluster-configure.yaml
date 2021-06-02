@@ -1,6 +1,6 @@
 changelog:
   - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1595
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1584
     description: >
     Add a `meshctl cluster configure` command that interactively allows the user to
     generate a file that looks like:
@@ -18,3 +18,8 @@ changelog:
     ```
     This file is stored in ${HOME}/.gloo-mesh/meshctl-config.yaml 
     and referenced in subsequent meshctl commands which automate cluster interaction.
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1584
+    description: >
+    Add a `meshctl cluster list community` and `meshctl cluster list enterprise`
+    command that allows the user to list all the registered clusters.
