@@ -15,20 +15,85 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	var meshctlConfigPath string
+	opts := &options{}
+
 	cmd := &cobra.Command{
 		Use:   "configure",
 		Short: "Configure Kubernetes Clusters registered with Gloo Mesh.",
 		Long:  "Create a mapping of clusters to kubeconfig entries in ${HOME}/.gloo-mesh/meshctl-config.yaml.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return configure(meshctlConfigPath)
+			if opts.disablePrompt {
+				if opts.kubeConfigFilePath == "" || opts.kubeContext == "" {
+					return eris.Errorf("must pass in additional flags when configuring in non-interactive mode")
+				}
+				return configure(opts)
+			}
+			return configureInteractive(opts.meshctlConfigPath)
 		},
 	}
-	pflag.StringVarP(&meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
+	opts.addToFlags(cmd.PersistentFlags())
 	return cmd
 }
 
-func configure(meshctlConfigPath string) error {
+type options struct {
+	meshctlConfigPath string
+
+	disablePrompt      bool
+	clusterName        string
+	kubeConfigFilePath string
+	kubeContext        string
+}
+
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
+
+	flags.BoolVar(&o.disablePrompt, "disable-prompt", false,
+		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
+	flags.StringVar(&o.clusterName, "cluster-name", "",
+		"data plane cluster name (leave empty if this is the management cluster)")
+	flags.StringVar(&o.kubeConfigFilePath, "kubeconfig", "",
+		"path to the kubeconfig file")
+	flags.StringVar(&o.kubeContext, "context", "",
+		"name of the kubernetes context")
+}
+
+func configure(opts *options) error {
+	config, err := utils.ParseMeshctlConfig(opts.meshctlConfigPath)
+	if err != nil {
+		return err
+	}
+	if err = validateKubeConfigExists(opts.kubeConfigFilePath); err != nil {
+		return err
+	}
+	validContexts, err := getKubeContextOptions(opts.kubeConfigFilePath)
+	if err != nil {
+		return err
+	}
+	valid := false
+	for _, context := range validContexts {
+		if opts.kubeContext == context {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return eris.Errorf("context %v does not exist in kubeconfig file %s", opts.kubeContext, opts.kubeConfigFilePath)
+	}
+	cluster := utils.MeshctlCluster{
+		KubeConfig:  opts.kubeConfigFilePath,
+		KubeContext: opts.kubeContext,
+	}
+	if opts.clusterName != "" {
+		if err := config.AddDataPlaneCluster(opts.clusterName, cluster); err != nil {
+			return err
+		}
+	} else {
+		config.AddMgmtCluster(cluster)
+	}
+	return writeConfigToFile(config, opts.meshctlConfigPath)
+}
+
+func configureInteractive(meshctlConfigPath string) error {
 	config, err := utils.ParseMeshctlConfig(meshctlConfigPath)
 	if err != nil {
 		return err
@@ -36,22 +101,19 @@ func configure(meshctlConfigPath string) error {
 
 	keepGoing := "Yes"
 	for keepGoing == "Yes" {
-		prompt := promptui.Select{
-			Label: "Are you configuring a management cluster or a data plane cluster?",
-			Items: []string{"Management Plane", "Data Plane"},
-		}
-		answer, _, err := prompt.Run()
+		answer, err := selectValueInteractive("Are you configuring a management cluster or a data plane cluster?",
+			[]string{"Management Plane", "Data Plane"})
 		if err != nil {
 			return err
 		}
 		switch answer {
-		case 0:
+		case "Management Plane":
 			mgmtContext, err := configureCluster()
 			if err != nil {
 				return err
 			}
 			config.AddMgmtCluster(mgmtContext)
-		case 1:
+		case "Data Plane":
 			clusterName, dataPlaneContext, err := configureDataPlaneCluster()
 			if err != nil {
 				return err
@@ -60,16 +122,17 @@ func configure(meshctlConfigPath string) error {
 				return err
 			}
 		}
-		keepGoingPrompt := promptui.Select{
-			Label: "Would you like to configure another cluster?",
-			Items: []string{"Yes", "No"},
-		}
-		_, keepGoing, err = keepGoingPrompt.Run()
+		keepGoing, err = selectValueInteractive("Would you like to configure another cluster?",
+			[]string{"Yes", "No"})
 		if err != nil {
 			return err
 		}
 	}
 
+	return writeConfigToFile(config, meshctlConfigPath)
+}
+
+func writeConfigToFile(config utils.MeshctlConfig, meshctlConfigPath string) error {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		return err
@@ -97,12 +160,6 @@ func configureDataPlaneCluster() (string, utils.MeshctlCluster, error) {
 
 func configureCluster() (utils.MeshctlCluster, error) {
 	meshctlCluster := utils.MeshctlCluster{}
-	validateKubeConfigExists := func(filePath string) error {
-		if _, fileErr := os.Stat(filePath); fileErr != nil {
-			return eris.Errorf("no kube config file found at %s", filePath)
-		}
-		return nil
-	}
 	kubeConfigFilePrompt := promptui.Prompt{
 		Label:    "What is the path to your kubernetes config file?",
 		Validate: validateKubeConfigExists,
@@ -119,11 +176,7 @@ func configureCluster() (utils.MeshctlCluster, error) {
 	if len(clusters) == 0 {
 		return meshctlCluster, eris.Errorf("no clusters found in kubernetes config file %s", kubeConfigFile)
 	}
-	kubeContextPrompt := promptui.Select{
-		Label: "What is the name of your kube context?",
-		Items: clusters,
-	}
-	_, kubeContext, err := kubeContextPrompt.Run()
+	kubeContext, err := selectValueInteractive("What is the name of your kube context?", clusters)
 	if err != nil {
 		return meshctlCluster, err
 	}
@@ -132,6 +185,25 @@ func configureCluster() (utils.MeshctlCluster, error) {
 		KubeConfig:  kubeConfigFile,
 		KubeContext: kubeContext,
 	}, nil
+}
+
+func selectValueInteractive(message string, options interface{}) (string, error) {
+	prompt := promptui.Select{
+		Label: message,
+		Items: options,
+	}
+	_, result, err := prompt.Run()
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+func validateKubeConfigExists(filePath string) error {
+	if _, fileErr := os.Stat(filePath); fileErr != nil {
+		return eris.Errorf("no kube config file found at %s", filePath)
+	}
+	return nil
 }
 
 func getKubeContextOptions(kubeConfigFile string) ([]string, error) {
