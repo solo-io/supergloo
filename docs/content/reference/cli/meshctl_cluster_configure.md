@@ -4,7 +4,7 @@ weight: 5
 ---
 ## meshctl cluster configure
 
-Configure Kubernetes Cluster registered with Gloo Mesh.
+Configure Kubernetes Clusters registered with Gloo Mesh.
 
 ### Synopsis
 
@@ -17,7 +17,8 @@ meshctl cluster configure [flags]
 ### Options
 
 ```
-  -h, --help   help for configure
+  -h, --help                         help for configure
+  -f, --meshctl-config-file string   path to the meshctl config file
 ```
 
 ### Options inherited from parent commands
