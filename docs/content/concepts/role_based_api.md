@@ -229,7 +229,7 @@ spec:
                 clusterName: "cluster-1"
 ```
 
-Assuming that the `istiod-istio-system-cluster-1` mesh is the only control plane present on the `cluster-1` cluster, this role allows access 
+Assuming that the `istiod-istio-system-cluster-1` mesh is the only control plane present on `cluster-1`, this role allows access 
 for configuring TrafficPolicies and AccessPolicies that affect only Destinations controlled by the 
 `istiod-istio-system-cluster-1` mesh.
 
@@ -284,7 +284,7 @@ spec:
                 clusterName: "*"
 ```
 
-This role allows configuration of TrafficPolicies and AccessPolicies that affect the `ratings` Destination in both the `cluster-1` and `cluster-2`,
+This role allows configuration of TrafficPolicies and AccessPolicies that affect the `ratings` Destination in both `cluster-1` and `cluster-2`,
 with no restrictions on actions.
 
 **Destination Consumer**

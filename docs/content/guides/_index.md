@@ -53,7 +53,7 @@ meshctl cluster register community cluster-2 \
   --remote-context $CONTEXT_2
 ```
 
-At this point we have two clusters, `cluster-1` and `cluster-2` both registered with Gloo Mesh (which also happens to be installed on `cluster-1`).
+At this point we have two clusters, `cluster-1` and `cluster-2`, which are both registered with Gloo Mesh (which also happens to be installed on `cluster-1`).
 
 ## Using Kind
 
