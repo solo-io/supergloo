@@ -1,0 +1,20 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1595
+    description: >
+    Add a `meshctl cluster configure` command that interactively allows the user to
+    generate a file that looks like:
+    ```
+    clusters:
+      managementPlane: #reserved special name for the management cluster
+        kubeConfig: /Users/username/.kube/config
+        kubeContext: kind-mgmt-cluster
+      remote-cluster: # data plane cluster
+        kubeConfig: /Users/username/.kube/config
+        kubeContext: kind-remote-cluster
+      mgmt-cluster: # mgmt cluster is also registered as data plane
+        kubeConfig: /Users/username/.kube/config
+        kubeContext: kind-mgmt-cluster
+    ```
+    This file is stored in ${HOME}/.gloo-mesh/meshctl-config.yaml 
+    and referenced in subsequent meshctl commands which automate cluster interaction.
