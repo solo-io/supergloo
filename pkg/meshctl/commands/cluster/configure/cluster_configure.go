@@ -8,30 +8,44 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func Command(ctx context.Context) *cobra.Command {
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "configure",
-		Short: "Configure Kubernetes Cluster registered with Gloo Mesh.",
+		Short: "Configure Kubernetes Clusters registered with Gloo Mesh.",
 		Long:  "Create a mapping of clusters to kubeconfig entries in ${HOME}/.gloo-mesh/meshctl-config.yaml.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return configure()
+			return configure(opts)
 		},
 	}
+	opts.addToFlags(cmd.PersistentFlags())
 	return cmd
 }
 
-func configure() error {
-	fileName, err := MeshctlConfigFilePath()
+type options struct {
+	MeshctlConfigPath string
+}
+
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.MeshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file")
+}
+
+func configure(opts *options) error {
+	var err error
+	if opts.MeshctlConfigPath == "" {
+		opts.MeshctlConfigPath, err = MeshctlConfigFilePath()
+		if err != nil {
+			return err
+		}
+	}
+	config, err := ParseMeshctlConfig(opts.MeshctlConfigPath)
 	if err != nil {
 		return err
 	}
-	config, err := ParseMeshctlConfig(fileName)
-	if err != nil {
-		return err
-	}
-	configFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	configFile, err := os.OpenFile(opts.MeshctlConfigPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -65,6 +79,8 @@ func configure() error {
 		return err
 	}
 	_, err = configFile.Write(d)
+
+	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", opts.MeshctlConfigPath)
 	return err
 }
 
