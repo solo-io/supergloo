@@ -11,28 +11,28 @@ weight: 30
 
 This guide assumes the following:
 
-* Gloo Mesh Enterprise is [installed in relay mode and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/install-gloo-mesh" %}})
+* Gloo Mesh Enterprise is [installed in relay mode and running on the `cluster-1`]({{% versioned_link_path fromRoot="/setup/install-gloo-mesh" %}})
   * `gloo-mesh` is the installation namespace for Gloo Mesh
-  * `enterprise-networking` is deployed on the `mgmt-cluster` in the `gloo-mesh` namespace and exposes its gRPC server on port 9900
+  * `enterprise-networking` is deployed on `cluster-1` in the `gloo-mesh` namespace and exposes its gRPC server on port 9900
   * `enterprise-agent` is deployed on both clusters and exposes its gRPC server on port 9977
-  * Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+  * Both `cluster-1` and `cluster-2` are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Istio is [installed on both clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
   * `istio-system` is the root namespace for both Istio deployments
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}}) under the `bookinfo` namespace
 * the following environment variables are set:
     ```shell
-    MGMT_CONTEXT=your_management_plane_context
-    REMOTE_CONTEXT=your_remote_context
+    CONTEXT_1=cluster_1's_context
+    CONTEXT_2=cluster_2's_context
     ```
 
 ## Istio Configuration
 
 Before we begin, we need to ensure that our Istio deployments in
-both `mgmt-cluster` and `remote-cluster` have the necessary configuration for
+both `cluster-1` and `cluster-2` have the necessary configuration for
 Gloo Mesh access logging. View the Istio ConfigMap with the following command:
 
 ```shell
-kubectl --context $MGMT_CONTEXT -n istio-system get configmap istio -oyaml
+kubectl --context $CONTEXT_1 -n istio-system get configmap istio -oyaml
 ```
 
 Ensure that the following highlighted entries exist in the ConfigMap:
@@ -75,7 +75,7 @@ spec:
         value: bar
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context $MGMT_CONTEXT -f - << EOF
+kubectl apply --context $CONTEXT_1 -f - << EOF
 apiVersion: observability.enterprise.mesh.gloo.solo.io/v1
 kind: AccessLogRecord
 metadata:
@@ -98,11 +98,11 @@ for requests containing the header `"foo": "bar"`.
 Let's first generate some access logs by making requests in both clusters:
 
 ```shell
-kubectl --context $MGMT_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
+kubectl --context $CONTEXT_1 -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
 ```
 
 ```shell
-kubectl --context $REMOTE_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
+kubectl --context $CONTEXT_2 -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
 ```
 
 Assuming the access logs were collected successfully, we can now retrieve them, either
@@ -115,7 +115,7 @@ port to your local machine by running the following:
 
 ```shell
 # forward port 8080 from enterprise-networking to localhost:8080
-kubectl --context $MGMT_CONTEXT -n gloo-mesh port-forward deploy/enterprise-networking 8080
+kubectl --context $CONTEXT_1 -n gloo-mesh port-forward deploy/enterprise-networking 8080
 ```
 
 The following command will fetch up to 10 of the latest access logs.
@@ -132,7 +132,7 @@ The response will look similar to:
     "workloadRef": {
       "name": "ratings-v1",
       "namespace": "bookinfo",
-      "clusterName": "mgmt-cluster"
+      "clusterName": "cluster-1"
     },
     "httpAccessLog": {
       "commonProperties": {
@@ -201,7 +201,7 @@ The response will look similar to:
     "workloadRef": {
       "name": "reviews-v1",
       "namespace": "bookinfo",
-      "clusterName": "mgmt-cluster"
+      "clusterName": "cluster-1"
     },
     ...
     }
@@ -212,7 +212,7 @@ The response will look similar to:
     "workloadRef": {
       "name": "ratings-v1",
       "namespace": "bookinfo",
-      "clusterName": "remote-cluster"
+      "clusterName": "cluster-2"
     },
     ...
   }
@@ -222,7 +222,7 @@ The response will look similar to:
     "workloadRef": {
       "name": "reviews-v3",
       "namespace": "bookinfo",
-      "clusterName": "remote-cluster"
+      "clusterName": "cluster-2"
     },
     ...
   }
@@ -230,7 +230,7 @@ The response will look similar to:
 ```
 
 You can also filter the retrieved access logs by workload. The following
-request retrieves access logs for any Kubernetes workload with label `app: reviews` *and* in the cluster `mgmt-cluster`, or
+request retrieves access logs for any Kubernetes workload with label `app: reviews` *and* in the cluster `cluster-1`, or
 `app: productpage` from any cluster.
 
 ```shell
@@ -241,7 +241,7 @@ curl -XPOST --data '{
             "labels":{
                "app":"reviews"
             },
-            "clusters": ["mgmt-cluster"]
+            "clusters": ["cluster-1"]
          }
       },
       {
@@ -320,7 +320,7 @@ spec:
       caCertificates: /etc/certs/rootcacerts.pem
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context $REMOTE_CONTEXT -f - << EOF
+kubectl apply --context $CONTEXT_2 -f - << EOF
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
@@ -348,7 +348,7 @@ the following access log:
     "workloadRef": {
       "name": "productpage-v1",
       "namespace": "bookinfo",
-      "clusterName": "mgmt-cluster"
+      "clusterName": "cluster-1"
     },
     "httpAccessLog": {
       ...

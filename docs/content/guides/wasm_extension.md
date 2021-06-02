@@ -22,21 +22,21 @@ In this guide we will enable a Wasm filter for use by an Envoy proxy. The filter
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh Enterprise is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio **1.8** is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* There are two clusters managed by Gloo Mesh Enterprise named `cluster-1` and `cluster-2`. 
+* Gloo Mesh Enterprise is [installed and running on `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
+* Istio **1.8** is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
-Set your environment variables like so to reference the management and remote clusters:
+Set your environment variables like so to reference the two clusters:
 
 ```shell
-export MGMT_CONTEXT=kind-mgmt-cluster
-export REMOTE_CONTEXT=kind-remote-cluster
+export CONTEXT_1=kind-cluster-1
+export CONTEXT_2=kind-cluster-2
 export ENTERPRISE_NETWORKING_VERSION=0.2.0
 ```
 
@@ -47,7 +47,7 @@ Our Envoy instances will fetch their wasm filters from an [envoy cluster](https:
 To do so, let's create a ConfigMap containing the custom additions to the Envoy bootstrap:
 
 ```bash
-cat <<EOF | kubectl apply --context ${REMOTE_CONTEXT} -n bookinfo -f -
+cat <<EOF | kubectl apply --context ${CONTEXT_2} -n bookinfo -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -109,7 +109,7 @@ EOF
 Next we'll patch the `reviews-v3` deployment to include this custom boostrap in the sidecar:
 
 ```bash
-kubectl patch deployment -n bookinfo reviews-v3 --context ${REMOTE_CONTEXT} \
+kubectl patch deployment -n bookinfo reviews-v3 --context ${CONTEXT_2} \
   --patch='{"spec":{"template": {"metadata": {"annotations": {"sidecar.istio.io/bootstrapOverride": "gloo-mesh-custom-envoy-bootstrap"}}}}}' \
   --type=merge
 ```
@@ -153,7 +153,7 @@ EOF
 
 # install upgrade from helm chart
 helm upgrade --install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise \
-  --namespace gloo-mesh --kube-context $MGMT_CONTEXT \
+  --namespace gloo-mesh --kube-context $CONTEXT_1 \
   --values gloo-mesh-values.yaml
 
 ```
@@ -164,14 +164,14 @@ You can run the following command to verify the deployment was successful.
 kubectl get deployment/enterprise-networking -n gloo-mesh
 ```
 
-The next step is to install the `enterprise-agent` on the remote cluster.
+The next step is to install the `enterprise-agent` on the `cluster-2`.
 
 ## Ensure the Enterprise agent is installed
 
-If you registered the `remote-cluster` after having installed Enterprise Networking, meshctl should have already installed the Wasm agent on your behalf. Run the following command to verify presence of the Enterprise agent.
+If you registered `cluster-2` after having installed Enterprise Networking, meshctl should have already installed the Wasm agent on your behalf. Run the following command to verify presence of the Enterprise agent.
 
 ```shell
-kubectl get deployment/enterprise-agent -n gloo-mesh --context $REMOTE_CONTEXT
+kubectl get deployment/enterprise-agent -n gloo-mesh --context $CONTEXT_2
 ```
 
 You should see the following:
@@ -181,16 +181,16 @@ NAME         READY   UP-TO-DATE   AVAILABLE   AGE
 enterprise-agent   1/1     1            1           55m
 ```
 
-If not, we will register the `remote-cluster` to install the enterprise-agent. Even if you already registered the cluster, we will re-run the registration command and include the `--install-enterprise-agent` flag to add the Enterprise agent.
+If not, we will register `cluster-2` to install the enterprise-agent. Even if you already registered the cluster, we will re-run the registration command and include the `--install-enterprise-agent` flag to add the Enterprise agent.
 
 If using `kind` or another docker-based Kubernetes distro, the cluster registration command requires an additional flag `--api-server-address` along with the API server address and port. Use the command on the Kind tab if that is the case.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
 meshctl cluster register \
-    --cluster-name remote-cluster \
-    --mgmt-context "${MGMT_CONTEXT}" \
-    --remote-context "${REMOTE_CONTEXT}" \
+    --cluster-name cluster-2 \
+    --mgmt-context "${CONTEXT_1}" \
+    --remote-context "${CONTEXT_2}" \
     --install-enterprise-agent --enterprise-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent/enterprise-agent-${ENTERPRISE_NETWORKING_VERSION}.tgz
 {{< /tab >}}
 {{< tab name="Kind" codelang="shell" >}}
@@ -198,12 +198,12 @@ meshctl cluster register \
 ADDRESS=host.docker.internal
 
 # For Linux
-ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
+ADDRESS=$(docker exec "cluster-2-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
-    --cluster-name remote-cluster \
-    --mgmt-context "${MGMT_CONTEXT}" \
-    --remote-context "${REMOTE_CONTEXT}" \
+    --cluster-name cluster-2 \
+    --mgmt-context "${CONTEXT_1}" \
+    --remote-context "${CONTEXT_2}" \
     --api-server-address ${ADDRESS}:6443 \
     --install-enterprise-agent --enterprise-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent/enterprise-agent-${ENTERPRISE_NETWORKING_VERSION}.tgz
 {{< /tab >}}
@@ -212,7 +212,7 @@ meshctl cluster register \
 We can validate the agent has been deployed by running the following:
 
 ```shell
-kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
+kubectl get pods -n gloo-mesh --context $CONTEXT_2
 
 NAME                                READY   STATUS    RESTARTS   AGE
 cert-agent-d449599d9-26mz7          1/1     Running   0          38m
@@ -228,7 +228,7 @@ We've got everything in place to use the Wasm filter, but first let's see what t
 As a sanity check, let's run a `curl` without any wasm filter deployed. First we'll create a temporary container to run curl from in the same namespace as the review service.
 
 ```bash
-kubectl run -it -n bookinfo --context $REMOTE_CONTEXT curl \
+kubectl run -it -n bookinfo --context $CONTEXT_2 curl \
   --image=curlimages/curl:7.73.0 --rm  -- sh
 
 # From the new terminal run the following
@@ -266,7 +266,7 @@ Go ahead and exit the pod and it will delete itself. Next we'll try the same aft
 Now let's deploy a Wasm filter with a WasmDeployment:
 
 ```bash
-cat <<EOF | kubectl apply --context ${MGMT_CONTEXT} -f-
+cat <<EOF | kubectl apply --context ${CONTEXT_1} -f-
 apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: WasmDeployment
 metadata:
@@ -282,7 +282,7 @@ spec:
       wasmImageTag: webassemblyhub.io/ilackarms/assemblyscript-test:istio-1.8
   workloadSelector:
   - clusters:
-    - remote-cluster
+    - cluster-2
     labels:
       app: reviews
       version: v3
@@ -303,13 +303,13 @@ At the bottom of the output, you should see the following status:
 status:
   observedGeneration: 1
   workloadStates:
-    reviews-v3-bookinfo-remote-cluster-deployment.gloo-mesh.: FILTERS_DEPLOYED
+    reviews-v3-bookinfo-cluster-2-deployment.gloo-mesh.: FILTERS_DEPLOYED
 ```
 
 Let's try our curl again:
 
 ```bash
-kubectl run -it -n bookinfo --context $REMOTE_CONTEXT curl \
+kubectl run -it -n bookinfo --context $CONTEXT_2 curl \
   --image=curlimages/curl:7.73.0 --rm  -- sh
 
 # From the new terminal run the following

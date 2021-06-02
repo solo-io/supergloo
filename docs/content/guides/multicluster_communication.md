@@ -9,20 +9,23 @@ In the [previous guides]({{% versioned_link_path fromRoot="/guides/federate_iden
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* There are two clusters registered under Gloo Mesh named `cluster1` and `cluster2`. This marks both of them as client clusters that are managed by Gloo Mesh.
-* Gloo Mesh is [installed and running on `cluster1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}}). This means that `cluster1` is performing
-  double-duty; it is a client cluster, and it is the management cluster with Gloo Mesh installed.
+* There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
 * Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
-
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
+Also ensure you have the correct context names set in your environment:
+
+```shell
+CONTEXT_1=cluster_1's_context_here
+```
+
 ## Controlling cross-cluster traffic
 
-We will now perform a *multi-cluster traffic split*, splitting traffic from the `productpage` service in the `mgmt-cluster` cluster between `reviews-v1`, `reviews-v2`, and `reviews-v3` running in the `remote-cluster` cluster.
+We will now perform a *multi-cluster traffic split*, splitting traffic from the `productpage` service in `cluster-1` between `reviews-v1`, `reviews-v2`, and `reviews-v3` running in `cluster-2`.
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="yaml">}}
@@ -36,26 +39,26 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: reviews
           namespace: bookinfo
   policy:
     trafficShift:
       destinations:
         - kubeService:
-            clusterName: remote-cluster
+            clusterName: cluster-2
             name: reviews
             namespace: bookinfo
           weight: 75
         - kubeService:
-            clusterName: mgmt-cluster
+            clusterName: cluster-1
             name: reviews
             namespace: bookinfo
             subset:
               version: v1
           weight: 15
         - kubeService:
-            clusterName: mgmt-cluster
+            clusterName: cluster-1
             name: reviews
             namespace: bookinfo
             subset:
@@ -63,7 +66,7 @@ spec:
           weight: 10
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context $MGMT_CONTEXT -f - << EOF
+kubectl apply --context $CONTEXT_1 -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
@@ -73,26 +76,26 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: reviews
           namespace: bookinfo
   policy:
     trafficShift:
       destinations:
         - kubeService:
-            clusterName: remote-cluster
+            clusterName: cluster-2
             name: reviews
             namespace: bookinfo
           weight: 75
         - kubeService:
-            clusterName: mgmt-cluster
+            clusterName: cluster-1
             name: reviews
             namespace: bookinfo
             subset:
               version: v1
           weight: 15
         - kubeService:
-            clusterName: mgmt-cluster
+            clusterName: cluster-1
             name: reviews
             namespace: bookinfo
             subset:
@@ -102,7 +105,7 @@ EOF
 {{< /tab >}}
 {{< /tabs >}}
 
-Once you apply this resource to the `mgmt-cluster` cluster, you should occasionally see traffic being routed to the reviews-v3 service, which will produce red-colored stars on the product page.
+Once you apply this resource to `cluster-1`, you should occasionally see traffic being routed to the reviews-v3 service, which will produce red-colored stars on the product page.
 
 To go into slightly more detail here: The above TrafficPolicy says that:
 

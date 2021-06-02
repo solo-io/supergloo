@@ -31,12 +31,12 @@ We will assume in this guide that you have access to two clusters and the follow
 
 Your actual context names will likely be different.
 
-* `mgmt-cluster-context`
+* `cluster-1-context`
     - kubeconfig context pointing to a cluster where we will install and operate Gloo Mesh
-* `remote-cluster-context`
+* `cluster-2-context`
     - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Gloo Mesh 
 
-We assume you've [installed Gloo Mesh]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `mgmt-cluster-context`.
+We assume you've [installed Gloo Mesh]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `cluster-1-context`.
 
 
 #### Two registered clusters
@@ -44,16 +44,16 @@ We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#reg
 
 
 ```shell
-meshctl cluster register community mgmt-cluster \
-  --remote-context $MGMT_CONTEXT
+meshctl cluster register community cluster-1 \
+  --remote-context $CONTEXT_1
 ```
 
 ```shell
-meshctl cluster register community remote-cluster \
-  --remote-context $REMOTE_CONTEXT
+meshctl cluster register community cluster-2 \
+  --remote-context $CONTEXT_2
 ```
 
-At this point we have two clusters, `mgmt-cluster` and `remote-cluster` both registered with Gloo Mesh which happens to be installed on the `mgmt-cluster` cluster.
+At this point we have two clusters, `cluster-1` and `cluster-2` both registered with Gloo Mesh (which also happens to be installed on `cluster-1`).
 
 ## Using Kind
 
@@ -67,7 +67,7 @@ meshctl demo istio-multicluster init
 
 The command will do the following:
 
-* Create two kind clusters: mgmt-cluster and remote-cluster
+* Create two kind clusters: cluster-1 and cluster-2
 * Install Gloo Mesh on the management plane cluster
 * Install Istio on both clusters
 * Register both clusters with Gloo Mesh
@@ -85,20 +85,20 @@ You'll want to first have [Istio installed for multi-cluster]({{% versioned_link
 The core components, including reviews-v1 and reviews-v2, are deployed to the management plane cluster, while `reviews-v3` is deployed on the remote cluster.
 
 {{% notice note %}}
-Be sure to switch the `kubeconfig` context to the `mgmt-cluster`
+Be sure to switch the `kubeconfig` context to the `cluster-1`
 {{% /notice %}}
 
 Before running the following, make sure your context names are set as environment variables:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-REMOTE_CONTEXT=your_remote_context
+CONTEXT_1=your_first_context_with_gloo_mesh_installed
+CONTEXT_2=your_second_context
 ```
 
-Deploy part of the bookinfo application to the `mgmt-cluster` cluster:
+Deploy part of the bookinfo application to the `cluster-1` cluster:
 
 ```shell
-kubectl config use-context $MGMT_CONTEXT
+kubectl config use-context $CONTEXT_1
 
 kubectl create ns bookinfo
 kubectl label namespace bookinfo istio-injection=enabled
@@ -108,10 +108,10 @@ kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/relea
 kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
 ```
 
-Now deploy only reviews-v3 to your `remote-cluster-context` cluster:
+Now deploy only reviews-v3 to your `cluster-2-context` cluster:
 
 ```shell
-kubectl config use-context $REMOTE_CONTEXT
+kubectl config use-context $CONTEXT_2
 
 kubectl create ns bookinfo
 kubectl label namespace bookinfo istio-injection=enabled

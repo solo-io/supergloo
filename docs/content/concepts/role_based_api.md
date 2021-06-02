@@ -61,7 +61,7 @@ destinationSelectors:
     name: foobar
     namespace: foobar-namespace
     clusters:
-    - remote-cluster
+    - cluster-2
 ```
 
 However, if we modify the selector to the following:
@@ -71,7 +71,7 @@ destinationSelectors:
 - kubeServiceMatcher:
     namespace: foobar-namespace
     clusters:
-      - remote-cluster
+      - cluster-2
 ```
 
 It permits DestinationSelectors to select any specific name or to omit the name altogether. The following DestinationSelectors would be permitted
@@ -83,11 +83,11 @@ destinationSelector:
     name: foobar
     namespace: foobar-namespace
     clusters:
-    - remote-cluster
+    - cluster-2
   kubeServiceMatcher:
     namespace: foobar-namespace
     clusters:
-    - remote-cluster
+    - cluster-2
 ```
 
 ## Example Roles / Personas
@@ -187,12 +187,12 @@ spec:
             namespaces:
               - "*"
             clusters:
-              - "mgmt-cluster"
+              - "cluster-1"
         - kubeServiceRefs:
             services:
               - name: "*"
                 namespace: "*"
-                clusterName: "mgmt-cluster"
+                clusterName: "cluster-1"
       workloadSelectors:
         - kubeWorkloadMatcher:
             labels:
@@ -200,7 +200,7 @@ spec:
             namespaces:
               - "*"
             clusters:
-              - "mgmt-cluster"
+              - "cluster-1"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
   accessPolicyScopes:
     - identitySelectors:
@@ -208,12 +208,12 @@ spec:
             namespaces:
               - "*"
             clusters:
-              - "mgmt-cluster"
+              - "cluster-1"
           kubeServiceAccountRefs:
             serviceAccounts:
               - name: "*"
                 namespace: "*"
-                clusterName: "mgmt-cluster"
+                clusterName: "cluster-1"
     - destinationSelectors:
         - kubeServiceMatcher:
             labels:
@@ -221,17 +221,17 @@ spec:
             namespaces:
               - "*"
             clusters:
-              - "mgmt-cluster"
+              - "cluster-1"
         - kubeServiceRefs:
             services:
               - name: "*"
                 namespace: "*"
-                clusterName: "mgmt-cluster"
+                clusterName: "cluster-1"
 ```
 
-Assuming that the `istiod-istio-system-mgmt-cluster` mesh is the only control plane present on the `mgmt-cluster` cluster, this role allows access 
+Assuming that the `istiod-istio-system-cluster-1` mesh is the only control plane present on the `cluster-1` cluster, this role allows access 
 for configuring TrafficPolicies and AccessPolicies that affect only Destinations controlled by the 
-`istiod-istio-system-mgmt-cluster` mesh.
+`istiod-istio-system-cluster-1` mesh.
 
 **Destination Publisher**
 
@@ -255,10 +255,10 @@ spec:
             services:
               - name: ratings
                 namespace: gloo-mesh
-                clusterName: mgmt-cluster
+                clusterName: cluster-1
               - name: ratings
                 namespace: gloo-mesh
-                clusterName: remote-cluster
+                clusterName: cluster-2
       workloadSelectors:
         - kubeWorkloadMatcher:
             labels:
@@ -284,7 +284,7 @@ spec:
                 clusterName: "*"
 ```
 
-This role allows configuration of TrafficPolicies and AccessPolicies that affect the `ratings` Destination in both the `mgmt-cluster` and `remote-cluster`,
+This role allows configuration of TrafficPolicies and AccessPolicies that affect the `ratings` Destination in both the `cluster-1` and `cluster-2`,
 with no restrictions on actions.
 
 **Destination Consumer**
@@ -340,7 +340,7 @@ spec:
 ```
 
 This role allows configuration of TrafficPolicies (only request timeouts, retries, and fault injections) and AccessPolicies that affect traffic originating
- from the `productpage` workload to the `ratings` Destination on both `mgmt-cluster` and `remote-cluster`. We assume that the `productpage-service-account` 
+ from the `productpage` workload to the `ratings` Destination on both `cluster-1` and `cluster-2`. We assume that the `productpage-service-account` 
  service account identity applies only to the `productpage` workload (and no other workloads). 
 
 ## Next Steps

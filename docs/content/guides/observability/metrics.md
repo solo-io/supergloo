@@ -15,15 +15,10 @@ This guide describes how to get started with Gloo Mesh Enterprise's out of the b
 
 This guide assumes the following:
 
-* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Istio is [installed on both `cluster-1` and `cluster-2`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
     * Istio is configured according to what's described in "Environment Prerequisites" below
     * `istio-system` is the root namespace for both Istio deployments
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}}) under the `bookinfo` namespace
-* the following environment variables are set:
-    ```shell
-    MGMT_CONTEXT=your_management_plane_context
-    REMOTE_CONTEXT=your_remote_context
-    ```
 
 ## Environment Prerequisites
 
@@ -68,7 +63,7 @@ the following argument to `Helm install`, `--set metricsBackend.prometheus.enabl
 This configures Gloo Mesh to install a Prometheus server which comes preconfigured to scrape the centralized metrics from the Enterprise Networking
 metrics endpoint.
 
-After installation of the Gloo Mesh management plane, you should see the following deployments:
+After installation of the Gloo Mesh management plane into `cluster-1`, you should see the following deployments:
 
 ```shell
 gloo-mesh      enterprise-networking-69d74c9744-8nlkd               1/1     Running   0          23m
@@ -125,13 +120,13 @@ kubectl -n gloo-mesh port-forward deploy/prometheus-server 9090
 Then open `localhost:9090` in your browser of choice. 
 Here is a simple promql query to get you started with navigating the collected metrics.
 This query fetches the `istio_requests_total` metric (which counts the total number of requests) emitted by the
-`productpage-v1.bookinfo.mgmt-cluster` workload's Envoy proxy. You can read more about PromQL in the [official documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+`productpage-v1.bookinfo.cluster-1` workload's Envoy proxy. You can read more about PromQL in the [official documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/).
 
 ```promql
 sum(
   increase(
     istio_requests_total{
-      gm_workload_ref="productpage-v1.bookinfo.mgmt-cluster",
+      gm_workload_ref="productpage-v1.bookinfo.cluster-1",
     }[2m]
   )
 ) by (
@@ -163,7 +158,7 @@ curl -XPOST --data '{
         "workloadRef": {
           "name": "productpage-v1",
           "namespace": "bookinfo",
-          "clusterName": "mgmt-cluster"
+          "clusterName": "cluster-1"
 
       }
     }
@@ -182,14 +177,14 @@ curl -XPOST --data '{
            "workloadRef":{
               "name":"productpage-v1",
               "namespace":"bookinfo",
-              "clusterName":"mgmt-cluster"
+              "clusterName":"cluster-1"
            }
          },
          "target": {
            "workloadRef":{
              "name":"details-v1",
              "namespace":"bookinfo",
-             "clusterName":"mgmt-cluster"
+             "clusterName":"cluster-1"
            }
          }
       }

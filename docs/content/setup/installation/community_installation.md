@@ -13,7 +13,7 @@ Gloo Mesh Enterprise is the paid version of Gloo Mesh, including the Gloo Mesh U
 
 ![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-3clusters.png" %}})
 
-You can install Gloo Mesh onto its own cluster and register remote clusters, or you can co-locate Gloo Mesh onto a cluster with a service mesh. The former (its own cluster) is the preferred deployment pattern, but for getting started, exploring, or to save resources, you can use the co-located deployment approach.
+You can install Gloo Mesh onto its own cluster and register remote clusters, or you can co-locate Gloo Mesh onto a cluster with a service mesh. The former (giving gloo mesh its own unregistered cluster) is the preferred deployment pattern, but for getting started, exploring, or to save resources, you can use the co-located deployment approach.
 
 ![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-2clusters.png" %}})
 
@@ -25,9 +25,9 @@ We will assume in this and following guides that we have access to two clusters 
 
 Your actual context names will likely be different.
 
-* `mgmt-cluster-context`
+* `cluster-1-context`
     - kubeconfig context pointing to a cluster where we will install and operate Gloo Mesh
-* `remote-cluster-context`
+* `cluster-2-context`
     - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Gloo Mesh 
 
 To verify you're running the following commands in the correct context, run:
@@ -55,13 +55,13 @@ You can also quickly install like this:
 curl -sL https://run.solo.io/meshctl/install | sh
 ```
 
-Once you have the `meshctl` tool, you can install Gloo Mesh onto a cluster acting as the `mgmt-cluster` like this:
+Once you have the `meshctl` tool, you can install Gloo Mesh onto the cluster acting as the management cluster like this:
 
 ```shell
 meshctl install community
 ```
 
-If you're not using the context for the `mgmt-cluster`, you can explicitly specify it using the `--kubecontext` option:
+Note that this command assumes that you're still using the context for the `cluster-1`. If you switched away, you can explicitly specify it using the `--kubecontext` option:
 
 ```shell
 meshctl install community --kubecontext $MGMT_CONTEXT
