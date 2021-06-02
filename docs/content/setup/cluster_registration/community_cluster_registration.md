@@ -18,7 +18,7 @@ In order to identify a cluster as being managed by Gloo Mesh, we have to *regist
 We will start by registering a remote cluster, i.e. a cluster not running the Gloo Mesh installation. We will need to tell `meshctl` which kubectl context to use. Let's start by storing the name of our context in a variable:
 
 ```shell
-CONTEXT_2=your_remote_context (cluster 2 if following our examples)
+CONTEXT_2=your_remote_context (cluster 2's context if following our examples)
 ```
 We will register the cluster with the `meshctl cluster register community` command. We will assume that the management plane cluster (i.e. where `discovery` and `networking` are running) is your current kubeconfig context. If not, set the `--mgmt-context` flag. The kubeconfig context for the cluster we want to register to the management plane is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
 

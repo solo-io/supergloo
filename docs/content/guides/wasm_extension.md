@@ -24,7 +24,7 @@ To illustrate these concepts, we will assume that:
 
 * There are two clusters managed by Gloo Mesh Enterprise named `cluster-1` and `cluster-2`. 
 * Gloo Mesh Enterprise is [installed and running on `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio **1.8** is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* Istio **1.8** is [installed on both managed clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -164,7 +164,7 @@ You can run the following command to verify the deployment was successful.
 kubectl get deployment/enterprise-networking -n gloo-mesh
 ```
 
-The next step is to install the `enterprise-agent` on the `cluster-2`.
+The next step is to install the `enterprise-agent` on `cluster-2`.
 
 ## Ensure the Enterprise agent is installed
 

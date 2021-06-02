@@ -198,7 +198,7 @@ kubectl -n bookinfo port-forward deployments/productpage-v1 9080
 
 Reloading the page a few times should show the "Book Reviews" section with either no stars (for requests routed to the `reviews-v1` pod) or black stars (for requests routed to the `reviews-v2` pod). This shows that the `productpage` is routing to the local service. This is the desired behavior. The product page requests are coming from the local cluster and being routed to a local destination.
 
-Recall from the [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) that `reviews-v1` and `reviews-v2` only exist on the `cluster-1` and `reviews-v3` only exists on `cluster-2`, which we'll use to distinguish requests routing to either cluster.
+Recall from the [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) that `reviews-v1` and `reviews-v2` only exist on `cluster-1`, and `reviews-v3` only exists on `cluster-2`, which we'll use to distinguish requests routing to either cluster.
 
 Now, to trigger the failover, we'll modify the `reviews-v1` and `reviews-v2` deployments to disable the web servers. 
 

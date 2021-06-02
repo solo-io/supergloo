@@ -16,7 +16,7 @@ This guide will have you create two example roles and bind them to users.
 To illustrate these concepts, we will assume that:
 
 * There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
-* Gloo Mesh is [installed and running on the `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
+* Gloo Mesh is [installed and running on `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
