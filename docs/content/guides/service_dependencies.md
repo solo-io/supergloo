@@ -39,6 +39,9 @@ thereby alleviating memory consumption of the data plane.
 The [ServiceDependency CRD]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.service_dependency/" %}}) facilitates management of workload-to-destination dependencies, which translate to
 [Istio Sidecar CRs](https://istio.io/latest/docs/reference/config/networking/sidecar/).
 
+The ServiceDependency CR affects **workload's egress traffic dependencies**, i.e. it declares which destinations
+a given workload needs to send traffic to.
+
 Consider the following example:
 
 ```yaml
