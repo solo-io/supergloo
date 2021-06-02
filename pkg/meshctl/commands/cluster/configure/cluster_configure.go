@@ -3,7 +3,8 @@ package configure
 import (
 	"context"
 	"fmt"
-	"os"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
+	"io/ioutil"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -21,56 +22,43 @@ func Command(ctx context.Context) *cobra.Command {
 			return configure(meshctlConfigPath)
 		},
 	}
-	pflag.StringVarP(&meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file")
+	pflag.StringVarP(&meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
 	return cmd
 }
 
 func configure(meshctlConfigPath string) error {
-	if meshctlConfigPath == "" {
-		var err error
-		meshctlConfigPath, err = MeshctlConfigFilePath()
-		if err != nil {
-			return err
-		}
-	}
-	config, err := ParseMeshctlConfig(meshctlConfigPath)
+	config, err := utils.ParseMeshctlConfig(meshctlConfigPath)
 	if err != nil {
 		return err
-	}
-	configFile, err := os.OpenFile(meshctlConfigPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer configFile.Close()
-
-	if len(config.Clusters) == 0 {
-		config.ApiVersion = "v1"
-		config.Clusters = map[string]KubeCluster{}
-	} else if config.ApiVersion != "v1" {
-		return fmt.Errorf("unrecognized api version: %v", config.ApiVersion)
 	}
 
 	keepGoing := "y"
 	for keepGoing == "y" {
+		// TODO replace fmt.Scanln with promptui
 		var answer string
 		fmt.Println("Are you configuring the management cluster? (y/n)")
 		fmt.Scanln(&answer)
 		if strings.ToLower(answer) == "y" || strings.ToLower(answer) == "yes" {
 			mgmtContext := configureCluster()
-			config.Clusters[managementPlane] = mgmtContext
+			config.AddMgmtCluster(mgmtContext)
 		} else if strings.ToLower(answer) == "n" || strings.ToLower(answer) == "no" {
 			remoteContext := configureCluster()
-			config.Clusters[remoteContext.KubeContext] = remoteContext
+			/*TODO: get the cluster name as a user input*/
+			if err := config.AddDataPlaneCluster(clusterName, remoteContext); err != nil{
+				return err
+			}
 		}
 		fmt.Println("Would you like to configure another cluster? (y/n)")
 		fmt.Scanln(&keepGoing)
 	}
 
-	d, err := yaml.Marshal(&config)
+	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		return err
 	}
-	_, err = configFile.Write(d)
+	if err := ioutil.WriteFile(meshctlConfigPath, bytes, 0644); err != nil {
+		return err
+	}
 
 	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", meshctlConfigPath)
 	return err
