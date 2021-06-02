@@ -2,39 +2,54 @@ package utils
 
 import (
 	"fmt"
-	"github.com/rotisserie/eris"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/rotisserie/eris"
 
 	"github.com/ghodss/yaml"
 )
 
 const managementPlane = "managementPlane"
 
-type Config struct {
+type MeshctlConfig struct {
 	filepath   string
-	ApiVersion string                 `json:"apiVersion"`
-	Clusters   map[string]KubeCluster `json:"clusters"`
+	ApiVersion string                    `json:"apiVersion"`
+	Clusters   map[string]MeshctlCluster `json:"clusters"`
+}
+
+type MeshctlCluster struct {
+	KubeConfig  string `json:"kubeConfig"`
+	KubeContext string `json:"kubeContext"`
+}
+
+type KubeConfig struct {
+	ApiVersion string              `json:"apiVersion"`
+	Clusters   []KubeConfigCluster `yaml:"clusters"`
+}
+
+type KubeConfigCluster struct {
+	Name string `yaml:"name"`
 }
 
 // returns the path of the file storing the config
-func (c Config) FilePath() string {
+func (c MeshctlConfig) FilePath() string {
 	return c.filepath
 }
 
 // returns the path of the file storing the config
-func (c Config) MgmtCluster() KubeCluster {
+func (c MeshctlConfig) MgmtCluster() MeshctlCluster {
 	return c.Clusters[managementPlane]
 }
 
 // returns the path of the file storing the config
-func (c Config) AddMgmtCluster(kc KubeCluster) {
+func (c MeshctlConfig) AddMgmtCluster(kc MeshctlCluster) {
 	c.Clusters[managementPlane] = kc
 }
 
 // returns the path of the file storing the config
-func (c Config) AddDataPlaneCluster(name string, kc KubeCluster) error {
+func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error {
 	if name == managementPlane {
 		return eris.Errorf("%v is a special cluster name reserved for the management cluster. try a different name", name)
 	}
@@ -42,21 +57,16 @@ func (c Config) AddDataPlaneCluster(name string, kc KubeCluster) error {
 	return nil
 }
 
-type KubeCluster struct {
-	KubeConfig  string `json:"kubeConfig"`
-	KubeContext string `json:"kubeContext"`
-}
-
-func ParseMeshctlConfig(meshctlConfigPath string) (Config, error) {
+func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	if meshctlConfigPath == "" {
 		var err error
 		meshctlConfigPath, err = meshctlConfigFilePath()
 		if err != nil {
-			return Config{}, err
+			return MeshctlConfig{}, err
 		}
 	}
 
-	config := Config{}
+	config := MeshctlConfig{}
 
 	if _, fileErr := os.Stat(meshctlConfigPath); fileErr == nil {
 		contentString, err := ioutil.ReadFile(meshctlConfigPath)
@@ -72,13 +82,12 @@ func ParseMeshctlConfig(meshctlConfigPath string) (Config, error) {
 		config.ApiVersion = "v1"
 	}
 	if config.Clusters == nil {
-		config.Clusters = map[string]KubeCluster{}
+		config.Clusters = map[string]MeshctlCluster{}
 	}
 
 	if config.ApiVersion != "v1" {
-		return Config{}, fmt.Errorf("unrecognized api version: %v", config.ApiVersion)
+		return MeshctlConfig{}, fmt.Errorf("unrecognized api version: %v", config.ApiVersion)
 	}
-
 
 	return config, nil
 }
