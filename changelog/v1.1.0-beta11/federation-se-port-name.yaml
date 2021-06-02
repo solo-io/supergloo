@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1554
+    description: Update federation to use port protocol for ServiceEntry port names when no name is specified on the Kube Service.
