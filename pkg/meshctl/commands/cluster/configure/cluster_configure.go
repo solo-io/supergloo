@@ -12,40 +12,32 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := &options{}
+	var meshctlConfigPath string
 	cmd := &cobra.Command{
 		Use:   "configure",
 		Short: "Configure Kubernetes Clusters registered with Gloo Mesh.",
 		Long:  "Create a mapping of clusters to kubeconfig entries in ${HOME}/.gloo-mesh/meshctl-config.yaml.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return configure(opts)
+			return configure(meshctlConfigPath)
 		},
 	}
-	opts.addToFlags(cmd.PersistentFlags())
+	pflag.StringVarP(&meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file")
 	return cmd
 }
 
-type options struct {
-	MeshctlConfigPath string
-}
-
-func (o *options) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.MeshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file")
-}
-
-func configure(opts *options) error {
-	var err error
-	if opts.MeshctlConfigPath == "" {
-		opts.MeshctlConfigPath, err = MeshctlConfigFilePath()
+func configure(meshctlConfigPath string) error {
+	if meshctlConfigPath == "" {
+		var err error
+		meshctlConfigPath, err = MeshctlConfigFilePath()
 		if err != nil {
 			return err
 		}
 	}
-	config, err := ParseMeshctlConfig(opts.MeshctlConfigPath)
+	config, err := ParseMeshctlConfig(meshctlConfigPath)
 	if err != nil {
 		return err
 	}
-	configFile, err := os.OpenFile(opts.MeshctlConfigPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	configFile, err := os.OpenFile(meshctlConfigPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -80,7 +72,7 @@ func configure(opts *options) error {
 	}
 	_, err = configFile.Write(d)
 
-	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", opts.MeshctlConfigPath)
+	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", meshctlConfigPath)
 	return err
 }
 
