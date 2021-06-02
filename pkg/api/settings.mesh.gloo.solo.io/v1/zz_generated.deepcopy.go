@@ -67,3 +67,63 @@ func (in *SettingsList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+// Generated Deepcopy methods for Dashboard
+
+func (in *Dashboard) DeepCopyInto(out *Dashboard) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
+
+	return
+}
+
+func (in *Dashboard) DeepCopy() *Dashboard {
+	if in == nil {
+		return nil
+	}
+	out := new(Dashboard)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *Dashboard) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *DashboardList) DeepCopyInto(out *DashboardList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]Dashboard, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *DashboardList) DeepCopy() *DashboardList {
+	if in == nil {
+		return nil
+	}
+	out := new(DashboardList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *DashboardList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
