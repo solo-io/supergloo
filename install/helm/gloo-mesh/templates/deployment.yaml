@@ -8,7 +8,7 @@
 {{- $discoveryExtraPodLabels := $discovery.extraPodLabels -}}
 {{- $discoveryExtraPodAnnotations := $discovery.extraPodAnnotations -}}
 {{- $discoveryExtraDeploymentLabels := $discovery.extraDeploymentLabels -}}
-{{- $discoveryExtraDeploymentAnnotations := $discovery.extraDeploymentAnnotations -}}
+{{- $discoveryExtraDeploymentAnnotations := $discovery.extraDeploymentAnnotations}}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -98,7 +98,7 @@ metadata:
 ---
 # Service for discovery
 {{- $discoveryExtraServiceLabels := $discovery.extraLabels -}}
-{{- $discoveryExtraServiceAnnotations := $discovery.extraAnnotations -}}
+{{- $discoveryExtraServiceAnnotations := $discovery.extraAnnotations }}
 
 apiVersion: v1
 kind: Service
@@ -133,7 +133,7 @@ spec:
 {{- $networkingExtraPodLabels := $networking.extraPodLabels -}}
 {{- $networkingExtraPodAnnotations := $networking.extraPodAnnotations -}}
 {{- $networkingExtraDeploymentLabels := $networking.extraDeploymentLabels -}}
-{{- $networkingExtraDeploymentAnnotations := $networking.extraDeploymentAnnotations -}}
+{{- $networkingExtraDeploymentAnnotations := $networking.extraDeploymentAnnotations}}
 
 apiVersion: apps/v1
 kind: Deployment

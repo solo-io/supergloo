@@ -8,7 +8,7 @@
 {{- $certAgentExtraPodLabels := $certAgent.extraPodLabels -}}
 {{- $certAgentExtraPodAnnotations := $certAgent.extraPodAnnotations -}}
 {{- $certAgentExtraDeploymentLabels := $certAgent.extraDeploymentLabels -}}
-{{- $certAgentExtraDeploymentAnnotations := $certAgent.extraDeploymentAnnotations -}}
+{{- $certAgentExtraDeploymentAnnotations := $certAgent.extraDeploymentAnnotations}}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -95,7 +95,7 @@ metadata:
 ---
 # Service for cert-agent
 {{- $certAgentExtraServiceLabels := $certAgent.extraLabels -}}
-{{- $certAgentExtraServiceAnnotations := $certAgent.extraAnnotations -}}
+{{- $certAgentExtraServiceAnnotations := $certAgent.extraAnnotations }}
 
 apiVersion: v1
 kind: Service

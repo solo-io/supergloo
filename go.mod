@@ -76,7 +76,7 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.19
+	github.com/solo-io/skv2 v0.17.20-0.20210602200409-04afcbd3627a
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.3
@@ -102,3 +102,5 @@ require (
 	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 	sigs.k8s.io/controller-runtime v0.9.0-alpha.1.0.20210412152200-442d3cad1e99
 )
+
+replace github.com/solo-io/skv2 => /Users/ashwang/go/src/github.com/solo-io/skv2
