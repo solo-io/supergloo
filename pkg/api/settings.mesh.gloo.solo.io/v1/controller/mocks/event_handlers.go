@@ -134,3 +134,124 @@ func (mr *MockSettingsEventWatcherMockRecorder) AddEventHandler(ctx, h interface
 	varargs := append([]interface{}{ctx, h}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockSettingsEventWatcher)(nil).AddEventHandler), varargs...)
 }
+
+// MockDashboardEventHandler is a mock of DashboardEventHandler interface.
+type MockDashboardEventHandler struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardEventHandlerMockRecorder
+}
+
+// MockDashboardEventHandlerMockRecorder is the mock recorder for MockDashboardEventHandler.
+type MockDashboardEventHandlerMockRecorder struct {
+	mock *MockDashboardEventHandler
+}
+
+// NewMockDashboardEventHandler creates a new mock instance.
+func NewMockDashboardEventHandler(ctrl *gomock.Controller) *MockDashboardEventHandler {
+	mock := &MockDashboardEventHandler{ctrl: ctrl}
+	mock.recorder = &MockDashboardEventHandlerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardEventHandler) EXPECT() *MockDashboardEventHandlerMockRecorder {
+	return m.recorder
+}
+
+// CreateDashboard mocks base method.
+func (m *MockDashboardEventHandler) CreateDashboard(obj *v1.Dashboard) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateDashboard", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateDashboard indicates an expected call of CreateDashboard.
+func (mr *MockDashboardEventHandlerMockRecorder) CreateDashboard(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDashboard", reflect.TypeOf((*MockDashboardEventHandler)(nil).CreateDashboard), obj)
+}
+
+// DeleteDashboard mocks base method.
+func (m *MockDashboardEventHandler) DeleteDashboard(obj *v1.Dashboard) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDashboard", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDashboard indicates an expected call of DeleteDashboard.
+func (mr *MockDashboardEventHandlerMockRecorder) DeleteDashboard(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDashboard", reflect.TypeOf((*MockDashboardEventHandler)(nil).DeleteDashboard), obj)
+}
+
+// GenericDashboard mocks base method.
+func (m *MockDashboardEventHandler) GenericDashboard(obj *v1.Dashboard) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericDashboard", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericDashboard indicates an expected call of GenericDashboard.
+func (mr *MockDashboardEventHandlerMockRecorder) GenericDashboard(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericDashboard", reflect.TypeOf((*MockDashboardEventHandler)(nil).GenericDashboard), obj)
+}
+
+// UpdateDashboard mocks base method.
+func (m *MockDashboardEventHandler) UpdateDashboard(old, new *v1.Dashboard) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDashboard", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDashboard indicates an expected call of UpdateDashboard.
+func (mr *MockDashboardEventHandlerMockRecorder) UpdateDashboard(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDashboard", reflect.TypeOf((*MockDashboardEventHandler)(nil).UpdateDashboard), old, new)
+}
+
+// MockDashboardEventWatcher is a mock of DashboardEventWatcher interface.
+type MockDashboardEventWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardEventWatcherMockRecorder
+}
+
+// MockDashboardEventWatcherMockRecorder is the mock recorder for MockDashboardEventWatcher.
+type MockDashboardEventWatcherMockRecorder struct {
+	mock *MockDashboardEventWatcher
+}
+
+// NewMockDashboardEventWatcher creates a new mock instance.
+func NewMockDashboardEventWatcher(ctrl *gomock.Controller) *MockDashboardEventWatcher {
+	mock := &MockDashboardEventWatcher{ctrl: ctrl}
+	mock.recorder = &MockDashboardEventWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardEventWatcher) EXPECT() *MockDashboardEventWatcherMockRecorder {
+	return m.recorder
+}
+
+// AddEventHandler mocks base method.
+func (m *MockDashboardEventWatcher) AddEventHandler(ctx context.Context, h controller.DashboardEventHandler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, h}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddEventHandler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddEventHandler indicates an expected call of AddEventHandler.
+func (mr *MockDashboardEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, h}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockDashboardEventWatcher)(nil).AddEventHandler), varargs...)
+}
