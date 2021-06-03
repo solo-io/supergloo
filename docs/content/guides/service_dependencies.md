@@ -9,9 +9,8 @@ weight: 30
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on both `cluster-1` and `cluster-2`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
+* Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
