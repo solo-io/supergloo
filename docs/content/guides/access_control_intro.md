@@ -10,10 +10,9 @@ In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_ident
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
+* Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
 {{% notice note %}}
@@ -26,16 +25,16 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 Ensure that your kubeconfig has the correct context set as its `currentContext`:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-REMOTE_CONTEXT=your_remote_context
+CONTEXT_1=your_first_context
+CONTEXT_2=your_second_context
 
-kubectl config use-context $MGMT_CONTEXT
+kubectl config use-context $CONTEXT_1
 ```
 
 In another shell, start a port-forward to the bookinfo demo:
 
 ```shell
-kubectl --context $MGMT_CONTEXT -n bookinfo port-forward deployment/productpage-v1 9080:9080
+kubectl --context $CONTEXT_1 -n bookinfo port-forward deployment/productpage-v1 9080:9080
 ```
 
 In a browser, visit [http://localhost:9080](http://localhost:9080) (potentially selecting "normal user" if this is your first time using the app) and verify that both the book details and the reviews are loading correctly. Depending on which review service is accessed you will see reviews with no stars or black stars. You can refresh the page to see the review source change.
@@ -63,13 +62,13 @@ spec:
     - {}
   globalAccessPolicy: ENABLED
   meshes:
-  - name: istiod-istio-system-mgmt-cluster
+  - name: istiod-istio-system-cluster-1
     namespace: gloo-mesh
-  - name: istiod-istio-system-remote-cluster
+  - name: istiod-istio-system-cluster-2
     namespace: gloo-mesh
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context $MGMT_CONTEXT -f - << EOF
+kubectl apply --context $CONTEXT_1 -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: VirtualMesh
 metadata:
@@ -87,9 +86,9 @@ spec:
     - {}
   globalAccessPolicy: ENABLED
   meshes:
-  - name: istiod-istio-system-mgmt-cluster
+  - name: istiod-istio-system-cluster-1
     namespace: gloo-mesh
-  - name: istiod-istio-system-remote-cluster
+  - name: istiod-istio-system-cluster-2
     namespace: gloo-mesh
 EOF
 {{< /tab >}}
@@ -98,7 +97,7 @@ EOF
 If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you can apply it like this:
 
 ```shell
-kubectl --context $MGMT_CONTEXT apply -f demo-virtual-mesh.yaml
+kubectl --context $CONTEXT_1 apply -f demo-virtual-mesh.yaml
 
 virtualmesh.networking.mesh.gloo.solo.io/virtual-mesh configured
 ```
@@ -137,14 +136,14 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: bookinfo
-          clusterName: mgmt-cluster
+          clusterName: cluster-1
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
       - bookinfo
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context $MGMT_CONTEXT -f - << EOF
+kubectl apply --context $CONTEXT_1 -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
@@ -156,7 +155,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: bookinfo
-          clusterName: mgmt-cluster
+          clusterName: cluster-1
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -168,7 +167,7 @@ EOF
 If you saved this VirtualMesh CR to a file named `demo-product-policy.yaml`, you can apply it like this:
 
 ```shell
-kubectl --context $MGMT_CONTEXT apply -f demo-product-policy.yaml
+kubectl --context $CONTEXT_1 apply -f demo-product-policy.yaml
 
 accesspolicy.networking.mesh.gloo.solo.io/productpage created
 ```
@@ -188,7 +187,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: bookinfo
-          clusterName: mgmt-cluster
+          clusterName: cluster-1
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -197,7 +196,7 @@ spec:
         service: ratings
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
-kubectl apply --context $MGMT_CONTEXT -f - <<EOF
+kubectl apply --context $CONTEXT_1 -f - <<EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
@@ -209,7 +208,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: bookinfo
-          clusterName: mgmt-cluster
+          clusterName: cluster-1
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -223,7 +222,7 @@ EOF
 If you have this YAML saved to a file called `reviews-access.yaml`, you can apply it to take effect:
 
 ```yaml
-kubectl --context $MGMT_CONTEXT apply -f reviews-access.yaml
+kubectl --context $CONTEXT_1 apply -f reviews-access.yaml
 
 accesspolicy.networking.mesh.gloo.solo.io/reviews created
 ```
