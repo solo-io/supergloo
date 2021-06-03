@@ -18,9 +18,9 @@ meshctl cluster configure [flags]
 
 ```
       --cluster-name string                                        data plane cluster name (leave empty if this is the management cluster)
+      --context string                                             name of the kubernetes context
       --disable-prompt                                             Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.
   -h, --help                                                       help for configure
-      --kubeContext string                                         name of the kubernetes context
       --kubeconfig string                                          path to the kubeconfig file
   -f, --meshctl-config-file $HOME/.gloo-mesh/meshctl-config.yaml   path to the meshctl config file. defaults to $HOME/.gloo-mesh/meshctl-config.yaml
 ```

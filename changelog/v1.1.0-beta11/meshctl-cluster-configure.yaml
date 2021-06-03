@@ -7,5 +7,5 @@ changelog:
   - type: NEW_FEATURE
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1584
     description: >
-      Add a `meshctl cluster list community` and `meshctl cluster list enterprise`
-      command that allows the user to list all the registered clusters.
+      Add a `meshctl cluster list` command that allows the user to list all
+      the registered clusters.
