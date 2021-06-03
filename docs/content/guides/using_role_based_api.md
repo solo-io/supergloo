@@ -15,10 +15,10 @@ This guide will have you create two example roles and bind them to users.
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
+* Gloo Mesh is [installed and running on `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
+* Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
 {{% notice note %}}
@@ -28,7 +28,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 Ensure you have the correct context names set in your environment:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
+MGMT_CONTEXT=your_management_plane_context (in this case cluster-1's context)
 ```
 
 ## Role-based API
@@ -63,7 +63,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: petstore
           namespace: default
   policy:
@@ -83,7 +83,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: petstore
           namespace: default
   policy:
@@ -147,7 +147,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: petstore
           namespace: default
   policy:
@@ -167,7 +167,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: petstore
           namespace: default
   policy:

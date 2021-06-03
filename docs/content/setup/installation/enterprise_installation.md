@@ -223,13 +223,13 @@ a cluster running a service mesh we would like Gloo Mesh to discover and configu
 the root cert, server cert, and signing cert. On the remote clusters, we just need the root cert.
 
 ```bash
-MGMT_CLUSTER=mgmt-cluster
-MGMT_CONTEXT=kind-mgmt-cluster
+MGMT_CLUSTER=cluster-1
+MGMT_CONTEXT=kind-cluster-1
 
-REMOTE_CLUSTER=remote-cluster
-REMOTE_CONTEXT=kind-remote-cluster
+REMOTE_CLUSTER=cluster-2
+REMOTE_CONTEXT=kind-cluster-2
 
-# ensure gloo-mesh namespace exists on both mgmt and remote clusters
+# ensure gloo-mesh namespace exists on both clusters
 for context in ${MGMT_CONTEXT} ${REMOTE_CONTEXT}; do
   kubectl --context ${context} create namespace gloo-mesh
 done
