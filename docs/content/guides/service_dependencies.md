@@ -9,9 +9,9 @@ weight: 30
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Gloo Mesh is [installed and running on the `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
+* Istio is [installed on both `cluster-1` and `cluster-2`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -62,17 +62,17 @@ spec:
       services:
       - name: reviews
         namespace: bookinfo
-        clusterName: remote-cluster
+        clusterName: cluster-2
       - name: reviews
         namespace: bookinfo
-        clusterName: mgmt-cluster
+        clusterName: cluster-1
 ```
 
 Semantically, this object declares that Kubernetes workloads with label `app: productpage` in the `bookinfo` namespace, on any cluster,
-depend on the Kubernetes service with name `reviews` in namespace `bookinfo` on both the `mgmt-cluster` and `remote-cluster`.
+depend on the Kubernetes service with name `reviews` in namespace `bookinfo` on both `cluster-1` and `cluster-2`.
 
-Assuming that the environment has a `productpage-v1` workload deployed to the `mgmt-cluster`,
-Gloo Mesh will translate this object into the following Istio Sidecar object on the `mgmt-cluster`:
+Assuming that the environment has a `productpage-v1` workload deployed to `cluster-1`,
+Gloo Mesh will translate this object into the following Istio Sidecar object on `cluster-1`:
 
 ```yaml
 apiVersion: networking.istio.io/v1beta1
@@ -84,7 +84,7 @@ spec:
   egress:
   - hosts:
     - '*/reviews.bookinfo.svc.cluster.local' # the local reviews service
-    - '*/reviews.bookinfo.svc.remote-cluster.soloio' # the federated remote reviews service
+    - '*/reviews.bookinfo.svc.cluster-2.soloio' # the federated remote reviews service
   workloadSelector:
     labels:
       app: productpage
