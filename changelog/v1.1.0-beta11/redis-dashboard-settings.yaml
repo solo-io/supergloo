@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/544
+    resolvesIssue: false
+    description: Adds redis options to the dashboard CRD.

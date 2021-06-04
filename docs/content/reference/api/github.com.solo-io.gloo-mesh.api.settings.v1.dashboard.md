@@ -252,6 +252,16 @@ OIDC configuration is discovered at <issuerUrl>/.well-known/openid-configuration
 
 
 
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| host | string |  | address of the redis. can be address:port or unix://path/to/unix.sock |
+  | db | int32 |  | db to use. can leave unset for db 0. |
+  | poolSize | int32 |  | size of the connection pool. can leave unset for default. defaults to 10 connections per every CPU |
+  | keyPrefix | string |  | Key prefix inside redis |
+  | cookieName | string |  | Cookie name to set and store the session id. If empty the default "__session" is used. |
+  | allowRefreshing | [google.protobuf.BoolValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.BoolValue" >}}) |  | When set, refresh expired id-tokens using the refresh-token. Defaults to true. Explicitly set to false to disable refreshing. |
+  
+
 
 
 
