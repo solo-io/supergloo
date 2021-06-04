@@ -27,53 +27,54 @@ meshctl demo istio-multicluster init --enterprise --license $GLOO_MESH_LICENSE_K
 
 The command will do the following:
 
-* Create two kind clusters: `mgmt-cluster` and `remote-cluster`
-* Install Gloo Mesh on the `mgmt-cluster`
-* Install Istio on both clusters
-* Register both clusters with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`
+* Create two kind clusters: `cluster-1` and `cluster-2`
+* Install Gloo Mesh on `cluster-1`. This makes `cluster-1` your *management cluster*.
+* Install Istio on both clusters.
+* Register both clusters with Gloo Mesh under the names `cluster-1` and `cluster-2`. This means that `cluster-1'
+is both your management cluster, and a managed cluster.
 * Deploy BookInfo sample application on both clusters under the `bookinfo` namespace
 
 ```shell
-Creating cluster mgmt-cluster with ingress port 32001
-Creating cluster "mgmt-cluster" ...
+Creating cluster cluster-1 with ingress port 32001
+Creating cluster "cluster-1" ...
  ✓ Ensuring node image (kindest/node:v1.17.5) �
  ✓ Preparing nodes ��
  ✓ Writing configuration ��
  ✓ Starting control-plane 🕹
  ✓ Installing CNI ��
  ✓ Installing StorageClass ��
-Set kubectl context to "kind-mgmt-cluster"
+Set kubectl context to "kind-cluster-1"
 You can now use your cluster with:
 
-kubectl cluster-info --context kind-mgmt-cluster
+kubectl cluster-info --context kind-cluster-1
 
 ...
 
-Creating cluster remote-cluster with ingress port 32000
-Creating cluster "remote-cluster" ...
+Creating cluster cluster-2 with ingress port 32000
+Creating cluster "cluster-2" ...
  ✓ Ensuring node image (kindest/node:v1.17.5) �
  ✓ Preparing nodes ��
  ✓ Writing configuration ��
  ✓ Starting control-plane 🕹
  ✓ Installing CNI ��
  ✓ Installing StorageClass ��
-Set kubectl context to "kind-remote-cluster"
+Set kubectl context to "kind-cluster-2"
 You can now use your cluster with:
 
-kubectl cluster-info --context kind-remote-cluster
+kubectl cluster-info --context kind-cluster-2
 ```
 
 To connect to each of the clusters, run the following:
 
 ```shell
-export MGMT_CONTEXT=kind-mgmt-cluster
-export REMOTE_CONTEXT=kind-remote-cluster
+export CONTEXT_1=kind-cluster-1
+export CONTEXT_2=kind-cluster-2
 ```
 
-Then you can run the following to connect to the mgmt-cluster cluster:
+Then you can run the following to connect to cluster-1:
 
 ```shell
-kubectl --context $MGMT_CONTEXT get po -n gloo-mesh
+kubectl --context $CONTEXT_1 get po -n gloo-mesh
 ```
 
 You should see Gloo Mesh installed:
