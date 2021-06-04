@@ -206,7 +206,6 @@ func (t *translator) initializeDestinationRule(
 			Subsets: trafficshift.MakeDestinationRuleSubsetsForDestination(
 				destination,
 				t.destinations,
-				sourceMeshInstallation.GetCluster(),
 			),
 		},
 	}
