@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fixes kubeconfig variable usage
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1616
