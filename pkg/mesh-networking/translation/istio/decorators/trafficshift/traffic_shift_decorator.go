@@ -261,7 +261,6 @@ func MakeDestinationRuleSubsetsForVirtualDestination(
 func MakeDestinationRuleSubsetsForDestination(
 	destination *discoveryv1.Destination,
 	allDestinations discoveryv1sets.DestinationSet,
-	sourceClusterName string,
 ) []*networkingv1alpha3spec.Subset {
 	subsets := makeDestinationRuleSubsets(
 		allDestinations,
@@ -274,39 +273,7 @@ func MakeDestinationRuleSubsetsForDestination(
 		},
 	)
 
-	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated Destination,
-	// which contain all the matching subset names for the remote destination rule.
-	// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
-	// Based on https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-	//
-	// If flat-networking is enabled, we leave the subset info as there is no ingress involved
-	if sourceClusterName != "" &&
-		sourceClusterName != destination.ClusterName &&
-		!destination.Status.GetAppliedFederation().GetFlatNetwork() {
-		for _, subset := range subsets {
-			// only the name of the subset matters here.
-			// the labels must match those on the ServiceEntry's endpoints.
-			subset.Labels = MakeFederatedSubsetLabel(destination.Spec.GetKubeService().Ref.ClusterName)
-			// we also remove the TrafficPolicy, leaving
-			// it to the server-side DestinationRule to enforce.
-			subset.TrafficPolicy = nil
-		}
-	}
-
 	return subsets
-}
-
-// clusterName corresponds to the cluster name for the federated Destination.
-//
-// NOTE(ilackarms): we use these labels to support federated subsets.
-// the values don't actually matter; but the subset names should
-// match those on the DestinationRule for the Destination in the
-// remote cluster.
-// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-func MakeFederatedSubsetLabel(clusterName string) map[string]string {
-	return map[string]string{
-		"cluster": clusterName,
-	}
 }
 
 func makeDestinationRuleSubsets(
