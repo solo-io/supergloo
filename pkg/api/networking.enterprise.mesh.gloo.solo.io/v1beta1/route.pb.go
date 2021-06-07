@@ -370,106 +370,6 @@ func (*RedirectAction_PathRedirect) isRedirectAction_PathRewriteSpecifier() {}
 
 func (*RedirectAction_PrefixRewrite) isRedirectAction_PathRewriteSpecifier() {}
 
-// Data source consisting of either a file or an inline value.
-type DataSource struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Specifier:
-	//	*DataSource_Filename
-	//	*DataSource_InlineBytes
-	//	*DataSource_InlineString
-	Specifier isDataSource_Specifier `protobuf_oneof:"specifier"`
-}
-
-func (x *DataSource) Reset() {
-	*x = DataSource{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DataSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DataSource) ProtoMessage() {}
-
-func (x *DataSource) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DataSource.ProtoReflect.Descriptor instead.
-func (*DataSource) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_rawDescGZIP(), []int{2}
-}
-
-func (m *DataSource) GetSpecifier() isDataSource_Specifier {
-	if m != nil {
-		return m.Specifier
-	}
-	return nil
-}
-
-func (x *DataSource) GetFilename() string {
-	if x, ok := x.GetSpecifier().(*DataSource_Filename); ok {
-		return x.Filename
-	}
-	return ""
-}
-
-func (x *DataSource) GetInlineBytes() []byte {
-	if x, ok := x.GetSpecifier().(*DataSource_InlineBytes); ok {
-		return x.InlineBytes
-	}
-	return nil
-}
-
-func (x *DataSource) GetInlineString() string {
-	if x, ok := x.GetSpecifier().(*DataSource_InlineString); ok {
-		return x.InlineString
-	}
-	return ""
-}
-
-type isDataSource_Specifier interface {
-	isDataSource_Specifier()
-}
-
-type DataSource_Filename struct {
-	// Local filesystem data source.
-	Filename string `protobuf:"bytes,1,opt,name=filename,proto3,oneof"`
-}
-
-type DataSource_InlineBytes struct {
-	// Bytes inlined in the configuration.
-	InlineBytes []byte `protobuf:"bytes,2,opt,name=inline_bytes,json=inlineBytes,proto3,oneof"`
-}
-
-type DataSource_InlineString struct {
-	// String inlined in the configuration.
-	InlineString string `protobuf:"bytes,3,opt,name=inline_string,json=inlineString,proto3,oneof"`
-}
-
-func (*DataSource_Filename) isDataSource_Specifier() {}
-
-func (*DataSource_InlineBytes) isDataSource_Specifier() {}
-
-func (*DataSource_InlineString) isDataSource_Specifier() {}
-
-// TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5a8bfa20dc3c85ecb61826d122696ecaa75dffa0/api/envoy/config/route/v4alpha/route_components.proto#L1396
-// Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 // DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
 type DirectResponseAction struct {
 	state         protoimpl.MessageState
@@ -480,19 +380,13 @@ type DirectResponseAction struct {
 	Status uint32 `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
 	// Specifies the content of the response body. If this setting is omitted,
 	// no body is included in the generated response.
-	//
-	// .. note::
-	//
-	//   Headers can be specified using *response_headers_to_add* in the enclosing
-	//   :ref:`envoy_api_msg_config.route.v4alpha.Route`, :ref:`envoy_api_msg_config.route.v4alpha.RouteConfiguration` or
-	//   :ref:`envoy_api_msg_config.route.v4alpha.VirtualHost`.
-	Body *DataSource `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
+	Body string `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
 }
 
 func (x *DirectResponseAction) Reset() {
 	*x = DirectResponseAction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[3]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -505,7 +399,7 @@ func (x *DirectResponseAction) String() string {
 func (*DirectResponseAction) ProtoMessage() {}
 
 func (x *DirectResponseAction) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[3]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -518,7 +412,7 @@ func (x *DirectResponseAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DirectResponseAction.ProtoReflect.Descriptor instead.
 func (*DirectResponseAction) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_rawDescGZIP(), []int{3}
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *DirectResponseAction) GetStatus() uint32 {
@@ -528,11 +422,11 @@ func (x *DirectResponseAction) GetStatus() uint32 {
 	return 0
 }
 
-func (x *DirectResponseAction) GetBody() *DataSource {
+func (x *DirectResponseAction) GetBody() string {
 	if x != nil {
 		return x.Body
 	}
-	return nil
+	return ""
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
@@ -551,7 +445,7 @@ type DelegateAction struct {
 func (x *DelegateAction) Reset() {
 	*x = DelegateAction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[4]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -564,7 +458,7 @@ func (x *DelegateAction) String() string {
 func (*DelegateAction) ProtoMessage() {}
 
 func (x *DelegateAction) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[4]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -577,7 +471,7 @@ func (x *DelegateAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DelegateAction.ProtoReflect.Descriptor instead.
 func (*DelegateAction) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_rawDescGZIP(), []int{4}
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DelegateAction) GetRefs() []*v12.ObjectRef {
@@ -609,7 +503,7 @@ type Route_RouteAction struct {
 func (x *Route_RouteAction) Reset() {
 	*x = Route_RouteAction{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[5]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -622,7 +516,7 @@ func (x *Route_RouteAction) String() string {
 func (*Route_RouteAction) ProtoMessage() {}
 
 func (x *Route_RouteAction) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[5]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -752,37 +646,26 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_pr
 	0x0a, 0x12, 0x50, 0x45, 0x52, 0x4d, 0x41, 0x4e, 0x45, 0x4e, 0x54, 0x5f, 0x52, 0x45, 0x44, 0x49,
 	0x52, 0x45, 0x43, 0x54, 0x10, 0x04, 0x42, 0x18, 0x0a, 0x16, 0x70, 0x61, 0x74, 0x68, 0x5f, 0x72,
 	0x65, 0x77, 0x72, 0x69, 0x74, 0x65, 0x5f, 0x73, 0x70, 0x65, 0x63, 0x69, 0x66, 0x69, 0x65, 0x72,
-	0x22, 0x83, 0x01, 0x0a, 0x0a, 0x44, 0x61, 0x74, 0x61, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12,
-	0x1c, 0x0a, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x48, 0x00, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a,
-	0x0c, 0x69, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x0b, 0x69, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x42, 0x79, 0x74,
-	0x65, 0x73, 0x12, 0x25, 0x0a, 0x0d, 0x69, 0x6e, 0x6c, 0x69, 0x6e, 0x65, 0x5f, 0x73, 0x74, 0x72,
-	0x69, 0x6e, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0c, 0x69, 0x6e, 0x6c,
-	0x69, 0x6e, 0x65, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x42, 0x0b, 0x0a, 0x09, 0x73, 0x70, 0x65,
-	0x63, 0x69, 0x66, 0x69, 0x65, 0x72, 0x22, 0x77, 0x0a, 0x14, 0x44, 0x69, 0x72, 0x65, 0x63, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16,
-	0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06,
-	0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x47, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
-	0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73,
-	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x44,
-	0x61, 0x74, 0x61, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x52, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x22,
-	0x88, 0x01, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x41, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x12, 0x30, 0x0a, 0x04, 0x72, 0x65, 0x66, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c,
-	0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x04,
-	0x72, 0x65, 0x66, 0x73, 0x12, 0x44, 0x0a, 0x08, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
-	0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
-	0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72,
-	0x52, 0x08, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x42, 0x5a, 0x5a, 0x54, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f,
-	0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61,
-	0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e,
-	0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
-	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74,
-	0x61, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x42, 0x0a, 0x14, 0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x12, 0x12, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x62, 0x6f, 0x64, 0x79, 0x22, 0x88, 0x01, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74,
+	0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x30, 0x0a, 0x04, 0x72, 0x65, 0x66, 0x73, 0x18,
+	0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76,
+	0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x52, 0x65, 0x66, 0x52, 0x04, 0x72, 0x65, 0x66, 0x73, 0x12, 0x44, 0x0a, 0x08, 0x73, 0x65, 0x6c,
+	0x65, 0x63, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73,
+	0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c,
+	0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x08, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x42,
+	0x5a, 0x5a, 0x54, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f,
+	0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f,
+	0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69,
+	0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65,
+	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -798,38 +681,36 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_p
 }
 
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_goTypes = []interface{}{
 	(RedirectAction_RedirectResponseCode)(0), // 0: networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode
 	(*Route)(nil),                            // 1: networking.enterprise.mesh.gloo.solo.io.Route
 	(*RedirectAction)(nil),                   // 2: networking.enterprise.mesh.gloo.solo.io.RedirectAction
-	(*DataSource)(nil),                       // 3: networking.enterprise.mesh.gloo.solo.io.DataSource
-	(*DirectResponseAction)(nil),             // 4: networking.enterprise.mesh.gloo.solo.io.DirectResponseAction
-	(*DelegateAction)(nil),                   // 5: networking.enterprise.mesh.gloo.solo.io.DelegateAction
-	(*Route_RouteAction)(nil),                // 6: networking.enterprise.mesh.gloo.solo.io.Route.RouteAction
-	(*v1.HttpMatcher)(nil),                   // 7: common.mesh.gloo.solo.io.HttpMatcher
-	(*v11.TrafficPolicySpec_Policy)(nil),     // 8: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
-	(*v12.ObjectRef)(nil),                    // 9: core.skv2.solo.io.ObjectRef
-	(*v1.ObjectSelector)(nil),                // 10: common.mesh.gloo.solo.io.ObjectSelector
-	(*v11.WeightedDestination)(nil),          // 11: networking.mesh.gloo.solo.io.WeightedDestination
+	(*DirectResponseAction)(nil),             // 3: networking.enterprise.mesh.gloo.solo.io.DirectResponseAction
+	(*DelegateAction)(nil),                   // 4: networking.enterprise.mesh.gloo.solo.io.DelegateAction
+	(*Route_RouteAction)(nil),                // 5: networking.enterprise.mesh.gloo.solo.io.Route.RouteAction
+	(*v1.HttpMatcher)(nil),                   // 6: common.mesh.gloo.solo.io.HttpMatcher
+	(*v11.TrafficPolicySpec_Policy)(nil),     // 7: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
+	(*v12.ObjectRef)(nil),                    // 8: core.skv2.solo.io.ObjectRef
+	(*v1.ObjectSelector)(nil),                // 9: common.mesh.gloo.solo.io.ObjectSelector
+	(*v11.WeightedDestination)(nil),          // 10: networking.mesh.gloo.solo.io.WeightedDestination
 }
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_depIdxs = []int32{
-	7,  // 0: networking.enterprise.mesh.gloo.solo.io.Route.matchers:type_name -> common.mesh.gloo.solo.io.HttpMatcher
-	6,  // 1: networking.enterprise.mesh.gloo.solo.io.Route.route_action:type_name -> networking.enterprise.mesh.gloo.solo.io.Route.RouteAction
+	6,  // 0: networking.enterprise.mesh.gloo.solo.io.Route.matchers:type_name -> common.mesh.gloo.solo.io.HttpMatcher
+	5,  // 1: networking.enterprise.mesh.gloo.solo.io.Route.route_action:type_name -> networking.enterprise.mesh.gloo.solo.io.Route.RouteAction
 	2,  // 2: networking.enterprise.mesh.gloo.solo.io.Route.redirect_action:type_name -> networking.enterprise.mesh.gloo.solo.io.RedirectAction
-	4,  // 3: networking.enterprise.mesh.gloo.solo.io.Route.direct_response_action:type_name -> networking.enterprise.mesh.gloo.solo.io.DirectResponseAction
-	5,  // 4: networking.enterprise.mesh.gloo.solo.io.Route.delegate_action:type_name -> networking.enterprise.mesh.gloo.solo.io.DelegateAction
-	8,  // 5: networking.enterprise.mesh.gloo.solo.io.Route.options:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
+	3,  // 3: networking.enterprise.mesh.gloo.solo.io.Route.direct_response_action:type_name -> networking.enterprise.mesh.gloo.solo.io.DirectResponseAction
+	4,  // 4: networking.enterprise.mesh.gloo.solo.io.Route.delegate_action:type_name -> networking.enterprise.mesh.gloo.solo.io.DelegateAction
+	7,  // 5: networking.enterprise.mesh.gloo.solo.io.Route.options:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
 	0,  // 6: networking.enterprise.mesh.gloo.solo.io.RedirectAction.response_code:type_name -> networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode
-	3,  // 7: networking.enterprise.mesh.gloo.solo.io.DirectResponseAction.body:type_name -> networking.enterprise.mesh.gloo.solo.io.DataSource
-	9,  // 8: networking.enterprise.mesh.gloo.solo.io.DelegateAction.refs:type_name -> core.skv2.solo.io.ObjectRef
-	10, // 9: networking.enterprise.mesh.gloo.solo.io.DelegateAction.selector:type_name -> common.mesh.gloo.solo.io.ObjectSelector
-	11, // 10: networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.destinations:type_name -> networking.mesh.gloo.solo.io.WeightedDestination
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	8,  // 7: networking.enterprise.mesh.gloo.solo.io.DelegateAction.refs:type_name -> core.skv2.solo.io.ObjectRef
+	9,  // 8: networking.enterprise.mesh.gloo.solo.io.DelegateAction.selector:type_name -> common.mesh.gloo.solo.io.ObjectSelector
+	10, // 9: networking.enterprise.mesh.gloo.solo.io.Route.RouteAction.destinations:type_name -> networking.mesh.gloo.solo.io.WeightedDestination
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_init() }
@@ -863,18 +744,6 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_p
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DataSource); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DirectResponseAction); i {
 			case 0:
 				return &v.state
@@ -886,7 +755,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_p
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DelegateAction); i {
 			case 0:
 				return &v.state
@@ -898,7 +767,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_p
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Route_RouteAction); i {
 			case 0:
 				return &v.state
@@ -921,18 +790,13 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_p
 		(*RedirectAction_PathRedirect)(nil),
 		(*RedirectAction_PrefixRewrite)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_msgTypes[2].OneofWrappers = []interface{}{
-		(*DataSource_Filename)(nil),
-		(*DataSource_InlineBytes)(nil),
-		(*DataSource_InlineString)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_route_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

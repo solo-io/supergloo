@@ -18,7 +18,6 @@ title: "route.proto"
 
 
 ## Table of Contents
-  - [DataSource](#networking.enterprise.mesh.gloo.solo.io.DataSource)
   - [DelegateAction](#networking.enterprise.mesh.gloo.solo.io.DelegateAction)
   - [DirectResponseAction](#networking.enterprise.mesh.gloo.solo.io.DirectResponseAction)
   - [RedirectAction](#networking.enterprise.mesh.gloo.solo.io.RedirectAction)
@@ -27,23 +26,6 @@ title: "route.proto"
 
   - [RedirectAction.RedirectResponseCode](#networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode)
 
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.DataSource"></a>
-
-### DataSource
-Data source consisting of either a file or an inline value.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| filename | string |  | Local filesystem data source. |
-  | inlineBytes | bytes |  | Bytes inlined in the configuration. |
-  | inlineString | string |  | String inlined in the configuration. |
-  
 
 
 
@@ -68,13 +50,13 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 <a name="networking.enterprise.mesh.gloo.solo.io.DirectResponseAction"></a>
 
 ### DirectResponseAction
-TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5a8bfa20dc3c85ecb61826d122696ecaa75dffa0/api/envoy/config/route/v4alpha/route_components.proto#L1396 Note: This message needs to be at this level (rather than nested) due to cue restrictions. DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
+DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | status | uint32 |  | Specifies the HTTP response status to be returned. |
-  | body | [networking.enterprise.mesh.gloo.solo.io.DataSource]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DataSource" >}}) |  | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response.<br>.. note::<br>  Headers can be specified using *response_headers_to_add* in the enclosing   :ref:`envoy_api_msg_config.route.v4alpha.Route`, :ref:`envoy_api_msg_config.route.v4alpha.RouteConfiguration` or   :ref:`envoy_api_msg_config.route.v4alpha.VirtualHost`. |
+  | body | string |  | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response. |
   
 
 

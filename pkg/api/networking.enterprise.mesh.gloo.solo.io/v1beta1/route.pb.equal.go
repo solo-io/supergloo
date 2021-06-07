@@ -217,66 +217,6 @@ func (m *RedirectAction) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *DataSource) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DataSource)
-	if !ok {
-		that2, ok := that.(DataSource)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.Specifier.(type) {
-
-	case *DataSource_Filename:
-		if _, ok := target.Specifier.(*DataSource_Filename); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetFilename(), target.GetFilename()) != 0 {
-			return false
-		}
-
-	case *DataSource_InlineBytes:
-		if _, ok := target.Specifier.(*DataSource_InlineBytes); !ok {
-			return false
-		}
-
-		if bytes.Compare(m.GetInlineBytes(), target.GetInlineBytes()) != 0 {
-			return false
-		}
-
-	case *DataSource_InlineString:
-		if _, ok := target.Specifier.(*DataSource_InlineString); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetInlineString(), target.GetInlineString()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.Specifier != target.Specifier {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *DirectResponseAction) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -301,14 +241,8 @@ func (m *DirectResponseAction) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetBody()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetBody()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetBody(), target.GetBody()) {
-			return false
-		}
+	if strings.Compare(m.GetBody(), target.GetBody()) != 0 {
+		return false
 	}
 
 	return true

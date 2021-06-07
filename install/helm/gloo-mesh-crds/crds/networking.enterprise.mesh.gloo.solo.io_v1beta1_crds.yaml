@@ -1573,42 +1573,7 @@ spec:
                                             description: |-
                                               Specifies the content of the response body. If this setting is omitted,
                                               no body is included in the generated response.
-
-                                              .. note::
-
-                                                Headers can be specified using *response_headers_to_add* in the enclosing
-                                                :ref:`envoy_api_msg_config.route.v4alpha.Route`, :ref:`envoy_api_msg_config.route.v4alpha.RouteConfiguration` or
-                                                :ref:`envoy_api_msg_config.route.v4alpha.VirtualHost`.
-                                            oneOf:
-                                            - not:
-                                                anyOf:
-                                                - required:
-                                                  - filename
-                                                - required:
-                                                  - inlineBytes
-                                                - required:
-                                                  - inlineString
-                                            - required:
-                                              - filename
-                                            - required:
-                                              - inlineBytes
-                                            - required:
-                                              - inlineString
-                                            properties:
-                                              filename:
-                                                description: Local filesystem data
-                                                  source.
-                                                type: string
-                                              inlineBytes:
-                                                description: Bytes inlined in the
-                                                  configuration.
-                                                format: binary
-                                                type: string
-                                              inlineString:
-                                                description: String inlined in the
-                                                  configuration.
-                                                type: string
-                                            type: object
+                                            type: string
                                           status:
                                             description: Specifies the HTTP response
                                               status to be returned.
@@ -3694,39 +3659,7 @@ spec:
                         description: |-
                           Specifies the content of the response body. If this setting is omitted,
                           no body is included in the generated response.
-
-                          .. note::
-
-                            Headers can be specified using *response_headers_to_add* in the enclosing
-                            :ref:`envoy_api_msg_config.route.v4alpha.Route`, :ref:`envoy_api_msg_config.route.v4alpha.RouteConfiguration` or
-                            :ref:`envoy_api_msg_config.route.v4alpha.VirtualHost`.
-                        oneOf:
-                        - not:
-                            anyOf:
-                            - required:
-                              - filename
-                            - required:
-                              - inlineBytes
-                            - required:
-                              - inlineString
-                        - required:
-                          - filename
-                        - required:
-                          - inlineBytes
-                        - required:
-                          - inlineString
-                        properties:
-                          filename:
-                            description: Local filesystem data source.
-                            type: string
-                          inlineBytes:
-                            description: Bytes inlined in the configuration.
-                            format: binary
-                            type: string
-                          inlineString:
-                            description: String inlined in the configuration.
-                            type: string
-                        type: object
+                        type: string
                       status:
                         description: Specifies the HTTP response status to be returned.
                         maximum: 4294967295
@@ -4687,39 +4620,7 @@ spec:
                         description: |-
                           Specifies the content of the response body. If this setting is omitted,
                           no body is included in the generated response.
-
-                          .. note::
-
-                            Headers can be specified using *response_headers_to_add* in the enclosing
-                            :ref:`envoy_api_msg_config.route.v4alpha.Route`, :ref:`envoy_api_msg_config.route.v4alpha.RouteConfiguration` or
-                            :ref:`envoy_api_msg_config.route.v4alpha.VirtualHost`.
-                        oneOf:
-                        - not:
-                            anyOf:
-                            - required:
-                              - filename
-                            - required:
-                              - inlineBytes
-                            - required:
-                              - inlineString
-                        - required:
-                          - filename
-                        - required:
-                          - inlineBytes
-                        - required:
-                          - inlineString
-                        properties:
-                          filename:
-                            description: Local filesystem data source.
-                            type: string
-                          inlineBytes:
-                            description: Bytes inlined in the configuration.
-                            format: binary
-                            type: string
-                          inlineString:
-                            description: String inlined in the configuration.
-                            type: string
-                        type: object
+                        type: string
                       status:
                         description: Specifies the HTTP response status to be returned.
                         maximum: 4294967295
