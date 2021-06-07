@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
@@ -181,7 +180,6 @@ func (t *translator) translateKubeServiceDestination(
 	// KubeService scenario
 	meshKubeService := destination.Spec.GetKubeService()
 	istioMesh := mesh.Spec.GetIstio()
-	istioCluster := istioMesh.Installation.Cluster
 
 	// Guaranteed to have at least one gateway passed by caller
 	ingressGateway := istioMesh.IngressGateways[0]
@@ -198,7 +196,7 @@ func (t *translator) translateKubeServiceDestination(
 		virtualMesh.Spec,
 	)
 
-	endpointPorts := make(map[string]uint32)
+	remoteIngressTlsPort := make(map[string]uint32)
 	var ports []*networkingv1alpha3spec.Port
 	for _, port := range destination.Spec.GetKubeService().GetPorts() {
 		portName := port.Name
@@ -211,21 +209,21 @@ func (t *translator) translateKubeServiceDestination(
 			Protocol: ConvertKubePortProtocol(port),
 			Name:     portName,
 		})
-		endpointPorts[portName] = ingressGateway.ExternalTlsPort
+		remoteIngressTlsPort[portName] = ingressGateway.ExternalTlsPort
 	}
 
-	// NOTE(ilackarms): we use these labels to support federated subsets.
-	// the values don't actually matter; but the subset names should
-	// match those on the DestinationRule for the Destination in the
-	// remote cluster.
-	// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-	clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
-
-	endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
-		Address: ingressGateway.ExternalAddress,
-		Ports:   endpointPorts,
-		Labels:  clusterLabels,
-	}}
+	var workloadEntries []*networkingv1alpha3spec.WorkloadEntry
+	// construct a WorkloadEntry for each endpoint (i.e. backing Workload) for the Destination
+	for _, endpointSubset := range meshKubeService.EndpointSubsets {
+		for _, endpoint := range endpointSubset.Endpoints {
+			workloadEntry := &networkingv1alpha3spec.WorkloadEntry{
+				Address: ingressGateway.ExternalAddress,
+				Ports:   remoteIngressTlsPort,
+				Labels:  endpoint.Labels,
+			}
+			workloadEntries = append(workloadEntries, workloadEntry)
+		}
+	}
 
 	var remoteDestinationRule *networkingv1alpha3.DestinationRule
 	// translate remote resources for all meshes in the virtual mesh
@@ -267,7 +265,7 @@ func (t *translator) translateKubeServiceDestination(
 				Hosts:      []string{federatedHostname},
 				Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
 				Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
-				Endpoints:  endpoints,
+				Endpoints:  workloadEntries,
 				Ports:      ports,
 			},
 		}
@@ -303,7 +301,7 @@ func (t *translator) translateKubeServiceDestination(
 
 	// translate local resources
 	if len(destination.Status.AppliedFederation.GetFederatedToMeshes()) != 0 {
-		localServiceEntry, localDestinationRule := translateLocalDestinationFederationResources(destination, mesh, ports, clusterLabels, remoteDestinationRule)
+		localServiceEntry, localDestinationRule := translateLocalDestinationFederationResources(destination, mesh, ports, remoteDestinationRule)
 		metautils.AppendParent(t.ctx, localServiceEntry, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
 		metautils.AppendParent(t.ctx, localDestinationRule, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
 		outputs.AddServiceEntries(localServiceEntry)
@@ -316,11 +314,34 @@ func translateLocalDestinationFederationResources(
 	destination *discoveryv1.Destination,
 	destinationMesh *discoveryv1.Mesh,
 	serviceEntryPorts []*networkingv1alpha3spec.Port,
-	serviceEntryEndpointLabels map[string]string,
 	remoteDestinationRule *networkingv1alpha3.DestinationRule,
 ) (*networkingv1alpha3.ServiceEntry, *networkingv1alpha3.DestinationRule) {
 	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
 	destinationIstioMesh := destinationMesh.Spec.GetIstio()
+
+	var workloadEntries []*networkingv1alpha3spec.WorkloadEntry
+	// construct a WorkloadEntry for each endpoint (i.e. backing Workload) for the Destination
+	for _, endpointSubset := range destination.Spec.GetKubeService().EndpointSubsets {
+		for _, endpoint := range endpointSubset.Endpoints {
+
+			ports := map[string]uint32{}
+			for _, port := range endpointSubset.Ports {
+				portName := port.Name
+				// fall back to protocol for port name if k8s port name is unpopulated
+				if portName == "" {
+					portName = port.Protocol
+				}
+				ports[portName] = port.Port
+			}
+
+			workloadEntry := &networkingv1alpha3spec.WorkloadEntry{
+				Address: endpoint.IpAddress,
+				Ports:   ports,
+				Labels:  endpoint.Labels,
+			}
+			workloadEntries = append(workloadEntries, workloadEntry)
+		}
+	}
 
 	se := &networkingv1alpha3.ServiceEntry{
 		ObjectMeta: metav1.ObjectMeta{
@@ -336,15 +357,8 @@ func translateLocalDestinationFederationResources(
 			ExportTo:   []string{"."},
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
 			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
-			Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
-				{
-					// map to the local hostname
-					Address: destination.Status.LocalFqdn,
-					// needed for cross cluster subset routing
-					Labels: serviceEntryEndpointLabels,
-				},
-			},
-			Ports: serviceEntryPorts,
+			Endpoints:  workloadEntries,
+			Ports:      serviceEntryPorts,
 		},
 	}
 
