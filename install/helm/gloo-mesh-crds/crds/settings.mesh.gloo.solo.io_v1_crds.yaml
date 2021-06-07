@@ -390,6 +390,34 @@ spec:
                           type: object
                         redis:
                           description: Store the session data in a Redis instance.
+                          properties:
+                            allowRefreshing:
+                              description: |-
+                                When set, refresh expired id-tokens using the refresh-token. Defaults to true.
+                                Explicitly set to false to disable refreshing.
+                              nullable: true
+                              type: boolean
+                            cookieName:
+                              description: Cookie name to set and store the session
+                                id. If empty the default "__session" is used.
+                              type: string
+                            db:
+                              description: db to use. can leave unset for db 0.
+                              format: int32
+                              type: integer
+                            host:
+                              description: address of the redis. can be address:port
+                                or unix://path/to/unix.sock
+                              type: string
+                            keyPrefix:
+                              description: Key prefix inside redis
+                              type: string
+                            poolSize:
+                              description: |-
+                                size of the connection pool. can leave unset for default.
+                                defaults to 10 connections per every CPU
+                              format: int32
+                              type: integer
                           type: object
                       type: object
                     tokenEndpointQueryParams:

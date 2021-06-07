@@ -531,6 +531,48 @@ func (m *SessionConfig_RedisSession) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
+	if _, err = hasher.Write([]byte(m.GetHost())); err != nil {
+		return 0, err
+	}
+
+	err = binary.Write(hasher, binary.LittleEndian, m.GetDb())
+	if err != nil {
+		return 0, err
+	}
+
+	err = binary.Write(hasher, binary.LittleEndian, m.GetPoolSize())
+	if err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetKeyPrefix())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetCookieName())); err != nil {
+		return 0, err
+	}
+
+	if h, ok := interface{}(m.GetAllowRefreshing()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("AllowRefreshing")); err != nil {
+			return 0, err
+		}
+		if _, err = h.Hash(hasher); err != nil {
+			return 0, err
+		}
+	} else {
+		if fieldValue, err := hashstructure.Hash(m.GetAllowRefreshing(), nil); err != nil {
+			return 0, err
+		} else {
+			if _, err = hasher.Write([]byte("AllowRefreshing")); err != nil {
+				return 0, err
+			}
+			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				return 0, err
+			}
+		}
+	}
+
 	return hasher.Sum64(), nil
 }
 

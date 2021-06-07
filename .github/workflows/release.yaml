@@ -20,7 +20,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - name: Setup Cache
         uses: actions/cache@v1
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - name: Setup Cache
         uses: actions/cache@v1
         with:
@@ -86,7 +86,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - name: Install Protoc
         uses: solo-io/setup-protoc@master
         with:

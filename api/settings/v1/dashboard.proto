@@ -26,7 +26,27 @@ message DashboardSpec {
 message SessionConfig {
   message CookieSession {}
 
-  message RedisSession {}
+  message RedisSession {
+    // address of the redis. can be address:port or unix://path/to/unix.sock
+    string host = 1;
+
+    // db to use. can leave unset for db 0.
+    int32 db = 2;
+
+    // size of the connection pool. can leave unset for default.
+    // defaults to 10 connections per every CPU
+    int32 pool_size = 3;
+
+    // Key prefix inside redis
+    string key_prefix = 4;
+
+    // Cookie name to set and store the session id. If empty the default "__session" is used.
+    string cookie_name = 5;
+
+    // When set, refresh expired id-tokens using the refresh-token. Defaults to true.
+    // Explicitly set to false to disable refreshing.
+    google.protobuf.BoolValue allow_refreshing = 6;
+  }
 
   message CookieOptions {
     // Max age of the cookie. If unset, the default of 30 days will be
