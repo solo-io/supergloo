@@ -2,8 +2,9 @@ package destinationrule_test
 
 import (
 	"context"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	"sort"
+
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
