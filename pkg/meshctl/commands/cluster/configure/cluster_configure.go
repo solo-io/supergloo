@@ -20,10 +20,15 @@ func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "configure",
 		Short: "Configure Kubernetes Clusters registered with Gloo Mesh.",
-		Long:  "Create a mapping of clusters to kubeconfig entries in ${HOME}/.gloo-mesh/meshctl-config.yaml.",
+		Long: `Create a mapping of clusters to kubeconfig entries in ${HOME}/.gloo-mesh/meshctl-config.yaml.
+
+There are two modes for this - interactive and non-interactive. Each data plane cluster should be configured with
+a cluster name. Note that if a cluster is both a management and data plane cluster, it will need to be configured twice.`,
+		Example: " meshctl cluster configure --disable-prompt --kubeconfig ${HOME}/.kube/config --kubecontext cluster1 ## Registers a management plane cluster\n" +
+			" meshctl cluster configure --disable-prompt --cluster-name cluster2 --kubeconfig ${HOME}/.kube/config --kubecontext cluster2 ## Registers a data plane cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.disablePrompt {
-				if opts.kubeConfigFilePath == "" || opts.kubeContext == "" {
+				if opts.kubeconfig == "" || opts.kubecontext == "" {
 					return eris.Errorf("must pass in additional flags when configuring in non-interactive mode")
 				}
 				return configure(opts)
@@ -38,10 +43,10 @@ func Command(ctx context.Context) *cobra.Command {
 type options struct {
 	meshctlConfigPath string
 
-	disablePrompt      bool
-	clusterName        string
-	kubeConfigFilePath string
-	kubeContext        string
+	disablePrompt bool
+	clusterName   string
+	kubeconfig    string
+	kubecontext   string
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
@@ -51,10 +56,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
 	flags.StringVar(&o.clusterName, "cluster-name", "",
 		"data plane cluster name (leave empty if this is the management cluster)")
-	flags.StringVar(&o.kubeConfigFilePath, "kubeconfig", "",
-		"path to the kubeconfig file")
-	flags.StringVar(&o.kubeContext, "context", "",
-		"name of the kubernetes context")
+	utils.AddKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
 }
 
 func configure(opts *options) error {
@@ -62,26 +64,26 @@ func configure(opts *options) error {
 	if err != nil {
 		return err
 	}
-	if err = validateKubeConfigExists(opts.kubeConfigFilePath); err != nil {
+	if err = validateKubeConfigExists(opts.kubeconfig); err != nil {
 		return err
 	}
-	validContexts, err := getKubeContextOptions(opts.kubeConfigFilePath)
+	validContexts, err := getKubeContextOptions(opts.kubeconfig)
 	if err != nil {
 		return err
 	}
 	valid := false
 	for _, context := range validContexts {
-		if opts.kubeContext == context {
+		if opts.kubecontext == context {
 			valid = true
 			break
 		}
 	}
 	if !valid {
-		return eris.Errorf("context %v does not exist in kubeconfig file %s", opts.kubeContext, opts.kubeConfigFilePath)
+		return eris.Errorf("context %v does not exist in kubeconfig file %s", opts.kubecontext, opts.kubeconfig)
 	}
 	cluster := utils.MeshctlCluster{
-		KubeConfig:  opts.kubeConfigFilePath,
-		KubeContext: opts.kubeContext,
+		KubeConfig:  opts.kubeconfig,
+		KubeContext: opts.kubecontext,
 	}
 	if opts.clusterName != "" {
 		if err := config.AddDataPlaneCluster(opts.clusterName, cluster); err != nil {
