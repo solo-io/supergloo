@@ -24,6 +24,7 @@
 
   - [Status.State](#core.skv2.solo.io.Status.State)
 
+  - [File-level Extensions](#core.proto-extensions)
 
 
 
@@ -135,6 +136,14 @@
 
 
  <!-- end enums -->
+
+
+<a name="core.proto-extensions"></a>
+
+### File-level Extensions
+| Extension | Type | Base | Number | Description |
+| --------- | ---- | ---- | ------ | ----------- |
+| disable_openapi_validation_schema | bool | .google.protobuf.FileOptions | 10001 |  |
 
  <!-- end HasExtensions -->
 
