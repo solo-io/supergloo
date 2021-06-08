@@ -99,7 +99,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 		}
 		var trafficShiftDestination *networkingv1alpha3spec.HTTPRouteDestination
 		switch destinationType := weightedDest.DestinationType.(type) {
-		case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+		case *networkingv1.WeightedDestination_KubeService:
 			var err error
 			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
@@ -110,7 +110,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			if err != nil {
 				return nil, err
 			}
-		case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
+		case *networkingv1.WeightedDestination_VirtualDestination_:
 			var err error
 			trafficShiftDestination, err = d.buildVirtualDestinationDestination(
 				destinationType.VirtualDestination,
@@ -130,7 +130,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 }
 
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
-	kubeDest *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination,
+	kubeDest *networkingv1.WeightedDestination_KubeDestination,
 	destination *discoveryv1.Destination,
 	weight uint32,
 	sourceClusterName string,
@@ -196,7 +196,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 }
 
 func (d *trafficShiftDecorator) buildVirtualDestinationDestination(
-	virtualDestinationDest *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference,
+	virtualDestinationDest *networkingv1.WeightedDestination_VirtualDestination,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	virtualDestination, err := d.virtualDestinations.Find(ezkube.MakeObjectRef(virtualDestinationDest))
@@ -256,9 +256,9 @@ func MakeDestinationRuleSubsets(
 	for _, requiredSubset := range requiredSubsets {
 		for _, dest := range requiredSubset.TrafficShift.Destinations {
 			switch destType := dest.DestinationType.(type) {
-			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+			case *networkingv1.WeightedDestination_KubeService:
 				appendUniqueSubset(destType.KubeService.Subset)
-			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
+			case *networkingv1.WeightedDestination_VirtualDestination_:
 				appendUniqueSubset(destType.VirtualDestination.Subset)
 			}
 		}
