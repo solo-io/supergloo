@@ -137,41 +137,15 @@ var _ = Describe("FederationTranslator", func() {
 		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1.DestinationSpec_KubeService{
-						Ref: backingService,
-						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-							{
-								Port:     1234,
-								Protocol: "TCP", // translated ServiceEntry should fall back on protocol for port name because name isn't specified here
-							},
-						},
-						EndpointSubsets: []*discoveryv1.DestinationSpec_KubeService_EndpointsSubset{
-							{
-								Endpoints: []*discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
-									{
-										IpAddress: "192.168.21.1",
-										Labels: map[string]string{
-											"version": "v1",
-										},
-									},
-									{
-										IpAddress: "192.168.21.2",
-										Labels: map[string]string{
-											"version": "v2",
-										},
-									},
-								},
-								Ports: []*discoveryv1.DestinationSpec_KubeService_EndpointPort{
-									{
-										Port:     1234,
-										Protocol: "TCP",
-									},
-								},
-							},
+				Type: &discoveryv1.DestinationSpec_KubeService_{KubeService: &discoveryv1.DestinationSpec_KubeService{
+					Ref: backingService,
+					Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+						{
+							Port:     1234,
+							Protocol: "TCP", // translated ServiceEntry should fall back on protocol for port name because name isn't specified here
 						},
 					},
-				},
+				}},
 				Mesh: destinationMeshRef,
 			},
 			// include some applied subsets
@@ -212,13 +186,13 @@ var _ = Describe("FederationTranslator", func() {
 					{
 						Name: "version-v1",
 						Labels: map[string]string{
-							"version": "v1",
+							"cluster": "remote-cluster",
 						},
 					},
 					{
 						Name: "version-v2",
 						Labels: map[string]string{
-							"version": "v2",
+							"cluster": "remote-cluster",
 						},
 					},
 				},
@@ -270,14 +244,7 @@ var _ = Describe("FederationTranslator", func() {
 						Ports: map[string]uint32{
 							"TCP": 8181,
 						},
-						Labels: map[string]string{"version": "v1"},
-					},
-					{
-						Address: "mesh-gateway.dns.name",
-						Ports: map[string]uint32{
-							"TCP": 8181,
-						},
-						Labels: map[string]string{"version": "v2"},
+						Labels: map[string]string{"cluster": "cluster"},
 					},
 				},
 			},
@@ -308,17 +275,9 @@ var _ = Describe("FederationTranslator", func() {
 				Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
 					{
 						// map to the local hostname
-						Address: "192.168.21.1",
+						Address: destination.Status.LocalFqdn,
 						// needed for cross cluster subset routing
-						Labels: map[string]string{"version": "v1"},
-						Ports:  map[string]uint32{"TCP": 1234},
-					},
-					{
-						// map to the local hostname
-						Address: "192.168.21.2",
-						// needed for cross cluster subset routing
-						Labels: map[string]string{"version": "v2"},
-						Ports:  map[string]uint32{"TCP": 1234},
+						Labels: expectedRemoteServiceEntry.Spec.Endpoints[0].Labels,
 					},
 				},
 				Ports: expectedRemoteServiceEntry.Spec.Ports,

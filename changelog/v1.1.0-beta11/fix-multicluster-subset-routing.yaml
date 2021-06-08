@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Fix multicluster subset routing.
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/645

@@ -175,7 +175,6 @@ func FederationTest() {
 
 			// check we can eventually hit the v3 subset
 			Eventually(CurlReviews, "30s", "1s").Should(ContainSubstring(`"color": "red"`))
-			Consistently(CurlReviews).Should(ContainSubstring(`"color": "red"`))
 		})
 	})
 
