@@ -926,6 +926,167 @@ func (m *TrafficPolicySpec_Policy_Ratelimit) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_Policy_MultiDestination_WeightedDestination)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetWeight() != target.GetWeight() {
+		return false
+	}
+
+	switch m.DestinationType.(type) {
+
+	case *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+		if _, ok := target.DestinationType.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetKubeService()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetKubeService(), target.GetKubeService()) {
+				return false
+			}
+		}
+
+	case *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
+		if _, ok := target.DestinationType.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetVirtualDestination()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVirtualDestination()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetVirtualDestination(), target.GetVirtualDestination()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.DestinationType != target.DestinationType {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetClusterName(), target.GetClusterName()) != 0 {
+		return false
+	}
+
+	if len(m.GetSubset()) != len(target.GetSubset()) {
+		return false
+	}
+	for k, v := range m.GetSubset() {
+
+		if strings.Compare(v, target.GetSubset()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if m.GetPort() != target.GetPort() {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if len(m.GetSubset()) != len(target.GetSubset()) {
+		return false
+	}
+	for k, v := range m.GetSubset() {
+
+		if strings.Compare(v, target.GetSubset()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *TrafficPolicySpec_Policy_FaultInjection_Abort) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

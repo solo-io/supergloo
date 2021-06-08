@@ -57,7 +57,7 @@ func forwardDashboard(ctx context.Context, kubeconfigPath, kubectx, namespace st
 	if err != nil {
 		return err
 	}
-	portFwdCmd, err := forwardPort(namespace, fmt.Sprint(localPort), staticPort)
+	portFwdCmd, err := forwardPort(kubeconfigPath, kubectx, namespace, fmt.Sprint(localPort), staticPort)
 	if err != nil {
 		return err
 	}
@@ -106,10 +106,21 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, namespace strin
 	return staticPort, nil
 }
 
-func forwardPort(namespace, localPort, kubePort string) (*exec.Cmd, error) {
-	cmd := exec.Command(
-		"kubectl", "port-forward", "-n", namespace, "deployment/dashboard", localPort+":"+kubePort,
-	)
+func forwardPort(kubeconfigPath, kubectx, namespace, localPort, kubePort string) (*exec.Cmd, error) {
+	cmdArgs := []string{
+		"port-forward",
+		"-n",
+		namespace,
+		"deployment/dashboard",
+		localPort + ":" + kubePort,
+	}
+	if kubectx != "" {
+		cmdArgs = append(cmdArgs, "--context", kubectx)
+	}
+	if kubeconfigPath != "" {
+		cmdArgs = append(cmdArgs, "--kubeconfig", kubeconfigPath)
+	}
+	cmd := exec.Command("kubectl", cmdArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {

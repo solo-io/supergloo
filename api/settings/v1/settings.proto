@@ -7,6 +7,10 @@ option (extproto.equal_all) = true;
 
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 
 // Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
 message SettingsSpec {
@@ -24,7 +28,6 @@ message SettingsSpec {
 
     // Enable and configure use of Relay mode to communicate with remote clusters. This is an enterprise-only feature.
     RelaySettings relay = 4;
-
 }
 
 // RelaySettings contains options for configuring Gloo Mesh to use Relay for cluster management.

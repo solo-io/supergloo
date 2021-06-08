@@ -981,26 +981,11 @@ spec:
                                         - kubeService
                                       - required:
                                         - virtualDestination
-                                      - required:
-                                        - static
-                                      - required:
-                                        - clusterHeader
                                   - required:
                                     - kubeService
                                   - required:
                                     - virtualDestination
-                                  - required:
-                                    - static
-                                  - required:
-                                    - clusterHeader
                                   properties:
-                                    clusterHeader:
-                                      description: |-
-                                        Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
-                                        If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
-                                        Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
-                                        {{/* NOTE: unimplemented */}}
-                                      type: string
                                     kubeService:
                                       description: Specify a Kubernetes Service.
                                       properties:
@@ -1027,58 +1012,6 @@ spec:
                                           description: Specify, by labels, a subset
                                             of service instances to route to.
                                           type: object
-                                      type: object
-                                    options:
-                                      description: |-
-                                        additional options / config for a route which will be applied
-                                        when this destination is selected.
-                                      properties:
-                                        headerManipulation:
-                                          description: manipualte headers on traffic
-                                            sent to this destination
-                                          properties:
-                                            appendRequestHeaders:
-                                              additionalProperties:
-                                                type: string
-                                              description: Additional HTTP headers
-                                                to add before forwarding a request
-                                                to the destination service.
-                                              type: object
-                                            appendResponseHeaders:
-                                              additionalProperties:
-                                                type: string
-                                              description: Additional HTTP headers
-                                                to add before returning a response
-                                                to the caller.
-                                              type: object
-                                            removeRequestHeaders:
-                                              description: HTTP headers to remove
-                                                before forwarding a request to the
-                                                destination service.
-                                              items:
-                                                type: string
-                                              type: array
-                                            removeResponseHeaders:
-                                              description: HTTP headers to remove
-                                                before returning a response to the
-                                                caller.
-                                              items:
-                                                type: string
-                                              type: array
-                                          type: object
-                                      type: object
-                                    static:
-                                      description: Reference to a gloo mesh Static
-                                        Destination
-                                      properties:
-                                        name:
-                                          description: name of the resource being
-                                            referenced
-                                          type: string
-                                        namespace:
-                                          description: namespace of the resource being
-                                            referenced
-                                          type: string
                                       type: object
                                     virtualDestination:
                                       description: Specify a VirtualDestination.
@@ -1194,26 +1127,11 @@ spec:
                                 - kubeService
                               - required:
                                 - virtualDestination
-                              - required:
-                                - static
-                              - required:
-                                - clusterHeader
                           - required:
                             - kubeService
                           - required:
                             - virtualDestination
-                          - required:
-                            - static
-                          - required:
-                            - clusterHeader
                           properties:
-                            clusterHeader:
-                              description: |-
-                                Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
-                                If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
-                                Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
-                                {{/* NOTE: unimplemented */}}
-                              type: string
                             kubeService:
                               description: Specify a Kubernetes Service.
                               properties:
@@ -1240,52 +1158,6 @@ spec:
                                   description: Specify, by labels, a subset of service
                                     instances to route to.
                                   type: object
-                              type: object
-                            options:
-                              description: |-
-                                additional options / config for a route which will be applied
-                                when this destination is selected.
-                              properties:
-                                headerManipulation:
-                                  description: manipualte headers on traffic sent
-                                    to this destination
-                                  properties:
-                                    appendRequestHeaders:
-                                      additionalProperties:
-                                        type: string
-                                      description: Additional HTTP headers to add
-                                        before forwarding a request to the destination
-                                        service.
-                                      type: object
-                                    appendResponseHeaders:
-                                      additionalProperties:
-                                        type: string
-                                      description: Additional HTTP headers to add
-                                        before returning a response to the caller.
-                                      type: object
-                                    removeRequestHeaders:
-                                      description: HTTP headers to remove before forwarding
-                                        a request to the destination service.
-                                      items:
-                                        type: string
-                                      type: array
-                                    removeResponseHeaders:
-                                      description: HTTP headers to remove before returning
-                                        a response to the caller.
-                                      items:
-                                        type: string
-                                      type: array
-                                  type: object
-                              type: object
-                            static:
-                              description: Reference to a gloo mesh Static Destination
-                              properties:
-                                name:
-                                  description: name of the resource being referenced
-                                  type: string
-                                namespace:
-                                  description: namespace of the resource being referenced
-                                  type: string
                               type: object
                             virtualDestination:
                               description: Specify a VirtualDestination.

@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Pin Go version to v1.16.3
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1619

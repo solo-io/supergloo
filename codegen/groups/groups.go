@@ -20,6 +20,7 @@ var (
 
 var GlooMeshSettingsGroup = makeGroup("settings", "v1", []ResourceToGenerate{
 	{Kind: "Settings"},
+	{Kind: "Dashboard"},
 })
 
 var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1", []ResourceToGenerate{

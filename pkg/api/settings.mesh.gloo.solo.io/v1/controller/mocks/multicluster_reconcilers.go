@@ -129,3 +129,118 @@ func (mr *MockMulticlusterSettingsReconcileLoopMockRecorder) AddMulticlusterSett
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterSettingsReconciler", reflect.TypeOf((*MockMulticlusterSettingsReconcileLoop)(nil).AddMulticlusterSettingsReconciler), varargs...)
 }
+
+// MockMulticlusterDashboardReconciler is a mock of MulticlusterDashboardReconciler interface.
+type MockMulticlusterDashboardReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterDashboardReconcilerMockRecorder
+}
+
+// MockMulticlusterDashboardReconcilerMockRecorder is the mock recorder for MockMulticlusterDashboardReconciler.
+type MockMulticlusterDashboardReconcilerMockRecorder struct {
+	mock *MockMulticlusterDashboardReconciler
+}
+
+// NewMockMulticlusterDashboardReconciler creates a new mock instance.
+func NewMockMulticlusterDashboardReconciler(ctrl *gomock.Controller) *MockMulticlusterDashboardReconciler {
+	mock := &MockMulticlusterDashboardReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterDashboardReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterDashboardReconciler) EXPECT() *MockMulticlusterDashboardReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileDashboard mocks base method.
+func (m *MockMulticlusterDashboardReconciler) ReconcileDashboard(clusterName string, obj *v1.Dashboard) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDashboard", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileDashboard indicates an expected call of ReconcileDashboard.
+func (mr *MockMulticlusterDashboardReconcilerMockRecorder) ReconcileDashboard(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDashboard", reflect.TypeOf((*MockMulticlusterDashboardReconciler)(nil).ReconcileDashboard), clusterName, obj)
+}
+
+// MockMulticlusterDashboardDeletionReconciler is a mock of MulticlusterDashboardDeletionReconciler interface.
+type MockMulticlusterDashboardDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterDashboardDeletionReconcilerMockRecorder
+}
+
+// MockMulticlusterDashboardDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterDashboardDeletionReconciler.
+type MockMulticlusterDashboardDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterDashboardDeletionReconciler
+}
+
+// NewMockMulticlusterDashboardDeletionReconciler creates a new mock instance.
+func NewMockMulticlusterDashboardDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterDashboardDeletionReconciler {
+	mock := &MockMulticlusterDashboardDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterDashboardDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterDashboardDeletionReconciler) EXPECT() *MockMulticlusterDashboardDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileDashboardDeletion mocks base method.
+func (m *MockMulticlusterDashboardDeletionReconciler) ReconcileDashboardDeletion(clusterName string, req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDashboardDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileDashboardDeletion indicates an expected call of ReconcileDashboardDeletion.
+func (mr *MockMulticlusterDashboardDeletionReconcilerMockRecorder) ReconcileDashboardDeletion(clusterName, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDashboardDeletion", reflect.TypeOf((*MockMulticlusterDashboardDeletionReconciler)(nil).ReconcileDashboardDeletion), clusterName, req)
+}
+
+// MockMulticlusterDashboardReconcileLoop is a mock of MulticlusterDashboardReconcileLoop interface.
+type MockMulticlusterDashboardReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterDashboardReconcileLoopMockRecorder
+}
+
+// MockMulticlusterDashboardReconcileLoopMockRecorder is the mock recorder for MockMulticlusterDashboardReconcileLoop.
+type MockMulticlusterDashboardReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterDashboardReconcileLoop
+}
+
+// NewMockMulticlusterDashboardReconcileLoop creates a new mock instance.
+func NewMockMulticlusterDashboardReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterDashboardReconcileLoop {
+	mock := &MockMulticlusterDashboardReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterDashboardReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterDashboardReconcileLoop) EXPECT() *MockMulticlusterDashboardReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// AddMulticlusterDashboardReconciler mocks base method.
+func (m *MockMulticlusterDashboardReconcileLoop) AddMulticlusterDashboardReconciler(ctx context.Context, rec controller.MulticlusterDashboardReconciler, predicates ...predicate.Predicate) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMulticlusterDashboardReconciler", varargs...)
+}
+
+// AddMulticlusterDashboardReconciler indicates an expected call of AddMulticlusterDashboardReconciler.
+func (mr *MockMulticlusterDashboardReconcileLoopMockRecorder) AddMulticlusterDashboardReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterDashboardReconciler", reflect.TypeOf((*MockMulticlusterDashboardReconcileLoop)(nil).AddMulticlusterDashboardReconciler), varargs...)
+}
