@@ -19,8 +19,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/hashicorp/go-multierror"
@@ -498,10 +500,10 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
 		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
-			issuedCertificates.Insert(obj)
+			i.insertIssuedCertificate(ctx, obj, issuedCertificates, opts)
 		// insert CertificateRequests
 		case *certificates_mesh_gloo_solo_io_v1_types.CertificateRequest:
-			certificateRequests.Insert(obj)
+			i.insertCertificateRequest(ctx, obj, certificateRequests, opts)
 		}
 	})
 
@@ -511,4 +513,63 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		issuedCertificates,
 		certificateRequests,
 	), nil
+}
+
+func (i *inMemoryBuilder) insertIssuedCertificate(
+	ctx context.Context,
+	issuedCertificate *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate,
+	issuedCertificateSet certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.IssuedCertificates.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = issuedCertificate.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(issuedCertificate.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		issuedCertificateSet.Insert(issuedCertificate)
+	}
+}
+func (i *inMemoryBuilder) insertCertificateRequest(
+	ctx context.Context,
+	certificateRequest *certificates_mesh_gloo_solo_io_v1_types.CertificateRequest,
+	certificateRequestSet certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.CertificateRequests.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = certificateRequest.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(certificateRequest.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		certificateRequestSet.Insert(certificateRequest)
+	}
 }
