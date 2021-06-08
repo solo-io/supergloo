@@ -5,8 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
-
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 
 	"github.com/rotisserie/eris"
@@ -147,43 +145,6 @@ func resolveHostPortSubsetVirtualDestination(
 	}
 
 	return hostname, port, subsetName, nil
-}
-
-// make all the necessary subsets for the destination rule for the given destination.
-// traverses all the applied traffic policies to find subsets matching this destination
-func MakeDestinationRuleSubsetsForDestination(
-	destination *discoveryv1.Destination,
-	sourceCluster string,
-) []*networkingv1alpha3spec.Subset {
-	subsets := makeDestinationRuleSubsets(destination.Status.GetRequiredSubsets())
-
-	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated Destination,
-	// which contain all the matching subset names for the remote destination rule.
-	// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
-	// Based on https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-	//
-	// If flat-networking is enabled, we leave the subset info as there is no ingress involved
-	if sourceCluster != "" &&
-		sourceCluster != destination.ClusterName &&
-		!destination.Status.GetAppliedFederation().GetFlatNetwork() {
-		for _, subset := range subsets {
-			// only the name of the subset matters here.
-			// the labels must match those on the ServiceEntry's endpoints.
-			subset.Labels = MakeFederatedSubsetLabel(destination.Spec.GetKubeService().Ref.ClusterName)
-			// we also remove the TrafficPolicy, leaving
-			// it to the server-side DestinationRule to enforce.
-			subset.TrafficPolicy = nil
-		}
-	}
-
-	return subsets
-}
-
-// exported for use in enterprise
-func MakeDestinationRuleSubsetsForVirtualDestination(
-	virtualDestination *v1beta1.VirtualDestination,
-) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(virtualDestination.Status.GetRequiredSubsets())
 }
 
 // used in DestinationRule translator as well
