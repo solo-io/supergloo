@@ -181,12 +181,17 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 	endpointPorts := make(map[string]uint32)
 	var ports []*networkingv1alpha3spec.Port
 	for _, port := range destination.Spec.GetKubeService().GetPorts() {
+		portName := port.Name
+		// fall back to protocol for port name if k8s port name is unpopulated
+		if portName == "" {
+			portName = port.Protocol
+		}
 		ports = append(ports, &networkingv1alpha3spec.Port{
 			Number:   port.Port,
 			Protocol: ConvertKubePortProtocol(port),
-			Name:     port.Name,
+			Name:     portName,
 		})
-		endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
+		endpointPorts[portName] = ingressGateway.ExternalTlsPort
 	}
 
 	// NOTE(ilackarms): we use these labels to support federated subsets.

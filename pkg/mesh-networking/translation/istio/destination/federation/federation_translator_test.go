@@ -142,8 +142,7 @@ var _ = Describe("FederationTranslator", func() {
 					Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 						{
 							Port:     1234,
-							Name:     "http",
-							Protocol: "TCP",
+							Protocol: "TCP", // translated ServiceEntry should fall back on protocol for port name because name isn't specified here
 						},
 					},
 				}},
@@ -233,8 +232,8 @@ var _ = Describe("FederationTranslator", func() {
 				Ports: []*networkingv1alpha3spec.Port{
 					{
 						Number:   1234,
-						Protocol: string(protocol.HTTP),
-						Name:     "http",
+						Protocol: string(protocol.TCP),
+						Name:     "TCP",
 					},
 				},
 				Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
@@ -243,7 +242,7 @@ var _ = Describe("FederationTranslator", func() {
 					{
 						Address: "mesh-gateway.dns.name",
 						Ports: map[string]uint32{
-							"http": 8181,
+							"TCP": 8181,
 						},
 						Labels: map[string]string{"cluster": "cluster"},
 					},
