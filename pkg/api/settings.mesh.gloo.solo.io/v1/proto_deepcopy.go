@@ -19,3 +19,15 @@ func (in *SettingsStatus) DeepCopyInto(out *SettingsStatus) {
 	p := proto.Clone(in).(*SettingsStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the Dashboard.Spec
+func (in *DashboardSpec) DeepCopyInto(out *DashboardSpec) {
+	p := proto.Clone(in).(*DashboardSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the Dashboard.Status
+func (in *DashboardStatus) DeepCopyInto(out *DashboardStatus) {
+	p := proto.Clone(in).(*DashboardStatus)
+	*out = *p
+}

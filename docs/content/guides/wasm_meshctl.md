@@ -217,10 +217,10 @@ Run these commands to create the namespace and deploy the components:
 
 ```shell
 # Set the management cluster context variable
-MGMT_CONTEXT=kind-mgmt-cluster
+CONTEXT_1=kind-cluster-1
 
 # Select the management context for use
-kubectl config use-context $MGMT_CONTEXT
+kubectl config use-context $CONTEXT_1
 
 # Create the namespace and label it for Istio
 kubectl create ns meshctl
@@ -237,7 +237,7 @@ In the previous guide, we altered the Envoy filters for v3 of the reviews servic
 Before we deploy the filter, let's test the reviews service in the meshctl namespace. We'll spin up a temporary pod with and use curl to check.
 
 ```bash
-kubectl run -it -n meshctl --context $MGMT_CONTEXT curl \
+kubectl run -it -n meshctl --context $CONTEXT_1 curl \
   --image=curlimages/curl:7.73.0 --rm  -- sh
 
 # From the new terminal run the following
@@ -275,13 +275,13 @@ Now we can run the `deploy` command to get our Wasm filter in place.
 
 ```shell
 meshctl wasm deploy \
-  --cluster mgmt-cluster \
+  --cluster cluster-1 \
   --namespace meshctl \
   --labels "app=reviews" \
   --deployment-name meshctl-filter \
   --image webassemblyhub.io/$HUB_USERNAME/add-header:v0.1 \
-  --mgmt-kubecontext $MGMT_CONTEXT \
-  --remote-kubecontext $MGMT_CONTEXT
+  --mgmt-kubecontext $CONTEXT_1 \
+  --remote-kubecontext $CONTEXT_1
 ```
 
 You should see the following output.
@@ -294,7 +294,7 @@ deploying wasm filter
 Now let's try using `curl` again to check for our custom header.
 
 ```bash
-kubectl run -it -n meshctl --context $MGMT_CONTEXT curl \
+kubectl run -it -n meshctl --context $CONTEXT_1 curl \
   --image=curlimages/curl:7.73.0 --rm  -- sh
 
 # From the new terminal run the following

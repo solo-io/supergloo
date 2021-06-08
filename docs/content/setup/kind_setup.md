@@ -7,7 +7,7 @@ weight: 20
 
 The installation of Gloo Mesh assumes that you have access to at least one Kubernetes cluster, and preferably two for following the multi-cluster guides. If you do not have access to remote clusters, you can instead spin up two local clusters using Kubernetes in Docker (Kind). Be aware that this will use a significant amount of RAM when both clusters are running with Istio and Gloo Mesh installed. We recommend a workstation with a minimum of 16GB.
 
-This guide will walk you through deploying two Kind clusters referred to as the `mgmt-cluster` and `remote-cluster`. The mgmt-cluster will host the Gloo Mesh installation as well as a deployment of Istio. The remote-cluster will run Istio only, and will be used in later guides to demonstrate the multi-cluster management capabilities of Gloo Mesh.
+This guide will walk you through deploying two Kind clusters referred to as the `cluster-1` and `cluster-2`. `cluster-1` will host the Gloo Mesh installation (making it the management cluster) as well as a deployment of Istio. `cluster-2` will run Istio only, and will be used in later guides to demonstrate the multi-cluster management capabilities of Gloo Mesh.
 
 ### Using Kind
 
@@ -16,13 +16,13 @@ Before you run Kind on your local workstation, you will need the following pre-r
 * [Docker Desktop](https://www.docker.com/products/docker-desktop) or Docker running as a service
 * Kind installed using `go get` or a [stable binary for your platform](https://kind.sigs.k8s.io/docs/user/quick-start)
 
-Once you have those pieces in place, you will simply run the following commands to create the mgmt-cluster and remote-cluster clusters.
+Once you have those pieces in place, you will simply run the following commands to create the two clusters.
 
 ```bash
-# Create the mgmt-cluster
+# Create cluster-1
 #Set version, cluster name, and port
 kindImage=kindest/node:v1.17.5
-cluster=mgmt-cluster
+cluster=cluster-1
 port=32001
 
 cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
@@ -50,7 +50,7 @@ kubeadmConfigPatches:
 EOF
 
 # Create the remote cluster
-cluster=remote-cluster
+cluster=cluster-2
 port=32000
 
 cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
@@ -77,8 +77,8 @@ kubeadmConfigPatches:
       authorization-mode: "AlwaysAllow"
 EOF
 
-#Switch to the mgmt-cluster context
-kubectl config use-context kind-mgmt-cluster
+#Switch to the cluster-1 context
+kubectl config use-context kind-cluster-1
 ```
 
 ## Next Steps
