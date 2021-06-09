@@ -6,13 +6,13 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	mock_certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent/mocks"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	mock_podbouncer "github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation/pod-bouncer/mocks"
 	mock_translation "github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation/mocks"
-	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,48 +38,6 @@ var _ = Describe("CertAgentReconciler", func() {
 
 	AfterEach(func() {
 		ctrl.Finish()
-	})
-
-	It("Will search for secret/readd it if Status==FINISHED", func() {
-
-		// reconciler := reconciliation.NewCertAgentReconciler(ctx, mockPodBouncer, mockTranslator)
-		reconciler := &certAgentReconciler{
-			ctx:        ctx,
-			podBouncer: mockPodBouncer,
-			translator: mockTranslator,
-		}
-		issuedCert := &certificatesv1.IssuedCertificate{
-			ObjectMeta: metav1.ObjectMeta{
-				Generation: 2,
-			},
-			Spec: certificatesv1.IssuedCertificateSpec{
-				IssuedCertificateSecret: &skv2corev1.ObjectRef{
-					Name:      "hello",
-					Namespace: "world",
-				},
-			},
-			Status: certificatesv1.IssuedCertificateStatus{
-				State:              certificatesv1.IssuedCertificateStatus_FINISHED,
-				ObservedGeneration: 2,
-			},
-		}
-
-		writtenSecret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      issuedCert.Spec.GetIssuedCertificateSecret().GetName(),
-				Namespace: issuedCert.Spec.GetIssuedCertificateSecret().GetNamespace(),
-			},
-		}
-
-		inputSnap := input.NewInputSnapshotManualBuilder("hello").
-			AddSecrets([]*corev1.Secret{writtenSecret}).
-			Build()
-
-		mockTranslator.EXPECT().ShouldProcess(gomock.Any(), issuedCert).Return(true)
-		mockOutput.EXPECT().AddSecrets(writtenSecret)
-
-		err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
-		Expect(err).NotTo(HaveOccurred())
 	})
 
 	Context("IssuedCertificatePending", func() {
@@ -344,5 +302,100 @@ var _ = Describe("CertAgentReconciler", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_ISSUED))
 		})
+	})
+
+	Context("IssuedCertificateFinished", func() {
+		var (
+			issuedCert       *certificatesv1.IssuedCertificate
+			issuedCertSecret *corev1.Secret
+		)
+
+		BeforeEach(func() {
+
+			issuedCertSecret = &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "issued",
+					Namespace: "cert",
+				},
+			}
+
+			issuedCert = &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "hello",
+					Namespace:  "world",
+					Generation: 2,
+				},
+				Spec: certificatesv1.IssuedCertificateSpec{
+					IssuedCertificateSecret: ezkube.MakeObjectRef(issuedCertSecret),
+				},
+				Status: certificatesv1.IssuedCertificateStatus{
+					State:              certificatesv1.IssuedCertificateStatus_FINISHED,
+					ObservedGeneration: 2,
+				},
+			}
+		})
+
+		It("Will do nothing if no error happens", func() {
+
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
+
+			pods := v1sets.NewPodSet(&corev1.Pod{})
+			configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
+			secrets := v1sets.NewSecretSet(issuedCertSecret)
+
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddPods(pods.List()).
+				AddSecrets(secrets.List()).
+				AddConfigMaps(configMaps.List()).
+				Build()
+
+			mockTranslator.EXPECT().
+				ShouldProcess(gomock.Any(), issuedCert).
+				Return(true)
+
+			mockTranslator.EXPECT().
+				IssuedCertificateFinished(gomock.Any(), issuedCert, inputSnap, mockOutput).
+				Return(nil)
+
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FINISHED))
+		})
+
+		It("Will set status to failed if error happens", func() {
+
+			reconciler := &certAgentReconciler{
+				ctx:        ctx,
+				podBouncer: mockPodBouncer,
+				translator: mockTranslator,
+			}
+
+			pods := v1sets.NewPodSet(&corev1.Pod{})
+			configMaps := v1sets.NewConfigMapSet(&corev1.ConfigMap{})
+			secrets := v1sets.NewSecretSet(&corev1.Secret{})
+
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddPods(pods.List()).
+				AddSecrets(secrets.List()).
+				AddConfigMaps(configMaps.List()).
+				Build()
+
+			mockTranslator.EXPECT().
+				ShouldProcess(gomock.Any(), issuedCert).
+				Return(true)
+
+			mockTranslator.EXPECT().
+				IssuedCertificateFinished(gomock.Any(), issuedCert, inputSnap, mockOutput).
+				Return(eris.New("hello"))
+
+			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(issuedCert.Status.State).To(Equal(certificatesv1.IssuedCertificateStatus_FAILED))
+		})
+
 	})
 })
