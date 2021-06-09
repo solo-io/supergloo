@@ -15,7 +15,7 @@ type Config struct {
 	DeployControlPlaneToManagementPlane bool
 }
 
-const glooMeshVersion = "1.1.0-beta8"
+const glooMeshVersion = "1.1.0-beta12"
 
 func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey string) resource.SetupFn {
 	return func(ctx resource.Context) error {
@@ -36,7 +36,7 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey st
 		mpcfg := InstanceConfig{
 			managementPlane:               true,
 			managementPlaneKubeConfigPath: cfg.ClusterKubeConfigs[ctx.Clusters()[0].Name()],
-			version:                       glooMeshVersion,
+			version:                       version,
 			clusterDomain:                 "",
 			cluster:                       ctx.Clusters()[0],
 		}
@@ -72,7 +72,7 @@ func Deploy(deploymentCtx *context.DeploymentContext, cfg *Config, licenseKey st
 				managementPlane:                   false,
 				controlPlaneKubeConfigPath:        p,
 				managementPlaneKubeConfigPath:     cfg.ClusterKubeConfigs[ctx.Clusters()[0].Name()],
-				version:                           glooMeshVersion,
+				version:                           version,
 				cluster:                           ctx.Clusters()[index],
 				managementPlaneRelayServerAddress: relayAddress,
 				clusterDomain:                     "",
