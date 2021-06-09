@@ -1,0 +1,9 @@
+changelog:
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: skv2
+    dependencyTag: v0.17.20
+  - type: HELM
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1450
+    description: >
+      Expose helm options for setting custom labels and annotations on pods, deployments, and services.
