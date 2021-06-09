@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fixed kubeconfig for cli command meshctl cluster register
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1627
