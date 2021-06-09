@@ -59,7 +59,7 @@ spec:
         labels:
           app: backend
   policy:
-    retryPolicy:
+    retries:
       attempts: 3
       perTryTimeout: 1ms
     trafficShift:
