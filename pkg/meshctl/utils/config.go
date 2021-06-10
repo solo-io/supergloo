@@ -38,17 +38,33 @@ func (c MeshctlConfig) FilePath() string {
 	return c.filepath
 }
 
-// returns the path of the file storing the config
+// returns the mgmt meshctl cluster config
 func (c MeshctlConfig) MgmtCluster() MeshctlCluster {
 	return c.Clusters[managementPlane]
 }
 
-// returns the path of the file storing the config
+// returns the mgmt meshctl cluster name
+func (c MeshctlConfig) IsMgmtCluster(name string) bool {
+	return name == managementPlane
+}
+
+// returns the mgmt meshctl cluster config
+func (c MeshctlConfig) DataPlaneClusters() map[string]MeshctlCluster {
+	dataPlaneClusters := make(map[string]MeshctlCluster)
+	for name, cluster := range c.Clusters {
+		if name != managementPlane {
+			dataPlaneClusters[name] = cluster
+		}
+	}
+	return dataPlaneClusters
+}
+
+// add the management cluster config
 func (c MeshctlConfig) AddMgmtCluster(kc MeshctlCluster) {
 	c.Clusters[managementPlane] = kc
 }
 
-// returns the path of the file storing the config
+// add a data plane cluster config
 func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error {
 	if name == managementPlane {
 		return eris.Errorf("%v is a special cluster name reserved for the management cluster. try a different name", name)
@@ -57,15 +73,8 @@ func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error
 	return nil
 }
 
+// parse the meshctl config file into a MeshctlConfig struct
 func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
-	if meshctlConfigPath == "" {
-		var err error
-		meshctlConfigPath, err = meshctlConfigFilePath()
-		if err != nil {
-			return MeshctlConfig{}, err
-		}
-	}
-
 	config := MeshctlConfig{}
 
 	if _, fileErr := os.Stat(meshctlConfigPath); fileErr == nil {
@@ -92,7 +101,8 @@ func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	return config, nil
 }
 
-func meshctlConfigFilePath() (string, error) {
+// return the default meshctl config filepath
+func DefaultMeshctlConfigFilePath() (string, error) {
 	userHome, err := os.UserHomeDir()
 	if err != nil {
 		return "", err

@@ -27,6 +27,13 @@ a cluster name. Note that if a cluster is both a management and data plane clust
 		Example: " meshctl cluster configure --disable-prompt --kubeconfig ${HOME}/.kube/config --kubecontext cluster1 ## Registers a management plane cluster\n" +
 			" meshctl cluster configure --disable-prompt --cluster-name cluster2 --kubeconfig ${HOME}/.kube/config --kubecontext cluster2 ## Registers a data plane cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.meshctlConfigPath == "" {
+				var err error
+				opts.meshctlConfigPath, err = utils.DefaultMeshctlConfigFilePath()
+				if err != nil {
+					return err
+				}
+			}
 			if opts.disablePrompt {
 				if opts.kubeconfig == "" || opts.kubecontext == "" {
 					return eris.Errorf("must pass in additional flags when configuring in non-interactive mode")
@@ -50,8 +57,8 @@ type options struct {
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
-
+	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "c", "",
+		"path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
 	flags.BoolVar(&o.disablePrompt, "disable-prompt", false,
 		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
 	flags.StringVar(&o.clusterName, "cluster-name", "",
@@ -94,6 +101,8 @@ func configure(opts *options) error {
 	}
 	return writeConfigToFile(config, opts.meshctlConfigPath)
 }
+
+var defaultConfigFile string
 
 func configureInteractive(meshctlConfigPath string) error {
 	config, err := utils.ParseMeshctlConfig(meshctlConfigPath)
@@ -165,11 +174,13 @@ func configureCluster() (utils.MeshctlCluster, error) {
 	kubeConfigFilePrompt := promptui.Prompt{
 		Label:    "What is the path to your kubernetes config file?",
 		Validate: validateKubeConfigExists,
+		Default:  defaultConfigFile,
 	}
 	kubeConfigFile, err := kubeConfigFilePrompt.Run()
 	if err != nil {
 		return meshctlCluster, err
 	}
+	defaultConfigFile = kubeConfigFile
 
 	clusters, err := getKubeContextOptions(kubeConfigFile)
 	if err != nil {
