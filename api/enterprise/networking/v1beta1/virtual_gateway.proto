@@ -6,7 +6,8 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
 
 import "google/protobuf/empty.proto";
@@ -161,6 +162,9 @@ message VirtualGatewaySpec {
 
                 // Configure the Envoy based CSRF filter for this Gateway.
                 .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
+
+                // Configure the Envoy based Ratelimit filter for this Gateway.
+                .networking.mesh.gloo.solo.io.RatelimitConfig ratelimit = 3;
 
             }
         }

@@ -12,6 +12,9 @@ import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/base.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -71,7 +74,10 @@ message TrafficPolicySpec {
         MTLS mtls = 12;
 
         // Configure the Envoy based CSRF filter
-        CsrfPolicy csrf = 13;
+        .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 13;
+
+        // Config the Envoy based Ratelimit filter
+        .networking.mesh.gloo.solo.io.RatelimitConfig ratelimit = 14;
 
         // Specify retries for failed requests.
         message RetryPolicy {
@@ -124,7 +130,7 @@ message TrafficPolicySpec {
         message CorsPolicy {
 
             // String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
-            repeated StringMatch allow_origins = 7;
+            repeated .networking.mesh.gloo.solo.io.StringMatch allow_origins = 7;
 
             // List of HTTP methods allowed to access the resource. The content will
             // be serialized to the `Access-Control-Allow-Methods` header.
@@ -235,12 +241,6 @@ message TrafficPolicySpec {
             string todo = 1;
         }
 
-        // Ratelimit filter config.
-        message Ratelimit {
-            // TODO: implement
-            string todo = 1;
-        }
-
     }
 }
 
@@ -264,55 +264,4 @@ message TrafficPolicyStatus {
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
-}
-
-// needed to extract for CUE
-
-// CSRF filter config.
-message CsrfPolicy {
-
-    // Specifies that CSRF policies will be evaluated, tracked and enforced.
-    bool filter_enabled = 1;
-
-    // Specifies that CSRF policies will be evaluated and tracked, but not enforced.
-    //
-    // This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
-    bool shadow_enabled = 2;
-
-    // Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
-    // evaluated and tracked, but not enforced.
-    //
-    // If filter_enabled or shadow_enabled is true.
-    // Envoy will lookup the runtime key to get the percentage of requests to filter.
-    //
-    // .. note:: This field defaults to 100
-    double percentage = 3;
-
-    // Specifies additional source origins that will be allowed in addition to
-    // the destination origin.
-    repeated StringMatch additional_origins = 4;
-
-}
-
-// Describes how to match a given string in HTTP headers. Match is case-sensitive.
-message StringMatch {
-
-    // The string match type.
-    oneof match_type {
-
-        // Exact string match.
-        string exact = 1;
-
-        // Prefix-based match.
-        string prefix = 2;
-
-        // ECMAscript style regex-based match.
-        string regex = 3;
-
-        // Suffix-based match.
-        string suffix = 4;
-    }
-
-      //If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match.
-      bool ignore_case = 5;
 }

@@ -1,0 +1,45 @@
+syntax = "proto3";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/base.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+// needed to extract for CUE
+
+// CSRF filter config.
+message CsrfPolicy {
+
+  // Specifies that CSRF policies will be evaluated, tracked and enforced.
+  bool filter_enabled = 1;
+
+  // Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+  //
+  // This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+  bool shadow_enabled = 2;
+
+  // Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+  // evaluated and tracked, but not enforced.
+  //
+  // If filter_enabled or shadow_enabled is true.
+  // Envoy will lookup the runtime key to get the percentage of requests to filter.
+  //
+  // .. note:: This field defaults to 100
+  double percentage = 3;
+
+  // Specifies additional source origins that will be allowed in addition to
+  // the destination origin.
+  repeated .networking.mesh.gloo.solo.io.StringMatch additional_origins = 4;
+
+}

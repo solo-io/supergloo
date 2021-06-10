@@ -18,8 +18,6 @@ title: "traffic_policy.proto"
 
 
 ## Table of Contents
-  - [CsrfPolicy](#networking.mesh.gloo.solo.io.CsrfPolicy)
-  - [StringMatch](#networking.mesh.gloo.solo.io.StringMatch)
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
@@ -32,7 +30,6 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy.Mirror](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror)
   - [TrafficPolicySpec.Policy.MultiDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination)
   - [TrafficPolicySpec.Policy.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection)
-  - [TrafficPolicySpec.Policy.Ratelimit](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Ratelimit)
   - [TrafficPolicySpec.Policy.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy)
   - [TrafficPolicySpec.Policy.Transform](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Transform)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
@@ -40,43 +37,6 @@ title: "traffic_policy.proto"
 
   - [TrafficPolicySpec.Policy.MTLS.Istio.TLSmode](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio.TLSmode)
 
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.CsrfPolicy"></a>
-
-### CsrfPolicy
-CSRF filter config.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| filterEnabled | bool |  | Specifies that CSRF policies will be evaluated, tracked and enforced. |
-  | shadowEnabled | bool |  | Specifies that CSRF policies will be evaluated and tracked, but not enforced.<br>This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise. |
-  | percentage | double |  | Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests evaluated and tracked, but not enforced.<br>If filter_enabled or shadow_enabled is true. Envoy will lookup the runtime key to get the percentage of requests to filter.<br>.. note:: This field defaults to 100 |
-  | additionalOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.StringMatch"></a>
-
-### StringMatch
-Describes how to match a given string in HTTP headers. Match is case-sensitive.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| exact | string |  | Exact string match. |
-  | prefix | string |  | Prefix-based match. |
-  | regex | string |  | ECMAscript style regex-based match. |
-  | suffix | string |  | Suffix-based match. |
-  | ignoreCase | bool |  | If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match. |
-  
 
 
 
@@ -117,7 +77,8 @@ Specify L7 routing and post-routing configuration.
   | headerManipulation | [networking.mesh.gloo.solo.io.HeaderManipulation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
   | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. DEPRECATED: use DestinationPolicy to configure Outlier Detection |
   | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. DEPRECATED: use DestinationPolicy to configure MTLS |
-  | csrf | [networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter |
+  | csrf | [networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.csrf#networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter |
+  | ratelimit | [networking.mesh.gloo.solo.io.RatelimitConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.RatelimitConfig" >}}) |  | Config the Envoy based Ratelimit filter |
   
 
 
@@ -132,7 +93,7 @@ Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| allowOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
+| allowOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.base#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
   | allowMethods | []string | repeated | List of HTTP methods allowed to access the resource. The content will be serialized to the `Access-Control-Allow-Methods` header. |
   | allowHeaders | []string | repeated | List of HTTP headers that can be used when requesting the resource. Serialized to the `Access-Control-Allow-Headers` header. |
   | exposeHeaders | []string | repeated | A list of HTTP headers that browsers are allowed to access. Serialized to the `Access-Control-Expose-Headers` header. |
@@ -280,21 +241,6 @@ Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/
   | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set. |
   | baseEjectionTime | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set. |
   | maxEjectionPercent | uint32 |  | The maximum percentage of hosts that can be ejected from the load balancing pool. At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Ratelimit"></a>
-
-### TrafficPolicySpec.Policy.Ratelimit
-Ratelimit filter config.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| todo | string |  | TODO: implement |
   
 
 
