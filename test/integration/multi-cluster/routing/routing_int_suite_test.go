@@ -153,6 +153,7 @@ func TestInMesh(t *testing.T) {
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-https.yaml",
 							Folder:      "gloo-mesh/in-mesh",
+							Skip:        "https://github.com/solo-io/gloo-mesh-enterprise/issues/683",
 						},
 						{
 							Name:        "different-cluster-http-flat-network",
