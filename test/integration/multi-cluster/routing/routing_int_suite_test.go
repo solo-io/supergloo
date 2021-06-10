@@ -79,7 +79,7 @@ func TestInMesh(t *testing.T) {
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "weighted-routing.yaml",
 							Folder:      "gloo-mesh/in-mesh",
-							Skip: "Blocked https://github.com/solo-io/gloo-mesh-enterprise/issues/640 https://github.com/solo-io/gloo-mesh-enterprise/issues/589",
+							Skip:        "Blocked https://github.com/solo-io/gloo-mesh-enterprise/issues/640 https://github.com/solo-io/gloo-mesh-enterprise/issues/589",
 						},
 						{
 							Name:        "weighted-routing-single-cluster",
@@ -88,7 +88,7 @@ func TestInMesh(t *testing.T) {
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "weighted-routing-single-cluster.yaml",
 							Folder:      "gloo-mesh/in-mesh",
-							Skip: "Blocked https://github.com/solo-io/gloo-mesh-enterprise/issues/640 https://github.com/solo-io/gloo-mesh-enterprise/issues/589",
+							Skip:        "Blocked https://github.com/solo-io/gloo-mesh-enterprise/issues/640 https://github.com/solo-io/gloo-mesh-enterprise/issues/589",
 						},
 						{
 							Name:        "same-cluster-http",
