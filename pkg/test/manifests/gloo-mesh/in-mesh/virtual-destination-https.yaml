@@ -59,9 +59,6 @@ spec:
         labels:
           app: backend
   policy:
-    retries:
-      attempts: 3
-      perTryTimeout: 1ms
     trafficShift:
       destinations:
         - virtualDestination:
