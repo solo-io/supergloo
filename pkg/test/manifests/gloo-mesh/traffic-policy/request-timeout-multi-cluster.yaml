@@ -20,10 +20,8 @@ metadata:
   name: backend-timeout
 spec:
   destinationSelector:
-  - kubeServiceRefs:
-      services:
-      - clusterName: cluster-1
-        name: backend
-        namespace: {{.EchoContext.AppNamespace.Name}}
+    - kubeServiceMatcher:
+        labels:
+          app: backend
   policy:
     requestTimeout: 1s
