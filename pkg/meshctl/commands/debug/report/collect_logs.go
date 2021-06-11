@@ -12,10 +12,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/solo-io/go-utils/errgroup"
 	"github.com/solo-io/k8s-utils/debugutils"
-	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
@@ -34,11 +32,7 @@ func collectLogs(ctx context.Context, opts *DebugReportOpts, dir string, config 
 			return err
 		}
 
-		cfg, err := kubeconfig.GetRestConfigWithContext(cluster.KubeConfig, cluster.KubeContext, "")
-		if err != nil {
-			return errors.Wrapf(err, "getting kube config")
-		}
-		kubeClient, err := kubernetes.NewForConfig(cfg)
+		kubeClient, err := utils.BuildClientset(cluster.KubeConfig, cluster.KubeContext)
 		if err != nil {
 			return errors.Wrapf(err, "getting kube clientset")
 		}
@@ -96,18 +90,11 @@ func collectUnstructuredPods(ctx context.Context, opts *DebugReportOpts, clients
 			return unstructuredPods, err
 		}
 	} else {
-		glooMeshLogRequests, err := getUnstructuredPods(ctx, clientset, opts.namespace,
+		unstructuredPods, err = getUnstructuredPods(ctx, clientset, opts.namespace,
 			"app in (enterprise-agent)")
 		if err != nil {
 			return unstructuredPods, err
 		}
-		unstructuredPods = append(unstructuredPods, glooMeshLogRequests...)
-		istioLogRequests, err := getUnstructuredPods(ctx, clientset, "istio-system",
-			"app in (istiod)")
-		if err != nil {
-			return unstructuredPods, err
-		}
-		unstructuredPods = append(unstructuredPods, istioLogRequests...)
 	}
 	return unstructuredPods, err
 }

@@ -40,23 +40,15 @@ func (c MeshctlConfig) FilePath() string {
 
 // returns the mgmt meshctl cluster config
 func (c MeshctlConfig) MgmtCluster() MeshctlCluster {
-	return c.Clusters[managementPlane]
+	if mgmtCluster, ok := c.Clusters[managementPlane]; ok {
+		return mgmtCluster
+	}
+	return MeshctlCluster{}
 }
 
 // returns the mgmt meshctl cluster name
 func (c MeshctlConfig) IsMgmtCluster(name string) bool {
 	return name == managementPlane
-}
-
-// returns the mgmt meshctl cluster config
-func (c MeshctlConfig) DataPlaneClusters() map[string]MeshctlCluster {
-	dataPlaneClusters := make(map[string]MeshctlCluster)
-	for name, cluster := range c.Clusters {
-		if name != managementPlane {
-			dataPlaneClusters[name] = cluster
-		}
-	}
-	return dataPlaneClusters
 }
 
 // add the management cluster config

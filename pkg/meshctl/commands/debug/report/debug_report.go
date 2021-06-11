@@ -1,12 +1,15 @@
 package report
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
 
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
-	"github.com/solo-io/go-utils/tarutils"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -23,9 +26,8 @@ type DebugReportOpts struct {
 }
 
 func AddDebugReportFlags(flags *pflag.FlagSet, o *DebugReportOpts) {
-	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "c", "",
-		"path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
-	flags.StringVarP(&o.outputFile, "file", "f", "bug-report.tgz", "name of the output tgz file")
+	utils.AddMeshctlConfigFlags(&o.meshctlConfigPath, flags)
+	flags.StringVarP(&o.outputFile, "file", "f", "meshctl-bug-report.tgz", "name of the output tgz file")
 	flags.StringVarP(&o.namespace, "namespace", "n", defaults.GetPodNamespace(), "gloo-mesh namespace")
 }
 
@@ -47,6 +49,7 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 		},
 	}
 	AddDebugReportFlags(cmd.PersistentFlags(), opts)
+	cmd.MarkFlagRequired("meshctl-config-file")
 	return cmd
 }
 
@@ -58,6 +61,21 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 	}
 	defer opts.fs.RemoveAll(dir)
 
+	fmt.Printf("Running `meschtl debug snapshot`\n")
+	var b bytes.Buffer
+	snapshotFile := dir + "/meshctl_debug_snapshot.tgz"
+	utils.RunShell(fmt.Sprintf("meshctl debug snapshot -c %s --zip %s", opts.meshctlConfigPath, snapshotFile), os.Stdout)
+
+	fmt.Printf("Running `meschtl check`\n")
+	b.Reset()
+	meshctlCheckFile := dir + "/meshctl_check.txt"
+	utils.RunShell(fmt.Sprintf(fmt.Sprintf("meshctl check -c %s", opts.meshctlConfigPath)), io.Writer(&b))
+	err = ioutil.WriteFile(meshctlCheckFile, b.Bytes(), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Running `meschtl debug logs`\n")
 	config, err := utils.ParseMeshctlConfig(opts.meshctlConfigPath)
 	if err != nil {
 		return err
@@ -68,25 +86,10 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		return err
 	}
 
-	err = zip(opts.fs, dir, opts.outputFile)
+	err = utils.Zip(opts.fs, dir, opts.outputFile)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func zip(fs afero.Fs, dir string, file string) error {
-	tarball, err := fs.Create(file)
-	if err != nil {
-		return err
-	}
-	if err := tarutils.Tar(dir, fs, tarball); err != nil {
-		return err
-	}
-	_, err = tarball.Seek(0, io.SeekStart)
-	if err != nil {
-		return err
-	}
 	return nil
 }

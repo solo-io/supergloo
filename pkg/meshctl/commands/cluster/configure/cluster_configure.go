@@ -63,7 +63,8 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
 	flags.StringVar(&o.clusterName, "cluster-name", "",
 		"data plane cluster name (leave empty if this is the management cluster)")
-	utils.AddKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to the kubeconfig from which the cluster will be accessed")
+	flags.StringVar(&o.kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the cluster")
 }
 
 func configure(opts *options) error {
