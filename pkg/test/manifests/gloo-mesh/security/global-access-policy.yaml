@@ -5,6 +5,7 @@ metadata:
   namespace: gloo-mesh
 spec:
   globalAccessPolicy: ENABLED
+  hostnameSuffix: solo.io
   federation:
     selectors:
       - { }

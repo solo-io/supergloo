@@ -4,6 +4,7 @@ metadata:
   name: virtual-mesh
   namespace: gloo-mesh
 spec:
+  hostnameSuffix: solo.io
   federation:
     flatNetwork: true
     # required or flat network wont get detected
