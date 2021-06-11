@@ -201,7 +201,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					ClusterName: clusterName,
 				},
 				Spec: corev1.ServiceSpec{
-					ExternalIPs: []string{"ignored-external-ip"},
+					ExternalIPs: []string{"manually-assigned-external-ip"},
 					Ports: []corev1.ServicePort{{
 						Name:     "tls",
 						Protocol: "TCP",
@@ -279,8 +279,17 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							WorkloadLabels: workloadLabels,
-							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-								Ip: "12.34.56.78",
+							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+										Ip: "12.34.56.78",
+									},
+								},
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+										Ip: "manually-assigned-external-ip",
+									},
+								},
 							},
 							ExternalAddress:  "12.34.56.78",
 							ExternalTlsPort:  5678,
@@ -308,7 +317,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					ClusterName: clusterName,
 				},
 				Spec: corev1.ServiceSpec{
-					ExternalIPs: []string{"12.34.56.78"},
+					ExternalIPs: []string{"manually-assigned-ip"},
 					Ports: []corev1.ServicePort{{
 						Name:     "tls",
 						Protocol: "TCP",
@@ -353,10 +362,14 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							WorkloadLabels: workloadLabels,
-							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-								Ip: "12.34.56.78",
+							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+										Ip: "manually-assigned-ip",
+									},
+								},
 							},
-							ExternalAddress:  "12.34.56.78",
+							ExternalAddress:  "manually-assigned-ip",
 							ExternalTlsPort:  5678,
 							TlsContainerPort: 1234,
 						}},
@@ -435,8 +448,12 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							WorkloadLabels: workloadLabels,
-							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
-								DnsName: "hello.hostname",
+							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_DnsName{
+										DnsName: "hello.hostname",
+									},
+								},
 							},
 							ExternalAddress:  "hello.hostname",
 							ExternalTlsPort:  1234,
@@ -516,8 +533,12 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							WorkloadLabels: workloadLabels,
-							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-								Ip: "12.34.56.78",
+							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+										Ip: "12.34.56.78",
+									},
+								},
 							},
 							ExternalAddress:  "12.34.56.78",
 							ExternalTlsPort:  1234,
@@ -589,8 +610,12 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							WorkloadLabels: workloadLabels,
-							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-								Ip: "12.34.56.78",
+							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+										Ip: "12.34.56.78",
+									},
+								},
 							},
 							ExternalAddress:  "12.34.56.78",
 							ExternalTlsPort:  1234,
@@ -706,8 +731,12 @@ var _ = Describe("IstioMeshDetector", func() {
 					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels: workloadLabels,
-						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
-							Ip: "12.34.56.78",
+						ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+							{
+								ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+									Ip: "12.34.56.78",
+								},
+							},
 						},
 						ExternalAddress:  "12.34.56.78",
 						ExternalTlsPort:  5678,

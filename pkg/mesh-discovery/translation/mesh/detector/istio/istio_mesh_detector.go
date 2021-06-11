@@ -51,7 +51,7 @@ func NewMeshDetector(
 	ctx context.Context,
 ) detector.MeshDetector {
 	return &meshDetector{
-		ctx: contextutils.WithLogger(ctx, "detector"),
+		ctx: contextutils.WithLogger(ctx, "mesh-detector"),
 	}
 }
 
@@ -159,7 +159,7 @@ func getIngressGateways(
 	ingressSvcs := getIngressServices(services, namespace, clusterName, workloadLabels)
 	var ingressGateways []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
-		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, pods, nodes)
+		gateway, err := getIngressGateway(ctx, svc, workloadLabels, tlsPortName, pods, nodes)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Warnw("detection failed for matching istio ingress service", "error", err, "service", sets.Key(svc))
 			continue
@@ -170,6 +170,7 @@ func getIngressGateways(
 }
 
 func getIngressGateway(
+	ctx context.Context,
 	svc *corev1.Service,
 	workloadLabels map[string]string,
 	tlsPortName string,
@@ -200,16 +201,14 @@ func getIngressGateway(
 	var externalTlsPort uint32
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
-		nodeIps, err := getNodeIps(
+		nodeIps := getNodeIps(
+			ctx,
 			svc.ClusterName,
 			svc.Namespace,
 			workloadLabels,
 			pods,
 			nodes,
 		)
-		if err != nil {
-			return nil, err
-		}
 		for _, nodeIp := range nodeIps {
 			externalAddresses = append(externalAddresses, &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 				ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
@@ -221,17 +220,31 @@ func getIngressGateway(
 	case corev1.ServiceTypeLoadBalancer:
 		ingress := svc.Status.LoadBalancer.Ingress
 		for _, loadBalancerIngress := range ingress {
-			externalAddresses = append(externalAddresses, &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
-				ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
-					Ip: loadBalancerIngress.IP,
-				},
-			})
+
+			var externalAddress *discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress
+			// If the Ip address is set in the ingress, use that
+			if loadBalancerIngress.IP != "" {
+				externalAddress = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+					ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+						Ip: loadBalancerIngress.IP,
+					},
+				}
+			} else if loadBalancerIngress.Hostname != "" {
+				// Otherwise use the hostname
+				externalAddress = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+					ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_DnsName{
+						DnsName: loadBalancerIngress.Hostname,
+					},
+				}
+			}
+			externalAddresses = append(externalAddresses, externalAddress)
 		}
 		externalTlsPort = uint32(tlsPort.Port)
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
 	}
 
+	// TODO: distinguish between these manually assigned external IPs and assigned IPs in case a user may want to specify which IPs to use for networking policies
 	for _, externalIP := range svc.Spec.ExternalIPs {
 		externalAddresses = append(externalAddresses, &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 			ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
@@ -256,13 +269,11 @@ func getIngressGateway(
 		ExternalAddresses: externalAddresses,
 	}
 
-	// Continue to set deprecated fields until they are removed
+	// Continue to set deprecated fields until they are removed, only populate with first external address.
 	switch extAddr := externalAddresses[0].ExternalAddressType.(type) {
 	case *discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip:
-		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{Ip: extAddr.Ip}
 		gatewayInfo.ExternalAddress = extAddr.Ip
 	case *discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_DnsName:
-		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{DnsName: extAddr.DnsName}
 		gatewayInfo.ExternalAddress = extAddr.DnsName
 	}
 
@@ -283,12 +294,13 @@ func getIngressServices(
 }
 
 func getNodeIps(
+	ctx context.Context,
 	cluster,
 	namespace string,
 	workloadLabels map[string]string,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
-) ([]string, error) {
+) []string {
 	var ips []string
 	ingressPods := pods.List(func(pod *corev1.Pod) bool {
 		return pod.ClusterName != cluster ||
@@ -296,7 +308,8 @@ func getNodeIps(
 			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(pod.Labels))
 	})
 	if len(ingressPods) < 1 {
-		return nil, eris.Errorf("no pods found backing ingress workload %v in namespace %v", workloadLabels, namespace)
+		contextutils.LoggerFrom(ctx).Warnf("no backing pods found for ingress workload %v in namespace %v", workloadLabels, namespace)
+		return nil
 	}
 	// TODO(ilackarms): currently we just grab the node ip of the first available pod
 	// Eventually we may want to consider supporting multiple nodes/IPs for load balancing.
@@ -307,7 +320,8 @@ func getNodeIps(
 			Name:        ingressPod.Spec.NodeName,
 		})
 		if err != nil {
-			return nil, eris.Wrapf(err, "failed to find ingress node for pod %v", sets.Key(ingressPod))
+			contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to find ingress node for pod %v", sets.Key(ingressPod))
+			return nil
 		}
 		ingressNodeNames = append(ingressNodeNames, ingressPod.Spec.NodeName)
 
@@ -325,9 +339,10 @@ func getNodeIps(
 		}
 	}
 	if len(ips) == 0 {
-		return nil, eris.Errorf("no external addresses reported for ingress node %v", ingressNodeNames)
+		contextutils.LoggerFrom(ctx).Warnf("no external IP addresses assigned for ingress node %v", ingressNodeNames)
+		return nil
 	}
-	return ips, nil
+	return ips
 }
 
 func isKindNode(node *corev1.Node) bool {

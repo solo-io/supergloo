@@ -1425,25 +1425,9 @@ spec:
                 ingressGateways:
                   description: Describes the ingress gateway.
                   items:
-                    oneOf:
-                    - not:
-                        anyOf:
-                        - required:
-                          - dnsName
-                        - required:
-                          - ip
-                    - required:
-                      - dnsName
-                    - required:
-                      - ip
                     properties:
-                      dnsName:
-                        description: |-
-                          Will be populated if the LoadBalancer Address is a DNS name
-                          DEPRECATED: use external_addresses.dns_name
-                        type: string
                       externalAddress:
-                        description: 'DEPRECATED: in favor of dns_name or external_addresses'
+                        description: 'DEPRECATED: in favor of external_addresses'
                         type: string
                       externalAddresses:
                         description: |-
@@ -1482,11 +1466,6 @@ spec:
                         maximum: 4294967295
                         minimum: 0
                         type: integer
-                      ip:
-                        description: |-
-                          Will be populated if the LoadBalancer Address is an IP
-                          DEPRECATED: use external_addresses.ip
-                        type: string
                       tlsContainerPort:
                         description: |-
                           Container port on which the gateway is listening for TLS connections.
