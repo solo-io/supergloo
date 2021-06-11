@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Default federation selectors in VirtualMesh so spec.federation.selectors={} is no longer needed
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1550
