@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/protomarshal"
@@ -279,6 +280,11 @@ var _ = Describe("IstioMeshDetector", func() {
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 							WorkloadLabels: workloadLabels,
+							WorkloadLabelSets: []*commonv1.LabelSet{
+								{
+									Labels: workloadLabels,
+								},
+							},
 							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 								{
 									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
@@ -361,7 +367,6 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-							WorkloadLabels: workloadLabels,
 							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 								{
 									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
@@ -447,7 +452,6 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-							WorkloadLabels: workloadLabels,
 							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 								{
 									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_DnsName{
@@ -532,7 +536,6 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-							WorkloadLabels: workloadLabels,
 							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 								{
 									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
@@ -609,7 +612,6 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-							WorkloadLabels: workloadLabels,
 							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
 								{
 									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
@@ -631,123 +633,255 @@ var _ = Describe("IstioMeshDetector", func() {
 
 	})
 
-	It("uses settings to detect ingress gateways", func() {
-		configMaps := istioConfigMap()
-		workloadLabels := map[string]string{"mykey": "myvalue"}
-		services := corev1sets.NewServiceSet(&corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "ingress-svc",
-				Namespace:   meshNs,
-				ClusterName: clusterName,
-			},
-			Spec: corev1.ServiceSpec{
-				Ports: []corev1.ServicePort{{
-					Name:     "specialport",
-					Protocol: "TCP",
-					Port:     1234,
-					NodePort: 5678,
-				}},
-				Selector: workloadLabels,
-				Type:     corev1.ServiceTypeNodePort,
-			},
-		})
+	Context("uses settings to detect ingress gateways", func() {
+		var (
+			configMaps        = istioConfigMap()
+			workloadLabelSet1 = map[string]string{"k1": "v1"}
+			workloadLabelSet2 = map[string]string{"k2": "v2"}
 
-		nodeName := "ingress-node"
-		pods := corev1sets.NewPodSet(&corev1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "ingress-pod",
-				Namespace:   meshNs,
-				ClusterName: clusterName,
-				Labels:      workloadLabels,
-			},
-			Spec: corev1.PodSpec{
-				NodeName: nodeName,
-			},
-		})
-		nodes := corev1sets.NewNodeSet(&corev1.Node{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        nodeName,
-				ClusterName: clusterName,
-			},
-			Status: corev1.NodeStatus{
-				Addresses: []corev1.NodeAddress{
-					{
-						Type:    corev1.NodeInternalDNS,
-						Address: "internal.domain",
+			services = corev1sets.NewServiceSet(
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "ingress-svc1",
+						Namespace:   meshNs,
+						ClusterName: clusterName,
 					},
-					{
-						Type:    corev1.NodeExternalDNS,
-						Address: "12.34.56.78",
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{{
+							Name:     "specialport",
+							Protocol: "TCP",
+							Port:     1234,
+							NodePort: 5678,
+						}},
+						Selector: workloadLabelSet1,
+						Type:     corev1.ServiceTypeNodePort,
 					},
 				},
-			},
-		})
+				&corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "ingress-svc2",
+						Namespace:   meshNs,
+						ClusterName: clusterName,
+					},
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{{
+							Name:     "specialport",
+							Protocol: "TCP",
+							Port:     1111,
+							NodePort: 2222,
+						}},
+						Selector: workloadLabelSet2,
+						Type:     corev1.ServiceTypeNodePort,
+					},
+				})
 
-		detector := NewMeshDetector(
-			ctx,
+			nodeName = "ingress-node"
+			nodes    = corev1sets.NewNodeSet(&corev1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        nodeName,
+					ClusterName: clusterName,
+				},
+				Status: corev1.NodeStatus{
+					Addresses: []corev1.NodeAddress{
+						{
+							Type:    corev1.NodeInternalDNS,
+							Address: "internal.domain",
+						},
+						{
+							Type:    corev1.NodeExternalDNS,
+							Address: "12.34.56.78",
+						},
+					},
+				},
+			})
+
+			pods = corev1sets.NewPodSet(
+				&corev1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "ingress-pod1",
+						Namespace:   meshNs,
+						ClusterName: clusterName,
+						Labels:      workloadLabelSet1,
+					},
+					Spec: corev1.PodSpec{
+						NodeName: nodeName,
+					},
+				},
+				&corev1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "ingress-pod2",
+						Namespace:   meshNs,
+						ClusterName: clusterName,
+						Labels:      workloadLabelSet2,
+					},
+					Spec: corev1.PodSpec{
+						NodeName: nodeName,
+					},
+				})
+
+			detector = NewMeshDetector(
+				ctx,
+			)
+
+			deployment = istioDeployment(istiodDeploymentName)
+
+			inRemote = input.NewInputDiscoveryInputSnapshotManualBuilder("").
+					AddDeployments([]*appsv1.Deployment{deployment}).
+					AddConfigMaps(configMaps.List()).
+					AddServices(services.List()).
+					AddPods(pods.List()).
+					AddNodes(nodes.List()).
+					Build()
 		)
 
-		deployment := istioDeployment(istiodDeploymentName)
-
-		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inRemote.AddConfigMaps(configMaps.List())
-		inRemote.AddServices(services.List())
-		inRemote.AddPods(pods.List())
-		inRemote.AddNodes(nodes.List())
-		settings := &settingsv1.DiscoverySettings{
-			Istio: &settingsv1.DiscoverySettings_Istio{
-				IngressGatewayDetectors: map[string]*settingsv1.DiscoverySettings_Istio_IngressGatewayDetector{
-					"*": {
-						GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
-						GatewayTlsPortName:    "myport",
-					},
-					clusterName: {
-						GatewayTlsPortName: "specialport",
+		It("uses settings to detect ingress gateways using deprecated field", func() {
+			settings = &settingsv1.DiscoverySettings{
+				Istio: &settingsv1.DiscoverySettings_Istio{
+					IngressGatewayDetectors: map[string]*settingsv1.DiscoverySettings_Istio_IngressGatewayDetector{
+						"*": {
+							GatewayWorkloadLabels: workloadLabelSet1,
+							GatewayTlsPortName:    "myport",
+						},
+						clusterName: {
+							GatewayTlsPortName: "specialport",
+						},
 					},
 				},
-			},
-		}
+			}
 
-		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
-		Expect(err).NotTo(HaveOccurred())
+			meshes, err := detector.DetectMeshes(inRemote, settings)
+			Expect(err).NotTo(HaveOccurred())
 
-		expectedMesh := &discoveryv1.Mesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "istiod-namespace-cluster",
-				Namespace: defaults.GetPodNamespace(),
-				Labels:    labelutils.ClusterLabels(clusterName),
-			},
-			Spec: discoveryv1.MeshSpec{
-				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
-					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
-					Installation: &discoveryv1.MeshSpec_MeshInstallation{
-						Namespace: meshNs,
-						Cluster:   clusterName,
-						Version:   "latest",
-						PodLabels: map[string]string{"app": "istiod"},
-					},
-					TrustDomain:          trustDomain,
-					IstiodServiceAccount: serviceAccountName,
-					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-						WorkloadLabels: workloadLabels,
-						ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
-							{
-								ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
-									Ip: "12.34.56.78",
+			expectedMesh := &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istiod-namespace-cluster",
+					Namespace: defaults.GetPodNamespace(),
+					Labels:    labelutils.ClusterLabels(clusterName),
+				},
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
+						SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
+						Installation: &discoveryv1.MeshSpec_MeshInstallation{
+							Namespace: meshNs,
+							Cluster:   clusterName,
+							Version:   "latest",
+							PodLabels: map[string]string{"app": "istiod"},
+						},
+						TrustDomain:          trustDomain,
+						IstiodServiceAccount: serviceAccountName,
+						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+							WorkloadLabels: workloadLabelSet1,
+							WorkloadLabelSets: []*commonv1.LabelSet{
+								{
+									Labels: workloadLabelSet1,
 								},
 							},
-						},
-						ExternalAddress:  "12.34.56.78",
-						ExternalTlsPort:  5678,
-						TlsContainerPort: 1234,
+							ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+								{
+									ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+										Ip: "12.34.56.78",
+									},
+								},
+							},
+							ExternalAddress:  "12.34.56.78",
+							ExternalTlsPort:  5678,
+							TlsContainerPort: 1234,
+						}},
 					}},
-				}},
-			},
-		}
+				},
+			}
 
-		Expect(meshes).To(HaveLen(1))
-		Expect(meshes[0]).To(Equal(expectedMesh))
+			Expect(meshes).To(HaveLen(1))
+			Expect(meshes[0]).To(Equal(expectedMesh))
+		})
+
+		It("uses settings to detect multiple ingress gateway workloads", func() {
+			settings = &settingsv1.DiscoverySettings{
+				Istio: &settingsv1.DiscoverySettings_Istio{
+					IngressGatewayDetectors: map[string]*settingsv1.DiscoverySettings_Istio_IngressGatewayDetector{
+						"*": {
+							GatewayWorkloadLabelSets: []*commonv1.LabelSet{
+								{
+									Labels: workloadLabelSet1,
+								},
+								{
+									Labels: workloadLabelSet2,
+								},
+							},
+							GatewayTlsPortName: "myport",
+						},
+						clusterName: {
+							GatewayTlsPortName: "specialport",
+						},
+					},
+				},
+			}
+
+			meshes, err := detector.DetectMeshes(inRemote, settings)
+			Expect(err).NotTo(HaveOccurred())
+
+			expectedMesh := &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istiod-namespace-cluster",
+					Namespace: defaults.GetPodNamespace(),
+					Labels:    labelutils.ClusterLabels(clusterName),
+				},
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
+						SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
+						Installation: &discoveryv1.MeshSpec_MeshInstallation{
+							Namespace: meshNs,
+							Cluster:   clusterName,
+							Version:   "latest",
+							PodLabels: map[string]string{"app": "istiod"},
+						},
+						TrustDomain:          trustDomain,
+						IstiodServiceAccount: serviceAccountName,
+						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
+							{
+								WorkloadLabels: workloadLabelSet1,
+								WorkloadLabelSets: []*commonv1.LabelSet{
+									{
+										Labels: workloadLabelSet1,
+									},
+								},
+								ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+									{
+										ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+											Ip: "12.34.56.78",
+										},
+									},
+								},
+								ExternalAddress:  "12.34.56.78",
+								ExternalTlsPort:  5678,
+								TlsContainerPort: 1234,
+							},
+							{
+								WorkloadLabels: workloadLabelSet2,
+								WorkloadLabelSets: []*commonv1.LabelSet{
+									{
+										Labels: workloadLabelSet2,
+									},
+								},
+								ExternalAddresses: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+									{
+										ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress_Ip{
+											Ip: "12.34.56.78",
+										},
+									},
+								},
+								ExternalAddress:  "12.34.56.78",
+								ExternalTlsPort:  2222,
+								TlsContainerPort: 1111,
+							},
+						},
+					}},
+				},
+			}
+
+			Expect(meshes).To(HaveLen(1))
+			Expect(meshes[0]).To(Equal(expectedMesh))
+		})
 	})
 
 })

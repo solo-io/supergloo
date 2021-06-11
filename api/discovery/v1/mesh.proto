@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/virtual_mesh.proto";
 import "github.com/solo-io/gloo-mesh/api/discovery/v1/destination.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/labels.proto";
 import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
@@ -57,13 +58,16 @@ message MeshSpec {
         // Describes the ingress gateway.
         message IngressGatewayInfo {
 
-            // DEPRECATED: in favor of the `pod_labels` on the Workload referenced by `workload_refs`
+            // DEPRECATED: in favor of `workload_label_sets` which can represent multiple backing workloads.
             // Labels matching the workload backing the gateway.
             // [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
+            // Can be empty if ingress gateway is exposed through an external load balancer.
             map<string, string> workload_labels = 1;
 
-            // References to the Workload objects representing the workloads that back this ingress gateway.
-            .core.skv2.solo.io.ObjectRef workload_refs = 8;
+            // A list of label sets matching the workloads backing the gateway.
+            // [Defaults to a single label set](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
+            // Can be empty if ingress gateway is exposed through an external load balancer.
+            repeated .common.mesh.gloo.solo.io.LabelSet workload_label_sets = 8;
 
             // DEPRECATED: in favor of external_addresses
             string external_address = 2;

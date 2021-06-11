@@ -320,17 +320,17 @@ func (m *DiscoverySettings_Istio_IngressGatewayDetector) Equal(that interface{})
 
 	}
 
-	if len(m.GetGatewayWorkloadSelectors()) != len(target.GetGatewayWorkloadSelectors()) {
+	if len(m.GetGatewayWorkloadLabelSets()) != len(target.GetGatewayWorkloadLabelSets()) {
 		return false
 	}
-	for idx, v := range m.GetGatewayWorkloadSelectors() {
+	for idx, v := range m.GetGatewayWorkloadLabelSets() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetGatewayWorkloadSelectors()[idx]) {
+			if !h.Equal(target.GetGatewayWorkloadLabelSets()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetGatewayWorkloadSelectors()[idx]) {
+			if !proto.Equal(v, target.GetGatewayWorkloadLabelSets()[idx]) {
 				return false
 			}
 		}

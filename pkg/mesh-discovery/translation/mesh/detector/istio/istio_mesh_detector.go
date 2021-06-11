@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
@@ -101,10 +102,8 @@ func (d *meshDetector) detectMesh(
 
 	ingressGateways := getIngressGateways(
 		d.ctx,
-		deployment.Namespace,
 		deployment.ClusterName,
-		ingressGatewayDetector.GetGatewayWorkloadLabels(),
-		ingressGatewayDetector.GetGatewayTlsPortName(),
+		ingressGatewayDetector,
 		in.Services(),
 		in.Pods(),
 		in.Nodes(),
@@ -146,20 +145,20 @@ func (d *meshDetector) detectMesh(
 	return mesh, nil
 }
 
+// discover ingress gateway workload and destination metadata using label sets specified in settings, across all namespaces
 func getIngressGateways(
 	ctx context.Context,
-	namespace string,
 	clusterName string,
-	workloadLabels map[string]string,
-	tlsPortName string,
+	ingressGatewayDetector *settingsv1.DiscoverySettings_Istio_IngressGatewayDetector,
 	services corev1sets.ServiceSet,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
 ) []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo {
-	ingressSvcs := getIngressServices(services, namespace, clusterName, workloadLabels)
+
+	ingressSvcs := getIngressServices(services, clusterName, ingressGatewayDetector)
 	var ingressGateways []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
-		gateway, err := getIngressGateway(ctx, svc, workloadLabels, tlsPortName, pods, nodes)
+		gateway, err := getIngressGateway(ctx, svc, ingressGatewayDetector.GatewayTlsPortName, pods, nodes)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Warnw("detection failed for matching istio ingress service", "error", err, "service", sets.Key(svc))
 			continue
@@ -172,8 +171,7 @@ func getIngressGateways(
 func getIngressGateway(
 	ctx context.Context,
 	svc *corev1.Service,
-	workloadLabels map[string]string,
-	tlsPortName string,
+	gatewayTlsPortName string,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
 ) (*discoveryv1.MeshSpec_Istio_IngressGatewayInfo, error) {
@@ -182,7 +180,7 @@ func getIngressGateway(
 	)
 	for _, port := range svc.Spec.Ports {
 		port := port // pike
-		if port.Name == tlsPortName {
+		if port.Name == gatewayTlsPortName {
 			tlsPort = &port
 			break
 		}
@@ -199,13 +197,15 @@ func getIngressGateway(
 
 	var externalAddresses []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress
 	var externalTlsPort uint32
+	var labelSets []*commonv1.LabelSet
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
-		nodeIps := getNodeIps(
+		var nodeIps []string
+		labelSets, nodeIps = getWorkloadLabelSetsAndNodeIps(
 			ctx,
 			svc.ClusterName,
 			svc.Namespace,
-			workloadLabels,
+			svc.Spec.Selector,
 			pods,
 			nodes,
 		)
@@ -262,8 +262,15 @@ func getIngressGateway(
 		return nil, eris.Errorf("no external addresses found for service type %v for ingress gateway", svc.Spec.Type)
 	}
 
+	// set deprecated field using arbitrary first label set
+	var workloadLabels map[string]string
+	if len(labelSets) > 0 {
+		workloadLabels = labelSets[0].Labels
+	}
+
 	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
 		WorkloadLabels:    workloadLabels,
+		WorkloadLabelSets: labelSets,
 		ExternalTlsPort:   externalTlsPort,
 		TlsContainerPort:  uint32(containerPort),
 		ExternalAddresses: externalAddresses,
@@ -282,46 +289,61 @@ func getIngressGateway(
 
 func getIngressServices(
 	services corev1sets.ServiceSet,
-	namespace string,
 	clusterName string,
-	workloadLabels map[string]string,
+	ingressGatewayDetector *settingsv1.DiscoverySettings_Istio_IngressGatewayDetector,
 ) []*corev1.Service {
-	return services.List(func(svc *corev1.Service) bool {
-		return svc.Namespace != namespace ||
-			svc.ClusterName != clusterName ||
-			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(svc.Spec.Selector))
+	var ingressServices []*corev1.Service
+	services.List(func(svc *corev1.Service) (_ bool) {
+		for _, workloadLabels := range ingressGatewayDetector.GatewayWorkloadLabelSets {
+			if svc.ClusterName == clusterName && labels.SelectorFromSet(workloadLabels.Labels).Matches(labels.Set(svc.Spec.Selector)) {
+				ingressServices = append(ingressServices, svc)
+				break
+			}
+		}
+		return
 	})
+
+	return ingressServices
 }
 
-func getNodeIps(
+func getWorkloadLabelSetsAndNodeIps(
 	ctx context.Context,
-	cluster,
-	namespace string,
-	workloadLabels map[string]string,
+	svcCluster,
+	svcNamespace string,
+	svcSelector map[string]string,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
-) []string {
+) ([]*commonv1.LabelSet, []string) {
+	var labelSets []*commonv1.LabelSet
 	var ips []string
-	ingressPods := pods.List(func(pod *corev1.Pod) bool {
-		return pod.ClusterName != cluster ||
-			pod.Namespace != namespace ||
-			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(pod.Labels))
+
+	var ingressPods []*corev1.Pod
+	pods.List(func(pod *corev1.Pod) (_ bool) {
+		if pod.ClusterName == svcCluster &&
+			pod.Namespace == svcNamespace &&
+			labels.SelectorFromSet(svcSelector).Matches(labels.Set(pod.Labels)) {
+
+			ingressPods = append(ingressPods, pod)
+			labelSets = append(labelSets, &commonv1.LabelSet{Labels: pod.Labels})
+		}
+		return
 	})
+
 	if len(ingressPods) < 1 {
-		contextutils.LoggerFrom(ctx).Warnf("no backing pods found for ingress workload %v in namespace %v", workloadLabels, namespace)
-		return nil
+		contextutils.LoggerFrom(ctx).Warnf("no backing pods found for ingress service selector %v in namespace %v", svcSelector, svcNamespace)
+		return nil, nil
 	}
 	// TODO(ilackarms): currently we just grab the node ip of the first available pod
 	// Eventually we may want to consider supporting multiple nodes/IPs for load balancing.
 	var ingressNodeNames []string
 	for _, ingressPod := range ingressPods {
 		ingressNode, err := nodes.Find(&skv1.ClusterObjectRef{
-			ClusterName: cluster,
+			ClusterName: svcCluster,
 			Name:        ingressPod.Spec.NodeName,
 		})
 		if err != nil {
 			contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to find ingress node for pod %v", sets.Key(ingressPod))
-			return nil
+			return nil, nil
 		}
 		ingressNodeNames = append(ingressNodeNames, ingressPod.Spec.NodeName)
 
@@ -340,9 +362,10 @@ func getNodeIps(
 	}
 	if len(ips) == 0 {
 		contextutils.LoggerFrom(ctx).Warnf("no external IP addresses assigned for ingress node %v", ingressNodeNames)
-		return nil
+		return nil, nil
 	}
-	return ips
+
+	return labelSets, ips
 }
 
 func isKindNode(node *corev1.Node) bool {

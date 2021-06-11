@@ -1,0 +1,8 @@
+syntax = "proto3";
+package common.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1";
+
+// A set of labels on Kubernetes pods.
+message LabelSet {
+    map<string, string> labels = 1;
+}

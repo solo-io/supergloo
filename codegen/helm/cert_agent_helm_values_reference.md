@@ -26,6 +26,10 @@ weight: 2
 |settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>|struct| ||
 |settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_workload_labels|map[string, string]| ||
 |settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_workload_labels.<MAP_KEY>|string| ||
+|settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_workload_label_sets[]|[]ptr| ||
+|settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_workload_label_sets[]|struct| ||
+|settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_workload_label_sets[].labels|map[string, string]| ||
+|settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_workload_label_sets[].labels.<MAP_KEY>|string| ||
 |settings.discovery.istio.ingress_gateway_detectors.<MAP_KEY>.gateway_tls_port_name|string| ||
 |settings.relay|struct| ||
 |settings.relay.enabled|bool| ||

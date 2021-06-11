@@ -529,14 +529,21 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetWorkloadRefs()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetWorkloadRefs()) {
-			return false
+	if len(m.GetWorkloadLabelSets()) != len(target.GetWorkloadLabelSets()) {
+		return false
+	}
+	for idx, v := range m.GetWorkloadLabelSets() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetWorkloadLabelSets()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetWorkloadLabelSets()[idx]) {
+				return false
+			}
 		}
-	} else {
-		if !proto.Equal(m.GetWorkloadRefs(), target.GetWorkloadRefs()) {
-			return false
-		}
+
 	}
 
 	if strings.Compare(m.GetExternalAddress(), target.GetExternalAddress()) != 0 {
