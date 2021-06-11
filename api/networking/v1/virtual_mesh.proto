@@ -69,6 +69,9 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
+        // Disable federation
+        bool disabled = 5;
+
         // Selectively federate Destinations to specific external meshes.
         // If omitted, no Destinations will be federated.
         repeated FederationSelector selectors = 4;
@@ -93,6 +96,8 @@ message VirtualMeshSpec {
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
 
+
+
         // Selects a set of Destinations to federate to the referenced Meshes.
         message FederationSelector {
 
@@ -104,6 +109,7 @@ message VirtualMeshSpec {
             // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
             repeated .core.skv2.solo.io.ObjectRef meshes = 2;
         }
+
     }
 
     // Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
