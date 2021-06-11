@@ -5,7 +5,6 @@ metadata:
   namespace: gloo-mesh
 spec:
   federation:
-    hostnameSuffix: solo.io
     selectors:
       - { }
   meshes:

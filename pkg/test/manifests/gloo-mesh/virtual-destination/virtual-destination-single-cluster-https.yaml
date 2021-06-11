@@ -5,7 +5,6 @@ metadata:
   namespace: gloo-mesh
 spec:
   federation:
-    hostnameSuffix: solo.io
     selectors:
       - { }
   meshes:
@@ -20,11 +19,11 @@ metadata:
   name: backend
   namespace: gloo-mesh
 spec:
-  hostname: tcp-backend.solo.io
+  hostname: https-backend.solo.io
   port:
-    number: 9000
-    protocol: tcp
-    targetNumber: 9000
+    number: 9443
+    protocol: https
+    targetNumber: 9443
   localized:
     destinationSelectors:
       - kubeServiceMatcher:

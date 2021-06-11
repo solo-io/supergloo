@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 		Setup(echo2.DeployEchos(&deploymentCtx)).
 		Run()
 }
-func TestInMesh(t *testing.T) {
+func TestVirtualDestinations(t *testing.T) {
 	flatNetworkingEnabled := ""
 	if os.Getenv("FLAT_NETWORKING_ENABLED") != "true" {
 		flatNetworkingEnabled = "flat networking not enabled, to enable set env FLAT_NETWORKING_ENABLED=true"
@@ -78,7 +78,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testWeightedRouting,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "weighted-routing.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 							Skip:        "Blocked https://github.com/solo-io/gloo-mesh-enterprise/issues/640 https://github.com/solo-io/gloo-mesh-enterprise/issues/589",
 						},
 						{
@@ -87,7 +87,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testWeightedRouting,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "weighted-routing-single-cluster.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 							Skip:        "Blocked https://github.com/solo-io/gloo-mesh-enterprise/issues/640 https://github.com/solo-io/gloo-mesh-enterprise/issues/589",
 						},
 						{
@@ -96,7 +96,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testGlobalVirtualDestinationHTTP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-http.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "same-cluster-https",
@@ -104,7 +104,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testGlobalVirtualDestinationHTTPS,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-https.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "same-cluster-tcp",
@@ -112,7 +112,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testGlobalVirtualDestinationTCP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-tcp.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "different-cluster-http",
@@ -120,7 +120,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testSingleClusterVirtualDestinationHTTP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-http.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "different-cluster-https",
@@ -128,7 +128,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testSingleClusterVirtualDestinationHTTPS,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-https.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "different-cluster-tcp",
@@ -136,7 +136,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testSingleClusterVirtualDestinationTCP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-tcp.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "failover-http",
@@ -144,7 +144,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testFailoverHTTP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-http.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 						},
 						{
 							Name:        "failover-https",
@@ -152,7 +152,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testFailoverHTTPS,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-https.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 							Skip:        "https://github.com/solo-io/gloo-mesh-enterprise/issues/683",
 						},
 						{
@@ -161,7 +161,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testSingleClusterVirtualDestinationHTTP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-http-flat-network.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 							Skip:        flatNetworkingEnabled,
 						},
 						{
@@ -170,7 +170,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testSingleClusterVirtualDestinationHTTPS,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-https-flat-network.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 							Skip:        flatNetworkingEnabled,
 						},
 						{
@@ -179,7 +179,7 @@ func TestInMesh(t *testing.T) {
 							Test:        testSingleClusterVirtualDestinationTCP,
 							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
 							FileName:    "virtual-destination-single-cluster-tcp-flat-network.yaml",
-							Folder:      "gloo-mesh/in-mesh",
+							Folder:      "gloo-mesh/virtual-destination",
 							Skip:        flatNetworkingEnabled,
 						},
 					},

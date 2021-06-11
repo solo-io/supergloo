@@ -6,7 +6,6 @@ metadata:
 spec:
   federation:
     flatNetwork: true
-    hostnameSuffix: solo.io
     # required or flat network wont get detected
     selectors:
       - { }
