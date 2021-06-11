@@ -769,6 +769,10 @@ func getFederatedToMeshes(
 				federatedToMeshes.Insert(groupedMeshRef)
 			}
 		}
+		// non permissive and no selectors, means we should federate all
+		for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+			federatedToMeshes.Insert(groupedMeshRef)
+		}
 	}
 
 	for _, federationSelector := range virtualMesh.Spec.GetFederation().GetSelectors() {
