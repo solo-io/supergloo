@@ -760,6 +760,11 @@ func getFederatedToMeshes(
 ) []*v1.ObjectRef {
 	federatedToMeshes := sets.NewResourceSet()
 
+	// no federation is active
+	if virtualMesh.Spec.GetFederation().Disabled == true {
+		return []*v1.ObjectRef{}
+	}
+
 	// respect deprecated `mode` field only if new federation selectors are not specified
 	if len(virtualMesh.Spec.GetFederation().GetSelectors()) < 1 {
 		switch virtualMesh.Spec.GetFederation().GetMode().(type) {

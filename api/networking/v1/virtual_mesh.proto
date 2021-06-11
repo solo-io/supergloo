@@ -96,8 +96,6 @@ message VirtualMeshSpec {
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
 
-
-
         // Selects a set of Destinations to federate to the referenced Meshes.
         message FederationSelector {
 

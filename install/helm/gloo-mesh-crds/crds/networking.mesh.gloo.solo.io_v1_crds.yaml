@@ -875,6 +875,9 @@ spec:
               - required:
                 - permissive
               properties:
+                disabled:
+                  description: Disable federation
+                  type: boolean
                 flatNetwork:
                   description: |-
                     If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,

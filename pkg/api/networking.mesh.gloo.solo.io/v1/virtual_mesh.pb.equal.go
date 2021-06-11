@@ -391,6 +391,10 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetDisabled() != target.GetDisabled() {
+		return false
+	}
+
 	if len(m.GetSelectors()) != len(target.GetSelectors()) {
 		return false
 	}
