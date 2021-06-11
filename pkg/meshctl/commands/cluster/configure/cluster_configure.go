@@ -29,7 +29,7 @@ a cluster name. Note that if a cluster is both a management and data plane clust
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.disablePrompt {
 				if opts.kubeconfig == "" || opts.kubecontext == "" {
-					return eris.Errorf("must pass in additional flags when configuring in non-interactive mode")
+					return eris.Errorf("must pass in --kubeconfig and --kubecontext flags when configuring in non-interactive mode")
 				}
 				return configure(opts)
 			}
@@ -50,7 +50,7 @@ type options struct {
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "f", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
+	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "c", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
 
 	flags.BoolVar(&o.disablePrompt, "disable-prompt", false,
 		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
