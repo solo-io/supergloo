@@ -13,6 +13,23 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 // disable OpenAPI validation schema for this file as Cue is incompatible with recursive types (https://github.com/cuelang/cue/issues/915)
 option (core.skv2.solo.io.disable_openapi_validation_schema) = true;
 
+// TODO: fix ratelimit settings
+message RatelimitSettings {
+
+  Ratelimit ratelimit_config = 1;
+
+  // Enterprise-only: Partial config for GlooE's rate-limiting service, based on Envoy's rate-limit service;
+  // supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
+  // Configure rate-limit *descriptors* here, which define the limits for requests based on their descriptors.
+  // Configure rate-limits (composed of *actions*, which define how request characteristics get translated into
+  // descriptors) on the VirtualHost or its routes
+  ServiceSettings ratelimit_settings = 2;
+
+  // Enterprise-only: Settings for the rate limiting server itself
+  Settings ratelimit_server = 3;
+
+}
+
 message Ratelimit {
 
   // Config for rate-limiting using simplified (gloo-specific) API
@@ -98,16 +115,16 @@ message RateLimitConfigRef {
   string namespace = 2;
 }
 
-//// Use this field if you want to inline the Envoy rate limits for this VirtualHost.
-//// Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to
-//// specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are
-//// running a custom rate limit server you need to configure it yourself.
-//message RateLimitVhostExtension {
-//
-//  // Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
-//  // would be throttled, the entire request returns a 429 (gets throttled)
-//  repeated RateLimitActions rate_limits = 1;
-//}
+// Use this field if you want to inline the Envoy rate limits for this VirtualHost.
+// Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to
+// specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are
+// running a custom rate limit server you need to configure it yourself.
+message RateLimitVhostExtension {
+
+  // Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
+  // would be throttled, the entire request returns a 429 (gets throttled)
+  repeated RateLimitActions rate_limits = 1;
+}
 
 // Use this field if you want to inline the Envoy rate limits for this Route.
 // Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to
@@ -146,14 +163,14 @@ message RateLimitConfigSpec {
     repeated SetDescriptor set_descriptors = 3;
   }
 
-  // TODO: cue doesn't like oneofs
-  // Each `RateLimitConfig` is an instance of one specific configuration type.
-  // Currently, only raw configuration is supported, but going forward we are planning on adding
-  // more high-level configuration formats to support specific use cases.
-  oneof config_type {
-    // Define a policy using the raw configuration format used by the server and the client (Envoy).
-    Raw raw = 1;
-  }
+//  // TODO: cue doesn't like oneofs
+//  // Each `RateLimitConfig` is an instance of one specific configuration type.
+//  // Currently, only raw configuration is supported, but going forward we are planning on adding
+//  // more high-level configuration formats to support specific use cases.
+//  oneof config_type {
+//    // Define a policy using the raw configuration format used by the server and the client (Envoy).
+//    Raw raw = 1;
+//  }
 }
 
 // The current status of the `RateLimitConfig`.
@@ -397,6 +414,32 @@ message RateLimit {
 // Copied directly from envoy
 // https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#envoy-v3-api-msg-config-route-v3-ratelimit-action
 message Action {
+
+  // TODO: cue doesn't like oneofs
+  oneof action_specifier {
+
+    // Rate limit on source cluster.
+    SourceCluster source_cluster = 1;
+
+    // Rate limit on destination cluster.
+    DestinationCluster destination_cluster = 2;
+
+    // Rate limit on request headers.
+    RequestHeaders request_headers = 3;
+
+    // Rate limit on remote address.
+    RemoteAddress remote_address = 4;
+
+    // Rate limit on a generic key.
+    GenericKey generic_key = 5;
+
+    // Rate limit on the existence of request headers.
+    HeaderValueMatch header_value_match = 6;
+
+    // Rate limit on metadata.
+    MetaData metadata = 8;
+  }
+
   // The following descriptor entry is appended to the descriptor:
   //
   // ```
@@ -489,58 +532,58 @@ message Action {
       reserved 3; // regex deprecated by `regex_match
       // (envoy_api_field_route.HeaderMatcher.regex_match)`
 
-      // TODO: cue doesn't like one-ofs
-      // Specifies how the header match will be performed to route the request.
-      oneof header_match_specifier {
-
-        // If specified, header match will be performed based on the value of the header.
-        string exact_match = 4;
-
-        // If specified, this regex string is a regular expression rule which implies the entire request
-        // header value must match the regex. The rule will not match if only a subsequence of the
-        // request header value matches the regex. The regex grammar used in the value field is defined
-        // `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.
-        //
-        // Examples:
-        //
-        // * The regex *\d{3}* matches the value *123*
-        // * The regex *\d{3}* does not match the value *1234*
-        // * The regex *\d{3}* does not match the value *123.456*
-        string regex_match = 5; // [(validate.rules).string.max_bytes = 1024];
-
-        // If specified, header match will be performed based on range.
-        // The rule will match if the request header value is within this range.
-        // The entire request header value must represent an integer in base 10 notation: consisting of
-        // an optional plus or minus sign followed by a sequence of digits. The rule will not match if
-        // the header value does not represent an integer. Match will fail for empty values, floating
-        // point numbers or if only a subsequence of the header value is an integer.
-        //
-        // Examples:
-        //
-        // * For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,
-        //   "-1somestring"
-        Int64Range range_match = 6;
-
-        // If specified, header match will be performed based on whether the header is in the
-        // request.
-        bool present_match = 7;
-
-        // If specified, header match will be performed based on the prefix of the header value.
-        // Note: empty prefix is not allowed, please use present_match instead.
-        //
-        // Examples:
-        //
-        // * The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.
-        string prefix_match = 9; // [(validate.rules).string.min_bytes = 1];
-
-        // If specified, header match will be performed based on the suffix of the header value.
-        // Note: empty suffix is not allowed, please use present_match instead.
-        //
-        // Examples:
-        //
-        // * The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.
-        string suffix_match = 10; // [(validate.rules).string.min_bytes = 1];
-      }
+//      // TODO: cue doesn't like one-ofs
+//      // Specifies how the header match will be performed to route the request.
+//      oneof header_match_specifier {
+//
+//        // If specified, header match will be performed based on the value of the header.
+//        string exact_match = 4;
+//
+//        // If specified, this regex string is a regular expression rule which implies the entire request
+//        // header value must match the regex. The rule will not match if only a subsequence of the
+//        // request header value matches the regex. The regex grammar used in the value field is defined
+//        // `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.
+//        //
+//        // Examples:
+//        //
+//        // * The regex *\d{3}* matches the value *123*
+//        // * The regex *\d{3}* does not match the value *1234*
+//        // * The regex *\d{3}* does not match the value *123.456*
+//        string regex_match = 5; // [(validate.rules).string.max_bytes = 1024];
+//
+//        // If specified, header match will be performed based on range.
+//        // The rule will match if the request header value is within this range.
+//        // The entire request header value must represent an integer in base 10 notation: consisting of
+//        // an optional plus or minus sign followed by a sequence of digits. The rule will not match if
+//        // the header value does not represent an integer. Match will fail for empty values, floating
+//        // point numbers or if only a subsequence of the header value is an integer.
+//        //
+//        // Examples:
+//        //
+//        // * For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,
+//        //   "-1somestring"
+//        Int64Range range_match = 6;
+//
+//        // If specified, header match will be performed based on whether the header is in the
+//        // request.
+//        bool present_match = 7;
+//
+//        // If specified, header match will be performed based on the prefix of the header value.
+//        // Note: empty prefix is not allowed, please use present_match instead.
+//        //
+//        // Examples:
+//        //
+//        // * The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.
+//        string prefix_match = 9; // [(validate.rules).string.min_bytes = 1];
+//
+//        // If specified, header match will be performed based on the suffix of the header value.
+//        // Note: empty suffix is not allowed, please use present_match instead.
+//        //
+//        // Examples:
+//        //
+//        // * The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.
+//        string suffix_match = 10; // [(validate.rules).string.min_bytes = 1];
+//      }
 
       // If specified, the match result will be inverted before checking. Defaults to false.
       //
@@ -607,13 +650,13 @@ message Action {
       // Specifies the segment in a path to retrieve value from Metadata.
       // Currently it is only supported to specify the key, i.e. field name, as one segment of a path.
       message PathSegment {
-        // TODO: cue doesn't like oneofs
-        oneof segment {
-          // option (validate.required) = true;
-
-          // Required. If specified, use the key to retrieve the value in a Struct.
-          string key = 1; // [(validate.rules).string = {min_len: 1}];
-        }
+//        // TODO: cue doesn't like oneofs
+//        oneof segment {
+//          // option (validate.required) = true;
+//
+//          // Required. If specified, use the key to retrieve the value in a Struct.
+//          string key = 1; // [(validate.rules).string = {min_len: 1}];
+//        }
       }
 
       // Required. The key name of Metadata to retrieve the Struct from the metadata.
@@ -642,31 +685,6 @@ message Action {
 
     // Source of metadata
     Source source = 4; // [(validate.rules).enum = {defined_only: true}];
-  }
-
-  // TODO: cue doesn't like oneofs
-  oneof action_specifier {
-
-    // Rate limit on source cluster.
-    SourceCluster source_cluster = 1;
-
-    // Rate limit on destination cluster.
-    DestinationCluster destination_cluster = 2;
-
-    // Rate limit on request headers.
-    RequestHeaders request_headers = 3;
-
-    // Rate limit on remote address.
-    RemoteAddress remote_address = 4;
-
-    // Rate limit on a generic key.
-    GenericKey generic_key = 5;
-
-    // Rate limit on the existence of request headers.
-    HeaderValueMatch header_value_match = 6;
-
-    // Rate limit on metadata.
-    MetaData metadata = 8;
   }
 }
 

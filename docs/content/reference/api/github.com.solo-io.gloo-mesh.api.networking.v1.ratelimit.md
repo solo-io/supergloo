@@ -40,8 +40,10 @@ title: "ratelimit.proto"
   - [RateLimitConfigSpec.Raw](#networking.mesh.gloo.solo.io.RateLimitConfigSpec.Raw)
   - [RateLimitConfigStatus](#networking.mesh.gloo.solo.io.RateLimitConfigStatus)
   - [RateLimitRouteExtension](#networking.mesh.gloo.solo.io.RateLimitRouteExtension)
+  - [RateLimitVhostExtension](#networking.mesh.gloo.solo.io.RateLimitVhostExtension)
   - [Ratelimit](#networking.mesh.gloo.solo.io.Ratelimit)
   - [RatelimitConfig](#networking.mesh.gloo.solo.io.RatelimitConfig)
+  - [RatelimitSettings](#networking.mesh.gloo.solo.io.RatelimitSettings)
   - [ServiceSettings](#networking.mesh.gloo.solo.io.ServiceSettings)
   - [SetDescriptor](#networking.mesh.gloo.solo.io.SetDescriptor)
   - [Settings](#networking.mesh.gloo.solo.io.Settings)
@@ -128,12 +130,6 @@ The following descriptor entry is appended to the descriptor:<br>```   ("header_
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | Specifies the name of the header in the request.<br>[(validate.rules).string.min_bytes = 1]; |
-  | exactMatch | string |  | If specified, header match will be performed based on the value of the header. |
-  | regexMatch | string |  | If specified, this regex string is a regular expression rule which implies the entire request header value must match the regex. The rule will not match if only a subsequence of the request header value matches the regex. The regex grammar used in the value field is defined `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.<br>Examples:<br>* The regex *\d{3}* matches the value *123* * The regex *\d{3}* does not match the value *1234* * The regex *\d{3}* does not match the value *123.456*<br>[(validate.rules).string.max_bytes = 1024]; |
-  | rangeMatch | [networking.mesh.gloo.solo.io.Action.HeaderValueMatch.HeaderMatcher.Int64Range]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.Action.HeaderValueMatch.HeaderMatcher.Int64Range" >}}) |  | If specified, header match will be performed based on range. The rule will match if the request header value is within this range. The entire request header value must represent an integer in base 10 notation: consisting of an optional plus or minus sign followed by a sequence of digits. The rule will not match if the header value does not represent an integer. Match will fail for empty values, floating point numbers or if only a subsequence of the header value is an integer.<br>Examples:<br>* For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,   "-1somestring" |
-  | presentMatch | bool |  | If specified, header match will be performed based on whether the header is in the request. |
-  | prefixMatch | string |  | If specified, header match will be performed based on the prefix of the header value. Note: empty prefix is not allowed, please use present_match instead.<br>Examples:<br>* The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.<br>[(validate.rules).string.min_bytes = 1]; |
-  | suffixMatch | string |  | If specified, header match will be performed based on the suffix of the header value. Note: empty suffix is not allowed, please use present_match instead.<br>Examples:<br>* The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.<br>[(validate.rules).string.min_bytes = 1]; |
   | invertMatch | bool |  | If specified, the match result will be inverted before checking. Defaults to false.<br>Examples:<br>* The regex *\d{3}* does not match the value *1234*, so it will match when inverted. * The range [-10,0) will match the value -1, so it will not match when inverted. |
   
 
@@ -194,13 +190,8 @@ MetadataKey provides a general interface using `key` and `path` to retrieve valu
 <a name="networking.mesh.gloo.solo.io.Action.MetaData.MetadataKey.PathSegment"></a>
 
 ### Action.MetaData.MetadataKey.PathSegment
-Specifies the segment in a path to retrieve value from Metadata. Currently it is only supported to specify the key, i.e. field name, as one segment of a path.
+Specifies the segment in a path to retrieve value from Metadata. Currently it is only supported to specify the key, i.e. field name, as one segment of a path.<br>// TODO: cue doesn't like oneofs        oneof segment {          // option (validate.required) = true;<br>         // Required. If specified, use the key to retrieve the value in a Struct.          string key = 1; // [(validate.rules).string = {min_len: 1}];        }
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  | Required. If specified, use the key to retrieve the value in a Struct.<br>[(validate.rules).string = {min_len: 1}]; |
-  
 
 
 
@@ -345,11 +336,6 @@ A list of references to `RateLimitConfig` resources. Each resource represents a 
 A `RateLimitConfig` describes a rate limit policy.
 
 
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| raw | [networking.mesh.gloo.solo.io.RateLimitConfigSpec.Raw]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.RateLimitConfigSpec.Raw" >}}) |  | Define a policy using the raw configuration format used by the server and the client (Envoy). |
-  
-
 
 
 
@@ -404,6 +390,21 @@ Use this field if you want to inline the Envoy rate limits for this Route. Note 
 
 
 
+<a name="networking.mesh.gloo.solo.io.RateLimitVhostExtension"></a>
+
+### RateLimitVhostExtension
+Use this field if you want to inline the Envoy rate limits for this VirtualHost. Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are running a custom rate limit server you need to configure it yourself.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| rateLimits | [][networking.mesh.gloo.solo.io.RateLimitActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.RateLimitActions" >}}) | repeated | Define individual rate limits here. Each rate limit will be evaluated, if any rate limit would be throttled, the entire request returns a 429 (gets throttled) |
+  
+
+
+
+
+
 <a name="networking.mesh.gloo.solo.io.Ratelimit"></a>
 
 ### Ratelimit
@@ -431,6 +432,23 @@ Ratelimit filter config.
 | domain | string |  | Ratelimit domain |
   | descriptors | [networking.mesh.gloo.solo.io.Descriptor]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.Descriptor" >}}) |  |  |
   | setDescriptors | [networking.mesh.gloo.solo.io.SetDescriptor]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.SetDescriptor" >}}) |  |  |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.RatelimitSettings"></a>
+
+### RatelimitSettings
+TODO: fix ratelimit settings
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ratelimitConfig | [networking.mesh.gloo.solo.io.Ratelimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.Ratelimit" >}}) |  |  |
+  | ratelimitSettings | [networking.mesh.gloo.solo.io.ServiceSettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.ServiceSettings" >}}) |  | Enterprise-only: Partial config for GlooE's rate-limiting service, based on Envoy's rate-limit service; supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration) Configure rate-limit *descriptors* here, which define the limits for requests based on their descriptors. Configure rate-limits (composed of *actions*, which define how request characteristics get translated into descriptors) on the VirtualHost or its routes |
+  | ratelimitServer | [networking.mesh.gloo.solo.io.Settings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.Settings" >}}) |  | Enterprise-only: Settings for the rate limiting server itself |
   
 
 

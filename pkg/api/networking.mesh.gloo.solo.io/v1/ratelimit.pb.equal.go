@@ -26,6 +26,60 @@ var (
 )
 
 // Equal function
+func (m *RatelimitSettings) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*RatelimitSettings)
+	if !ok {
+		that2, ok := that.(RatelimitSettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetRatelimitConfig()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRatelimitConfig()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRatelimitConfig(), target.GetRatelimitConfig()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetRatelimitSettings()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRatelimitSettings()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRatelimitSettings(), target.GetRatelimitSettings()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetRatelimitServer()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRatelimitServer()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRatelimitServer(), target.GetRatelimitServer()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *Ratelimit) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -359,6 +413,47 @@ func (m *RateLimitConfigRef) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *RateLimitVhostExtension) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*RateLimitVhostExtension)
+	if !ok {
+		that2, ok := that.(RateLimitVhostExtension)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetRateLimits()) != len(target.GetRateLimits()) {
+		return false
+	}
+	for idx, v := range m.GetRateLimits() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRateLimits()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetRateLimits()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *RateLimitRouteExtension) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -422,30 +517,6 @@ func (m *RateLimitConfigSpec) Equal(that interface{}) bool {
 		return m == nil
 	} else if m == nil {
 		return false
-	}
-
-	switch m.ConfigType.(type) {
-
-	case *RateLimitConfigSpec_Raw_:
-		if _, ok := target.ConfigType.(*RateLimitConfigSpec_Raw_); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetRaw()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetRaw()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetRaw(), target.GetRaw()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.ConfigType != target.ConfigType {
-			return false
-		}
 	}
 
 	return true
@@ -1179,75 +1250,6 @@ func (m *Action_HeaderValueMatch_HeaderMatcher) Equal(that interface{}) bool {
 		return false
 	}
 
-	switch m.HeaderMatchSpecifier.(type) {
-
-	case *Action_HeaderValueMatch_HeaderMatcher_ExactMatch:
-		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_ExactMatch); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetExactMatch(), target.GetExactMatch()) != 0 {
-			return false
-		}
-
-	case *Action_HeaderValueMatch_HeaderMatcher_RegexMatch:
-		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_RegexMatch); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetRegexMatch(), target.GetRegexMatch()) != 0 {
-			return false
-		}
-
-	case *Action_HeaderValueMatch_HeaderMatcher_RangeMatch:
-		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_RangeMatch); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetRangeMatch()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetRangeMatch()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetRangeMatch(), target.GetRangeMatch()) {
-				return false
-			}
-		}
-
-	case *Action_HeaderValueMatch_HeaderMatcher_PresentMatch:
-		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_PresentMatch); !ok {
-			return false
-		}
-
-		if m.GetPresentMatch() != target.GetPresentMatch() {
-			return false
-		}
-
-	case *Action_HeaderValueMatch_HeaderMatcher_PrefixMatch:
-		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_PrefixMatch); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetPrefixMatch(), target.GetPrefixMatch()) != 0 {
-			return false
-		}
-
-	case *Action_HeaderValueMatch_HeaderMatcher_SuffixMatch:
-		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_SuffixMatch); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetSuffixMatch(), target.GetSuffixMatch()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.HeaderMatchSpecifier != target.HeaderMatchSpecifier {
-			return false
-		}
-	}
-
 	return true
 }
 
@@ -1347,24 +1349,6 @@ func (m *Action_MetaData_MetadataKey_PathSegment) Equal(that interface{}) bool {
 		return m == nil
 	} else if m == nil {
 		return false
-	}
-
-	switch m.Segment.(type) {
-
-	case *Action_MetaData_MetadataKey_PathSegment_Key:
-		if _, ok := target.Segment.(*Action_MetaData_MetadataKey_PathSegment_Key); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetKey(), target.GetKey()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.Segment != target.Segment {
-			return false
-		}
 	}
 
 	return true
