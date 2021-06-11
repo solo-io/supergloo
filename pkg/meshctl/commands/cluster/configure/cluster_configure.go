@@ -36,7 +36,7 @@ a cluster name. Note that if a cluster is both a management and data plane clust
 			}
 			if opts.disablePrompt {
 				if opts.kubeconfig == "" || opts.kubecontext == "" {
-					return eris.Errorf("must pass in additional flags when configuring in non-interactive mode")
+					return eris.Errorf("must pass in --kubeconfig and --kubecontext flags when configuring in non-interactive mode")
 				}
 				return configure(opts)
 			}

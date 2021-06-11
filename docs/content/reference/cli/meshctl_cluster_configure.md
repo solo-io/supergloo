@@ -32,7 +32,7 @@ meshctl cluster configure [flags]
   -h, --help                                                       help for configure
       --kubeconfig string                                          Path to the kubeconfig from which the cluster will be accessed
       --kubecontext string                                         Name of the kubeconfig context to use for the cluster
-  -f, --meshctl-config-file $HOME/.gloo-mesh/meshctl-config.yaml   path to the meshctl config file. defaults to $HOME/.gloo-mesh/meshctl-config.yaml
+  -c, --meshctl-config-file $HOME/.gloo-mesh/meshctl-config.yaml   path to the meshctl config file. defaults to $HOME/.gloo-mesh/meshctl-config.yaml
 ```
 
 ### Options inherited from parent commands
