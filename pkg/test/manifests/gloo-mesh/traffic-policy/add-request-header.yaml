@@ -1,0 +1,30 @@
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: VirtualMesh
+metadata:
+  name: virtual-mesh
+  namespace: gloo-mesh
+spec:
+  hostnameSuffix: solo.io
+  federation:
+    selectors:
+      - { }
+  meshes:
+    - name: istiod-istio-system-cluster-0
+      namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-1
+      namespace: gloo-mesh
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  namespace: gloo-mesh
+  name: backend-timeout
+spec:
+  destinationSelector:
+    - kubeServiceMatcher:
+        labels:
+          app: backend
+  policy:
+    headerManipulation:
+      appendRequestHeaders:
+        who: hoo
