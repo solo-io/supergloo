@@ -7,6 +7,7 @@ option (extproto.equal_all) = true;
 
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 
 // Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
 message SettingsSpec {
@@ -74,9 +75,19 @@ message DiscoverySettings {
         // Configure discovery of ingress gateways.
         message IngressGatewayDetector {
 
+            // DEPRECATED: in favor of `gateway_workload_selectors`
             // Workload labels used to detect ingress gateways for an Istio deployment.
             // If not specified, will default to `{"istio": "ingressgateway"}`.
             map<string, string> gateway_workload_labels = 1;
+
+            // Workload selectors used to detect ingress gateway workloads for an Istio deployment.
+            // Multiple selectors have OR semantics, i.e. a workload will be associated to this ingress gateway if it matches any of the
+            // specified selectors.
+            // The `cluster` field will be ignored and instead default to the cluster specified by the associated key under `ingress_gateway_detectors`.
+            // If no labels are specified, the default label pair `{"istio": "ingressgateway"}` will be used.
+            // If no namespace is specified, the default namespace `"istio-system"` will be used.
+            // If omitted entirely, a single selector consisting of the default label set and default namespace mentioned above will be used.
+            repeated .common.mesh.gloo.solo.io.WorkloadSelector gateway_workload_selectors = 3;
 
             // The name of the TLS port used to detect ingress gateways. Kubernetes services must have a port with this name
             // in order to be recognized as an ingress gateway. If not specified, will default to `tls`.

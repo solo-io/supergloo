@@ -43,9 +43,52 @@ spec:
                             additionalProperties:
                               type: string
                             description: |-
+                              DEPRECATED: in favor of `gateway_workload_selectors`
                               Workload labels used to detect ingress gateways for an Istio deployment.
                               If not specified, will default to `{"istio": "ingressgateway"}`.
                             type: object
+                          gatewayWorkloadSelectors:
+                            description: |-
+                              Workload selectors used to detect ingress gateway workloads for an Istio deployment.
+                              Multiple selectors have OR semantics, i.e. a workload will be associated to this ingress gateway if it matches any of the
+                              specified selectors.
+                              The `cluster` field will be ignored and instead default to the cluster specified by the associated key under `ingress_gateway_detectors`.
+                              If no labels are specified, the default label pair `{"istio": "ingressgateway"}` will be used.
+                              If no namespace is specified, the default namespace `"istio-system"` will be used.
+                              If omitted entirely, a single selector consisting of the default label set and default namespace mentioned above will be used.
+                            items:
+                              properties:
+                                kubeWorkloadMatcher:
+                                  description: Match Kubernetes workloads by their
+                                    labels, namespaces, and/or clusters.
+                                  properties:
+                                    clusters:
+                                      description: |-
+                                        If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+                                                   When used in a networking policy, omission matches any cluster.
+                                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                      items:
+                                        type: string
+                                      type: array
+                                    labels:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        If specified, all labels must exist on Kubernetes workload.
+                                               When used in a networking policy, omission matches any labels.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                      type: object
+                                    namespaces:
+                                      description: |-
+                                        If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+                                                   When used in a networking policy, omission matches any namespace.
+                                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
+                              type: object
+                            type: array
                         type: object
                       description: |-
                         Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or

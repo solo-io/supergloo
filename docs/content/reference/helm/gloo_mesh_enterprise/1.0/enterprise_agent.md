@@ -27,7 +27,7 @@ weight: 2
 |settingsRef.name|string|settings||
 |settingsRef.namespace|string|gloo-mesh||
 |verbose|bool|false||
-|enterpriseAgent|struct|{"image":{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"grpc":9977,"http":9988},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the enterpriseAgent deployment.|
+|enterpriseAgent|struct|{"image":{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"grpc":9977,"http":9988},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the enterpriseAgent deployment.|
 |enterpriseAgent.image|struct|{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |enterpriseAgent.image.tag|string| |Tag for the container.|
 |enterpriseAgent.image.repository|string|enterprise-agent|Image name (repository).|
@@ -41,3 +41,16 @@ weight: 2
 |enterpriseAgent.ports.grpc|uint32|9977|Specify service ports as a map from port name to port number.|
 |enterpriseAgent.ports.http|uint32|9988|Specify service ports as a map from port name to port number.|
 |enterpriseAgent.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|enterpriseAgent.customPodLabels|map[string, string]| |Custom labels for the pod|
+|enterpriseAgent.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
+|enterpriseAgent.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
+|enterpriseAgent.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
+|enterpriseAgent.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
+|enterpriseAgent.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
+|enterpriseAgent.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
+|enterpriseAgent.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
+|enterpriseAgent.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
+|enterpriseAgent.customServiceLabels|map[string, string]| |Custom labels for the service|
+|enterpriseAgent.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
+|enterpriseAgent.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
+|enterpriseAgent.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|

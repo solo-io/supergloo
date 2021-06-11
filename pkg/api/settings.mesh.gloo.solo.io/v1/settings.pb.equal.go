@@ -320,6 +320,23 @@ func (m *DiscoverySettings_Istio_IngressGatewayDetector) Equal(that interface{})
 
 	}
 
+	if len(m.GetGatewayWorkloadSelectors()) != len(target.GetGatewayWorkloadSelectors()) {
+		return false
+	}
+	for idx, v := range m.GetGatewayWorkloadSelectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGatewayWorkloadSelectors()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetGatewayWorkloadSelectors()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
 		return false
 	}
