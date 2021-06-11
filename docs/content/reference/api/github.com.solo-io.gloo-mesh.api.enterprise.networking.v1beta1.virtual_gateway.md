@@ -247,7 +247,7 @@ TODO: Fill ConnectionOptions
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | csrf | [networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.csrf#networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter for this Gateway. |
-  | ratelimit | [networking.mesh.gloo.solo.io.RatelimitConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.RatelimitConfig" >}}) |  | Configure the Envoy based Ratelimit filter for this Gateway. |
+  | ratelimit | [networking.mesh.gloo.solo.io.Ratelimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.Ratelimit" >}}) |  | Configure the Envoy based Ratelimit filter for this Gateway. |
   
 
 

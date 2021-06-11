@@ -13,6 +13,28 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 // disable OpenAPI validation schema for this file as Cue is incompatible with recursive types (https://github.com/cuelang/cue/issues/915)
 option (core.skv2.solo.io.disable_openapi_validation_schema) = true;
 
+message Ratelimit {
+
+  // Config for rate-limiting using simplified (gloo-specific) API
+  IngressRateLimit ratelimit_basic = 1;
+
+    oneof rate_limit_config_type {
+
+        // Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
+        // supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
+        // Configure rate-limit *actions* here, which define how request characteristics get translated into
+        // descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
+        // their associated limits on the Gloo settings.
+        // Only one of `ratelimit` or `rate_limit_configs` can be set.
+//        RateLimitVhostExtension ratelimit = 2;
+
+        // References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
+        // Only one of `ratelimit` or `rate_limit_configs` can be set.
+        RateLimitConfigRefs rate_limit_configs = 3;
+    }
+
+}
+
 // Ratelimit filter config.
 message RatelimitConfig {
 
@@ -22,23 +44,6 @@ message RatelimitConfig {
   Descriptor descriptors = 2;
   SetDescriptor set_descriptors = 3;
 
-  // Config for rate-limiting using simplified (gloo-specific) API
-  IngressRateLimit ratelimit_basic = 4;
-
-//  oneof rate_limit_config_type {
-//
-//      // Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
-//      // supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
-//      // Configure rate-limit *actions* here, which define how request characteristics get translated into
-//      // descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
-//      // their associated limits on the Gloo settings.
-//      // Only one of `ratelimit` or `rate_limit_configs` can be set.
-//      RateLimitVhostExtension ratelimit = 5;
-//
-//      // References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
-//      // Only one of `ratelimit` or `rate_limit_configs` can be set.
-//      RateLimitConfigRefs rate_limit_configs = 6;
-//  }
 }
 
 // Copied from Gloo Edge: https://github.com/solo-io/gloo/blob/cfa3c17ab2552a594966da9aaad3f7c8b9678b7c/projects/gloo/api/v1/enterprise/options/ratelimit/ratelimit.proto
@@ -83,9 +88,9 @@ message ServiceSettings {
 
 // A list of references to `RateLimitConfig` resources.
 // Each resource represents a rate limit policy that will be independently enforced.
-//message RateLimitConfigRefs {
-//  repeated RateLimitConfigRef refs = 1;
-//}
+message RateLimitConfigRefs {
+  repeated RateLimitConfigRef refs = 1;
+}
 
 // A reference to a `RateLimitConfig` resource.
 message RateLimitConfigRef {

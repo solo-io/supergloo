@@ -77,7 +77,7 @@ message TrafficPolicySpec {
         .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 13;
 
         // Config the Envoy based Ratelimit filter
-        .networking.mesh.gloo.solo.io.RatelimitConfig ratelimit = 14;
+        .networking.mesh.gloo.solo.io.Ratelimit ratelimit = 14;
 
         // Specify retries for failed requests.
         message RetryPolicy {

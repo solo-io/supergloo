@@ -164,7 +164,7 @@ message VirtualGatewaySpec {
                 .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
 
                 // Configure the Envoy based Ratelimit filter for this Gateway.
-                .networking.mesh.gloo.solo.io.RatelimitConfig ratelimit = 3;
+                .networking.mesh.gloo.solo.io.Ratelimit ratelimit = 3;
 
             }
         }

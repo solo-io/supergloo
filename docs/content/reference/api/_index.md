@@ -64,6 +64,8 @@ These docs describe Gloo Mesh CRDs.
 
   - [DestinationPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.destination_policy#networking.mesh.gloo.solo.io.DestinationPolicySpec" >}})
 
+  - [RateLimitConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit#networking.mesh.gloo.solo.io.RateLimitConfigSpec" >}})
+
   - [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}})
 
   - [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}})
