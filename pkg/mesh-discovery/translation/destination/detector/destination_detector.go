@@ -433,7 +433,7 @@ func getExternalNodeIps(
 		}
 
 		if !foundExternalNodeIp {
-			contextutils.LoggerFrom(ctx).Warnf("no external addresses reported for ingress node %v", sets2.Key(ingressNode))
+			contextutils.LoggerFrom(ctx).Debugf("no external addresses reported for ingress node %v", sets2.Key(ingressNode))
 		}
 	}
 
