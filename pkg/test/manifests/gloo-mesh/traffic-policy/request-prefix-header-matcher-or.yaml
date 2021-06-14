@@ -19,26 +19,26 @@ metadata:
   namespace: gloo-mesh
   name: backend-timeout
 spec:
+  sourceSelector:
+  - kubeWorkloadMatcher:
+      namespaces:
+      - {{.EchoContext.AppNamespace.Name}}
   destinationSelector:
-  - kubeServiceRefs:
-      services:
-      - clusterName: cluster-1
-        name: backend
-        namespace: {{.EchoContext.AppNamespace.Name}}
+    - kubeServiceRefs:
+        services:
+          - clusterName: cluster-1
+            name: backend
+            namespace: {{.EchoContext.AppNamespace.Name}}
   httpRequestMatchers:
-    - prefix: /
+    - prefix: /two
     - headers:
         - name: color-header
           value: blue
   policy:
-    requestTimeout: 100ms
-    retries:
-      attempts: 5
-      perTryTimeout: 5ms
     trafficShift:
       destinations:
         - kubeService:
             clusterName: cluster-2
             name: backend
             namespace: {{.EchoContext.AppNamespace.Name}}
-          weight: 100
+            port: 8090

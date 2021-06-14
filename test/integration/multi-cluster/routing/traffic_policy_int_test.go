@@ -50,6 +50,22 @@ func TestTrafficPolicies(t *testing.T) {
 							Folder:      "gloo-mesh/traffic-policy",
 							Skip:        "https://github.com/solo-io/gloo-mesh-enterprise/issues/688",
 						},
+						{
+							Name:        "request-path-matcher",
+							Description: "Checking request matching on a prefix route",
+							Test:        testRequestPathMatcher,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "request-prefix-matcher.yaml",
+							Folder:      "gloo-mesh/traffic-policy",
+						},
+						{
+							Name:        "request-header-matcher",
+							Description: "Checking request matching on a header",
+							Test:        testRequestHeaderMatcher,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "request-header-matcher.yaml",
+							Folder:      "gloo-mesh/traffic-policy",
+						},
 					},
 				},
 			}
@@ -74,7 +90,7 @@ func testRequestTimeout(ctx resource.Context, t *testing.T, deploymentCtx *conte
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "info",
+		Path:      "/info",
 		Count:     5,
 		Validator: echo.ExpectOK(),
 	})
@@ -88,7 +104,7 @@ func testRequestTimeout(ctx resource.Context, t *testing.T, deploymentCtx *conte
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "info?delay=3s",
+		Path:      "/info?delay=3s",
 		Count:     5,
 		Validator: echo.ExpectError(),
 	})
@@ -105,7 +121,7 @@ func testRequestTimeout(ctx resource.Context, t *testing.T, deploymentCtx *conte
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "info?delay=3s",
+		Path:      "/info?delay=3s",
 		Count:     5,
 		Validator: echo.ExpectOK(),
 	})
@@ -126,7 +142,7 @@ func testRequestTimeoutMultiCluster(ctx resource.Context, t *testing.T, deployme
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "info",
+		Path:      "/info",
 		Count:     5,
 		Validator: echo.ExpectOK(),
 	})
@@ -140,7 +156,7 @@ func testRequestTimeoutMultiCluster(ctx resource.Context, t *testing.T, deployme
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "info?delay=3s",
+		Path:      "/info?delay=3s",
 		Count:     5,
 		Validator: echo.ExpectError(),
 	})
@@ -177,9 +193,102 @@ func testAddRequestHeader(ctx resource.Context, t *testing.T, deploymentCtx *con
 		Scheme:    scheme.HTTP,
 		Address:   backendHost,
 		Method:    http.MethodGet,
-		Path:      "info",
+		Path:      "/info",
 		Count:     1,
 		Validator: echo.ExpectKey("who", "hoo"),
+	})
+
+}
+
+func testRequestPathMatcher(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+	backendHost := fmt.Sprintf("backend.%s.svc.cluster.local", deploymentCtx.EchoContext.AppNamespace.Name())
+
+	// happy requests with correct path
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "/two",
+		Count:     1,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
+	})
+
+	// happy requests non /two should 404
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "/one",
+		Count:     1,
+		Validator: echo.ExpectCode("404"),
+	})
+
+}
+
+func testRequestHeaderMatcher(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+	backendHost := fmt.Sprintf("backend.%s.svc.cluster.local", deploymentCtx.EchoContext.AppNamespace.Name())
+
+	// happy requests with header color-header: blue
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:  scheme.HTTP,
+		Address: backendHost,
+		Method:  http.MethodGet,
+		Headers: map[string][]string{
+			"Host":         {backendHost},
+			"color-header": {"blue"},
+		},
+		Path:      "/info",
+		Count:     1,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
+	})
+
+	// different header value
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:  scheme.HTTP,
+		Address: backendHost,
+		Method:  http.MethodGet,
+		Headers: map[string][]string{
+			"Host":         {backendHost},
+			"color-header": {"red"},
+		},
+		Path:      "/info",
+		Count:     1,
+		Validator: echo.ExpectCode("404"),
+	})
+	// no header
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Path:      "/info",
+		Count:     1,
+		Validator: echo.ExpectCode("404"),
 	})
 
 }
