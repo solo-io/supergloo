@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/solo-io/gloo-mesh/pkg/test/apps/context"
 	"istio.io/istio/pkg/test/echo/common/scheme"
 	"istio.io/istio/pkg/test/framework/components/echo"
 	"istio.io/istio/pkg/test/framework/resource"
-	"net/http"
-	"testing"
 
 	"github.com/solo-io/gloo-mesh/pkg/test/common"
 	"istio.io/istio/pkg/test/framework"
