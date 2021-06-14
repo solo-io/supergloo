@@ -1250,6 +1250,75 @@ func (m *Action_HeaderValueMatch_HeaderMatcher) Equal(that interface{}) bool {
 		return false
 	}
 
+	switch m.HeaderMatchSpecifier.(type) {
+
+	case *Action_HeaderValueMatch_HeaderMatcher_ExactMatch:
+		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_ExactMatch); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetExactMatch(), target.GetExactMatch()) != 0 {
+			return false
+		}
+
+	case *Action_HeaderValueMatch_HeaderMatcher_RegexMatch:
+		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_RegexMatch); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetRegexMatch(), target.GetRegexMatch()) != 0 {
+			return false
+		}
+
+	case *Action_HeaderValueMatch_HeaderMatcher_RangeMatch:
+		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_RangeMatch); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetRangeMatch()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRangeMatch()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetRangeMatch(), target.GetRangeMatch()) {
+				return false
+			}
+		}
+
+	case *Action_HeaderValueMatch_HeaderMatcher_PresentMatch:
+		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_PresentMatch); !ok {
+			return false
+		}
+
+		if m.GetPresentMatch() != target.GetPresentMatch() {
+			return false
+		}
+
+	case *Action_HeaderValueMatch_HeaderMatcher_PrefixMatch:
+		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_PrefixMatch); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetPrefixMatch(), target.GetPrefixMatch()) != 0 {
+			return false
+		}
+
+	case *Action_HeaderValueMatch_HeaderMatcher_SuffixMatch:
+		if _, ok := target.HeaderMatchSpecifier.(*Action_HeaderValueMatch_HeaderMatcher_SuffixMatch); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetSuffixMatch(), target.GetSuffixMatch()) != 0 {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.HeaderMatchSpecifier != target.HeaderMatchSpecifier {
+			return false
+		}
+	}
+
 	return true
 }
 
