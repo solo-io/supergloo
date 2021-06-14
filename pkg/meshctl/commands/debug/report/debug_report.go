@@ -36,6 +36,12 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "meshctl debug report selectively captures cluster information and logs into an archive to help diagnose problems.",
+		Long: `
+Running this command requires
+
+1) istioctl to be installed and accessible via your PATH.
+2) a meshctl-config-file to be passed in. You can configure this file by running 'meschtl cluster config'.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.verbose = globalFlags.Verbose
 			if opts.meshctlConfigPath == "" {
@@ -66,8 +72,6 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		return err
 	}
 
-	// Check that meshctl version is correct
-
 	fmt.Printf("Running `meschtl version`\n")
 	versionsDir := dir + "/version"
 	err = opts.fs.MkdirAll(versionsDir, 0755)
@@ -82,7 +86,8 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		}
 		meshctlVersionFile := clusterVersionDir + "/meshctl_version"
 		var b bytes.Buffer
-		utils.RunShell(fmt.Sprintf("meshctl version --kubeconfig %s --kubecontext %s", cluster.KubeConfig, cluster.KubeContext), io.Writer(&b))
+		utils.RunShell(fmt.Sprintf("meshctl version --kubeconfig %s --kubecontext %s",
+			cluster.KubeConfig, cluster.KubeContext), io.Writer(&b))
 		err = ioutil.WriteFile(meshctlVersionFile, b.Bytes(), 0644)
 		if err != nil {
 			panic(err)
