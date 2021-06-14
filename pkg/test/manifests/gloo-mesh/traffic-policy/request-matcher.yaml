@@ -25,5 +25,20 @@ spec:
       - clusterName: cluster-1
         name: backend
         namespace: {{.EchoContext.AppNamespace.Name}}
+  httpRequestMatchers:
+    - prefix: /
+    - headers:
+        - name: color-header
+          value: blue
   policy:
-    requestTimeout: 1s
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: cluster-2
+            name: backend
+            namespace: {{.EchoContext.AppNamespace.Name}}
+          weight: 100
