@@ -15,6 +15,7 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/pointer"
@@ -70,6 +71,7 @@ func (t *destinationDetector) DetectDestination(
 		WorkloadSelectorLabels: service.Spec.Selector,
 		Labels:                 service.Labels,
 		Ports:                  convertPorts(service),
+		ExternalAddresses:      getExternalAddresses(ctx, service, pods, nodes),
 	}
 
 	// add locality to the destination
@@ -322,4 +324,127 @@ func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeServ
 		ports = append(ports, discoveredPort)
 	}
 	return ports
+}
+
+// if the Service is a non ClusterIP type, fetch the external addresses
+func getExternalAddresses(
+	ctx context.Context,
+	svc *corev1.Service,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
+) []*v1.DestinationSpec_KubeService_ExternalAddress {
+
+	// TODO: add support for ExternalName Services
+	switch svc.Spec.Type {
+	case corev1.ServiceTypeNodePort:
+		return getExternalNodeIps(ctx, svc, pods, nodes)
+	case corev1.ServiceTypeLoadBalancer:
+		return getExternalLoadBalancerAddresses(svc)
+	}
+
+	return nil
+}
+
+// return all externally-addressable IPs or Hostnames for a LoadBalancer Service
+func getExternalLoadBalancerAddresses(
+	svc *corev1.Service,
+) []*v1.DestinationSpec_KubeService_ExternalAddress {
+	var externalLoadBalancerAddresses []*v1.DestinationSpec_KubeService_ExternalAddress
+
+	ingress := svc.Status.LoadBalancer.Ingress
+	for _, loadBalancerIngress := range ingress {
+
+		var externalAddress *v1.DestinationSpec_KubeService_ExternalAddress
+
+		// If the IP address is set in the ingress, use that
+		if loadBalancerIngress.IP != "" {
+			externalAddress = &v1.DestinationSpec_KubeService_ExternalAddress{
+				LoadBalancerExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
+					Ip: loadBalancerIngress.IP,
+				},
+			}
+		} else if loadBalancerIngress.Hostname != "" {
+			// Otherwise use the hostname
+			externalAddress = &v1.DestinationSpec_KubeService_ExternalAddress{
+				LoadBalancerExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_DnsName{
+					DnsName: loadBalancerIngress.Hostname,
+				},
+			}
+		}
+		externalLoadBalancerAddresses = append(externalLoadBalancerAddresses, externalAddress)
+	}
+
+	return externalLoadBalancerAddresses
+}
+
+// return all externally-addressable NodeIPs for a NodePort Service
+func getExternalNodeIps(
+	ctx context.Context,
+	svc *corev1.Service,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
+) []*v1.DestinationSpec_KubeService_ExternalAddress {
+	var externalNodeIps []*v1.DestinationSpec_KubeService_ExternalAddress
+
+	// fetch all backing Pods for the Service
+	backingPods := pods.List(func(pod *corev1.Pod) bool {
+		return pod.ClusterName != svc.ClusterName ||
+			pod.Namespace != svc.Namespace ||
+			!labels.SelectorFromSet(svc.Spec.Selector).Matches(labels.Set(pod.Labels))
+	})
+	if len(backingPods) < 1 {
+		contextutils.LoggerFrom(ctx).Warnf("no pods found backing service %v", sets2.Key(svc))
+		return nil
+	}
+
+	for _, backingPod := range backingPods {
+		ingressNode, err := nodes.Find(&skv2corev1.ClusterObjectRef{
+			ClusterName: backingPod.ClusterName,
+			Name:        backingPod.Spec.NodeName,
+		})
+		if err != nil {
+			contextutils.LoggerFrom(ctx).DPanicf("failed to find ingress node for pod %v", sets2.Key(backingPod))
+			continue
+		}
+
+		isKindNode := isKindNode(ingressNode)
+
+		var foundExternalNodeIp bool
+		for _, addr := range ingressNode.Status.Addresses {
+			if isKindNode {
+				// For Kind clusters, we use the NodeInternalIP for the external IP address.
+				if addr.Type != corev1.NodeInternalIP {
+					continue
+				}
+			} else if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeInternalDNS {
+				// skip node-internal IPs
+				continue
+			}
+
+			foundExternalNodeIp = true
+			externalNodeIps = append(externalNodeIps, &v1.DestinationSpec_KubeService_ExternalAddress{
+				LoadBalancerExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
+					Ip: addr.Address,
+				},
+			})
+		}
+
+		if !foundExternalNodeIp {
+			contextutils.LoggerFrom(ctx).Warnf("no external addresses reported for ingress node %v", sets2.Key(ingressNode))
+		}
+	}
+
+	return externalNodeIps
+}
+
+// return true is the Node is provisioned by Kind
+func isKindNode(node *corev1.Node) bool {
+	for _, image := range node.Status.Images {
+		for _, name := range image.Names {
+			if strings.Contains(name, "kindnetd") {
+				return true
+			}
+		}
+	}
+	return false
 }
