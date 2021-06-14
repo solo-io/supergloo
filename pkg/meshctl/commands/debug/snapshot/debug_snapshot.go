@@ -40,9 +40,8 @@ type DebugSnapshotOpts struct {
 	zip     string
 	verbose bool
 
-	kubeconfig        string
-	kubecontext       string
-	meshctlConfigPath string
+	kubeconfig  string
+	kubecontext string
 
 	// hidden optional values
 	metricsBindPort uint32
@@ -50,7 +49,6 @@ type DebugSnapshotOpts struct {
 }
 
 func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
-	utils.AddMeshctlConfigFlags(&opts.meshctlConfigPath, flags)
 	utils.AddManagementKubeconfigFlags(&opts.kubeconfig, &opts.kubecontext, flags)
 	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:\n meshctl debug snapshot discovery input | jq '.'")
 	flags.StringVarP(&opts.file, "file", "f", "", "file to write output to")
@@ -67,15 +65,6 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 		Short: "Input and Output snapshots for the discovery and networking pods. Requires jq to be installed if the --json flag is not being used.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.verbose = globalFlags.Verbose
-			if opts.meshctlConfigPath != "" {
-				config, err := utils.ParseMeshctlConfig(opts.meshctlConfigPath)
-				if err == nil {
-					if opts.kubeconfig == "" && opts.kubecontext == "" {
-						opts.kubeconfig = config.MgmtCluster().KubeConfig
-						opts.kubecontext = config.MgmtCluster().KubeContext
-					}
-				}
-			}
 			return debugSnapshot(ctx, opts, []string{discovery, networking, enterpriseNetworking, enterpriseAgent}, []string{input, output})
 		},
 	}
@@ -260,7 +249,7 @@ func getSnapshot(ctx context.Context, opts *DebugSnapshotOpts, localPort, podNam
 	mgmtDeployName := podName
 	remotePort := strconv.Itoa(int(opts.metricsBindPort))
 	// start port forward to mgmt server stats port
-	resultingLocalPort, err := utils.PortForwardFromDeployment(
+	localPort, err = utils.PortForwardFromDeployment(
 		portFwdContext,
 		opts.kubeconfig,
 		opts.kubecontext,
@@ -274,7 +263,7 @@ func getSnapshot(ctx context.Context, opts *DebugSnapshotOpts, localPort, podNam
 		return ""
 	}
 	// request metrics page from mgmt deployment
-	snapshotUrl := fmt.Sprintf("http://localhost:%v/snapshots/%s", resultingLocalPort, snapshotType)
+	snapshotUrl := fmt.Sprintf("http://localhost:%v/snapshots/%s", localPort, snapshotType)
 	resp, err := http.DefaultClient.Get(snapshotUrl)
 	if err != nil {
 		fmt.Printf("try verifying that the mgmt pods are listening on port %v", remotePort)

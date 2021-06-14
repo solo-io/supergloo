@@ -1,19 +1,19 @@
 ---
-title: "meshctl debug snapshot discovery input"
+title: "meshctl debug snapshot enterprise-agent output"
 weight: 5
 ---
-## meshctl debug snapshot discovery input
+## meshctl debug snapshot enterprise-agent output
 
-Input snapshot for the discovery pod
+Output snapshot for the enterprise-agent pod
 
 ```
-meshctl debug snapshot discovery input [flags]
+meshctl debug snapshot enterprise-agent output [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for input
+  -h, --help   help for output
 ```
 
 ### Options inherited from parent commands
@@ -30,5 +30,5 @@ meshctl debug snapshot discovery input [flags]
 
 ### SEE ALSO
 
-* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - Input and output snapshots for the discovery pod
+* [meshctl debug snapshot enterprise-agent](../meshctl_debug_snapshot_enterprise-agent)	 - Input and output snapshots for the enterprise agent pod
 

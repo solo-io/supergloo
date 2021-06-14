@@ -1,13 +1,13 @@
 ---
-title: "meshctl debug snapshot discovery input"
+title: "meshctl debug snapshot enterprise-networking input"
 weight: 5
 ---
-## meshctl debug snapshot discovery input
+## meshctl debug snapshot enterprise-networking input
 
-Input snapshot for the discovery pod
+Input snapshot for the enterprise-networking pod
 
 ```
-meshctl debug snapshot discovery input [flags]
+meshctl debug snapshot enterprise-networking input [flags]
 ```
 
 ### Options
@@ -30,5 +30,5 @@ meshctl debug snapshot discovery input [flags]
 
 ### SEE ALSO
 
-* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - Input and output snapshots for the discovery pod
+* [meshctl debug snapshot enterprise-networking](../meshctl_debug_snapshot_enterprise-networking)	 - Input and output snapshots for the enterprise networking pod
 

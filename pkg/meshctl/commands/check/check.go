@@ -51,15 +51,6 @@ func Command(ctx context.Context) *cobra.Command {
 		Use:   "check",
 		Short: "Perform health checks on the Gloo Mesh system",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.meshctlConfigPath != "" {
-				config, err := utils.ParseMeshctlConfig(opts.meshctlConfigPath)
-				if err == nil {
-					if opts.kubeconfig == "" && opts.kubecontext == "" {
-						opts.kubeconfig = config.MgmtCluster().KubeConfig
-						opts.kubecontext = config.MgmtCluster().KubeContext
-					}
-				}
-			}
 			kubeClient, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
@@ -75,17 +66,15 @@ func Command(ctx context.Context) *cobra.Command {
 }
 
 type options struct {
-	kubeconfig        string
-	kubecontext       string
-	meshctlConfigPath string
-	namespace         string
-	localPort         uint32
-	remotePort        uint32
+	kubeconfig  string
+	kubecontext string
+	namespace   string
+	localPort   uint32
+	remotePort  uint32
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
-	utils.AddMeshctlConfigFlags(&o.meshctlConfigPath, flags)
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Gloo Mesh is installed in")
 	flags.Uint32Var(&o.localPort, "local-port", defaults.MetricsPort, "local port used to open port-forward to enterprise mgmt pod (enterprise only)")
 	flags.Uint32Var(&o.remotePort, "remote-port", defaults.MetricsPort, "remote port used to open port-forward to enterprise mgmt pod (enterprise only). set to 0 to disable checks on the mgmt server")

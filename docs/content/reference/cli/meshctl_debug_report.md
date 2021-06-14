@@ -13,7 +13,7 @@ meshctl debug report [flags]
 ### Options
 
 ```
-  -f, --file string                                                name of the output tgz file (default "bug-report.tgz")
+  -f, --file string                                                name of the output tgz file (default "meshctl-bug-report.tgz")
   -h, --help                                                       help for report
   -c, --meshctl-config-file $HOME/.gloo-mesh/meshctl-config.yaml   path to the meshctl config file. defaults to $HOME/.gloo-mesh/meshctl-config.yaml
   -n, --namespace string                                           gloo-mesh namespace (default "gloo-mesh")
