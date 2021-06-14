@@ -51,6 +51,7 @@ type options struct {
 	meshctlConfigPath string
 
 	disablePrompt bool
+	mgmtCluster   bool
 	clusterName   string
 	kubeconfig    string
 	kubecontext   string
@@ -62,7 +63,9 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.BoolVar(&o.disablePrompt, "disable-prompt", false,
 		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
 	flags.StringVar(&o.clusterName, "cluster-name", "",
-		"data plane cluster name (leave empty if this is the management cluster)")
+		"data plane cluster name (ignored if this is the management cluster)")
+	flags.BoolVar(&o.mgmtCluster, "is-mgmt-cluster", true,
+		"this is the management cluster")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to the kubeconfig from which the cluster will be accessed")
 	flags.StringVar(&o.kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the cluster")
 }
@@ -93,12 +96,12 @@ func configure(opts *options) error {
 		KubeConfig:  opts.kubeconfig,
 		KubeContext: opts.kubecontext,
 	}
-	if opts.clusterName != "" {
+	if opts.mgmtCluster {
+		config.AddMgmtCluster(cluster)
+	} else {
 		if err := config.AddDataPlaneCluster(opts.clusterName, cluster); err != nil {
 			return err
 		}
-	} else {
-		config.AddMgmtCluster(cluster)
 	}
 	return writeConfigToFile(config, opts.meshctlConfigPath)
 }
@@ -114,7 +117,7 @@ func configureInteractive(meshctlConfigPath string) error {
 	keepGoing := "Yes"
 	for keepGoing == "Yes" {
 		answer, err := selectValueInteractive("Are you configuring a management cluster or a data plane cluster?",
-			[]string{"Management Plane", "Data Plane"})
+			[]string{"Management Plane", "Data Plane", "Both"})
 		if err != nil {
 			return err
 		}
@@ -133,6 +136,15 @@ func configureInteractive(meshctlConfigPath string) error {
 			if err := config.AddDataPlaneCluster(clusterName, dataPlaneContext); err != nil {
 				return err
 			}
+		case "Both":
+			clusterName, clusterContext, err := configureDataPlaneCluster()
+			if err != nil {
+				return err
+			}
+			if err := config.AddDataPlaneCluster(clusterName, clusterContext); err != nil {
+				return err
+			}
+			config.AddMgmtCluster(clusterContext)
 		}
 		keepGoing, err = selectValueInteractive("Would you like to configure another cluster?",
 			[]string{"Yes", "No"})

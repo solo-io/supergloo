@@ -13,6 +13,8 @@ import (
 
 const managementPlane = "managementPlane"
 
+var invalidMeshctlConfigFileErr = eris.New("please either configure or pass in a valid meshctl config file (see the 'meshctl cluster config' command)")
+
 type MeshctlConfig struct {
 	filepath   string
 	ApiVersion string                    `json:"apiVersion"`
@@ -67,16 +69,19 @@ func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error
 
 // parse the meshctl config file into a MeshctlConfig struct
 func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
-	config := MeshctlConfig{}
+	config := MeshctlConfig{
+		Clusters: map[string]MeshctlCluster{managementPlane: MeshctlCluster{KubeConfig: "", KubeContext: ""}},
+	}
 
-	if _, fileErr := os.Stat(meshctlConfigPath); fileErr == nil {
-		contentString, err := ioutil.ReadFile(meshctlConfigPath)
-		if err != nil {
-			return config, err
-		}
-		if err := yaml.Unmarshal(contentString, &config); err != nil {
-			return config, err
-		}
+	if _, err := os.Stat(meshctlConfigPath); err != nil {
+		return config, invalidMeshctlConfigFileErr
+	}
+	contentString, err := ioutil.ReadFile(meshctlConfigPath)
+	if err != nil {
+		return config, invalidMeshctlConfigFileErr
+	}
+	if err := yaml.Unmarshal(contentString, &config); err != nil {
+		return config, invalidMeshctlConfigFileErr
 	}
 	config.filepath = meshctlConfigPath
 	if config.ApiVersion == "" {

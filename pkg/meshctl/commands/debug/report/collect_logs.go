@@ -17,86 +17,52 @@ import (
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
-func collectLogs(ctx context.Context, opts *DebugReportOpts, dir string, config utils.MeshctlConfig) error {
-	logsDir := dir + "/logs"
-	err := opts.fs.MkdirAll(logsDir, 0755)
+func collectLogs(ctx context.Context, opts *DebugReportOpts, clusterLogsDir string, cluster utils.MeshctlCluster, isMgmt bool) error {
+	var responses []*debugutils.LogsResponse
+	kubeClient, err := utils.BuildClientset(cluster.KubeConfig, cluster.KubeContext)
+	if err != nil {
+		return errors.Wrapf(err, "getting kube clientset")
+	}
+	logCollector := debugutils.NewLogCollector(debugutils.NewLogRequestBuilder(kubeClient.CoreV1(),
+		debugutils.NewLabelPodFinder(kubeClient)))
+
+	var labelSelector string
+	if isMgmt {
+		labelSelector = "app in (gloo-mesh, enterprise-networking, discovery, networking, cert-agent)"
+	} else {
+		labelSelector = "app in (enterprise-agent)"
+	}
+	unstructuredPods, err := getUnstructuredPods(ctx, kubeClient.CoreV1(), opts.namespace,
+		labelSelector)
 	if err != nil {
 		return err
 	}
-
-	var responses []*debugutils.LogsResponse
-	for name, cluster := range config.Clusters {
-		clusterLogsDir := logsDir + "/" + name
-		err = opts.fs.MkdirAll(clusterLogsDir, 0755)
-		if err != nil {
-			return err
-		}
-
-		kubeClient, err := utils.BuildClientset(cluster.KubeConfig, cluster.KubeContext)
-		if err != nil {
-			return errors.Wrapf(err, "getting kube clientset")
-		}
-		logCollector := debugutils.NewLogCollector(debugutils.NewLogRequestBuilder(kubeClient.CoreV1(),
-			debugutils.NewLabelPodFinder(kubeClient)))
-		if err != nil {
-			return err
-		}
-
-		unstructuredPods, err := collectUnstructuredPods(ctx, opts, kubeClient.CoreV1(), config.IsMgmtCluster(name))
-		if err != nil {
-			return err
-		}
-		logRequests, err := logCollector.GetLogRequests(ctx, unstructuredPods)
-		if err != nil {
-			return err
-		}
-		clusterLogResponses, err := logCollector.LogRequestBuilder.StreamLogs(ctx, logRequests)
-		if err != nil {
-			return err
-		}
-		responses = append(responses, clusterLogResponses...)
-		// Write logs into a directory
-		eg := errgroup.Group{}
-		for _, response := range responses {
-			response := response
-			eg.Go(func() error {
-				defer response.Response.Close()
-				logs := readLogs(response.Response)
-				if logs.Len() > 0 {
-					err = debugutils.NewFileStorageClient(opts.fs).Save(clusterLogsDir, &debugutils.StorageObject{
-						Resource: strings.NewReader(logs.String()),
-						Name:     response.ResourceId(),
-					})
-				}
-				return nil
-			})
-		}
-		err = eg.Wait()
-		if err != nil {
-			return err
-		}
+	logRequests, err := logCollector.GetLogRequests(ctx, unstructuredPods)
+	if err != nil {
+		return err
 	}
-
-	return nil
-}
-
-func collectUnstructuredPods(ctx context.Context, opts *DebugReportOpts, clientset corev1client.CoreV1Interface, isMgmtCluster bool) ([]*unstructured.Unstructured, error) {
-	var unstructuredPods []*unstructured.Unstructured
-	var err error
-	if isMgmtCluster {
-		unstructuredPods, err = getUnstructuredPods(ctx, clientset, opts.namespace,
-			"app in (gloo-mesh, enterprise-networking)")
-		if err != nil {
-			return unstructuredPods, err
-		}
-	} else {
-		unstructuredPods, err = getUnstructuredPods(ctx, clientset, opts.namespace,
-			"app in (enterprise-agent)")
-		if err != nil {
-			return unstructuredPods, err
-		}
+	clusterLogResponses, err := logCollector.LogRequestBuilder.StreamLogs(ctx, logRequests)
+	if err != nil {
+		return err
 	}
-	return unstructuredPods, err
+	responses = append(responses, clusterLogResponses...)
+	// Write logs into a directory
+	eg := errgroup.Group{}
+	for _, response := range responses {
+		response := response
+		eg.Go(func() error {
+			defer response.Response.Close()
+			logs := readLogs(response.Response)
+			if logs.Len() > 0 {
+				err = debugutils.NewFileStorageClient(opts.fs).Save(clusterLogsDir, &debugutils.StorageObject{
+					Resource: strings.NewReader(logs.String()),
+					Name:     response.ResourceId(),
+				})
+			}
+			return nil
+		})
+	}
+	return eg.Wait()
 }
 
 func getUnstructuredPods(ctx context.Context, clientset corev1client.CoreV1Interface, ns, labelSelector string) ([]*unstructured.Unstructured, error) {

@@ -11,7 +11,7 @@ meshctl debug report selectively captures cluster information and logs into an a
 
 Running this command requires
 
-1) istioctl to be installed and accessible via your PATH.
+1) meshctl and istioctl to be installed and accessible via your PATH.
 2) a meshctl-config-file to be passed in. You can configure this file by running 'meschtl cluster config'.
 
 

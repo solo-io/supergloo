@@ -39,7 +39,7 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 		Long: `
 Running this command requires
 
-1) istioctl to be installed and accessible via your PATH.
+1) meshctl and istioctl to be installed and accessible via your PATH.
 2) a meshctl-config-file to be passed in. You can configure this file by running 'meschtl cluster config'.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -56,6 +56,7 @@ Running this command requires
 	}
 	AddDebugReportFlags(cmd.PersistentFlags(), opts)
 	cmd.MarkFlagRequired("meshctl-config-file")
+	cmd.SilenceUsage = true
 	return cmd
 }
 
@@ -69,7 +70,8 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 
 	config, err := utils.ParseMeshctlConfig(opts.meshctlConfigPath)
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
+		fmt.Printf("For now, continuing on with current kube context\n")
 	}
 
 	fmt.Printf("Running `meschtl version`\n")
@@ -86,8 +88,9 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		}
 		meshctlVersionFile := clusterVersionDir + "/meshctl_version"
 		var b bytes.Buffer
-		utils.RunShell(fmt.Sprintf("meshctl version --kubeconfig %s --kubecontext %s",
+		utils.RunShell(fmt.Sprintf("meshctl version --kubeconfig \"%s\" --kubecontext \"%s\"",
 			cluster.KubeConfig, cluster.KubeContext), io.Writer(&b))
+		fmt.Print(b.String())
 		err = ioutil.WriteFile(meshctlVersionFile, b.Bytes(), 0644)
 		if err != nil {
 			panic(err)
@@ -109,8 +112,9 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		}
 		meshctlCheckFile := clusterCheckDir + "/meshctl_check"
 		var b bytes.Buffer
-		utils.RunShell(fmt.Sprintf("meshctl check --kubeconfig %s --kubecontext %s",
+		utils.RunShell(fmt.Sprintf("meshctl check --kubeconfig \"%s\" --kubecontext \"%s\"",
 			cluster.KubeConfig, cluster.KubeContext), io.Writer(&b))
+		fmt.Print(b.String())
 		err = ioutil.WriteFile(meshctlCheckFile, b.Bytes(), 0644)
 		if err != nil {
 			panic(err)
@@ -118,8 +122,9 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		b.Reset()
 	}
 
+	// Get all the CRDs
 	fmt.Printf("Running `meschtl debug snapshot`\n")
-	snapshotsDir := dir + "/snapshot"
+	snapshotsDir := dir + "/crds"
 	err = opts.fs.MkdirAll(snapshotsDir, 0755)
 	if err != nil {
 		return err
@@ -130,15 +135,44 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		if err != nil {
 			return err
 		}
-		snapshotFile := fmt.Sprintf("%s/meshctl_debug_snapshot.tgz", clusterSnapshotDir)
-		utils.RunShell(fmt.Sprintf("meshctl debug snapshot --kubeconfig %s --kubecontext %s --zip %s",
-			cluster.KubeConfig, cluster.KubeContext, snapshotFile), os.Stdout)
+		utils.RunShell(fmt.Sprintf("meshctl debug snapshot --kubeconfig \"%s\" --kubecontext \"%s\" --dir %s",
+			cluster.KubeConfig, cluster.KubeContext, clusterSnapshotDir), os.Stdout)
 	}
 
-	fmt.Printf("Running `meschtl debug logs`\n")
-	err = collectLogs(ctx, opts, dir, config)
+	// Get all the metrics
+	fmt.Printf("Running `meschtl debug metrics`\n")
+	metricsDir := dir + "/metrics"
+	err = opts.fs.MkdirAll(metricsDir, 0755)
 	if err != nil {
 		return err
+	}
+	for name, cluster := range config.Clusters {
+		clusterMetricsDir := metricsDir + "/" + name
+		err = opts.fs.MkdirAll(clusterMetricsDir, 0755)
+		if err != nil {
+			return err
+		}
+		utils.RunShell(fmt.Sprintf("meshctl debug metrics --kubeconfig \"%s\" --kubecontext \"%s\" --dir %s",
+			cluster.KubeConfig, cluster.KubeContext, clusterMetricsDir), os.Stdout)
+	}
+
+	// Get the logs
+	fmt.Printf("Getting Gloo Mesh logs\n")
+	logsDir := dir + "/logs"
+	err = opts.fs.MkdirAll(logsDir, 0755)
+	if err != nil {
+		return err
+	}
+	for name, cluster := range config.Clusters {
+		clusterLogsDir := logsDir + "/" + name
+		err = opts.fs.MkdirAll(clusterLogsDir, 0755)
+		if err != nil {
+			return err
+		}
+		err = collectLogs(ctx, opts, clusterLogsDir, cluster, config.IsMgmtCluster(name))
+		if err != nil {
+			return err
+		}
 	}
 
 	// Istioctl bug-report
@@ -149,17 +183,18 @@ func runDebugReportCommand(ctx context.Context, opts *DebugReportOpts) error {
 		return err
 	}
 	for name, cluster := range config.Clusters {
+		if config.IsMgmtCluster(name) {
+			continue
+		}
 		clusterIstioReportDir := istioctlBugReportDir + "/" + name
 		err = opts.fs.MkdirAll(clusterIstioReportDir, 0755)
 		if err != nil {
 			return err
 		}
-		if !config.IsMgmtCluster(name) {
-			istioctlBugReportCmd := fmt.Sprintf("istioctl bug-report --kubeconfig %s --context %s",
-				cluster.KubeConfig, cluster.KubeContext)
-			utils.RunShell(istioctlBugReportCmd, os.Stdout)
-			utils.RunShell(fmt.Sprintf("mv bug-report.tgz %s", clusterIstioReportDir), os.Stdout)
-		}
+		istioctlBugReportCmd := fmt.Sprintf("istioctl bug-report --kubeconfig \"%s\" --context \"%s\"",
+			cluster.KubeConfig, cluster.KubeContext)
+		utils.RunShell(istioctlBugReportCmd, os.Stdout)
+		utils.RunShell(fmt.Sprintf("mv bug-report.tgz %s", clusterIstioReportDir), os.Stdout)
 	}
 
 	err = utils.Zip(opts.fs, dir, opts.outputFile)

@@ -13,6 +13,7 @@ meshctl debug snapshot [flags]
 ### Options
 
 ```
+      --dir string           dir to write file outputs to
   -f, --file string          file to write output to
   -h, --help                 help for snapshot
       --json                 display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:
