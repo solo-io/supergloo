@@ -166,6 +166,9 @@ message VirtualGatewaySpec {
                 // Configure the Envoy based Ratelimit filter for this Gateway.
                 .networking.mesh.gloo.solo.io.Ratelimit ratelimit = 3;
 
+                // Configure the Envoy based Ratelimit filter for this Gateway.
+                .networking.mesh.gloo.solo.io.RatelimitSettings ratelimit_settings = 4;
+
             }
         }
 

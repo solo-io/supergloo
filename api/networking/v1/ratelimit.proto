@@ -37,6 +37,7 @@ message Ratelimit {
 
     oneof rate_limit_config_type {
 
+      // TODO: slows down cue
         // Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
         // supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
         // Configure rate-limit *actions* here, which define how request characteristics get translated into
@@ -227,8 +228,9 @@ message Descriptor {
   // Optional rate limit rule for the descriptor.
   //  RateLimit rate_limit = 3;
 
+  // TODO: add inline annotation to fix recursive proto
   // Nested descriptors.
-  //  repeated Descriptor descriptors = 4;
+    repeated Descriptor descriptors = 4;
 
   // Each top-level Descriptor defines a new Rate Limit "rule". When a request comes in, rate limit
   // actions are applied to the request to generate descriptor tuples that are sent to the rate limit
