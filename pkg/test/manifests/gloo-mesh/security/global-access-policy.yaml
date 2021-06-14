@@ -4,8 +4,8 @@ metadata:
   name: virtual-mesh
   namespace: gloo-mesh
 spec:
+  globalAccessPolicy: ENABLED
   federation:
-    hostnameSuffix: solo.io
     selectors:
       - { }
   meshes:
@@ -28,8 +28,6 @@ spec:
   localized:
     destinationSelectors:
       - kubeServiceMatcher:
-          clusters:
-            - cluster-1
           labels:
             app: backend
   virtualMesh:
@@ -44,8 +42,6 @@ metadata:
 spec:
   destinationSelector:
     - kubeServiceMatcher:
-        clusters:
-          - cluster-1
         labels:
           app: backend
   policy:
