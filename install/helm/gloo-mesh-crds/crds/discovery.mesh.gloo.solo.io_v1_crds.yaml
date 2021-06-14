@@ -162,6 +162,32 @@ spec:
                         type: array
                     type: object
                   type: array
+                externalAddresses:
+                  description: Describes the address data for Kubernetes Services
+                    exposed to external traffic (i.e. for non ClusterIP type Services).
+                  items:
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - dnsName
+                        - required:
+                          - ip
+                    - required:
+                      - dnsName
+                    - required:
+                      - ip
+                    properties:
+                      dnsName:
+                        description: Populated for LoadBalancer Services with specified
+                          DNS name.
+                        type: string
+                      ip:
+                        description: Populated for LoadBalancer Services with specified
+                          IP address or NodePort Services.
+                        type: string
+                    type: object
+                  type: array
                 labels:
                   additionalProperties:
                     type: string
@@ -189,6 +215,11 @@ spec:
                       name:
                         description: Name of the port
                         type: string
+                      nodePort:
+                        description: Populated for NodePort Services.
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
                       port:
                         description: External-facing port for this Kubernetes service
                           (*not* the service's target port on the targeted pods).
@@ -1423,7 +1454,9 @@ spec:
               description: Describes an [Istio](https://istio.io/) service mesh.
               properties:
                 ingressGateways:
-                  description: Describes the ingress gateway.
+                  description: |-
+                    DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
+                    Describes the ingress gateway.
                   items:
                     oneOf:
                     - not:

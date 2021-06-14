@@ -57,6 +57,23 @@ message DestinationSpec {
         // This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
         repeated EndpointsSubset endpoint_subsets = 7;
 
+        // Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
+        repeated ExternalAddress external_addresses = 8;
+
+        // Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
+        message ExternalAddress {
+
+            // The externally-reachable address for this Kubernetes Service, either an IP address or DNS name.
+            oneof load_balancer_external_address_type {
+
+                // Populated for LoadBalancer Services with specified DNS name.
+                string dns_name = 5;
+
+                // Populated for LoadBalancer Services with specified IP address or NodePort Services.
+                string ip = 6;
+            }
+        }
+
         // Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services) for more information.
         message KubeServicePort {
 
@@ -79,6 +96,9 @@ message DestinationSpec {
                 // Number of the target port
                 uint32 target_port_number = 6;
             }
+
+            // Populated for NodePort Services.
+            uint32 node_port = 7;
         }
 
         // Subsets for routing, based on labels.
