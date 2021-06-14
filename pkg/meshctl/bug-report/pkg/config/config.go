@@ -114,10 +114,15 @@ func defaultListSetting(s []string) bool {
 // BugReportConfig controls what is captured and Include in the kube-capture tool
 // archive.
 type BugReportConfig struct {
-	// KubeConfigPath is the path to kube config file.
-	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
-	// Context is the cluster Context in the kube config
-	Context string `json:"context,omitempty"`
+	// MgmtKubeConfigPath is the path to kube config file for the management plane
+	MgmtKubeConfigPath string `json:"mgmtKubeConfigPath,omitempty"`
+	// MgmtContext is the cluster Context in the kube config for the management plane
+	MgmtContext string `json:"mgmtContext,omitempty"`
+
+	// RemoteKubeConfigPath is the path to kube config file for a remote cluster
+	RemoteKubeConfigPath string `json:"clientKubeConfigPath,omitempty"`
+	// RemoteContext is the cluster Context in the kube config for a remote cluster
+	RemoteContext string `json:"remoteContext,omitempty"`
 
 	// IstioNamespace is the namespace where the istio control plane is installed.
 	IstioNamespace string `json:"istioNamespace,omitempty"`

@@ -69,7 +69,7 @@ func GetClusterResources(ctx context.Context, clientset *kubernetes.Clientset) (
 		return nil, err
 	}
 	for _, ns := range namespaces.Items {
-		// skip system namesapces
+		// skip system namespaces
 		if analyzer_util.IsSystemNamespace(resource.Namespace(ns.Name)) {
 			continue
 		}

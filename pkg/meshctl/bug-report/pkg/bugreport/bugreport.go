@@ -119,7 +119,9 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	common.LogAndPrintf("\nTarget cluster context: %s\n", clusterCtxStr)
 	common.LogAndPrintf("Running with the following config: \n\n%s\n\n", config)
 
-	clientConfig, clientset, err := kubeclient.New(config.KubeConfigPath, config.Context)
+	// TODO redo the loop for the management plane and remote clusters
+
+	clientConfig, clientset, err := kubeclient.New(config.MgmtKubeConfigPath, config.MgmtContext)
 	if err != nil {
 		return fmt.Errorf("could not initialize k8s client: %s ", err)
 	}
@@ -132,7 +134,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		return err
 	}
 
-	dumpRevisionsAndVersions(resources, config.KubeConfigPath, config.Context, config.IstioNamespace)
+	dumpRevisionsAndVersions(resources, config.MgmtKubeConfigPath, config.MgmtContext, config.IstioNamespace, config.GlooMeshNamespace)
 
 	log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
 	paths, err := filter.GetMatchingPaths(config, resources)
@@ -177,10 +179,12 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	return nil
 }
 
-func dumpRevisionsAndVersions(resources *cluster2.Resources, kubeconfig, configContext, istioNamespace string, glooMeshNamespace string) {
+func dumpGlooMeshVersions()
+
+func dumpRevisionsAndVersions(resources *cluster2.Resources, kubeconfig, configContext, istioNamespace string) {
 	text := ""
 	revisions := getIstioRevisions(resources)
-	istioVersions, proxyVersions := getIstioVersions(kubeconfig, configContext, istioNamespace, revisions, glooMeshNamespace)
+	istioVersions, proxyVersions := getIstioVersions(kubeconfig, configContext, istioNamespace, revisions)
 	text += "The following Istio control plane revisions/versions were found in the cluster:\n"
 	for rev, ver := range istioVersions {
 		text += fmt.Sprintf("Revision %s:\n%s\n\n", rev, ver)
