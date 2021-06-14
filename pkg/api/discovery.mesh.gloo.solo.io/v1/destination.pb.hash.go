@@ -520,7 +520,7 @@ func (m *DestinationSpec_KubeService_ExternalAddress) Hash(hasher hash.Hash64) (
 		return 0, err
 	}
 
-	switch m.LoadBalancerExternalAddressType.(type) {
+	switch m.ExternalAddressType.(type) {
 
 	case *DestinationSpec_KubeService_ExternalAddress_DnsName:
 

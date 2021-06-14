@@ -216,7 +216,7 @@ spec:
                         description: Name of the port
                         type: string
                       nodePort:
-                        description: Populated for NodePort Services.
+                        description: Populated for NodePort or LoadBalancer Services.
                         maximum: 4294967295
                         minimum: 0
                         type: integer

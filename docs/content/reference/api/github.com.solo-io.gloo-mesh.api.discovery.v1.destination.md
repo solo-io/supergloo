@@ -267,7 +267,7 @@ Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/se
   | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
   | targetPortName | string |  | Name of the target port |
   | targetPortNumber | uint32 |  | Number of the target port |
-  | nodePort | uint32 |  | Populated for NodePort Services. |
+  | nodePort | uint32 |  | Populated for NodePort or LoadBalancer Services. |
   
 
 

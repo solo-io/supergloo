@@ -64,7 +64,7 @@ message DestinationSpec {
         message ExternalAddress {
 
             // The externally-reachable address for this Kubernetes Service, either an IP address or DNS name.
-            oneof load_balancer_external_address_type {
+            oneof external_address_type {
 
                 // Populated for LoadBalancer Services with specified DNS name.
                 string dns_name = 5;
@@ -97,7 +97,7 @@ message DestinationSpec {
                 uint32 target_port_number = 6;
             }
 
-            // Populated for NodePort Services.
+            // Populated for NodePort or LoadBalancer Services.
             uint32 node_port = 7;
         }
 

@@ -424,10 +424,10 @@ func (m *DestinationSpec_KubeService_ExternalAddress) Equal(that interface{}) bo
 		return false
 	}
 
-	switch m.LoadBalancerExternalAddressType.(type) {
+	switch m.ExternalAddressType.(type) {
 
 	case *DestinationSpec_KubeService_ExternalAddress_DnsName:
-		if _, ok := target.LoadBalancerExternalAddressType.(*DestinationSpec_KubeService_ExternalAddress_DnsName); !ok {
+		if _, ok := target.ExternalAddressType.(*DestinationSpec_KubeService_ExternalAddress_DnsName); !ok {
 			return false
 		}
 
@@ -436,7 +436,7 @@ func (m *DestinationSpec_KubeService_ExternalAddress) Equal(that interface{}) bo
 		}
 
 	case *DestinationSpec_KubeService_ExternalAddress_Ip:
-		if _, ok := target.LoadBalancerExternalAddressType.(*DestinationSpec_KubeService_ExternalAddress_Ip); !ok {
+		if _, ok := target.ExternalAddressType.(*DestinationSpec_KubeService_ExternalAddress_Ip); !ok {
 			return false
 		}
 
@@ -446,7 +446,7 @@ func (m *DestinationSpec_KubeService_ExternalAddress) Equal(that interface{}) bo
 
 	default:
 		// m is nil but target is not nil
-		if m.LoadBalancerExternalAddressType != target.LoadBalancerExternalAddressType {
+		if m.ExternalAddressType != target.ExternalAddressType {
 			return false
 		}
 	}

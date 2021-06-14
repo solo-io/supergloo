@@ -310,6 +310,7 @@ func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeServ
 			Name:        kubePort.Name,
 			Protocol:    string(kubePort.Protocol),
 			AppProtocol: pointer.StringPtrDerefOr(kubePort.AppProtocol, ""),
+			NodePort:    uint32(kubePort.NodePort),
 		}
 		// Add the target port depending on the type
 		if kubePort.TargetPort.Type == intstr.Int {
@@ -333,16 +334,22 @@ func getExternalAddresses(
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
 ) []*v1.DestinationSpec_KubeService_ExternalAddress {
+	var externalAddresses []*v1.DestinationSpec_KubeService_ExternalAddress
+
+	// include user set external IPs
+	for _, externalIP := range svc.Spec.ExternalIPs {
+		externalAddresses = append(externalAddresses, externalAddressIp(externalIP))
+	}
 
 	// TODO: add support for ExternalName Services
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
-		return getExternalNodeIps(ctx, svc, pods, nodes)
+		externalAddresses = append(externalAddresses, getExternalNodeIps(ctx, svc, pods, nodes)...)
 	case corev1.ServiceTypeLoadBalancer:
-		return getExternalLoadBalancerAddresses(svc)
+		externalAddresses = append(externalAddresses, getExternalLoadBalancerAddresses(svc)...)
 	}
 
-	return nil
+	return externalAddresses
 }
 
 // return all externally-addressable IPs or Hostnames for a LoadBalancer Service
@@ -355,21 +362,12 @@ func getExternalLoadBalancerAddresses(
 	for _, loadBalancerIngress := range ingress {
 
 		var externalAddress *v1.DestinationSpec_KubeService_ExternalAddress
-
 		// If the IP address is set in the ingress, use that
 		if loadBalancerIngress.IP != "" {
-			externalAddress = &v1.DestinationSpec_KubeService_ExternalAddress{
-				LoadBalancerExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
-					Ip: loadBalancerIngress.IP,
-				},
-			}
+			externalAddress = externalAddressIp(loadBalancerIngress.IP)
 		} else if loadBalancerIngress.Hostname != "" {
 			// Otherwise use the hostname
-			externalAddress = &v1.DestinationSpec_KubeService_ExternalAddress{
-				LoadBalancerExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_DnsName{
-					DnsName: loadBalancerIngress.Hostname,
-				},
-			}
+			externalAddress = externalAddressDns(loadBalancerIngress.Hostname)
 		}
 		externalLoadBalancerAddresses = append(externalLoadBalancerAddresses, externalAddress)
 	}
@@ -411,22 +409,27 @@ func getExternalNodeIps(
 
 		var foundExternalNodeIp bool
 		for _, addr := range ingressNode.Status.Addresses {
-			if isKindNode {
-				// For Kind clusters, we use the NodeInternalIP for the external IP address.
-				if addr.Type != corev1.NodeInternalIP {
-					continue
-				}
-			} else if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeInternalDNS {
-				// skip node-internal IPs
+
+			// For Kind clusters, we use the NodeInternalIP for the external IP address.
+			if isKindNode && addr.Type == corev1.NodeInternalIP {
+				foundExternalNodeIp = true
+				externalNodeIps = append(externalNodeIps, &v1.DestinationSpec_KubeService_ExternalAddress{
+					ExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
+						Ip: addr.Address,
+					},
+				})
 				continue
 			}
 
-			foundExternalNodeIp = true
-			externalNodeIps = append(externalNodeIps, &v1.DestinationSpec_KubeService_ExternalAddress{
-				LoadBalancerExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
-					Ip: addr.Address,
-				},
-			})
+			// k8s reference: https://kubernetes.io/docs/concepts/architecture/nodes/#addresses
+			switch addr.Type {
+			case corev1.NodeExternalIP:
+				foundExternalNodeIp = true
+				externalNodeIps = append(externalNodeIps, externalAddressIp(addr.Address))
+			case corev1.NodeHostName:
+				foundExternalNodeIp = true
+				externalNodeIps = append(externalNodeIps, externalAddressDns(addr.Address))
+			}
 		}
 
 		if !foundExternalNodeIp {
@@ -447,4 +450,20 @@ func isKindNode(node *corev1.Node) bool {
 		}
 	}
 	return false
+}
+
+func externalAddressIp(ip string) *v1.DestinationSpec_KubeService_ExternalAddress {
+	return &v1.DestinationSpec_KubeService_ExternalAddress{
+		ExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
+			Ip: ip,
+		},
+	}
+}
+
+func externalAddressDns(hostname string) *v1.DestinationSpec_KubeService_ExternalAddress {
+	return &v1.DestinationSpec_KubeService_ExternalAddress{
+		ExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_DnsName{
+			DnsName: hostname,
+		},
+	}
 }
