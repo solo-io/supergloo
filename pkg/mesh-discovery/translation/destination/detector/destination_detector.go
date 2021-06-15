@@ -72,6 +72,7 @@ func (t *destinationDetector) DetectDestination(
 		Labels:                 service.Labels,
 		Ports:                  convertPorts(service),
 		ExternalAddresses:      getExternalAddresses(ctx, service, pods, nodes),
+		ServiceType:            getServiceType(service.Spec.Type),
 	}
 
 	// add locality to the destination
@@ -466,4 +467,22 @@ func externalAddressDns(hostname string) *v1.DestinationSpec_KubeService_Externa
 			DnsName: hostname,
 		},
 	}
+}
+
+// convert Kubernetes service type to internal enum for service type
+func getServiceType(svcType corev1.ServiceType) v1.DestinationSpec_KubeService_ServiceType {
+	var serviceType v1.DestinationSpec_KubeService_ServiceType
+
+	switch svcType {
+	case corev1.ServiceTypeClusterIP:
+		serviceType = v1.DestinationSpec_KubeService_CLUSTER_IP
+	case corev1.ServiceTypeNodePort:
+		serviceType = v1.DestinationSpec_KubeService_NODE_PORT
+	case corev1.ServiceTypeLoadBalancer:
+		serviceType = v1.DestinationSpec_KubeService_LOAD_BALANCER
+	case corev1.ServiceTypeExternalName:
+		serviceType = v1.DestinationSpec_KubeService_EXTERNAL_NAME
+	}
+
+	return serviceType
 }

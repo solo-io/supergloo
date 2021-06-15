@@ -41,6 +41,7 @@ title: "destination.proto"
   - [DestinationStatus.AppliedTrafficPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy)
   - [DestinationStatus.RequiredSubsets](#discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets)
 
+  - [DestinationSpec.KubeService.ServiceType](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType)
 
 
 
@@ -148,6 +149,7 @@ Describes a Kubernetes service.
   | region | string |  | The region the service resides in, typically representing a large geographic area. |
   | endpointSubsets | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset" >}}) | repeated | Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs. This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core). |
   | externalAddresses | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ExternalAddress]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ExternalAddress" >}}) | repeated | Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services). |
+  | serviceType | [discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType" >}}) |  | Describes the Kubernetes Service type. |
   
 
 
@@ -245,8 +247,8 @@ Describes the address data for Kubernetes Services exposed to external traffic (
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| dnsName | string |  | Populated for LoadBalancer Services with specified DNS name. |
-  | ip | string |  | Populated for LoadBalancer Services with specified IP address or NodePort Services. |
+| dnsName | string |  | An externally accessible DNS name. |
+  | ip | string |  | An externally accessible IP address. |
   
 
 
@@ -426,6 +428,20 @@ Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 
 
  <!-- end messages -->
+
+
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType"></a>
+
+### DestinationSpec.KubeService.ServiceType
+Describes the Kubernetes Service type.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| CLUSTER_IP | 0 | A ClusterIP Service. |
+| NODE_PORT | 1 | A NodePort Service. |
+| LOAD_BALANCER | 2 | A LoadBalancer Service. |
+| EXTERNAL_NAME | 3 | An ExternalName Service. |
+
 
  <!-- end enums -->
 

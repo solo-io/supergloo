@@ -316,6 +316,10 @@ func (m *DestinationSpec_KubeService) Equal(that interface{}) bool {
 
 	}
 
+	if m.GetServiceType() != target.GetServiceType() {
+		return false
+	}
+
 	return true
 }
 

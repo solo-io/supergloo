@@ -60,18 +60,37 @@ message DestinationSpec {
         // Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
         repeated ExternalAddress external_addresses = 8;
 
+        // Describes the Kubernetes Service type.
+        ServiceType service_type = 9;
+
         // Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
         message ExternalAddress {
 
             // The externally-reachable address for this Kubernetes Service, either an IP address or DNS name.
             oneof external_address_type {
 
-                // Populated for LoadBalancer Services with specified DNS name.
+                // An externally accessible DNS name.
                 string dns_name = 5;
 
-                // Populated for LoadBalancer Services with specified IP address or NodePort Services.
+                // An externally accessible IP address.
                 string ip = 6;
             }
+        }
+
+        // Describes the Kubernetes Service type.
+        enum ServiceType {
+
+            // A ClusterIP Service.
+            CLUSTER_IP = 0;
+
+            // A NodePort Service.
+            NODE_PORT = 1;
+
+            // A LoadBalancer Service.
+            LOAD_BALANCER = 2;
+
+            // An ExternalName Service.
+            EXTERNAL_NAME = 3;
         }
 
         // Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services) for more information.

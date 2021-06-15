@@ -179,12 +179,10 @@ spec:
                       - ip
                     properties:
                       dnsName:
-                        description: Populated for LoadBalancer Services with specified
-                          DNS name.
+                        description: An externally accessible DNS name.
                         type: string
                       ip:
-                        description: Populated for LoadBalancer Services with specified
-                          IP address or NodePort Services.
+                        description: An externally accessible IP address.
                         type: string
                     type: object
                   type: array
@@ -256,6 +254,14 @@ spec:
                 region:
                   description: The region the service resides in, typically representing
                     a large geographic area.
+                  type: string
+                serviceType:
+                  description: Describes the Kubernetes Service type.
+                  enum:
+                  - CLUSTER_IP
+                  - NODE_PORT
+                  - LOAD_BALANCER
+                  - EXTERNAL_NAME
                   type: string
                 subsets:
                   additionalProperties:

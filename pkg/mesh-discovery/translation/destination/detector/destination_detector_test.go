@@ -272,6 +272,7 @@ var _ = Describe("DestinationDetector", func() {
 			Spec: v1.DestinationSpec{
 				Type: &v1.DestinationSpec_KubeService_{
 					KubeService: &v1.DestinationSpec_KubeService{
+						ServiceType:            v1.DestinationSpec_KubeService_NODE_PORT,
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
@@ -388,6 +389,7 @@ var _ = Describe("DestinationDetector", func() {
 			Spec: v1.DestinationSpec{
 				Type: &v1.DestinationSpec_KubeService_{
 					KubeService: &v1.DestinationSpec_KubeService{
+						ServiceType:            v1.DestinationSpec_KubeService_LOAD_BALANCER,
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
