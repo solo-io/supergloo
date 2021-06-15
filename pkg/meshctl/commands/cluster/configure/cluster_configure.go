@@ -103,7 +103,12 @@ func configure(opts *options) error {
 			return err
 		}
 	}
-	return writeConfigToFile(config, opts.meshctlConfigPath)
+	err = utils.WriteConfigToFile(config, opts.meshctlConfigPath)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", opts.meshctlConfigPath)
+	return nil
 }
 
 var defaultConfigFile string
@@ -153,20 +158,12 @@ func configureInteractive(meshctlConfigPath string) error {
 		}
 	}
 
-	return writeConfigToFile(config, meshctlConfigPath)
-}
-
-func writeConfigToFile(config utils.MeshctlConfig, meshctlConfigPath string) error {
-	bytes, err := yaml.Marshal(&config)
+	err = utils.WriteConfigToFile(config, meshctlConfigPath)
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(meshctlConfigPath, bytes, 0644); err != nil {
-		return err
-	}
-
 	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", meshctlConfigPath)
-	return err
+	return nil
 }
 
 func configureDataPlaneCluster() (string, utils.MeshctlCluster, error) {
