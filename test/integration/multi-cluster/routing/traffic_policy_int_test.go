@@ -241,38 +241,34 @@ func testRequestHeaderMatcher(ctx resource.Context, t *testing.T, deploymentCtx 
 	// frontend calling backend in mesh using virtual destination in same cluster
 	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
 	backendHost := fmt.Sprintf("backend.%s.svc.cluster.local", deploymentCtx.EchoContext.AppNamespace.Name())
-
+	header := http.Header{}
+	header.Add("color-header", "blue")
 	// happy requests with header color-header: blue
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
 			Protocol:    "http",
 			ServicePort: 8090,
 		},
-		Scheme:  scheme.HTTP,
-		Address: backendHost,
-		Method:  http.MethodGet,
-		Headers: map[string][]string{
-			"Host":         {backendHost},
-			"color-header": {"blue"},
-		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Headers:   header,
 		Path:      "/info",
 		Count:     1,
 		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
 	})
-
+	header = http.Header{}
+	header.Add("color-header", "red")
 	// different header value
 	src.CallOrFail(t, echo.CallOptions{
 		Port: &echo.Port{
 			Protocol:    "http",
 			ServicePort: 8090,
 		},
-		Scheme:  scheme.HTTP,
-		Address: backendHost,
-		Method:  http.MethodGet,
-		Headers: map[string][]string{
-			"Host":         {backendHost},
-			"color-header": {"red"},
-		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Headers:   header,
 		Path:      "/info",
 		Count:     1,
 		Validator: echo.ExpectCode("404"),
