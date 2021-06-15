@@ -72,22 +72,31 @@ gloo-mesh      prometheus-server-68b58c79f8-rlq54                   2/2     Runn
 
 #### OpenShift Integration
 
-If you are installing Gloo Mesh Enterprise on an [OpenShift](https://www.openshift.com/) cluster, you will need some additional helm values to make Prometheus run:
+If you are installing Gloo Mesh Enterprise on an [OpenShift](https://www.openshift.com/) cluster, you will need some additional helm values to make Prometheus run, as Openshift will require a user ID:
 
  - `gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true`
- - `enterprise-networking.prometheus.server.securityContext.runAsUser=<OpenshiftID>`
- - `enterprise-networking.prometheus.server.securityContext.runAsGroup=<OpenshiftID>`
- - `enterprise-networking.prometheus.server.securityContext.fsGroup=<OpenshiftID>`
+ - `enterprise-networking.prometheus.server.securityContext.runAsUser=$OPENSHIFT_ID`
+ - `enterprise-networking.prometheus.server.securityContext.runAsGroup=$OPENSHIFT_ID`
+ - `enterprise-networking.prometheus.server.securityContext.fsGroup=$OPENSHIFT_ID`
  
- Where `<OpenshiftID>` is a single valid ID from the range that OpenShift has assigned your intended Gloo Mesh Enterprise namespace. Assuming the number`12345` is a valid option, an example installation command would look like this: 
+ Where `$OPENSHIFT_ID` is a single valid ID from the range that OpenShift has assigned to your intended Gloo Mesh Enterprise namespace. The valid ID range can be found by examining your namespace's metadata:
+ 
+ ```shell 
+% MESH_NAMESPACE='gloo-mesh' # Replace with your namespace if are installing Gloo Mesh Enterprise elsewhere.
+% kubectl get ns $MESH_NAMESPACE -ojsonpath='{.metadata.annotations}' 
+map[openshift.io/sa.scc.mcs: s0:c27,c9 openshift.io/sa.scc.supplemental-groups: 1000720000/10000 openshift.io/sa.scc.uid-range: 1000720000/10000]
+```
+
+The range syntax is N through N + M - 1 inclusive, given the format N/M. So in this case, the valid ID range would be 1000720000 through 1000729999. Select a number from this range to be your ID. Assuming the number`1000720000` is a valid option, an example installation command would look like this: 
 
 ```shell 
-helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh   --set licenseKey=${GLOO_MESH_LICENSE_KEY}  \
+% OPENSHIFT_ID=1000720000
+% helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh   --set licenseKey=${GLOO_MESH_LICENSE_KEY}  \
 --set enterprise-networking.metricsBackend.prometheus.enabled=true \
 --set gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true \
---set enterprise-networking.prometheus.server.securityContext.runAsUser=12345 \
---set enterprise-networking.prometheus.server.securityContext.runAsGroup=12345 \
---set enterprise-networking.prometheus.server.securityContext.fsGroup=12345
+--set enterprise-networking.prometheus.server.securityContext.runAsUser=$OPENSHIFT_ID \
+--set enterprise-networking.prometheus.server.securityContext.runAsGroup=$OPENSHIFT_ID \
+--set enterprise-networking.prometheus.server.securityContext.fsGroup=$OPENSHIFT_ID
 ```
 
 ## Functionality
