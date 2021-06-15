@@ -1,10 +1,9 @@
-name: Docs
+name: Deploy to Preview Channel
 
 on:
-  push:
-    branches:
-    - 'main'
-
+  pull_request:
+    paths:
+    - "docs/**"
 jobs:
   build:
     name: Generate versioned docs site
@@ -50,5 +49,4 @@ jobs:
         repoToken: ${{ secrets.GITHUB_TOKEN }}
         firebaseServiceAccount: ${{ secrets.GC_FIREBASE_GHA_SA_JSON_KEY }}
         projectId: ${{ secrets.GC_FIREBASE_GHA_PROJECT_ID }}
-        channelId: live
         entryPoint: ./docs/ci
