@@ -70,24 +70,24 @@ gloo-mesh      enterprise-networking-69d74c9744-8nlkd               1/1     Runn
 gloo-mesh      prometheus-server-68b58c79f8-rlq54                   2/2     Running   0          23m
 ```
 
-#### OpenShift Prometheus Integration
+#### OpenShift Integration
 
-If you are installing Gloo Mesh Enterprise on an OpenShift cluster, you will need some additional helm values to make Prometheus run:
+If you are installing Gloo Mesh Enterprise on an [OpenShift](https://www.openshift.com/) cluster, you will need some additional helm values to make Prometheus run:
 
  - `gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true`
  - `enterprise-networking.prometheus.server.securityContext.runAsUser=<OpenshiftID>`
  - `enterprise-networking.prometheus.server.securityContext.runAsGroup=<OpenshiftID>`
  - `enterprise-networking.prometheus.server.securityContext.fsGroup=<OpenshiftID>`
  
- Where `<OpenshiftID>` is a single valid ID from the range OpenShift assigned to whichever namespace you are using for Gloo Mesh Enterprise. Assuming the number`1000630000` is a valid ID, an example installation command would look like this: 
+ Where `<OpenshiftID>` is a single valid ID from the range that OpenShift has assigned your intended Gloo Mesh Enterprise namespace. Assuming the number`12345` is a valid option, an example installation command would look like this: 
 
 ```shell 
 helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh   --set licenseKey=${GLOO_MESH_LICENSE_KEY}  \
 --set enterprise-networking.metricsBackend.prometheus.enabled=true \
 --set gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true \
---set enterprise-networking.prometheus.server.securityContext.runAsUser=1000630000 \
---set enterprise-networking.prometheus.server.securityContext.runAsGroup=1000630000 \
---set enterprise-networking.prometheus.server.securityContext.fsGroup=1000630000
+--set enterprise-networking.prometheus.server.securityContext.runAsUser=12345 \
+--set enterprise-networking.prometheus.server.securityContext.runAsGroup=12345 \
+--set enterprise-networking.prometheus.server.securityContext.fsGroup=12345
 ```
 
 ## Functionality
