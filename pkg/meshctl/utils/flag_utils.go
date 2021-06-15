@@ -17,3 +17,9 @@ func AddManagementKubeconfigFlags(kubeconfig, kubecontext *string, flags *pflag.
 	flags.StringVar(kubeconfig, "kubeconfig", "", "Path to the kubeconfig from which the management cluster will be accessed")
 	flags.StringVar(kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the management cluster")
 }
+
+// Set kubeconfig path and context flags for any cluster.
+func AddKubeconfigFlags(kubeconfig, kubecontext *string, flags *pflag.FlagSet) {
+	flags.StringVar(kubeconfig, "kubeconfig", "", "Path to the kubeconfig from which the cluster will be accessed")
+	flags.StringVar(kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the cluster")
+}

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: In the destination federation translator, gracefully handle case when Istio mesh has no ingress gateway.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1630

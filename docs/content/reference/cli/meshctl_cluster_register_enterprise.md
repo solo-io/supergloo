@@ -60,6 +60,7 @@ meshctl cluster register enterprise [cluster name] [flags]
                                   Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/ (default "cluster.local")
       --kubeconfig string         path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string       name of the kubeconfig context to use for the management cluster
+      --mgmt-kubeconfig string    path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location
       --mgmt-namespace string     namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created (default "gloo-mesh")
       --remote-context string     name of the kubeconfig context to use for the remote cluster
       --remote-namespace string   namespace in the target cluster where a service account enabling remote access will be created.

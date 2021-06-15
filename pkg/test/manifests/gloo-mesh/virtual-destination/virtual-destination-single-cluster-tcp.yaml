@@ -5,7 +5,6 @@ metadata:
   namespace: gloo-mesh
 spec:
   federation:
-    hostnameSuffix: solo.io
     selectors:
       - { }
   meshes:
@@ -20,28 +19,16 @@ metadata:
   name: backend
   namespace: gloo-mesh
 spec:
-  hostname: http-backend.solo.io
+  hostname: tcp-backend.solo.io
   port:
-    number: 8090
-    protocol: http
-    targetNumber: 8090
+    number: 9000
+    protocol: tcp
+    targetNumber: 9000
   localized:
-    failoverDirectives:
-      - from:
-          region: us-east-1
-        to:
-          - region: us-west-1
-      - from:
-          region: us-west-1
-        to:
-          - region: us-east-1
-    outlierDetection:
-      consecutiveErrors: 1
-      maxEjectionPercent: 100
-      interval: 5s
-      baseEjectionTime: 30s
     destinationSelectors:
       - kubeServiceMatcher:
+          clusters:
+            - cluster-1
           labels:
             app: backend
   virtualMesh:
@@ -56,6 +43,8 @@ metadata:
 spec:
   destinationSelector:
     - kubeServiceMatcher:
+        clusters:
+          - cluster-1
         labels:
           app: backend
   policy:

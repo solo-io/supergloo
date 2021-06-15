@@ -128,19 +128,12 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	switch issuedCertificate.Status.State {
 	case certificatesv1.IssuedCertificateStatus_FINISHED:
 
-		// If issued cert secret is nil, simply return
-		if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
-			return nil
+		// If the translator errors, set the Status to failed so we can restart the workflow
+		if err := r.translator.IssuedCertificateFinished(r.ctx, issuedCertificate, inputSnap, outputs); err != nil {
+			issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_FAILED
+			issuedCertificate.Status.Error = err.Error()
 		}
 
-		if issuedCertificateSecret, err := inputSnap.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
-			// ensure issued cert secret exists, nothing to do for this issued certificate
-			// add secret output to prevent it from being GC'ed
-			outputs.AddSecrets(issuedCertificateSecret)
-			return nil
-		}
-		// otherwise, restart the workflow from PENDING
-		fallthrough
 	case certificatesv1.IssuedCertificateStatus_FAILED:
 		// restart the workflow from PENDING
 		fallthrough
