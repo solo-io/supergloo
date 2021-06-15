@@ -17,13 +17,25 @@ apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
-  name: backend-timeout
+  name: request-prefix-match
 spec:
+  sourceSelector:
+    - kubeWorkloadMatcher:
+        namespaces:
+          - {{.EchoContext.AppNamespace.Name}}
   destinationSelector:
     - kubeServiceRefs:
         services:
-          - clusterName: cluster-1
+          - clusterName: cluster-0
             name: backend
             namespace: {{.EchoContext.AppNamespace.Name}}
+  httpRequestMatchers:
+    - prefix: /two
   policy:
-    requestTimeout: 1s
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: cluster-1
+            name: backend
+            namespace: {{.EchoContext.AppNamespace.Name}}
+            port: 8090
