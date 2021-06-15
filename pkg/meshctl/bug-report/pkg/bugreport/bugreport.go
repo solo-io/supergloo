@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	version2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/version"
 	"io/ioutil"
 	"os"
 	"path"
@@ -134,7 +135,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		return err
 	}
 
-	dumpRevisionsAndVersions(resources, config.MgmtKubeConfigPath, config.MgmtContext, config.IstioNamespace, config.GlooMeshNamespace)
+	dumpRevisionsAndVersions(resources, config.MgmtKubeConfigPath, config.MgmtContext, config.IstioNamespace)
 
 	log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
 	paths, err := filter.GetMatchingPaths(config, resources)
@@ -179,7 +180,20 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	return nil
 }
 
-func dumpGlooMeshVersions()
+func dumpGlooMeshVersions(kubeconfig, configContext, glooMeshNamespace string) {
+	text := ""
+	glooMeshVersions := version2.MakeServerVersions(context.Background(),&version2.Options{
+		Kubeconfig:  kubeconfig,
+		Kubecontext: configContext,
+		Namespace:   glooMeshNamespace,
+	})
+		text += "The following Gloo Management plane versions were found in the cluster:\n"
+	for _, ver := range glooMeshVersions {
+		text += fmt.Sprintf("Version: %s\n\n", ver.Components)
+	}
+	common.LogAndPrintf(text)
+	writeFile(filepath.Join(archive.OutputRootDir(tempDir), "gloo-versions"), text)
+}
 
 func dumpRevisionsAndVersions(resources *cluster2.Resources, kubeconfig, configContext, istioNamespace string) {
 	text := ""

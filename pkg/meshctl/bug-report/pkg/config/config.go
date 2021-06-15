@@ -168,11 +168,17 @@ type BugReportConfig struct {
 
 func (b *BugReportConfig) String() string {
 	out := ""
-	if b.KubeConfigPath != "" {
-		out += fmt.Sprintf("kubeconfig: %s\n", b.KubeConfigPath)
+	if b.MgmtKubeConfigPath != "" {
+		out += fmt.Sprintf("Gloo MP kubeconfig: %s\n", b.MgmtKubeConfigPath)
 	}
-	if b.Context != "" {
-		out += fmt.Sprintf("context: %s\n", b.Context)
+	if b.MgmtContext != "" {
+		out += fmt.Sprintf("Gloo MP Context: %s\n", b.MgmtContext)
+	}
+	if b.RemoteKubeConfigPath != "" {
+		out += fmt.Sprintf("Gloo CP kubeconfig: %s\n", b.RemoteKubeConfigPath)
+	}
+	if b.RemoteContext != "" {
+		out += fmt.Sprintf("Gloo CP context: %s\n", b.RemoteContext)
 	}
 	out += fmt.Sprintf("istio-namespace: %s\n", b.IstioNamespace)
 	out += fmt.Sprintf("full-secrets: %v\n", b.FullSecrets)
