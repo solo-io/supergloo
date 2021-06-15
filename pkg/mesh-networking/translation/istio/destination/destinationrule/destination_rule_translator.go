@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
@@ -204,14 +204,7 @@ func (t *translator) initializeDestinationRule(
 		Spec: networkingv1alpha3spec.DestinationRule{
 			Host:          hostname,
 			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
-<<<<<<< HEAD
-			Subsets: routeutils.MakeDestinationRuleSubsetsForDestination(
-				destination,
-				sourceMeshInstallation.GetCluster(),
-			),
-=======
 			Subsets:       trafficshift.MakeDestinationRuleSubsets(destination.Status.GetRequiredSubsets()),
->>>>>>> origin/main
 		},
 	}
 

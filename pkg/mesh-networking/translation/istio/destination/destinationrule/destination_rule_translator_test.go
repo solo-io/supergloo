@@ -2,8 +2,9 @@ package destinationrule_test
 
 import (
 	"context"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"sort"
+
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
