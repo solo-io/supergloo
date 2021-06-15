@@ -66,6 +66,22 @@ func TestTrafficPolicies(t *testing.T) {
 							FileName:    "request-header-matcher.yaml",
 							Folder:      "gloo-mesh/traffic-policy",
 						},
+						{
+							Name:        "request-prefix-header-matcher-and",
+							Description: "Checking request matching on a header and prefix",
+							Test:        testRequestPrefixAndHeaderMatcher,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "request-prefix-header-matcher-and.yaml",
+							Folder:      "gloo-mesh/traffic-policy",
+						},
+						{
+							Name:        "request-prefix-header-matcher-or",
+							Description: "Checking request matching on a header or prefix",
+							Test:        testRequestPrefixOrHeaderMatcher,
+							Namespace:   deploymentCtx.EchoContext.AppNamespace.Name(),
+							FileName:    "request-prefix-header-matcher-or.yaml",
+							Folder:      "gloo-mesh/traffic-policy",
+						},
 					},
 				},
 			}
@@ -287,4 +303,134 @@ func testRequestHeaderMatcher(ctx resource.Context, t *testing.T, deploymentCtx 
 		Validator: echo.ExpectCode("404"),
 	})
 
+}
+
+func testRequestPrefixAndHeaderMatcher(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+	backendHost := fmt.Sprintf("backend.%s.svc.cluster.local", deploymentCtx.EchoContext.AppNamespace.Name())
+	header := http.Header{}
+	header.Add("color-header", "blue")
+	// requests with header color-header: blue but wrong path
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Headers:   header,
+		Path:      "/info",
+		Count:     1,
+		Validator: echo.ExpectCode("404"),
+	})
+
+	// right path but wrong header
+	header = http.Header{}
+	header.Add("color-header", "red")
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Headers:   header,
+		Path:      "/two",
+		Count:     1,
+		Validator: echo.ExpectCode("404"),
+	})
+	// right path and right header
+	header = http.Header{}
+	header.Add("color-header", "blue")
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Headers:   header,
+		Method:    http.MethodGet,
+		Path:      "/two",
+		Count:     1,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
+	})
+
+}
+
+func testRequestPrefixOrHeaderMatcher(ctx resource.Context, t *testing.T, deploymentCtx *context.DeploymentContext) {
+	cluster := ctx.Clusters()[0]
+	// frontend calling backend in mesh using virtual destination in same cluster
+	src := deploymentCtx.EchoContext.Deployments.GetOrFail(t, echo.Service("frontend").And(echo.InCluster(cluster)))
+	backendHost := fmt.Sprintf("backend.%s.svc.cluster.local", deploymentCtx.EchoContext.AppNamespace.Name())
+	header := http.Header{}
+	header.Add("color-header", "blue")
+	// requests with header color-header: blue but wrong path. still should match
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Headers:   header,
+		Path:      "/info",
+		Count:     1,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
+	})
+
+	// right path but wrong header. still should match
+	header = http.Header{}
+	header.Add("color-header", "red")
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Method:    http.MethodGet,
+		Headers:   header,
+		Path:      "/two",
+		Count:     1,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
+	})
+	// right path and right header
+	header = http.Header{}
+	header.Add("color-header", "blue")
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Headers:   header,
+		Method:    http.MethodGet,
+		Path:      "/two",
+		Count:     1,
+		Validator: echo.And(echo.ExpectOK(), echo.ExpectCluster(ctx.Clusters()[1].Name())),
+	})
+
+	// neither path nor header
+	header = http.Header{}
+	header.Add("color-header", "red")
+	src.CallOrFail(t, echo.CallOptions{
+		Port: &echo.Port{
+			Protocol:    "http",
+			ServicePort: 8090,
+		},
+		Scheme:    scheme.HTTP,
+		Address:   backendHost,
+		Headers:   header,
+		Method:    http.MethodGet,
+		Path:      "/info",
+		Count:     1,
+		Validator: echo.ExpectCode("404"),
+	})
 }

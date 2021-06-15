@@ -20,9 +20,9 @@ metadata:
   name: request-prefix-match
 spec:
   sourceSelector:
-  - kubeWorkloadMatcher:
-      namespaces:
-      - {{.EchoContext.AppNamespace.Name}}
+    - kubeWorkloadMatcher:
+        namespaces:
+          - {{.EchoContext.AppNamespace.Name}}
   destinationSelector:
     - kubeServiceRefs:
         services:
