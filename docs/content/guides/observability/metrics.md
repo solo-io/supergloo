@@ -70,6 +70,27 @@ gloo-mesh      enterprise-networking-69d74c9744-8nlkd               1/1     Runn
 gloo-mesh      prometheus-server-68b58c79f8-rlq54                   2/2     Running   0          23m
 ```
 
+#### Openshift Prometheus Integration
+
+Gloo Mesh Enterprise can also be integrated with Openshift. To install Gloo Mesh Enterprise with Openshift configured for Prometheus, include the
+following helm values:
+
+ - `gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true`
+ - `enterprise-networking.prometheus.server.securityContext.runAsUser=1000630000`
+ - `enterprise-networking.prometheus.server.securityContext.runAsGroup=1000630000`
+ - `enterprise-networking.prometheus.server.securityContext.fsGroup=1000630000`
+
+Adding these together with the usual prometheus requirements for Gloo Mesh Enterprise, an example installation command would look like this: 
+
+```shell 
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh   --set licenseKey=${GLOO_MESH_LICENSE_KEY}  \
+--set enterprise-networking.metricsBackend.prometheus.enabled=true \
+--set gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true \
+--set enterprise-networking.prometheus.server.securityContext.runAsUser=1000630000 \
+--set enterprise-networking.prometheus.server.securityContext.runAsGroup=1000630000 \
+--set enterprise-networking.prometheus.server.securityContext.fsGroup=1000630000
+```
+
 ## Functionality
 
 ### Generate Traffic
