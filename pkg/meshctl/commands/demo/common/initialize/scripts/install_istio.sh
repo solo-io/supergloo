@@ -218,6 +218,9 @@ EOF
   elif istioctl version | grep -E -- '1.9'
   then
     install_istio_1_9 $cluster $port
+  elif istioctl version | grep -E -- '1.10'
+  then
+    install_istio_1_9 $cluster $port
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1

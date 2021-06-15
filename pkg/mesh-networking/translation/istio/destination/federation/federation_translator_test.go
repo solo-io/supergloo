@@ -137,16 +137,41 @@ var _ = Describe("FederationTranslator", func() {
 		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{KubeService: &discoveryv1.DestinationSpec_KubeService{
-					Ref: backingService,
-					Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-						{
-							Port:     1234,
-							Name:     "http",
-							Protocol: "TCP",
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: backingService,
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+							{
+								Port:     1234,
+								Protocol: "TCP", // translated ServiceEntry should fall back on protocol for port name because name isn't specified here
+							},
+						},
+						EndpointSubsets: []*discoveryv1.DestinationSpec_KubeService_EndpointsSubset{
+							{
+								Endpoints: []*discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
+									{
+										IpAddress: "192.168.21.1",
+										Labels: map[string]string{
+											"version": "v1",
+										},
+									},
+									{
+										IpAddress: "192.168.21.2",
+										Labels: map[string]string{
+											"version": "v2",
+										},
+									},
+								},
+								Ports: []*discoveryv1.DestinationSpec_KubeService_EndpointPort{
+									{
+										Port:     1234,
+										Protocol: "TCP",
+									},
+								},
+							},
 						},
 					},
-				}},
+				},
 				Mesh: destinationMeshRef,
 			},
 			// include some applied subsets
@@ -171,27 +196,49 @@ var _ = Describe("FederationTranslator", func() {
 			AddVirtualMeshes(networkingv1.VirtualMeshSlice{destinationVirtualMesh}).
 			Build()
 
-		expectedVS := &networkingv1alpha3.VirtualService{}
+		expectedRemoteVS := &networkingv1alpha3.VirtualService{}
 		mockVirtualServiceTranslator.
 			EXPECT().
 			Translate(ctx, in, destination, remoteMesh.Spec.GetIstio().Installation, mockReporter).
-			Return(expectedVS)
+			Return(expectedRemoteVS)
 		mockVirtualServiceTranslator.
 			EXPECT().
 			Translate(ctx, in, destination, remoteMesh2.Spec.GetIstio().Installation, mockReporter).
-			Return(expectedVS)
+			Return(expectedRemoteVS)
 
-		expectedDR := &networkingv1alpha3.DestinationRule{}
+		expectedRemoteDR := &networkingv1alpha3.DestinationRule{
+			Spec: networkingv1alpha3spec.DestinationRule{
+				Subsets: []*networkingv1alpha3spec.Subset{
+					{
+						Name: "version-v1",
+						Labels: map[string]string{
+							"version": "v1",
+						},
+					},
+					{
+						Name: "version-v2",
+						Labels: map[string]string{
+							"version": "v2",
+						},
+					},
+				},
+				TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+					Tls: &networkingv1alpha3spec.ClientTLSSettings{
+						Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+					},
+				},
+			},
+		}
 		mockDestinationRuleTranslator.
 			EXPECT().
 			Translate(ctx, in, destination, remoteMesh.Spec.GetIstio().Installation, mockReporter).
-			Return(expectedDR)
+			Return(expectedRemoteDR)
 		mockDestinationRuleTranslator.
 			EXPECT().
 			Translate(ctx, in, destination, remoteMesh2.Spec.GetIstio().Installation, mockReporter).
-			Return(expectedDR)
+			Return(expectedRemoteDR)
 
-		expectedServiceEntry := &networkingv1alpha3.ServiceEntry{
+		expectedRemoteServiceEntry := &networkingv1alpha3.ServiceEntry{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "federated-hostname",
 				Namespace:   "remote-namespace",
@@ -211,8 +258,8 @@ var _ = Describe("FederationTranslator", func() {
 				Ports: []*networkingv1alpha3spec.Port{
 					{
 						Number:   1234,
-						Protocol: string(protocol.HTTP),
-						Name:     "http",
+						Protocol: string(protocol.TCP),
+						Name:     "TCP",
 					},
 				},
 				Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
@@ -221,27 +268,84 @@ var _ = Describe("FederationTranslator", func() {
 					{
 						Address: "mesh-gateway.dns.name",
 						Ports: map[string]uint32{
-							"http": 8181,
+							"TCP": 8181,
 						},
-						Labels: map[string]string{"cluster": "cluster"},
+						Labels: map[string]string{"version": "v1"},
+					},
+					{
+						Address: "mesh-gateway.dns.name",
+						Ports: map[string]uint32{
+							"TCP": 8181,
+						},
+						Labels: map[string]string{"version": "v2"},
 					},
 				},
 			},
 		}
 
-		expectedServiceEntry2 := expectedServiceEntry.DeepCopy()
-		expectedServiceEntry.Namespace = "remote-namespace2"
-		expectedServiceEntry.ClusterName = "remote-cluster2"
+		expectedRemoteServiceEntry2 := expectedRemoteServiceEntry.DeepCopy()
 
-		expectedServiceEntries := []*networkingv1alpha3.ServiceEntry{
-			expectedServiceEntry,
-			expectedServiceEntry2,
+		expectedRemoteServiceEntry.Namespace = "remote-namespace2"
+		expectedRemoteServiceEntry.ClusterName = "remote-cluster2"
+
+		expectedLocalServiceEntry := &networkingv1alpha3.ServiceEntry{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        destination.Status.GetAppliedFederation().FederatedHostname,
+				Namespace:   destinationMesh.Spec.GetIstio().Installation.Namespace,
+				ClusterName: destinationMesh.Spec.GetIstio().Installation.Cluster,
+				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"namespace"}]}`,
+				},
+			},
+			Spec: networkingv1alpha3spec.ServiceEntry{
+				// match the federate hostname
+				Hosts: []string{destination.Status.GetAppliedFederation().FederatedHostname},
+				// only export to Gateway workload namespace
+				ExportTo:   []string{"."},
+				Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
+				Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+				Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
+					{
+						// map to the local hostname
+						Address: "192.168.21.1",
+						// needed for cross cluster subset routing
+						Labels: map[string]string{"version": "v1"},
+						Ports:  map[string]uint32{"TCP": 1234},
+					},
+					{
+						// map to the local hostname
+						Address: "192.168.21.2",
+						// needed for cross cluster subset routing
+						Labels: map[string]string{"version": "v2"},
+						Ports:  map[string]uint32{"TCP": 1234},
+					},
+				},
+				Ports: expectedRemoteServiceEntry.Spec.Ports,
+			},
+		}
+
+		expectedLocalDestinationRule := &networkingv1alpha3.DestinationRule{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        destination.Status.GetAppliedFederation().FederatedHostname,
+				Namespace:   destinationMesh.Spec.GetIstio().Installation.Namespace,
+				ClusterName: destinationMesh.Spec.GetIstio().Installation.Cluster,
+				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"namespace"}]}`,
+				},
+			},
+			Spec: networkingv1alpha3spec.DestinationRule{
+				Host:          destination.Status.GetAppliedFederation().FederatedHostname,
+				Subsets:       expectedRemoteDR.Spec.Subsets,
+				TrafficPolicy: expectedRemoteDR.Spec.TrafficPolicy,
+			},
 		}
 
 		serviceEntries, virtualServices, destinationRules := federationTranslator.Translate(in, destination, mockReporter)
 
-		Expect(serviceEntries).To(ConsistOf(expectedServiceEntries))
-		Expect(virtualServices).To(ConsistOf([]*networkingv1alpha3.VirtualService{expectedVS, expectedVS}))
-		Expect(destinationRules).To(ConsistOf([]*networkingv1alpha3.DestinationRule{expectedDR, expectedDR}))
+		Expect(serviceEntries).To(ConsistOf([]*networkingv1alpha3.ServiceEntry{expectedRemoteServiceEntry, expectedRemoteServiceEntry2, expectedLocalServiceEntry}))
+		Expect(virtualServices).To(ConsistOf([]*networkingv1alpha3.VirtualService{expectedRemoteVS, expectedRemoteVS}))
+		Expect(destinationRules).To(ConsistOf([]*networkingv1alpha3.DestinationRule{expectedRemoteDR, expectedRemoteDR, expectedLocalDestinationRule}))
 	})
 })

@@ -2,8 +2,10 @@ package gloo_mesh
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"io"
+	"io/fs"
 	"time"
 
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install"
@@ -21,8 +23,10 @@ import (
 )
 
 var (
-	_ gloo_context.GlooMeshInstance = &glooMeshInstance{}
-	_ io.Closer                     = &glooMeshInstance{}
+	//go:embed crds/*.yaml
+	crdFiles embed.FS
+	_        gloo_context.GlooMeshInstance = &glooMeshInstance{}
+	_        io.Closer                     = &glooMeshInstance{}
 )
 
 const namespace = "gloo-mesh"
@@ -30,6 +34,7 @@ const namespace = "gloo-mesh"
 type glooMeshInstance struct {
 	id             resource.ID
 	instanceConfig InstanceConfig
+	ctx            resource.Context
 }
 type InstanceConfig struct {
 	managementPlane                   bool
@@ -43,7 +48,9 @@ type InstanceConfig struct {
 
 func newInstance(ctx resource.Context, instanceConfig InstanceConfig, licenseKey string) (gloo_context.GlooMeshInstance, error) {
 	var err error
-	i := &glooMeshInstance{}
+	i := &glooMeshInstance{
+		ctx: ctx,
+	}
 	i.id = ctx.TrackResource(i)
 	i.instanceConfig = instanceConfig
 	if i.instanceConfig.managementPlane {
@@ -195,17 +202,18 @@ func (i *glooMeshInstance) GetCluster() cluster.Cluster {
 
 // Close implements io.Closer.
 func (i *glooMeshInstance) Close() error {
-	// TODO need to clean up Solo CRDs
 	if i.instanceConfig.managementPlane {
 		kubeConfig := i.instanceConfig.managementPlaneKubeConfigPath
 		releaseName := fmt.Sprintf("%s-mp", i.instanceConfig.cluster.Name())
-		return uninstall.Uninstall(context.Background(), &uninstall.Options{
+		if err := uninstall.Uninstall(context.Background(), &uninstall.Options{
 			Verbose:     true,
 			KubeCfgPath: kubeConfig,
 			KubeContext: "",
 			Namespace:   "gloo-mesh",
 			ReleaseName: releaseName,
-		})
+		}); err != nil {
+			log.Warn(err)
+		}
 	} else {
 		releaseName := fmt.Sprintf("%s-cp", i.instanceConfig.cluster.Name())
 		if err := enterprise.DeregisterCluster(context.Background(), enterprise.RegistrationOptions{
@@ -238,7 +246,21 @@ func (i *glooMeshInstance) Close() error {
 			TokenSecretKey:            "",
 			ReleaseName:               releaseName,
 		}); err != nil {
-			log.Error(err)
+			log.Warn(err)
+		}
+	}
+	// Delete CRDS in cluster
+	files, err := crdFiles.ReadDir("crds")
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		file, err := fs.ReadFile(crdFiles, "crds/"+f.Name())
+		if err != nil {
+			return err
+		}
+		if err = i.ctx.Config(i.GetCluster()).DeleteYAML("", string(file)); err != nil {
+			log.Warn(err)
 		}
 	}
 

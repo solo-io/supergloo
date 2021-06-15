@@ -39,6 +39,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.2.0 // indirect
 	github.com/fatih/color v1.10.0
 	github.com/gertd/go-pluralize v0.1.1
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-openapi/swag v0.19.6
 	github.com/go-test/deep v1.0.2
 	github.com/gobuffalo/packr v1.30.1
@@ -52,6 +53,7 @@ require (
 	github.com/iancoleman/strcase v0.1.3
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/logrusorgru/aurora/v3 v3.0.0
+	github.com/manifoldco/promptui v0.8.0
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4
@@ -76,7 +78,7 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.18
+	github.com/solo-io/skv2 v0.17.20
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.3

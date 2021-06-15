@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - 'main'
-  pull_request: {}
+  pull_request: { }
 
 jobs:
   check-code-gen:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
@@ -45,7 +45,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
@@ -68,9 +68,10 @@ jobs:
       fail-fast: false
       matrix:
         istioctl-binary: [
-          'https://github.com/istio/istio/releases/download/1.7.7/istio-1.7.7-linux-amd64.tar.gz',
-          'https://github.com/istio/istio/releases/download/1.8.3/istio-1.8.3-linux-amd64.tar.gz',
-          'https://github.com/istio/istio/releases/download/1.9.1/istio-1.9.1-linux-amd64.tar.gz'
+            'https://github.com/istio/istio/releases/download/1.7.7/istio-1.7.7-linux-amd64.tar.gz',
+            'https://github.com/istio/istio/releases/download/1.8.6/istio-1.8.6-linux-amd64.tar.gz',
+            'https://github.com/istio/istio/releases/download/1.9.5/istio-1.9.5-linux-amd64.tar.gz',
+            'https://github.com/istio/istio/releases/download/1.10.0/istio-1.10.0-linux-amd64.tar.gz'
         ]
     steps:
       - uses: actions/checkout@v2
@@ -79,7 +80,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - uses: engineerd/setup-kind@v0.5.0
         with:
           skipClusterCreation: "true"
@@ -125,8 +126,8 @@ jobs:
       fail-fast: false
       matrix:
         osm-binary: [
-          'https://github.com/openservicemesh/osm/releases/download/v0.3.0/osm-v0.3.0-linux-amd64.tar.gz',
-          'https://github.com/openservicemesh/osm/releases/download/v0.4.0/osm-v0.4.0-linux-amd64.tar.gz',
+            'https://github.com/openservicemesh/osm/releases/download/v0.3.0/osm-v0.3.0-linux-amd64.tar.gz',
+            'https://github.com/openservicemesh/osm/releases/download/v0.4.0/osm-v0.4.0-linux-amd64.tar.gz',
         ]
     steps:
       - uses: actions/checkout@v2
@@ -135,7 +136,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - uses: engineerd/setup-kind@v0.5.0
         with:
           skipClusterCreation: "true"

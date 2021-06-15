@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
@@ -74,6 +73,11 @@ func (t *translator) Translate(
 	[]*networkingv1alpha3.VirtualService,
 	[]*networkingv1alpha3.DestinationRule,
 ) {
+	// nothing to translate if this Destination is not federated to any external meshes
+	if len(destination.Status.AppliedFederation.GetFederatedToMeshes()) == 0 {
+		return nil, nil, nil
+	}
+
 	// KubeService scenario
 	kubeService := destination.Spec.GetKubeService()
 	appliedFederation := destination.Status.AppliedFederation
@@ -98,7 +102,7 @@ func (t *translator) Translate(
 	}
 
 	// translate ServiceEntry template
-	serviceEntryTemplate, err := t.translateServiceEntryTemplate(destination, destinationMesh)
+	remoteServiceEntryTemplate, err := t.translateRemoteServiceEntryTemplate(destination, destinationMesh)
 	if err != nil {
 		contextutils.LoggerFrom(t.ctx).Errorf("Encountered error while translating ServiceEntry template for Destination %v", ezkube.MakeObjectRef(destination))
 		return nil, nil, nil
@@ -108,6 +112,8 @@ func (t *translator) Translate(
 	var virtualServices []*networkingv1alpha3.VirtualService
 	var destinationRules []*networkingv1alpha3.DestinationRule
 
+	var remoteDestinationRule *networkingv1alpha3.DestinationRule
+	// translate remote resources
 	for _, meshRef := range destination.Status.AppliedFederation.GetFederatedToMeshes() {
 		remoteMesh, err := in.Meshes().Find(meshRef)
 		if err != nil {
@@ -120,12 +126,11 @@ func (t *translator) Translate(
 			destinationVirtualMesh,
 			in,
 			remoteMesh,
-			serviceEntryTemplate,
+			remoteServiceEntryTemplate,
 			reporter,
 		)
 
 		// Append the VirtualMesh as a parent to the outputs
-		// TODO(harveyxia) append Destination as parent once new GC is being implemented
 		metautils.AppendParent(t.ctx, serviceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 		metautils.AppendParent(t.ctx, virtualService, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 		metautils.AppendParent(t.ctx, destinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
@@ -133,43 +138,67 @@ func (t *translator) Translate(
 		serviceEntries = append(serviceEntries, serviceEntry)
 		virtualServices = append(virtualServices, virtualService)
 		destinationRules = append(destinationRules, destinationRule)
+
+		// take a reference to any translated remote DestinationRule so that we can copy over any necessary fields for the local DestinationRule for the federated FQDN
+		// this avoids re-translating the DestinationRule
+		if remoteDestinationRule == nil {
+			remoteDestinationRule = destinationRule
+		}
 	}
+
+	// translate local resources
+	localServiceEntry, localDestinationRule := t.translateForLocalMesh(
+		destination,
+		destinationMesh,
+		remoteServiceEntryTemplate,
+		remoteDestinationRule,
+	)
+	// Append the VirtualMesh as a parent to the outputs
+	metautils.AppendParent(t.ctx, localServiceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, localDestinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+	serviceEntries = append(serviceEntries, localServiceEntry)
+	destinationRules = append(destinationRules, localDestinationRule)
 
 	return serviceEntries, virtualServices, destinationRules
 }
 
 // translate the ServiceEntry template that must exist on all meshes this Destination is federated to
-func (t *translator) translateServiceEntryTemplate(
+func (t *translator) translateRemoteServiceEntryTemplate(
 	destination *discoveryv1.Destination,
 	destinationMesh *discoveryv1.Mesh,
 ) (*networkingv1alpha3.ServiceEntry, error) {
-	istioCluster := destinationMesh.Spec.GetIstio().Installation.Cluster
+	kubeService := destination.Spec.GetKubeService()
+	istioMesh := destinationMesh.Spec.GetIstio()
 
-	// Guaranteed to have at least one gateway passed by caller
-	ingressGateway := destinationMesh.Spec.GetIstio().IngressGateways[0]
-	serviceEntryIP, err := destinationutils.ConstructUniqueIpForKubeService(destination.Spec.GetKubeService().GetRef())
+	if len(istioMesh.IngressGateways) < 1 {
+		return nil, eris.Errorf("istio mesh %v has no ingress gateway", sets.Key(destinationMesh))
+	}
+
+	// TODO: support multiple ingress gateways or selecting a specific gateway.
+	// Currently, we just default to using the first one in the list.
+	ingressGateway := istioMesh.IngressGateways[0]
+
+	serviceEntryIP, err := destinationutils.ConstructUniqueIpForKubeService(kubeService.GetRef())
 	if err != nil {
 		// should never happen
 		return nil, eris.Errorf("unexpected error: failed to generate service entry ip: %v", err)
 	}
 
-	endpointPorts := make(map[string]uint32)
+	remoteIngressTlsPort := make(map[string]uint32)
 	var ports []*networkingv1alpha3spec.Port
-	for _, port := range destination.Spec.GetKubeService().GetPorts() {
+	for _, port := range kubeService.GetPorts() {
+		portName := port.Name
+		// fall back to protocol for port name if k8s port name is unpopulated
+		if portName == "" {
+			portName = port.Protocol
+		}
 		ports = append(ports, &networkingv1alpha3spec.Port{
 			Number:   port.Port,
 			Protocol: ConvertKubePortProtocol(port),
-			Name:     port.Name,
+			Name:     portName,
 		})
-		endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
+		remoteIngressTlsPort[portName] = ingressGateway.ExternalTlsPort
 	}
-
-	// NOTE(ilackarms): we use these labels to support federated subsets.
-	// the values don't actually matter; but the subset names should
-	// match those on the DestinationRule for the Destination in the
-	// remote cluster.
-	// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-	clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
 
 	address := ingressGateway.GetDnsName()
 	if address == "" {
@@ -179,11 +208,19 @@ func (t *translator) translateServiceEntryTemplate(
 		// remove when deprecated field is removed
 		address = ingressGateway.GetExternalAddress()
 	}
-	endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
-		Address: address,
-		Ports:   endpointPorts,
-		Labels:  clusterLabels,
-	}}
+
+	var workloadEntries []*networkingv1alpha3spec.WorkloadEntry
+	// construct a WorkloadEntry for each endpoint (i.e. backing Workload) for the Destination
+	for _, endpointSubset := range kubeService.EndpointSubsets {
+		for _, endpoint := range endpointSubset.Endpoints {
+			workloadEntry := &networkingv1alpha3spec.WorkloadEntry{
+				Address: address,
+				Ports:   remoteIngressTlsPort,
+				Labels:  endpoint.Labels,
+			}
+			workloadEntries = append(workloadEntries, workloadEntry)
+		}
+	}
 
 	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
 
@@ -198,12 +235,90 @@ func (t *translator) translateServiceEntryTemplate(
 			Hosts:      []string{federatedHostname},
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
 			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
-			Endpoints:  endpoints,
+			Endpoints:  workloadEntries,
 			Ports:      ports,
 		},
 	}, nil
 }
 
+// translate resources local to this Destination's mesh that allow routing to this Destination from clients in remote Meshes
+// A ServiceEntry is needed to map the Destination's global FQDN to the local FQDN.
+func (t *translator) translateForLocalMesh(
+	destination *discoveryv1.Destination,
+	destinationMesh *discoveryv1.Mesh,
+	remoteServiceEntryTemplate *networkingv1alpha3.ServiceEntry,
+	remoteDestinationRule *networkingv1alpha3.DestinationRule,
+) (*networkingv1alpha3.ServiceEntry, *networkingv1alpha3.DestinationRule) {
+	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
+	destinationIstioMesh := destinationMesh.Spec.GetIstio()
+
+	var workloadEntries []*networkingv1alpha3spec.WorkloadEntry
+	// construct a WorkloadEntry for each endpoint (i.e. backing Workload) for the Destination
+	for _, endpointSubset := range destination.Spec.GetKubeService().EndpointSubsets {
+		for _, endpoint := range endpointSubset.Endpoints {
+
+			ports := map[string]uint32{}
+			for _, port := range endpointSubset.Ports {
+				portName := port.Name
+				// fall back to protocol for port name if k8s port name is unpopulated
+				if portName == "" {
+					portName = port.Protocol
+				}
+				ports[portName] = port.Port
+			}
+
+			workloadEntry := &networkingv1alpha3spec.WorkloadEntry{
+				Address: endpoint.IpAddress,
+				Ports:   ports,
+				Labels:  endpoint.Labels,
+			}
+			workloadEntries = append(workloadEntries, workloadEntry)
+		}
+	}
+
+	se := &networkingv1alpha3.ServiceEntry{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        federatedHostname,
+			Namespace:   destinationIstioMesh.Installation.Namespace,
+			ClusterName: destinationIstioMesh.Installation.Cluster,
+			Labels:      metautils.TranslatedObjectLabels(),
+		},
+		Spec: networkingv1alpha3spec.ServiceEntry{
+			// match the federate hostname
+			Hosts: []string{federatedHostname},
+			// only export to Gateway workload namespace
+			ExportTo:   []string{"."},
+			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
+			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+			Endpoints:  workloadEntries,
+			Ports:      remoteServiceEntryTemplate.Spec.Ports,
+		},
+	}
+
+	var dr *networkingv1alpha3.DestinationRule
+	// if the remote DestinationRule is nil, that means no DestinationRule config is required for this federated Destination
+	if remoteDestinationRule != nil {
+		dr = &networkingv1alpha3.DestinationRule{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        federatedHostname,
+				Namespace:   destinationIstioMesh.Installation.Namespace,
+				ClusterName: destinationIstioMesh.Installation.Cluster,
+				Labels:      metautils.TranslatedObjectLabels(),
+			},
+			Spec: networkingv1alpha3spec.DestinationRule{
+				Host:          federatedHostname,
+				Subsets:       remoteDestinationRule.Spec.Subsets,
+				TrafficPolicy: remoteDestinationRule.Spec.TrafficPolicy,
+			},
+		}
+	}
+
+	return se, dr
+}
+
+// translate resources for remote meshes that allow routing to this Destination from clients in those remote Meshes
+// A ServiceEntry is needed to represent the federated Destination on all remote meshes.
+// A VirtualService and DestinationRule are needed to reflect any policies that apply to the federated Destination.
 func (t *translator) translateForRemoteMesh(
 	destination *discoveryv1.Destination,
 	destinationVirtualMesh *networkingv1.VirtualMesh,

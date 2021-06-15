@@ -256,3 +256,245 @@ func (mr *MockSettingsSetMockRecorder) UnsortedList(filterResource ...interface{
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockSettingsSet)(nil).UnsortedList), filterResource...)
 }
+
+// MockDashboardSet is a mock of DashboardSet interface.
+type MockDashboardSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardSetMockRecorder
+}
+
+// MockDashboardSetMockRecorder is the mock recorder for MockDashboardSet.
+type MockDashboardSetMockRecorder struct {
+	mock *MockDashboardSet
+}
+
+// NewMockDashboardSet creates a new mock instance.
+func NewMockDashboardSet(ctrl *gomock.Controller) *MockDashboardSet {
+	mock := &MockDashboardSet{ctrl: ctrl}
+	mock.recorder = &MockDashboardSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardSet) EXPECT() *MockDashboardSetMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockDashboardSet) Delete(dashboard ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", dashboard)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockDashboardSetMockRecorder) Delete(dashboard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDashboardSet)(nil).Delete), dashboard)
+}
+
+// Delta mocks base method.
+func (m *MockDashboardSet) Delta(newSet v1sets.DashboardSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta.
+func (mr *MockDashboardSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockDashboardSet)(nil).Delta), newSet)
+}
+
+// Difference mocks base method.
+func (m *MockDashboardSet) Difference(set v1sets.DashboardSet) v1sets.DashboardSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1sets.DashboardSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockDashboardSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockDashboardSet)(nil).Difference), set)
+}
+
+// Equal mocks base method.
+func (m *MockDashboardSet) Equal(dashboardSet v1sets.DashboardSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", dashboardSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockDashboardSetMockRecorder) Equal(dashboardSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockDashboardSet)(nil).Equal), dashboardSet)
+}
+
+// Find mocks base method.
+func (m *MockDashboardSet) Find(id ezkube.ResourceId) (*v1.Dashboard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.Dashboard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockDashboardSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockDashboardSet)(nil).Find), id)
+}
+
+// Generic mocks base method.
+func (m *MockDashboardSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockDashboardSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockDashboardSet)(nil).Generic))
+}
+
+// Has mocks base method.
+func (m *MockDashboardSet) Has(dashboard ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", dashboard)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockDashboardSetMockRecorder) Has(dashboard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockDashboardSet)(nil).Has), dashboard)
+}
+
+// Insert mocks base method.
+func (m *MockDashboardSet) Insert(dashboard ...*v1.Dashboard) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range dashboard {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockDashboardSetMockRecorder) Insert(dashboard ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockDashboardSet)(nil).Insert), dashboard...)
+}
+
+// Intersection mocks base method.
+func (m *MockDashboardSet) Intersection(set v1sets.DashboardSet) v1sets.DashboardSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1sets.DashboardSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockDashboardSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockDashboardSet)(nil).Intersection), set)
+}
+
+// Keys mocks base method.
+func (m *MockDashboardSet) Keys() sets0.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets0.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys.
+func (mr *MockDashboardSetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockDashboardSet)(nil).Keys))
+}
+
+// Length mocks base method.
+func (m *MockDashboardSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockDashboardSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockDashboardSet)(nil).Length))
+}
+
+// List mocks base method.
+func (m *MockDashboardSet) List(filterResource ...func(*v1.Dashboard) bool) []*v1.Dashboard {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].([]*v1.Dashboard)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *MockDashboardSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockDashboardSet)(nil).List), filterResource...)
+}
+
+// Map mocks base method.
+func (m *MockDashboardSet) Map() map[string]*v1.Dashboard {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1.Dashboard)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockDashboardSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockDashboardSet)(nil).Map))
+}
+
+// Union mocks base method.
+func (m *MockDashboardSet) Union(set v1sets.DashboardSet) v1sets.DashboardSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1sets.DashboardSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockDashboardSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockDashboardSet)(nil).Union), set)
+}
+
+// UnsortedList mocks base method.
+func (m *MockDashboardSet) UnsortedList(filterResource ...func(*v1.Dashboard) bool) []*v1.Dashboard {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Dashboard)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList.
+func (mr *MockDashboardSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockDashboardSet)(nil).UnsortedList), filterResource...)
+}

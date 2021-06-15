@@ -20,7 +20,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - name: Setup Cache
         uses: actions/cache@v1
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - name: Setup Cache
         uses: actions/cache@v1
         with:
@@ -60,6 +60,12 @@ jobs:
           registry: gcr.io
           username: _json_key
           password: ${{ secrets.GC_GHA_SA_JSON_KEY }}
+      - name: Docker Backup Login
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: solo-io+solobot
+          password: ${{ secrets.QUAY_IO_PASSWORD }}
       - name: Push Images
         run: make push-all-images
         env:
@@ -80,7 +86,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.16.3
       - name: Install Protoc
         uses: solo-io/setup-protoc@master
         with:

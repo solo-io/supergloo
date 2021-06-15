@@ -33,7 +33,7 @@ meshctl cluster deregister enterprise [cluster name] [flags]
       --cluster-name string       name of the cluster to deregister
       --kubeconfig string         path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string       name of the kubeconfig context to use for the management cluster
-      --mgmt-kubeconfig string    path to the kubeconfig context to use for the management cluster (defaults to ~/.kube/config)
+      --mgmt-kubeconfig string    path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location
       --mgmt-namespace string     namespace of the Gloo Mesh control plane in which the secret for the deregistered cluster will be created (default "gloo-mesh")
       --remote-context string     name of the kubeconfig context to use for the remote cluster
       --remote-namespace string   namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "gloo-mesh")

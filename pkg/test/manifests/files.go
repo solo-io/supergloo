@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	//go:embed operator/* traffic/* gloo-mesh/*
+	//go:embed operator/* gloo-mesh/*
 	manifestFiles embed.FS
 )
 

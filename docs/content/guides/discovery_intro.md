@@ -22,10 +22,9 @@ In this guide we will learn about the four main discovery capabilities in the co
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployment" %}})
+* There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
+* Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
 {{% notice note %}}
@@ -37,9 +36,9 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 Ensure that your `kubeconfig` has the correct context set as its `currentContext`:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-REMOTE_CONTEXT=your_remote_context
-kubectl config use-context $MGMT_CONTEXT
+CONTEXT_1=your_first_context
+CONTEXT_2=your_second_context
+kubectl config use-context $CONTEXT_1
 ```
 
 Validate that the cluster have been registered by checking for `KubernetesClusters` custom resources:
@@ -50,8 +49,8 @@ kubectl get kubernetesclusters -n gloo-mesh
 
 ```shell
 NAME                 AGE
-mgmt-cluster         23h
-remote-cluster       23h
+cluster-1            23h
+cluster-2            23h
 ```
 
 ### Discover Meshes
@@ -67,13 +66,13 @@ meshctl describe mesh
 |           METADATA          | VIRTUAL MESHES | FAILOVER SERVICES |
 +-----------------------------+----------------+-------------------+
 | Namespace: istio-system     |                |                   |
-| Cluster: mgmt-cluster       |                |                   |
+| Cluster: cluster-1          |                |                   |
 | Type: istio                 |                |                   |
 | Version: 1.8.1              |                |                   |
 |                             |                |                   |
 +-----------------------------+----------------+-------------------+
 | Namespace: istio-system     |                |                   |
-| Cluster: remote-cluster     |                |                   |
+| Cluster: cluster-2          |                |                   |
 | Type: istio                 |                |                   |
 | Version: 1.8.1              |                |                   |
 |                             |                |                   |
@@ -83,7 +82,7 @@ meshctl describe mesh
 We can print it in YAML form to see all the information we discovered:
 
 ```shell
-kubectl -n gloo-mesh get mesh istiod-istio-system-remote-cluster -oyaml
+kubectl -n gloo-mesh get mesh istiod-istio-system-cluster-2 -oyaml
 ```
 
 (snipped for brevity)
@@ -97,13 +96,13 @@ metadata:
     [...]
   generation: 2
   labels:
-    cluster.discovery.mesh.gloo.solo.io: remote-cluster
+    cluster.discovery.mesh.gloo.solo.io: cluster-2
     cluster.multicluster.solo.io: ""
     owner.discovery.mesh.gloo.solo.io: gloo-mesh
-  name: istiod-istio-system-remote-cluster
+  name: istiod-istio-system-cluster-2
   namespace: gloo-mesh
   resourceVersion: "3218"
-  selfLink: /apis/discovery.mesh.gloo.solo.io/v1/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
+  selfLink: /apis/discovery.mesh.gloo.solo.io/v1/namespaces/gloo-mesh/meshes/istiod-istio-system-cluster-2
   uid: 7c079983-3ece-4aed-b71a-bf56c8cd6267
 spec:
   agentInfo:
@@ -119,7 +118,7 @@ spec:
       workloadLabels:
         istio: ingressgateway
     installation:
-      cluster: remote-cluster
+      cluster: cluster-2
       namespace: istio-system
       podLabels:
         istio: pilot
@@ -139,15 +138,15 @@ kubectl -n gloo-mesh get workloads
 
 ```
 NAME                                                            AGE
-details-v1-bookinfo-mgmt-cluster-deployment                     3m54s
-istio-ingressgateway-istio-system-mgmt-cluster-deployment       23h
-istio-ingressgateway-istio-system-remote-cluster-deployment     23h
-productpage-v1-bookinfo-mgmt-cluster-deployment                 3m54s
-ratings-v1-bookinfo-mgmt-cluster-deployment                     3m53s
-ratings-v1-bookinfo-remote-cluster-deployment                   3m25s
-reviews-v1-bookinfo-mgmt-cluster-deployment                     3m53s
-reviews-v2-bookinfo-mgmt-cluster-deployment                     3m53s
-reviews-v3-bookinfo-remote-cluster-deployment                   2m
+details-v1-bookinfo-cluster-1-deployment                        3m54s
+istio-ingressgateway-istio-system-cluster-1-deployment          23h
+istio-ingressgateway-istio-system-cluster-2-deployment          23h
+productpage-v1-bookinfo-cluster-1-deployment                    3m54s
+ratings-v1-bookinfo-cluster-1-deployment                        3m53s
+ratings-v1-bookinfo-cluster-2-deployment                        3m25s
+reviews-v1-bookinfo-cluster-1-deployment                        3m53s
+reviews-v2-bookinfo-cluster-1-deployment                        3m53s
+reviews-v3-bookinfo-cluster-2-deployment                        2m
 ```
 
 ### Discover Destinations
@@ -160,14 +159,14 @@ kubectl -n gloo-mesh get destinations
 
 ```
 NAME                                                 AGE
-details-bookinfo-mgmt-cluster                        4m23s
-istio-ingressgateway-istio-system-mgmt-cluster       23h
-istio-ingressgateway-istio-system-remote-cluster     23h
-productpage-bookinfo-mgmt-cluster                    4m23s
-ratings-bookinfo-mgmt-cluster                        4m22s
-ratings-bookinfo-remote-cluster                      3m54s
-reviews-bookinfo-mgmt-cluster                        4m22s
-reviews-bookinfo-remote-cluster                      2m29s
+details-bookinfo-cluster-1                           4m23s
+istio-ingressgateway-istio-system-cluster-1          23h
+istio-ingressgateway-istio-system-cluster-2          23h
+productpage-bookinfo-cluster-1                       4m23s
+ratings-bookinfo-cluster-1                           4m22s
+ratings-bookinfo-cluster-2                           3m54s
+reviews-bookinfo-cluster-1                           4m22s
+reviews-bookinfo-cluster-2                           2m29s
 ```
 
 ## See it in action
