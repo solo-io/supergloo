@@ -1,7 +1,9 @@
 name: Deploy to Preview Channel
 
 on:
-  pull_request: {}
+  pull_request:
+    paths:
+    - "docs/**"
 jobs:
   build:
     name: Generate versioned docs site
