@@ -42,7 +42,7 @@ func addFlags(cmd *cobra.Command, args *config2.BugReportConfig) {
 	cmd.PersistentFlags().StringVar(&args.MgmtContext, "mgmt-context", "",
 		"Name of the kubeconfig Context to use for the gloo mesh management plane cluster.")
 
-	cmd.PersistentFlags().StringVarP(&args.RemoteKubeConfigPath, "remote-kubeconfig", "c", "",
+	cmd.PersistentFlags().StringVarP(&args.RemoteKubeConfigPath, "remote-kubeconfig", "", "",
 		"Path to kube config for a remote client cluster.")
 	cmd.PersistentFlags().StringVar(&args.RemoteContext, "remote-context", "",
 		"Name of the kubeconfig Context to use for a remote client cluster.")

@@ -50,9 +50,9 @@ type clientVersion struct {
 }
 type ServerVersion struct {
 	Namespace  string      `json:"Namespace"`
-	Components []component `json:"components"`
+	Components []Component `json:"components"`
 }
-type component struct {
+type Component struct {
 	ComponentName string           `json:"componentName"`
 	Images        []componentImage `json:"images"`
 }
@@ -92,7 +92,7 @@ func MakeServerVersions(ctx context.Context, opts *Options) []ServerVersion {
 	}
 
 	// map of Namespace to list of components
-	componentMap := make(map[string][]component)
+	componentMap := make(map[string][]Component)
 	for _, deployment := range deployments.Items {
 		images, err := getImages(&deployment)
 		if err != nil {
@@ -106,7 +106,7 @@ func MakeServerVersions(ctx context.Context, opts *Options) []ServerVersion {
 		namespace := deployment.GetObjectMeta().GetNamespace()
 		componentMap[namespace] = append(
 			componentMap[namespace],
-			component{
+			Component{
 				ComponentName: deployment.GetName(),
 				Images:        images,
 			},

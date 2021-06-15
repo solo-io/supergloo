@@ -135,6 +135,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		return err
 	}
 
+	dumpGlooMeshVersions(config.MgmtKubeConfigPath, config.MgmtContext, config.RemoteKubeConfigPath, config.RemoteContext, config.GlooMeshNamespace)
 	dumpRevisionsAndVersions(resources, config.MgmtKubeConfigPath, config.MgmtContext, config.IstioNamespace)
 
 	log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
@@ -180,19 +181,31 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	return nil
 }
 
-func dumpGlooMeshVersions(kubeconfig, configContext, glooMeshNamespace string) {
-	text := ""
-	glooMeshVersions := version2.MakeServerVersions(context.Background(),&version2.Options{
-		Kubeconfig:  kubeconfig,
-		Kubecontext: configContext,
-		Namespace:   glooMeshNamespace,
-	})
-		text += "The following Gloo Management plane versions were found in the cluster:\n"
-	for _, ver := range glooMeshVersions {
-		text += fmt.Sprintf("Version: %s\n\n", ver.Components)
-	}
+func dumpGlooMeshVersions(mgmtKubeconfig, mgmtContext, remoteKubeconfig, remoteContext, glooMeshNamespace string) {
+	text := getGlooMeshVersion(mgmtKubeconfig,mgmtContext,glooMeshNamespace)
+	text += "\n\n" + getGlooMeshVersion(remoteKubeconfig,remoteContext,glooMeshNamespace)
+
 	common.LogAndPrintf(text)
 	writeFile(filepath.Join(archive.OutputRootDir(tempDir), "gloo-versions"), text)
+}
+func getGlooMeshVersion(kubeconfig, configcontext, glooMeshNamespace string) string {
+	text := ""
+	glooMeshVersions := version2.MakeServerVersions(context.Background(), &version2.Options{
+		Kubeconfig:  kubeconfig,
+		Kubecontext: configcontext,
+		Namespace:   glooMeshNamespace,
+	})
+		text += "The following Gloo versions were found in the cluster\nKubeconfig: " + kubeconfig + "\nContext: " + configcontext + "\n"
+	for _, ver := range glooMeshVersions {
+		text += fmt.Sprintf("Namespace: %s\n", ver.Namespace)
+		for _, c := range ver.Components {
+			text += fmt.Sprintf("\tName: %s\n", c.ComponentName)
+			for _, i := range c.Images {
+				text += fmt.Sprintf("\t\tName: %s Image: %s/%s:%s\n", i.Name, i.Domain, i.Path, i.Version)
+			}
+		}
+	}
+	return text
 }
 
 func dumpRevisionsAndVersions(resources *cluster2.Resources, kubeconfig, configContext, istioNamespace string) {
