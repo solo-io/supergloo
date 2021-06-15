@@ -5,7 +5,6 @@ metadata:
   namespace: gloo-mesh
 spec:
   federation:
-    hostnameSuffix: solo.io
     selectors:
       - { }
   meshes:
@@ -24,6 +23,8 @@ spec:
   localized:
     destinationSelectors:
       - kubeServiceMatcher:
+          clusters:
+            - cluster-1
           labels:
             app: subset
     failoverDirectives:
@@ -56,6 +57,8 @@ metadata:
 spec:
   destinationSelector:
     - kubeServiceMatcher:
+       clusters:
+         - cluster-1
         labels:
           app: subset
   policy:
@@ -66,10 +69,10 @@ spec:
             namespace: gloo-mesh
             subset:
               version: v1
-          weight: 90
+          weight: 10
         - virtualDestination:
             name: subset
             namespace: gloo-mesh
             subset:
               version: v2
-          weight: 10
+          weight: 90

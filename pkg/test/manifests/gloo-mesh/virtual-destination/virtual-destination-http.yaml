@@ -5,9 +5,6 @@ metadata:
   namespace: gloo-mesh
 spec:
   federation:
-    flatNetwork: true
-    hostnameSuffix: solo.io
-    # required or flat network wont get detected
     selectors:
       - { }
   meshes:
@@ -28,12 +25,41 @@ spec:
     protocol: http
     targetNumber: 8090
   localized:
+    failoverDirectives:
+      - from:
+          region: us-east-1
+        to:
+          - region: us-west-1
+      - from:
+          region: us-west-1
+        to:
+          - region: us-east-1
+    outlierDetection:
+      consecutiveErrors: 1
+      maxEjectionPercent: 100
+      interval: 5s
+      baseEjectionTime: 30s
     destinationSelectors:
       - kubeServiceMatcher:
-          clusters:
-            - cluster-1
           labels:
             app: backend
   virtualMesh:
     name: virtual-mesh
     namespace: gloo-mesh
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: backend-failover
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+    - kubeServiceMatcher:
+        labels:
+          app: backend
+  policy:
+    trafficShift:
+      destinations:
+        - virtualDestination:
+            name: backend
+            namespace: gloo-mesh
