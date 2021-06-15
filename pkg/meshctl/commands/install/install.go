@@ -31,7 +31,7 @@ difference between the editions.
 `,
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
 			// Update the meshctl config file
-			return utils.UpdateMeshctlConfigWithInstall(opts.KubeCfgPath, opts.KubeContext)
+			return utils.UpdateMeshctlConfigWithInstallInfo(opts.KubeCfgPath, opts.KubeContext)
 		},
 	}
 

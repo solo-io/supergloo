@@ -100,8 +100,31 @@ func UpdateMeshctlConfigWithRegistrationInfo(mgmtKubeConfigPath, mgmtKubecontext
 	return WriteConfigToFile(config, meshctlConfigFile)
 }
 
+// update the default meschtl config file with deregistration info
+func UpdateMeshctlConfigWithDeregistrationInfo(mgmtKubeConfigPath, mgmtKubecontext,
+	remoteClusterName, remoteKubeConfigPath string) error {
+	// if the existing meschtl config file doesn't match, don't modify it
+	config := NewMeshctlConfig()
+	meshctlConfigFile, err := DefaultMeshctlConfigFilePath()
+	if err == nil {
+		if parsedConfig, err := ParseMeshctlConfig(meshctlConfigFile); err == nil {
+			config = parsedConfig
+		}
+	}
+	kubeConfig := mgmtKubeConfigPath
+	if kubeConfig == "" {
+		kubeConfig = remoteKubeConfigPath
+	}
+	if config.MgmtCluster().KubeConfig != kubeConfig || config.MgmtCluster().KubeContext != mgmtKubecontext {
+		return nil
+	}
+	// Otherwise, update it
+	delete(config.Clusters, remoteClusterName)
+	return WriteConfigToFile(config, meshctlConfigFile)
+}
+
 // update the default meschtl config file with install info
-func UpdateMeshctlConfigWithInstall(mgmtKubeConfig, mgmtKubecontext string) error {
+func UpdateMeshctlConfigWithInstallInfo(mgmtKubeConfig, mgmtKubecontext string) error {
 	meshctlConfigFile, err := DefaultMeshctlConfigFilePath()
 	if err != nil {
 		return err
@@ -146,6 +169,7 @@ func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 // new initialized meshctl config
 func NewMeshctlConfig() MeshctlConfig {
 	return MeshctlConfig{
+		ApiVersion: "v1",
 		Clusters: map[string]MeshctlCluster{managementPlane: MeshctlCluster{KubeConfig: "", KubeContext: ""}},
 	}
 }
