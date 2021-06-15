@@ -4,6 +4,8 @@ import (
 	"context"
 	"sort"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
@@ -25,7 +27,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -326,9 +327,6 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			},
 		}
-
-		federatedClusterLabels := routeutils.MakeFederatedSubsetLabel(destination.Spec.GetKubeService().Ref.ClusterName)
-
 		mockDecoratorFactory.
 			EXPECT().
 			MakeDecorators(decorators.Parameters{
@@ -355,16 +353,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 					},
 				},
-				Subsets: []*networkingv1alpha3spec.Subset{
-					{
-						Name:   "k1-v1",
-						Labels: federatedClusterLabels,
-					},
-					{
-						Name:   "k2-v2",
-						Labels: federatedClusterLabels,
-					},
-				},
+				Subsets: trafficshift.MakeDestinationRuleSubsets(destination.Status.RequiredSubsets),
 			},
 		}
 

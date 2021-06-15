@@ -37,6 +37,20 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 	return m.recorder
 }
 
+// IssuedCertificateFinished mocks base method.
+func (m *MockTranslator) IssuedCertificateFinished(ctx context.Context, issuedCertificate *v1.IssuedCertificate, inputs input.Snapshot, outputs certagent.Builder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IssuedCertificateFinished", ctx, issuedCertificate, inputs, outputs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// IssuedCertificateFinished indicates an expected call of IssuedCertificateFinished.
+func (mr *MockTranslatorMockRecorder) IssuedCertificateFinished(ctx, issuedCertificate, inputs, outputs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificateFinished", reflect.TypeOf((*MockTranslator)(nil).IssuedCertificateFinished), ctx, issuedCertificate, inputs, outputs)
+}
+
 // IssuedCertificateIssued mocks base method.
 func (m *MockTranslator) IssuedCertificateIssued(ctx context.Context, issuedCertificate *v1.IssuedCertificate, inputs input.Snapshot, outputs certagent.Builder) error {
 	m.ctrl.T.Helper()

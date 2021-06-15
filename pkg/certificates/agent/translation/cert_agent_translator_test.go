@@ -235,4 +235,69 @@ var _ = Describe("CertAgentTranslator", func() {
 		})
 
 	})
+
+	Context("IssuedCertiticateFinished", func() {
+
+		It("Will return error if issuedCert cannot be found", func() {
+
+			translator := translation.NewCertAgentTranslator()
+
+			issuedCertSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "issued",
+					Namespace: "cert",
+				},
+			}
+
+			issuedCertiticate := &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "name",
+					Namespace: "namespace",
+				},
+				Spec: certificatesv1.IssuedCertificateSpec{
+					IssuedCertificateSecret: ezkube.MakeObjectRef(issuedCertSecret),
+				},
+			}
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				Build()
+
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeTrue())
+			err := translator.IssuedCertificateFinished(ctx, issuedCertiticate, inputSnap, mockOutput)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("could not find issued cert secret (issued.cert.), restarting workflow: *v1.Secret with id issued.cert. not found"))
+		})
+
+		It("Will add issuedCert secret to outputs if it exists", func() {
+			translator := translation.NewCertAgentTranslator()
+
+			issuedCertSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "issued",
+					Namespace: "cert",
+				},
+			}
+
+			issuedCertiticate := &certificatesv1.IssuedCertificate{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "name",
+					Namespace: "namespace",
+				},
+				Spec: certificatesv1.IssuedCertificateSpec{
+					IssuedCertificateSecret: ezkube.MakeObjectRef(issuedCertSecret),
+				},
+			}
+			inputSnap := input.NewInputSnapshotManualBuilder("hello").
+				AddSecrets([]*corev1.Secret{issuedCertSecret}).
+				Build()
+
+			mockOutput.EXPECT().
+				AddSecrets(issuedCertSecret)
+
+			Expect(translator.ShouldProcess(ctx, issuedCertiticate)).To(BeTrue())
+			err := translator.IssuedCertificateFinished(ctx, issuedCertiticate, inputSnap, mockOutput)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+	})
+
 })

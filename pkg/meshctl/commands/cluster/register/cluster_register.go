@@ -50,6 +50,8 @@ type options registration.Options
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfigPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
 	flags.StringVar(&o.MgmtContext, "mgmt-context", "", "name of the kubeconfig context to use for the management cluster")
+	flags.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "",
+		"path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location")
 	flags.StringVar(&o.RemoteContext, "remote-context", "", "name of the kubeconfig context to use for the remote cluster")
 	flags.StringVar(&o.MgmtNamespace, "mgmt-namespace", defaults.DefaultPodNamespace, "namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created")
 	flags.StringVar(&o.RemoteNamespace, "remote-namespace", defaults.DefaultPodNamespace, "namespace in the target cluster where a service account enabling remote access will be created.\nIf the namespace does not exist it will be created.")
@@ -142,10 +144,6 @@ bootstrap token from the gloo-mesh cluster, if these are not explicitly provided
 type EnterpriseOptions enterprise.RegistrationOptions
 
 func (o *EnterpriseOptions) addToFlags(flags *pflag.FlagSet) {
-
-	flags.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "",
-		"path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location")
-
 	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
 	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", false, "Communicate with the relay server over an insecure connection.")
 
