@@ -5,7 +5,6 @@ metadata:
   namespace: gloo-mesh
 spec:
   federation:
-    hostnameSuffix: solo.io
     selectors:
       - { }
   meshes:
@@ -17,15 +16,15 @@ spec:
 apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: VirtualDestination
 metadata:
-  name: backend
+  name: subset
   namespace: gloo-mesh
 spec:
-  hostname: https-backend.solo.io
-  port:
-    number: 9443
-    protocol: https
-    targetNumber: 9443
+  hostname: http-subset.solo.io
   localized:
+    destinationSelectors:
+      - kubeServiceMatcher:
+          labels:
+            app: subset
     failoverDirectives:
       - from:
           region: us-east-1
@@ -36,14 +35,14 @@ spec:
         to:
           - region: us-east-1
     outlierDetection:
-      consecutiveErrors: 1
-      maxEjectionPercent: 100
-      interval: 5s
       baseEjectionTime: 30s
-    destinationSelectors:
-      - kubeServiceMatcher:
-          labels:
-            app: backend
+      consecutiveErrors: 1
+      interval: 5s
+      maxEjectionPercent: 100
+  port:
+    number: 8090
+    protocol: http
+    targetNumber: 8090
   virtualMesh:
     name: virtual-mesh
     namespace: gloo-mesh
@@ -51,19 +50,25 @@ spec:
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
-  name: backend-failover
+  name: subset-failover
   namespace: gloo-mesh
 spec:
   destinationSelector:
     - kubeServiceMatcher:
         labels:
-          app: backend
+          app: subset
   policy:
-    retries:
-      attempts: 3
-      perTryTimeout: 1ms
     trafficShift:
       destinations:
         - virtualDestination:
-            name: backend
+            name: subset
             namespace: gloo-mesh
+            subset:
+              version: v1
+          weight: 90
+        - virtualDestination:
+            name: subset
+            namespace: gloo-mesh
+            subset:
+              version: v2
+          weight: 10
