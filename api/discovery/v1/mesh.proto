@@ -48,12 +48,14 @@ message MeshSpec {
         // The istiod service account which determines identity for the Istio CA cert.
         string istiod_service_account = 3;
 
+        // DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
         // Describes the ingress gateway.
         repeated IngressGatewayInfo ingress_gateways = 4;
 
         // True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
         bool smart_dns_proxying_enabled = 5;
 
+        // DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
         // Describes the ingress gateway.
         message IngressGatewayInfo {
 
