@@ -130,7 +130,7 @@ func UpdateMeshctlConfigWithInstallInfo(mgmtKubeConfig, mgmtKubecontext string) 
 		return err
 	}
 	// Start over with a new config
-	config := MeshctlConfig{}
+	config := NewMeshctlConfig()
 	config.AddMgmtCluster(MeshctlCluster{
 		KubeConfig:  mgmtKubeConfig,
 		KubeContext: mgmtKubecontext,
