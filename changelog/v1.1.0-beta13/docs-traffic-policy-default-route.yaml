@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Update TrafficPolicy guide with example for creating a default route.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1653
