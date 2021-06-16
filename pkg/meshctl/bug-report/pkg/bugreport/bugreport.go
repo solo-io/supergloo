@@ -125,7 +125,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	contexts := strings.Split(config.Context, ",")
 
 	// we either use one kubeconfig(or none and use default) and many contexts or its 1 to 1
-	//TODO NEED NEW LOGIC
+	// TODO NEED NEW LOGIC
 	// if len(kubeConfigs) > 1 && len(contexts) != 0 && len(kubeConfigs) > 1 && len(contexts) > 0 && len(kubeConfigs) != len(contexts) {
 	// 	return errors.New("either provide 1 kubeconfig filepath or the same number as contexts")
 	// }
@@ -136,7 +136,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		kubeContext := combo.context
 
 		// override tempdir per clusters
-		tempDir = tempDir + "cluster-" + string(i)
+		tempDir = fmt.Sprintf("%s/cluster-%d",tempDirPlaceholder, i)
 
 		clientConfig, clientset, err := kubeclient.New(kubeConfigPath, kubeContext)
 		if err != nil {
@@ -214,60 +214,42 @@ type kubeCombo struct {
 func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
 	var combos []kubeCombo
 	switch len(kubeconfigs) {
-	case 0:
-		{
-			// no kubeconfig no context (use default for both)
-			if len(kubecontexts) == 0 {
-				// return an empty one
-				return []kubeCombo{
-					{},
-				}
-			}
-			// no kubeconfig, list of contexts (meaning use default kubeconfig)
-
-			for _, c := range kubecontexts {
-				combos = append(combos, kubeCombo{
-					context:  c,
-					filepath: "",
-				})
-			}
-		}
 	case 1:
 		{
-			// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
-			if len(kubecontexts) == 0 {
+			// // all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
+			if len(kubecontexts) == 1 {
+				// 1 to 1 kubeconfig to context
+				combos = append(combos, kubeCombo{
+					context:  kubecontexts[0],
+					filepath: kubeconfigs[0],
+				})
+			} else {
 				// return the single kubeconfig
-				return []kubeCombo{
-					{
-						context:  "",
+				for _, c := range kubecontexts {
+					combos = append(combos, kubeCombo{
+						context:  c,
 						filepath: kubeconfigs[0],
-					},
+					})
 				}
 			}
-			// 1 to 1 kubeconfig to context
-			combos = append(combos, kubeCombo{
-				context:  kubecontexts[0],
-				filepath: kubeconfigs[0],
-			})
-
 		}
 	default:
 		// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
-		if len(kubecontexts) == 0 {
+		if len(kubecontexts) == 1 {
 			for _, k := range kubeconfigs {
 				combos = append(combos, kubeCombo{
 					context:  "",
 					filepath: k,
 				})
 			}
-		}
-
-		// and equal list of kubeconfigs and contexts (use each cooresponding context per kubeconfig)
-		for i, c := range kubecontexts {
-			combos = append(combos, kubeCombo{
-				context:  c,
-				filepath: kubeconfigs[i],
-			})
+		} else {
+			// and equal list of kubeconfigs and contexts (use each cooresponding context per kubeconfig)
+			for i, c := range kubecontexts {
+				combos = append(combos, kubeCombo{
+					context:  c,
+					filepath: kubeconfigs[i],
+				})
+			}
 		}
 	}
 	return combos
