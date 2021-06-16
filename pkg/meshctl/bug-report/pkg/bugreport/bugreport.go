@@ -122,9 +122,11 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	if len(kubeConfigs) > 1 && len(contexts) > 1 && len(kubeConfigs) != len(contexts) {
 		return errors.New("cannot match kubeconfigs with contexts")
 	}
+	// establish rootdir, will create one if needed
+	tempDir = archive.GetRootDir(tempDir)
+	tempDirPlaceholder := tempDir
 
 	combos := buildKubeConfigList(kubeConfigs, contexts)
-	tempDirPlaceholder := tempDir
 	for i, combo := range combos {
 		kubeConfigPath := combo.filepath
 		kubeContext := combo.context

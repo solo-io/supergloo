@@ -41,36 +41,36 @@ var (
 
 // DirToArchive is the dir to archive.
 func DirToArchive(rootDir string) string {
-	return filepath.Dir(getRootDir(rootDir))
+	return filepath.Dir(GetRootDir(rootDir))
 }
 
 // OutputRootDir is the root dir of output artifacts.
 func OutputRootDir(rootDir string) string {
-	return getRootDir(rootDir)
+	return GetRootDir(rootDir)
 }
 
 func ProxyOutputPath(rootDir, namespace, pod string) string {
-	return filepath.Join(getRootDir(rootDir), proxyLogsPathSubdir, namespace, pod)
+	return filepath.Join(GetRootDir(rootDir), proxyLogsPathSubdir, namespace, pod)
 }
 
 func IstiodPath(rootDir, namespace, pod string) string {
-	return filepath.Join(getRootDir(rootDir), istioLogsPathSubdir, namespace, pod)
+	return filepath.Join(GetRootDir(rootDir), istioLogsPathSubdir, namespace, pod)
 }
 
 func GlooMeshPath(rootDir string) string {
-	return filepath.Join(getRootDir(rootDir), glooMeshLogsPathSubdir)
+	return filepath.Join(GetRootDir(rootDir), glooMeshLogsPathSubdir)
 }
 
 func OperatorPath(rootDir, namespace, pod string) string {
-	return filepath.Join(getRootDir(rootDir), operatorLogsPathSubdir, namespace, pod)
+	return filepath.Join(GetRootDir(rootDir), operatorLogsPathSubdir, namespace, pod)
 }
 
 func AnalyzePath(rootDir, namespace string) string {
-	return filepath.Join(getRootDir(rootDir), analyzeSubdir, namespace)
+	return filepath.Join(GetRootDir(rootDir), analyzeSubdir, namespace)
 }
 
 func ClusterInfoPath(rootDir string) string {
-	return filepath.Join(getRootDir(rootDir), clusterInfoSubdir)
+	return filepath.Join(GetRootDir(rootDir), clusterInfoSubdir)
 }
 
 // Create creates a gzipped tar file from srcDir and writes it to outPath.
@@ -116,7 +116,7 @@ func Create(srcDir, outPath string) error {
 	})
 }
 
-func getRootDir(rootDir string) string {
+func GetRootDir(rootDir string) string {
 	if rootDir != "" {
 		return rootDir
 	}
