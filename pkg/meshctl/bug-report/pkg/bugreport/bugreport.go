@@ -112,31 +112,23 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		return err
 	}
 
-	clusterCtxStr, err := content.GetClusterContext()
-	if err != nil {
-		return err
-	}
-
-	common.LogAndPrintf("\nTarget cluster context: %s\n", clusterCtxStr)
-	common.LogAndPrintf("Running with the following context: \n\n%s\n\n", config)
-
-	// TODO redo the loop for the management plane and remote clusters
 	kubeConfigs := strings.Split(config.KubeConfigPath, ",")
 	contexts := strings.Split(config.Context, ",")
 
-	// we either use one kubeconfig(or none and use default) and many contexts or its 1 to 1
-	// TODO NEED NEW LOGIC
-	// if len(kubeConfigs) > 1 && len(contexts) != 0 && len(kubeConfigs) > 1 && len(contexts) > 0 && len(kubeConfigs) != len(contexts) {
-	// 	return errors.New("either provide 1 kubeconfig filepath or the same number as contexts")
-	// }
+	if len(kubeConfigs) > 1 && len(contexts) > 1 && len(kubeConfigs) != len(contexts) {
+		return errors.New("cannot match kubeconfigs with contexts")
+	}
+
 	combos := buildKubeConfigList(kubeConfigs, contexts)
 	tempDirPlaceholder := tempDir
 	for i, combo := range combos {
 		kubeConfigPath := combo.filepath
 		kubeContext := combo.context
+		common.LogAndPrintf("\nTarget cluster config: %s\n", kubeConfigPath)
+		common.LogAndPrintf("Running with the following context: \n\n%s\n\n", kubeContext)
 
 		// override tempdir per clusters
-		tempDir = fmt.Sprintf("%s/cluster-%d",tempDirPlaceholder, i)
+		tempDir = fmt.Sprintf("%s/cluster-%d", tempDirPlaceholder, i)
 
 		clientConfig, clientset, err := kubeclient.New(kubeConfigPath, kubeContext)
 		if err != nil {
