@@ -160,7 +160,7 @@ func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	}
 
 	if config.ApiVersion != "v1" {
-		return MeshctlConfig{}, fmt.Errorf("unrecognized api version: %v", config.ApiVersion)
+		return config, fmt.Errorf("unrecognized api version: %v", config.ApiVersion)
 	}
 
 	return config, nil
