@@ -24,7 +24,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 
-	config2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/config"
+	config2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/config"
 	"istio.io/pkg/log"
 )
 

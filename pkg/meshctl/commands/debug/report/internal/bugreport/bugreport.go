@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	version2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/version"
 	"io/ioutil"
 	"os"
 	"path"
@@ -30,25 +29,23 @@ import (
 	"time"
 
 	"github.com/kr/pretty"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/archive"
+	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/cluster"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/config"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/content"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/filter"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/kubectlcmd"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/processlog"
+	version2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/version"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/archive"
-	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/cluster"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/common"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/config"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/content"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/filter"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/kubeclient"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/kubectlcmd"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/processlog"
 	analyzer_util "istio.io/istio/galley/pkg/config/analysis/analyzers/util"
 	"istio.io/istio/operator/pkg/util"
 	"istio.io/istio/pkg/config/resource"
 	"istio.io/istio/pkg/kube"
 	"istio.io/istio/pkg/proxy"
 	"istio.io/pkg/log"
-	"istio.io/pkg/version"
 )
 
 const (
@@ -67,9 +64,9 @@ var (
 func Cmd(logOpts *log.Options) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:          "report",
-		Short:        "Cluster information and log capture support tool.",
+		Short:        "meshctl debug report selectively captures cluster information and logs into an archive to help diagnose problems.",
 		SilenceUsage: true,
-		Long: `bug-report selectively captures cluster information and logs into an archive to help diagnose problems.
+		Long: `meshctl debug report selectively captures cluster information and logs into an archive to help diagnose problems.
 Proxy logs can be filtered using:
   --include|--exclude ns1,ns2.../dep1,dep2.../pod1,pod2.../cntr1,cntr.../lbl1=val1,lbl2=val2.../ann1=val1,ann2=val2...
 where ns=namespace, dep=deployment, cntr=container, lbl=label, ann=annotation
@@ -90,7 +87,6 @@ e.g.
 			return runBugReportCommand(cmd, logOpts)
 		},
 	}
-	rootCmd.AddCommand(version.CobraCommand())
 	addFlags(rootCmd, gConfig)
 
 	return rootCmd
@@ -136,7 +132,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		// override tempdir per clusters
 		tempDir = fmt.Sprintf("%s/cluster-%d", tempDirPlaceholder, i)
 
-		clientConfig, clientset, err := kubeclient.New(kubeConfigPath, kubeContext)
+		clientConfig, clientset, err := utils.BuildClientConfigAndClientset(kubeConfigPath, kubeContext)
 		if err != nil {
 			return fmt.Errorf("could not initialize k8s client: %s ", err)
 		}
@@ -214,7 +210,7 @@ func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
 	switch len(kubeconfigs) {
 	case 1:
 		{
-			// // all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
+			// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
 			if len(kubecontexts) == 1 {
 				// 1 to 1 kubeconfig to context
 				combos = append(combos, kubeCombo{
@@ -241,7 +237,7 @@ func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
 				})
 			}
 		} else {
-			// and equal list of kubeconfigs and contexts (use each cooresponding context per kubeconfig)
+			// and equal list of kubeconfigs and contexts (use each corresponding context per kubeconfig)
 			for i, c := range kubecontexts {
 				combos = append(combos, kubeCombo{
 					context:  c,
@@ -671,29 +667,6 @@ func appendGlobalErr(err error) {
 	lock.Lock()
 	gErrors = util.AppendErr(gErrors, err)
 	lock.Unlock()
-}
-
-func BuildClientsFromConfig(kubeConfig []byte) (kube.Client, error) {
-	if len(kubeConfig) == 0 {
-		return nil, errors.New("kubeconfig is empty")
-	}
-
-	rawConfig, err := clientcmd.Load(kubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("kubeconfig cannot be loaded: %v", err)
-	}
-
-	if err := clientcmd.Validate(*rawConfig); err != nil {
-		return nil, fmt.Errorf("kubeconfig is not valid: %v", err)
-	}
-
-	clientConfig := clientcmd.NewDefaultClientConfig(*rawConfig, &clientcmd.ConfigOverrides{})
-
-	clients, err := kube.NewClient(clientConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create kube clients: %v", err)
-	}
-	return clients, nil
 }
 
 func configLogs(opt *log.Options) error {

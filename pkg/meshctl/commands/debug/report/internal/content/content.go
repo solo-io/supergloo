@@ -19,8 +19,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/common"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/kubectlcmd"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/kubectlcmd"
 	"istio.io/istio/galley/pkg/config/analysis/analyzers"
 	"istio.io/istio/galley/pkg/config/analysis/diag"
 	"istio.io/istio/galley/pkg/config/analysis/local"

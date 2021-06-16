@@ -28,7 +28,7 @@ const (
 	bugReportSubdir        = "bug-report"
 	proxyLogsPathSubdir    = "proxies"
 	istioLogsPathSubdir    = "istio"
-	glooMeshLogsPathSubdir    = "gloo-mesh"
+	glooMeshLogsPathSubdir = "gloo-mesh"
 	clusterInfoSubdir      = "cluster"
 	analyzeSubdir          = "analyze"
 	operatorLogsPathSubdir = "operator"

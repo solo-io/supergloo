@@ -25,9 +25,9 @@ const (
 	// latestKey is an arbitrary value that represents the fallback version (master).
 	latestKey = "latest"
 
-	ProxyContainerName              = "istio-proxy"
-	DiscoveryContainerName          = "discovery"
-	OperatorContainerName           = "istio-operator"
+	ProxyContainerName     = "istio-proxy"
+	DiscoveryContainerName = "discovery"
+	OperatorContainerName  = "istio-operator"
 )
 
 type kv struct {

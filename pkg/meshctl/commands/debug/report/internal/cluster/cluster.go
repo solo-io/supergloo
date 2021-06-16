@@ -25,8 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/common"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/util/path"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/util/path"
 	analyzer_util "istio.io/istio/galley/pkg/config/analysis/analyzers/util"
 	"istio.io/istio/pkg/config/resource"
 	"istio.io/pkg/log"

@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/config"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/util/match"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/config"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/util/match"
 )
 
 const (

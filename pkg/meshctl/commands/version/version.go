@@ -38,7 +38,7 @@ type Options struct {
 
 func (o *Options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.Kubeconfig, &o.Kubecontext, flags)
-	flags.StringVar(&o.Namespace, "Namespace", "gloo-mesh", "Namespace that glooo mesh components are deployed to")
+	flags.StringVar(&o.Namespace, "namespace", "gloo-mesh", "Namespace that gloo mesh components are deployed to")
 }
 
 type versionInfo struct {

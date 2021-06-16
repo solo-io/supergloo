@@ -25,7 +25,7 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/common"
 	"istio.io/istio/operator/pkg/util"
 	"istio.io/istio/pkg/kube"
 	"istio.io/pkg/log"

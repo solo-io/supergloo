@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package kubeclient
+package utils
 
 import (
 	"os"
@@ -28,8 +28,8 @@ const (
 	defaultTimeoutDurationStr = "10m"
 )
 
-// New creates a rest.Config qne Clientset from the given kubeconfig path and Context.
-func New(kubeconfig, kubeContext string) (clientcmd.ClientConfig, *kubernetes.Clientset, error) {
+// BuildClientConfigAndClientset creates a rest.Config and Clientset from the given kubeconfig path and Context.
+func BuildClientConfigAndClientset(kubeconfig, kubeContext string) (clientcmd.ClientConfig, *kubernetes.Clientset, error) {
 	clientConfig := buildClientConfig(kubeconfig, kubeContext)
 	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
