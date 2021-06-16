@@ -249,20 +249,6 @@ func GetAnalyze(p *Params) (map[string]string, error) {
 	return out, nil
 }
 
-// GetNetfilter returns netfilter for the given container.
-/*func GetNetfilter(p *Params) (map[string]string, error) {
-	if p.Namespace == "" || p.Pod == "" {
-		return nil, fmt.Errorf("getNetfilter requires namespace and pod")
-	}
-
-	out, err := kubectlcmd.RunCmd("exec -it -n "+p.Namespace+" "+p.Pod+
-		" -- bash -c for fl in $(ls -1 /proc/sys/net/netfilter/*); do echo $fl: $(cat $fl); done", "", p.DryRun)
-	if err != nil {
-		return nil, err
-	}
-	return retMap("netfilter", out, err)
-}*/
-
 // GetCoredumps returns coredumps for the given namespace/pod/container.
 func GetCoredumps(p *Params) (map[string]string, error) {
 	if p.Namespace == "" || p.Pod == "" {

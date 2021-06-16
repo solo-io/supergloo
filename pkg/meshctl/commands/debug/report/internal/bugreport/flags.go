@@ -46,10 +46,6 @@ func addFlags(cmd *cobra.Command, args *config2.BugReportConfig) {
 		"Path to a file containing configuration in YAML format. The file contents are applied over the default "+
 			"values and flag settings, with lists being replaced per JSON merge semantics.")
 
-	// dry run
-	cmd.PersistentFlags().BoolVarP(&args.DryRun, "dry-run", "", false,
-		"Only log commands that would be run, don't fetch or write.")
-
 	// full secrets
 	cmd.PersistentFlags().BoolVarP(&args.FullSecrets, "full-secrets", "", false,
 		"If set, secret contents are included in output.")

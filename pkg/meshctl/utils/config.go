@@ -71,12 +71,9 @@ func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error
 func UpdateMeshctlConfigWithRegistrationInfo(mgmtKubeConfigPath, mgmtKubecontext,
 	remoteClusterName, remoteKubeConfigPath, remoteKubecontext string) error {
 	// if the existing meschtl config file matches, update it
-	config := NewMeshctlConfig()
-	meshctlConfigFile, err := DefaultMeshctlConfigFilePath()
-	if err == nil {
-		if parsedConfig, err := ParseMeshctlConfig(meshctlConfigFile); err == nil {
-			config = parsedConfig
-		}
+	config, err := ParseMeshctlConfig("")
+	if err != nil {
+		return err
 	}
 	kubeConfig := mgmtKubeConfigPath
 	if kubeConfig == "" {
@@ -97,19 +94,16 @@ func UpdateMeshctlConfigWithRegistrationInfo(mgmtKubeConfigPath, mgmtKubecontext
 	if err != nil {
 		return err
 	}
-	return WriteConfigToFile(config, meshctlConfigFile)
+	return WriteConfigToFile(config, "")
 }
 
 // update the default meschtl config file with deregistration info
 func UpdateMeshctlConfigWithDeregistrationInfo(mgmtKubeConfigPath, mgmtKubecontext,
 	remoteClusterName, remoteKubeConfigPath string) error {
 	// if the existing meschtl config file doesn't match, don't modify it
-	config := NewMeshctlConfig()
-	meshctlConfigFile, err := DefaultMeshctlConfigFilePath()
-	if err == nil {
-		if parsedConfig, err := ParseMeshctlConfig(meshctlConfigFile); err == nil {
-			config = parsedConfig
-		}
+	config, err := ParseMeshctlConfig("")
+	if err != nil {
+		return err
 	}
 	kubeConfig := mgmtKubeConfigPath
 	if kubeConfig == "" {
@@ -120,7 +114,7 @@ func UpdateMeshctlConfigWithDeregistrationInfo(mgmtKubeConfigPath, mgmtKubeconte
 	}
 	// Otherwise, update it
 	delete(config.Clusters, remoteClusterName)
-	return WriteConfigToFile(config, meshctlConfigFile)
+	return WriteConfigToFile(config, "")
 }
 
 // update the default meschtl config file with install info
@@ -141,6 +135,13 @@ func UpdateMeshctlConfigWithInstallInfo(mgmtKubeConfig, mgmtKubecontext string) 
 // parse the meshctl config file into a MeshctlConfig struct
 func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	config := NewMeshctlConfig()
+	if meshctlConfigPath == "" {
+		var err error
+		meshctlConfigPath, err = DefaultMeshctlConfigFilePath()
+		if err != nil {
+			return config, err
+		}
+	}
 	if _, err := os.Stat(meshctlConfigPath); err != nil {
 		return config, invalidMeshctlConfigFileErr
 	}
@@ -175,6 +176,13 @@ func NewMeshctlConfig() MeshctlConfig {
 }
 
 func WriteConfigToFile(config MeshctlConfig, meshctlConfigPath string) error {
+	if meshctlConfigPath == "" {
+		var err error
+		meshctlConfigPath, err = DefaultMeshctlConfigFilePath()
+		if err != nil {
+			return err
+		}
+	}
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		return err

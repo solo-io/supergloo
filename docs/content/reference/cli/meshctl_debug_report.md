@@ -36,7 +36,6 @@ meshctl debug report [flags]
       --context string               Name of the kubeconfig Context. For multiple contexts use a comma (Ex. cluster1,cluster2)
       --critical-errs strings        List of comma separated glob patters to match against log error strings. If any pattern matches an error in the log, the logs is given the highest priority for archive inclusion.
       --dir string                   Set a specific directory for temporary artifact storage.
-      --dry-run                      Only log commands that would be run, don't fetch or write.
       --duration duration            How far to go back in time from end-time for log entries to include in the archive. Default is infinity. If set, start-time must be unset.
       --end-time string              End time for the range of log entries to include in the archive. Default is now.
       --exclude strings              Spec for which pods' proxy logs to exclude from the archive, after the include spec is processed. See above for format and examples. (default ["kube-system, kube-public, kube-node-lease, local-path-storage"])

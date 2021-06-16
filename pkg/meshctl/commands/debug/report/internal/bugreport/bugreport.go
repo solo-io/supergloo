@@ -15,9 +15,11 @@
 package bugreport
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -60,7 +62,7 @@ var (
 	bugReportDefaultExclude           = []string{strings.Join(analyzer_util.SystemNamespaces, ", ")}
 )
 
-// Cmd returns a cobra command for bug-report.
+// Cmd returns a cobra command for report.
 func Cmd(logOpts *log.Options) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:          "report",
@@ -122,15 +124,15 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	tempDir = archive.GetRootDir(tempDir)
 	tempDirPlaceholder := tempDir
 
-	combos := buildKubeConfigList(kubeConfigs, contexts)
-	for i, combo := range combos {
-		kubeConfigPath := combo.filepath
-		kubeContext := combo.context
+	combos := buildKubeConfigList(kubeConfigs, contexts, len(config.KubeConfigPath+config.Context) > 0 )
+	for name, meshctlCluster := range combos {
+		kubeConfigPath := meshctlCluster.KubeConfig
+		kubeContext := meshctlCluster.KubeContext
 		common.LogAndPrintf("\nTarget cluster config: %s\n", kubeConfigPath)
 		common.LogAndPrintf("Running with the following context: \n\n%s\n\n", kubeContext)
 
 		// override tempdir per clusters
-		tempDir = fmt.Sprintf("%s/cluster-%d", tempDirPlaceholder, i)
+		tempDir = fmt.Sprintf("%s/%s", tempDirPlaceholder, name)
 
 		clientConfig, clientset, err := utils.BuildClientConfigAndClientset(kubeConfigPath, kubeContext)
 		if err != nil {
@@ -146,6 +148,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		}
 
 		dumpGlooMeshVersions(kubeConfigPath, kubeContext, config.GlooMeshNamespace)
+		dumpMeshctlCheck(kubeConfigPath, kubeContext, config.GlooMeshNamespace)
 		dumpRevisionsAndVersions(resources, kubeConfigPath, kubeContext, config.IstioNamespace)
 
 		log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
@@ -195,35 +198,41 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	return nil
 }
 
-type kubeCombo struct {
-	context  string
-	filepath string
-}
-
 // this is kinda tricky because you can provide the following combinations
 // no kubeconfig no context (use default for both)
 // no kubeconfig, list of contexts (meaning use default kubeconfig)
 // all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
 // and equal list of kubeconfigs and contexts (use each corresponding context per kubeconfig)
-func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
-	var combos []kubeCombo
+func buildKubeConfigList(kubeconfigs, kubecontexts []string, useFlags bool) map[string]utils.MeshctlCluster {
+	// If no flags were passed in, use the meshctl config file if it exists.
+	if !useFlags {
+		clusters, err := utils.ParseMeshctlConfig("")
+		if err == nil {
+			return clusters.Clusters
+		}
+	}
+
+	combos := make(map[string]utils.MeshctlCluster)
+	var clusterN int
 	switch len(kubeconfigs) {
 	case 1:
 		{
 			// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
 			if len(kubecontexts) == 1 {
 				// 1 to 1 kubeconfig to context
-				combos = append(combos, kubeCombo{
-					context:  kubecontexts[0],
-					filepath: kubeconfigs[0],
-				})
+				combos[fmt.Sprintf("cluster-%d", clusterN)] = utils.MeshctlCluster{
+					KubeConfig:  kubeconfigs[0],
+					KubeContext: kubecontexts[0],
+				}
+				clusterN++
 			} else {
 				// return the single kubeconfig
 				for _, c := range kubecontexts {
-					combos = append(combos, kubeCombo{
-						context:  c,
-						filepath: kubeconfigs[0],
-					})
+					combos[fmt.Sprintf("cluster-%s", clusterN)] = utils.MeshctlCluster{
+						KubeConfig:  kubeconfigs[0],
+						KubeContext: c,
+					}
+					clusterN++
 				}
 			}
 		}
@@ -231,22 +240,33 @@ func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
 		// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
 		if len(kubecontexts) == 1 {
 			for _, k := range kubeconfigs {
-				combos = append(combos, kubeCombo{
-					context:  "",
-					filepath: k,
-				})
+				combos[fmt.Sprintf("cluster-%s", clusterN)] = utils.MeshctlCluster{
+					KubeConfig:  k,
+					KubeContext: "",
+				}
+				clusterN++
 			}
 		} else {
 			// and equal list of kubeconfigs and contexts (use each corresponding context per kubeconfig)
 			for i, c := range kubecontexts {
-				combos = append(combos, kubeCombo{
-					context:  c,
-					filepath: kubeconfigs[i],
-				})
+				combos[fmt.Sprintf("cluster-%s", clusterN)] = utils.MeshctlCluster{
+					KubeConfig:  kubeconfigs[i],
+					KubeContext: c,
+				}
+				clusterN++
 			}
 		}
 	}
 	return combos
+}
+
+func dumpMeshctlCheck(kubeconfig, context, glooMeshNamespace string) {
+	var b bytes.Buffer
+	utils.RunShell(fmt.Sprintf("meshctl check --kubeconfig \"%s\" --kubecontext \"%s\" --namespace \"%s\"",
+		kubeconfig, context, glooMeshNamespace), io.Writer(&b))
+	text := b.String()
+	common.LogAndPrintf(text)
+	appendToFile(filepath.Join(archive.GlooMeshPath(tempDir), "meshctl-check"), text)
 }
 
 func dumpGlooMeshVersions(kubeconfig, context, glooMeshNamespace string) {
@@ -255,6 +275,7 @@ func dumpGlooMeshVersions(kubeconfig, context, glooMeshNamespace string) {
 	common.LogAndPrintf(text)
 	appendToFile(filepath.Join(archive.GlooMeshPath(tempDir), "gloo-versions"), text)
 }
+
 func getGlooMeshVersion(kubeconfig, configcontext, glooMeshNamespace string) string {
 	text := ""
 	glooMeshVersions := version2.MakeServerVersions(context.Background(), &version2.Options{
@@ -670,7 +691,7 @@ func appendGlobalErr(err error) {
 }
 
 func configLogs(opt *log.Options) error {
-	logDir := filepath.Join(archive.OutputRootDir(tempDir), "bug-report.log")
+	logDir := filepath.Join(archive.OutputRootDir(tempDir), "meshctl-bug-report.log")
 	mkdirOrExit(logDir)
 	f, err := os.Create(logDir)
 	if err != nil {
