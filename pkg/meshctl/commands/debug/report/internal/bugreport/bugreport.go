@@ -204,7 +204,7 @@ type kubeCombo struct {
 // no kubeconfig no context (use default for both)
 // no kubeconfig, list of contexts (meaning use default kubeconfig)
 // all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
-// and equal list of kubeconfigs and contexts (use each cooresponding context per kubeconfig)
+// and equal list of kubeconfigs and contexts (use each corresponding context per kubeconfig)
 func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
 	var combos []kubeCombo
 	switch len(kubeconfigs) {
