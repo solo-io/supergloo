@@ -66,7 +66,7 @@ var (
 // Cmd returns a cobra command for bug-report.
 func Cmd(logOpts *log.Options) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:          "bug-report",
+		Use:          "report",
 		Short:        "Cluster information and log capture support tool.",
 		SilenceUsage: true,
 		Long: `bug-report selectively captures cluster information and logs into an archive to help diagnose problems.
@@ -184,7 +184,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		log.Errorf("using ./ to write archive: %s", err.Error())
 		outDir = "."
 	}
-	outPath := filepath.Join(outDir, "bug-report.tgz")
+	outPath := filepath.Join(outDir, "meshctl-bug-report.tgz")
 	common.LogAndPrintf("Creating an archive at %s.\n", outPath)
 
 	archiveDir := archive.DirToArchive(tempDir)
