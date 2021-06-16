@@ -36,12 +36,12 @@ var (
 )
 
 func addFlags(cmd *cobra.Command, args *config2.BugReportConfig) {
-	// k8s client config
+	// k8s client context
 	cmd.PersistentFlags().StringVarP(&args.KubeConfigPath, "kubeconfig", "c", "",
-		"Path to kube config.")
+		"Path to kube context.")
 	cmd.PersistentFlags().StringVar(&args.Context, "context", "",
 		"Name of the kubeconfig Context.")
-	// input config
+	// input context
 	cmd.PersistentFlags().StringVarP(&configFile, "filename", "f", "",
 		"Path to a file containing configuration in YAML format. The file contents are applied over the default "+
 			"values and flag settings, with lists being replaced per JSON merge semantics.")

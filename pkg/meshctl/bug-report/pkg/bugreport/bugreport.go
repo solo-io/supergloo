@@ -93,7 +93,7 @@ e.g.
 }
 
 var (
-	// Logs, along with stats and importance metrics. Key is path (namespace/deployment/pod/cluster) which can be
+	// Logs, along with stats and importance metrics. Key is filepath (namespace/deployment/pod/cluster) which can be
 	// parsed with ParsePath.
 	logs       = make(map[string]string)
 	stats      = make(map[string]*processlog.Stats)
@@ -118,48 +118,68 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	}
 
 	common.LogAndPrintf("\nTarget cluster context: %s\n", clusterCtxStr)
-	common.LogAndPrintf("Running with the following config: \n\n%s\n\n", config)
+	common.LogAndPrintf("Running with the following context: \n\n%s\n\n", config)
 
 	// TODO redo the loop for the management plane and remote clusters
+	kubeConfigs := strings.Split(config.KubeConfigPath, ",")
+	contexts := strings.Split(config.Context, ",")
 
-	clientConfig, clientset, err := kubeclient.New(config.KubeConfigPath, config.Context)
-	if err != nil {
-		return fmt.Errorf("could not initialize k8s client: %s ", err)
-	}
-	client, err := kube.NewExtendedClient(clientConfig, "")
-	if err != nil {
-		return err
-	}
-	resources, err := cluster2.GetClusterResources(context.Background(), clientset)
-	if err != nil {
-		return err
-	}
+	// we either use one kubeconfig(or none and use default) and many contexts or its 1 to 1
+	//TODO NEED NEW LOGIC
+	// if len(kubeConfigs) > 1 && len(contexts) != 0 && len(kubeConfigs) > 1 && len(contexts) > 0 && len(kubeConfigs) != len(contexts) {
+	// 	return errors.New("either provide 1 kubeconfig filepath or the same number as contexts")
+	// }
+	combos := buildKubeConfigList(kubeConfigs, contexts)
+	tempDirPlaceholder := tempDir
+	for i, combo := range combos {
+		kubeConfigPath := combo.filepath
+		kubeContext := combo.context
 
-	dumpGlooMeshVersions(config.KubeConfigPath, config.Context, config.GlooMeshNamespace)
-	dumpRevisionsAndVersions(resources, config.KubeConfigPath, config.Context, config.IstioNamespace)
+		// override tempdir per clusters
+		tempDir = tempDir + "cluster-" + string(i)
 
-	log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
-	paths, err := filter.GetMatchingPaths(config, resources)
-	if err != nil {
-		return err
-	}
-
-	common.LogAndPrintf("\n\nFetching proxy logs for the following containers:\n\n%s\n", strings.Join(paths, "\n"))
-
-	gatherInfo(client, config, resources, paths)
-	if len(gErrors) != 0 {
-		log.Error(gErrors.ToError())
-	}
-
-	// TODO: sort by importance and discard any over the size limit.
-	for path, text := range logs {
-		namespace, _, pod, _, err := cluster2.ParsePath(path)
+		clientConfig, clientset, err := kubeclient.New(kubeConfigPath, kubeContext)
 		if err != nil {
-			log.Errorf(err.Error())
-			continue
+			return fmt.Errorf("could not initialize k8s client: %s ", err)
 		}
-		writeFile(filepath.Join(archive.ProxyOutputPath(tempDir, namespace, pod), common.ProxyContainerName+".log"), text)
+		client, err := kube.NewExtendedClient(clientConfig, "")
+		if err != nil {
+			return err
+		}
+		resources, err := cluster2.GetClusterResources(context.Background(), clientset)
+		if err != nil {
+			return err
+		}
+
+		dumpGlooMeshVersions(kubeConfigPath, kubeContext, config.GlooMeshNamespace)
+		dumpRevisionsAndVersions(resources, kubeConfigPath, kubeContext, config.IstioNamespace)
+
+		log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
+		paths, err := filter.GetMatchingPaths(config, resources)
+		if err != nil {
+			return err
+		}
+
+		common.LogAndPrintf("\n\nFetching proxy logs for the following containers:\n\n%s\n", strings.Join(paths, "\n"))
+
+		gatherInfo(client, config, resources, paths)
+		if len(gErrors) != 0 {
+			log.Error(gErrors.ToError())
+		}
+
+		// TODO: sort by importance and discard any over the size limit.
+		for path, text := range logs {
+			namespace, _, pod, _, err := cluster2.ParsePath(path)
+			if err != nil {
+				log.Errorf(err.Error())
+				continue
+			}
+			writeFile(filepath.Join(archive.ProxyOutputPath(tempDir, namespace, pod), common.ProxyContainerName+".log"), text)
+		}
 	}
+
+	// reset tempdir so archiving can happen correctly
+	tempDir = tempDirPlaceholder
 
 	outDir, err := os.Getwd()
 	if err != nil {
@@ -179,6 +199,78 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	}
 	common.LogAndPrintf("Done.\n")
 	return nil
+}
+
+type kubeCombo struct {
+	context  string
+	filepath string
+}
+
+// this is kinda tricky because you can provide the following combinations
+// no kubeconfig no context (use default for both)
+// no kubeconfig, list of contexts (meaning use default kubeconfig)
+// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
+// and equal list of kubeconfigs and contexts (use each cooresponding context per kubeconfig)
+func buildKubeConfigList(kubeconfigs, kubecontexts []string) []kubeCombo {
+	var combos []kubeCombo
+	switch len(kubeconfigs) {
+	case 0:
+		{
+			// no kubeconfig no context (use default for both)
+			if len(kubecontexts) == 0 {
+				// return an empty one
+				return []kubeCombo{
+					{},
+				}
+			}
+			// no kubeconfig, list of contexts (meaning use default kubeconfig)
+
+			for _, c := range kubecontexts {
+				combos = append(combos, kubeCombo{
+					context:  c,
+					filepath: "",
+				})
+			}
+		}
+	case 1:
+		{
+			// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
+			if len(kubecontexts) == 0 {
+				// return the single kubeconfig
+				return []kubeCombo{
+					{
+						context:  "",
+						filepath: kubeconfigs[0],
+					},
+				}
+			}
+			// 1 to 1 kubeconfig to context
+			combos = append(combos, kubeCombo{
+				context:  kubecontexts[0],
+				filepath: kubeconfigs[0],
+			})
+
+		}
+	default:
+		// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
+		if len(kubecontexts) == 0 {
+			for _, k := range kubeconfigs {
+				combos = append(combos, kubeCombo{
+					context:  "",
+					filepath: k,
+				})
+			}
+		}
+
+		// and equal list of kubeconfigs and contexts (use each cooresponding context per kubeconfig)
+		for i, c := range kubecontexts {
+			combos = append(combos, kubeCombo{
+				context:  c,
+				filepath: kubeconfigs[i],
+			})
+		}
+	}
+	return combos
 }
 
 func dumpGlooMeshVersions(kubeconfig, context, glooMeshNamespace string) {
