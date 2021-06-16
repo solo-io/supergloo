@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/kubectlcmd"
 	"istio.io/istio/galley/pkg/config/analysis/analyzers"
 	"istio.io/istio/galley/pkg/config/analysis/diag"
 	"istio.io/istio/galley/pkg/config/analysis/local"
@@ -27,8 +29,6 @@ import (
 	"istio.io/istio/pkg/config/resource"
 	"istio.io/istio/pkg/config/schema"
 	"istio.io/istio/pkg/kube"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/common"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/kubectlcmd"
 	"istio.io/pkg/log"
 )
 
@@ -155,7 +155,7 @@ func GetDescribePods(p *Params) (map[string]string, error) {
 		return nil, fmt.Errorf("getDescribePods requires the Istio namespace")
 	}
 	out, err := kubectlcmd.RunCmd("describe pods", p.IstioNamespace, p.DryRun)
-	return retMap("describe-pods", out, err)
+	return retMap("describe-pods-"+p.IstioNamespace, out, err)
 }
 
 // GetEvents returns events for all namespaces.

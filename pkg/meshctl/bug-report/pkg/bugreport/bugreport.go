@@ -122,7 +122,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 
 	// TODO redo the loop for the management plane and remote clusters
 
-	clientConfig, clientset, err := kubeclient.New(config.MgmtKubeConfigPath, config.MgmtContext)
+	clientConfig, clientset, err := kubeclient.New(config.KubeConfigPath, config.Context)
 	if err != nil {
 		return fmt.Errorf("could not initialize k8s client: %s ", err)
 	}
@@ -135,8 +135,8 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 		return err
 	}
 
-	dumpGlooMeshVersions(config.MgmtKubeConfigPath, config.MgmtContext, config.RemoteKubeConfigPath, config.RemoteContext, config.GlooMeshNamespace)
-	dumpRevisionsAndVersions(resources, config.MgmtKubeConfigPath, config.MgmtContext, config.IstioNamespace)
+	dumpGlooMeshVersions(config.KubeConfigPath, config.Context, config.GlooMeshNamespace)
+	dumpRevisionsAndVersions(resources, config.KubeConfigPath, config.Context, config.IstioNamespace)
 
 	log.Infof("Cluster resource tree:\n\n%s\n\n", resources)
 	paths, err := filter.GetMatchingPaths(config, resources)
@@ -181,12 +181,11 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	return nil
 }
 
-func dumpGlooMeshVersions(mgmtKubeconfig, mgmtContext, remoteKubeconfig, remoteContext, glooMeshNamespace string) {
-	text := getGlooMeshVersion(mgmtKubeconfig,mgmtContext,glooMeshNamespace)
-	text += "\n\n" + getGlooMeshVersion(remoteKubeconfig,remoteContext,glooMeshNamespace)
+func dumpGlooMeshVersions(kubeconfig, context, glooMeshNamespace string) {
+	text := getGlooMeshVersion(kubeconfig, context, glooMeshNamespace)
 
 	common.LogAndPrintf(text)
-	writeFile(filepath.Join(archive.OutputRootDir(tempDir), "gloo-versions"), text)
+	appendToFile(filepath.Join(archive.GlooMeshPath(tempDir), "gloo-versions"), text)
 }
 func getGlooMeshVersion(kubeconfig, configcontext, glooMeshNamespace string) string {
 	text := ""
@@ -195,7 +194,7 @@ func getGlooMeshVersion(kubeconfig, configcontext, glooMeshNamespace string) str
 		Kubecontext: configcontext,
 		Namespace:   glooMeshNamespace,
 	})
-		text += "The following Gloo versions were found in the cluster\nKubeconfig: " + kubeconfig + "\nContext: " + configcontext + "\n"
+	text += "The following Gloo versions were found in the cluster\nKubeconfig: " + kubeconfig + "\nContext: " + configcontext + "\n"
 	for _, ver := range glooMeshVersions {
 		text += fmt.Sprintf("Namespace: %s\n", ver.Namespace)
 		for _, c := range ver.Components {
@@ -303,6 +302,8 @@ func gatherInfo(client kube.ExtendedClient, config *config.BugReportConfig, reso
 	getFromCluster(content.GetClusterInfo, params, clusterDir, &mandatoryWg)
 	getFromCluster(content.GetSecrets, params.SetVerbose(config.FullSecrets), clusterDir, &mandatoryWg)
 	getFromCluster(content.GetDescribePods, params.SetIstioNamespace(config.IstioNamespace), clusterDir, &mandatoryWg)
+	// Gloo mesh describe pods
+	getFromCluster(content.GetDescribePods, params.SetIstioNamespace(config.GlooMeshNamespace), archive.GlooMeshPath(tempDir), &mandatoryWg)
 
 	// optionalWg is subject to timer.
 	var optionalWg sync.WaitGroup
@@ -325,7 +326,12 @@ func gatherInfo(client kube.ExtendedClient, config *config.BugReportConfig, reso
 		case resources.IsDiscoveryContainer(params.ClusterVersion, namespace, pod, container):
 			getFromCluster(content.GetIstiodInfo, cp, archive.IstiodPath(tempDir, namespace, pod), &mandatoryWg)
 			getIstiodLogs(client, config, resources, namespace, pod, &mandatoryWg)
-
+		case resources.IsGlooMeshDashboardContainer(container):
+			getGlooMeshDashboardLogs(client, config, resources, namespace, pod, &mandatoryWg)
+		case resources.IsGlooMeshAgentContainer(container):
+			getGlooMeshAgentLogs(client, config, resources, namespace, pod, &mandatoryWg)
+		case resources.IsGlooMeshNetworkingContainer(container):
+			getGlooMeshNetworkingLogs(client, config, resources, namespace, pod, &mandatoryWg)
 		case common.IsOperatorContainer(params.ClusterVersion, container):
 			getOperatorLogs(client, config, resources, namespace, pod, &optionalWg)
 		}
@@ -398,6 +404,51 @@ func getIstiodLogs(client kube.ExtendedClient, config *config.BugReportConfig, r
 	}()
 }
 
+// getGlooMeshAgentLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
+// Runs if a goroutine, with errors reported through gErrors.
+func getGlooMeshAgentLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
+	namespace, pod string, wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Infof("Waiting on logs %s", pod)
+	go func() {
+		defer wg.Done()
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshAgentContainerName)
+		appendGlobalErr(err)
+		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "enterprise-agent.log"), clog)
+		log.Infof("Done with logs %s", pod)
+	}()
+}
+
+// getGlooMeshNetworkingLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
+// Runs if a goroutine, with errors reported through gErrors.
+func getGlooMeshNetworkingLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
+	namespace, pod string, wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Infof("Waiting on logs %s", pod)
+	go func() {
+		defer wg.Done()
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshNetworkingContainerName)
+		appendGlobalErr(err)
+		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "enterprise-networking.log"), clog)
+		log.Infof("Done with logs %s", pod)
+	}()
+}
+
+// getGlooMeshNetworkingLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
+// Runs if a goroutine, with errors reported through gErrors.
+func getGlooMeshDashboardLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
+	namespace, pod string, wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Infof("Waiting on logs %s", pod)
+	go func() {
+		defer wg.Done()
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshDashboardContainerName)
+		appendGlobalErr(err)
+		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "dashboard.log"), clog)
+		log.Infof("Done with logs %s", pod)
+	}()
+}
+
 // getOperatorLogs fetches istio-operator logs for the given namespace/pod and writes the output.
 func getOperatorLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
 	namespace, pod string, wg *sync.WaitGroup) {
@@ -433,6 +484,25 @@ func getLog(client kube.ExtendedClient, resources *cluster2.Resources, config *c
 	return clog, cstat, cstat.Importance(), nil
 }
 
+// getGlooLog fetches the logs for the given namespace/pod/container and returns the log text.
+func getGlooLog(client kube.ExtendedClient, resources *cluster2.Resources, config *config.BugReportConfig,
+	namespace, pod, container string) (string, error) {
+	log.Infof("Getting logs for %s/%s/%s...", namespace, pod, container)
+	clog, err := kubectlcmd.Logs(client, namespace, pod, container, false, config.DryRun)
+	if err != nil {
+		return "", err
+	}
+	if resources.ContainerRestarts(namespace, pod, container) > 0 {
+		pclog, err := kubectlcmd.Logs(client, namespace, pod, container, true, config.DryRun)
+		if err != nil {
+			return "", err
+		}
+		clog = "========= Previous log present (appended at the end) =========\n\n" + clog +
+			"\n\n========= Previous log =========\n\n" + pclog
+	}
+	return clog, nil
+}
+
 func runAnalyze(config *config.BugReportConfig, resources *cluster2.Resources, params *content.Params) {
 	for ns := range resources.Root {
 		if analyzer_util.IsSystemNamespace(resource.Namespace(ns)) {
@@ -461,6 +531,22 @@ func writeFile(path, text string) {
 	}
 	mkdirOrExit(path)
 	if err := ioutil.WriteFile(path, []byte(text), 0644); err != nil {
+		log.Errorf(err.Error())
+	}
+}
+
+func appendToFile(path, text string) {
+	if strings.TrimSpace(text) == "" {
+		return
+	}
+	mkdirOrExit(path)
+	f, err := os.OpenFile(path,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Errorf(err.Error())
+	}
+	defer f.Close()
+	if _, err := f.WriteString(text); err != nil {
 		log.Errorf(err.Error())
 	}
 }

@@ -41,6 +41,10 @@ const (
 	Label
 	Annotation
 	Container
+
+	GlooMeshAgentContainerName      = "enterprise-agent"
+	GlooMeshNetworkingContainerName = "enterprise-networking"
+	GlooMeshDashboardContainerName  = "apiserver"
 )
 
 var (
@@ -143,6 +147,21 @@ func (r *Resources) ContainerRestarts(namespace, pod, container string) int {
 // IsDiscoveryContainer reports whether the given container is the Istio discovery container.
 func (r *Resources) IsDiscoveryContainer(clusterVersion, namespace, pod, container string) bool {
 	return common.IsDiscoveryContainer(clusterVersion, container, r.Labels[PodKey(namespace, pod)])
+}
+
+// IsGlooMeshAgentContainer reports whether the given container is the Gloo mesh agent.
+func (r *Resources) IsGlooMeshAgentContainer(container string) bool {
+	return GlooMeshAgentContainerName == container
+}
+
+// IsGlooMeshNetworkingContainer reports whether the given container is the Gloo mesh networking.
+func (r *Resources) IsGlooMeshNetworkingContainer(container string) bool {
+	return GlooMeshNetworkingContainerName == container
+}
+
+// IsGlooMeshDashboardContainer reports whether the given container is the Gloo mesh dashboard.
+func (r *Resources) IsGlooMeshDashboardContainer(container string) bool {
+	return GlooMeshDashboardContainerName == container
 }
 
 // PodIstioVersion returns the Istio version for the given pod, if either the proxy or discovery are one of its

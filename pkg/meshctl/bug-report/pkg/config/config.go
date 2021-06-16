@@ -114,15 +114,12 @@ func defaultListSetting(s []string) bool {
 // BugReportConfig controls what is captured and Include in the kube-capture tool
 // archive.
 type BugReportConfig struct {
-	// MgmtKubeConfigPath is the path to kube config file for the management plane
-	MgmtKubeConfigPath string `json:"mgmtKubeConfigPath,omitempty"`
-	// MgmtContext is the cluster Context in the kube config for the management plane
-	MgmtContext string `json:"mgmtContext,omitempty"`
 
-	// RemoteKubeConfigPath is the path to kube config file for a remote cluster
-	RemoteKubeConfigPath string `json:"clientKubeConfigPath,omitempty"`
-	// RemoteContext is the cluster Context in the kube config for a remote cluster
-	RemoteContext string `json:"remoteContext,omitempty"`
+	// KubeConfigPath is the path to kube config file
+	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
+
+	// Context is the cluster Context in the kube config
+	Context string `json:"context,omitempty"`
 
 	// IstioNamespace is the namespace where the istio control plane is installed.
 	IstioNamespace string `json:"istioNamespace,omitempty"`
@@ -168,18 +165,13 @@ type BugReportConfig struct {
 
 func (b *BugReportConfig) String() string {
 	out := ""
-	if b.MgmtKubeConfigPath != "" {
-		out += fmt.Sprintf("Gloo MP kubeconfig: %s\n", b.MgmtKubeConfigPath)
+	if b.KubeConfigPath != "" {
+		out += fmt.Sprintf("kubeconfig: %s\n", b.KubeConfigPath)
 	}
-	if b.MgmtContext != "" {
-		out += fmt.Sprintf("Gloo MP Context: %s\n", b.MgmtContext)
+	if b.Context != "" {
+		out += fmt.Sprintf("context: %s\n", b.Context)
 	}
-	if b.RemoteKubeConfigPath != "" {
-		out += fmt.Sprintf("Gloo CP kubeconfig: %s\n", b.RemoteKubeConfigPath)
-	}
-	if b.RemoteContext != "" {
-		out += fmt.Sprintf("Gloo CP context: %s\n", b.RemoteContext)
-	}
+
 	out += fmt.Sprintf("istio-namespace: %s\n", b.IstioNamespace)
 	out += fmt.Sprintf("full-secrets: %v\n", b.FullSecrets)
 	out += fmt.Sprintf("timeout (mins): %v\n", math.Round(float64(int(b.CommandTimeout))/float64(time.Minute)))

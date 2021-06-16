@@ -37,16 +37,10 @@ var (
 
 func addFlags(cmd *cobra.Command, args *config2.BugReportConfig) {
 	// k8s client config
-	cmd.PersistentFlags().StringVarP(&args.MgmtKubeConfigPath, "mgmt-kubeconfig", "c", "",
-		"Path to kube config for the gloo mesh management plane cluster.")
-	cmd.PersistentFlags().StringVar(&args.MgmtContext, "mgmt-context", "",
-		"Name of the kubeconfig Context to use for the gloo mesh management plane cluster.")
-
-	cmd.PersistentFlags().StringVarP(&args.RemoteKubeConfigPath, "remote-kubeconfig", "", "",
-		"Path to kube config for a remote client cluster.")
-	cmd.PersistentFlags().StringVar(&args.RemoteContext, "remote-context", "",
-		"Name of the kubeconfig Context to use for a remote client cluster.")
-
+	cmd.PersistentFlags().StringVarP(&args.KubeConfigPath, "kubeconfig", "c", "",
+		"Path to kube config.")
+	cmd.PersistentFlags().StringVar(&args.Context, "context", "",
+		"Name of the kubeconfig Context.")
 	// input config
 	cmd.PersistentFlags().StringVarP(&configFile, "filename", "f", "",
 		"Path to a file containing configuration in YAML format. The file contents are applied over the default "+

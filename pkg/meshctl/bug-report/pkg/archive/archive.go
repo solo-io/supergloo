@@ -28,6 +28,7 @@ const (
 	bugReportSubdir        = "bug-report"
 	proxyLogsPathSubdir    = "proxies"
 	istioLogsPathSubdir    = "istio"
+	glooMeshLogsPathSubdir    = "gloo-mesh"
 	clusterInfoSubdir      = "cluster"
 	analyzeSubdir          = "analyze"
 	operatorLogsPathSubdir = "operator"
@@ -54,6 +55,10 @@ func ProxyOutputPath(rootDir, namespace, pod string) string {
 
 func IstiodPath(rootDir, namespace, pod string) string {
 	return filepath.Join(getRootDir(rootDir), istioLogsPathSubdir, namespace, pod)
+}
+
+func GlooMeshPath(rootDir string) string {
+	return filepath.Join(getRootDir(rootDir), glooMeshLogsPathSubdir)
 }
 
 func OperatorPath(rootDir, namespace, pod string) string {
