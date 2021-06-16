@@ -74,6 +74,10 @@ Proxy logs can be filtered using:
   --include|--exclude ns1,ns2.../dep1,dep2.../pod1,pod2.../cntr1,cntr.../lbl1=val1,lbl2=val2.../ann1=val1,ann2=val2...
 where ns=namespace, dep=deployment, cntr=container, lbl=label, ann=annotation
 
+For multiple clusters use commas to separate kube configs or kube contexts
+--kubeconfig ~/.kube/config --context cluster-1,cluster-2
+--kubeconfig ~/.kube/cluster1,~/.kube/cluster2 --context cluster-1,cluster-2
+
 The filter spec is interpreted as 'must be in (ns1 OR ns2) AND (dep1 OR dep2) AND (cntr1 OR cntr2)...'
 The log will be included only if the container matches at least one include filter and does not match any exclude filters.
 All parts of the filter are optional and can be omitted e.g. ns1//pod1 filters only for namespace ns1 and pod1.
