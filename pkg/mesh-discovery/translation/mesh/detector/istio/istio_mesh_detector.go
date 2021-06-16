@@ -146,6 +146,8 @@ func (d *meshDetector) detectMesh(
 	return mesh, nil
 }
 
+// DEPRECATED: in favor of Destination discovery, which captures all external address information
+// TODO: remove this code when Mesh.spec.Type.Istio.IngressGateways is deleted
 func getIngressGateways(
 	ctx context.Context,
 	namespace string,
