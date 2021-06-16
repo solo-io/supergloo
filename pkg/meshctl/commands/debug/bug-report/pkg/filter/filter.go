@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"sort"
 
-	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/cluster"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/config"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/util/match"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/util/path"
+	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/cluster"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/config"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/util/match"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/util/path"
 )
 
 // GetMatchingPaths returns a slice of matching paths, given a cluster tree and config.

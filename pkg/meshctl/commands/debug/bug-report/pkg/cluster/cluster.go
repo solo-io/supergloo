@@ -25,8 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/common"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/util/path"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/util/path"
 	analyzer_util "istio.io/istio/galley/pkg/config/analysis/analyzers/util"
 	"istio.io/istio/pkg/config/resource"
 	"istio.io/pkg/log"
@@ -42,9 +42,11 @@ const (
 	Annotation
 	Container
 
-	GlooMeshAgentContainerName      = "enterprise-agent"
-	GlooMeshNetworkingContainerName = "enterprise-networking"
-	GlooMeshDashboardContainerName  = "apiserver"
+	GlooMeshEnterpriseAgentContainerName      = "enterprise-agent"
+	GlooMeshEnterpriseNetworkingContainerName = "enterprise-networking"
+	GlooMeshDashboardContainerName            = "apiserver"
+	GlooMeshDiscoveryContainerName            = "discovery"
+	GlooMeshNetworkingContainerName           = "networking"
 )
 
 var (
@@ -151,17 +153,27 @@ func (r *Resources) IsDiscoveryContainer(clusterVersion, namespace, pod, contain
 
 // IsGlooMeshAgentContainer reports whether the given container is the Gloo mesh agent.
 func (r *Resources) IsGlooMeshAgentContainer(container string) bool {
-	return GlooMeshAgentContainerName == container
+	return GlooMeshEnterpriseAgentContainerName == container
 }
 
-// IsGlooMeshNetworkingContainer reports whether the given container is the Gloo mesh networking.
-func (r *Resources) IsGlooMeshNetworkingContainer(container string) bool {
-	return GlooMeshNetworkingContainerName == container
+// IsGlooMeshEnterpriseNetworkingContainer reports whether the given container is the Gloo mesh networking.
+func (r *Resources) IsGlooMeshEnterpriseNetworkingContainer(container string) bool {
+	return GlooMeshEnterpriseNetworkingContainerName == container
 }
 
 // IsGlooMeshDashboardContainer reports whether the given container is the Gloo mesh dashboard.
 func (r *Resources) IsGlooMeshDashboardContainer(container string) bool {
 	return GlooMeshDashboardContainerName == container
+}
+
+// IsGlooMeshDiscoveryContainer reports whether the given container is the Gloo mesh networking.
+func (r *Resources) IsGlooMeshDiscoveryContainer(container string) bool {
+	return GlooMeshDiscoveryContainerName == container
+}
+
+// IsGlooMeshNetworkingContainer reports whether the given container is the Gloo mesh networking.
+func (r *Resources) IsGlooMeshNetworkingContainer(container string) bool {
+	return GlooMeshNetworkingContainerName == container
 }
 
 // PodIstioVersion returns the Istio version for the given pod, if either the proxy or discovery are one of its

@@ -20,8 +20,8 @@ import (
 	"github.com/ghodss/yaml"
 	. "github.com/onsi/gomega"
 
-	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/cluster"
-	config2 "github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/config"
+	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/cluster"
+	config2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/config"
 )
 
 var (

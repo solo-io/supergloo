@@ -33,15 +33,15 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/archive"
-	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/cluster"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/common"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/config"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/content"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/filter"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/kubeclient"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/kubectlcmd"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/processlog"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/archive"
+	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/cluster"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/common"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/config"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/content"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/filter"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/kubeclient"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/kubectlcmd"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/processlog"
 	analyzer_util "istio.io/istio/galley/pkg/config/analysis/analyzers/util"
 	"istio.io/istio/operator/pkg/util"
 	"istio.io/istio/pkg/config/resource"
@@ -402,6 +402,10 @@ func gatherInfo(client kube.ExtendedClient, config *config.BugReportConfig, reso
 			getGlooMeshDashboardLogs(client, config, resources, namespace, pod, &mandatoryWg)
 		case resources.IsGlooMeshAgentContainer(container):
 			getGlooMeshAgentLogs(client, config, resources, namespace, pod, &mandatoryWg)
+		case resources.IsGlooMeshEnterpriseNetworkingContainer(container):
+			getGlooMeshEnterpriseNetworkingLogs(client, config, resources, namespace, pod, &mandatoryWg)
+		case resources.IsGlooMeshDiscoveryContainer(container):
+			getGlooMeshDiscoveryLogs(client, config, resources, namespace, pod, &mandatoryWg)
 		case resources.IsGlooMeshNetworkingContainer(container):
 			getGlooMeshNetworkingLogs(client, config, resources, namespace, pod, &mandatoryWg)
 		case common.IsOperatorContainer(params.ClusterVersion, container):
@@ -484,9 +488,54 @@ func getGlooMeshAgentLogs(client kube.ExtendedClient, config *config.BugReportCo
 	log.Infof("Waiting on logs %s", pod)
 	go func() {
 		defer wg.Done()
-		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshAgentContainerName)
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshEnterpriseAgentContainerName)
 		appendGlobalErr(err)
 		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "enterprise-agent.log"), clog)
+		log.Infof("Done with logs %s", pod)
+	}()
+}
+
+// getGlooMeshEnterpriseNetworkingLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
+// Runs if a goroutine, with errors reported through gErrors.
+func getGlooMeshEnterpriseNetworkingLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
+	namespace, pod string, wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Infof("Waiting on logs %s", pod)
+	go func() {
+		defer wg.Done()
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshEnterpriseNetworkingContainerName)
+		appendGlobalErr(err)
+		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "enterprise-networking.log"), clog)
+		log.Infof("Done with logs %s", pod)
+	}()
+}
+
+// getGlooMeshEnterpriseNetworkingLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
+// Runs if a goroutine, with errors reported through gErrors.
+func getGlooMeshDashboardLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
+	namespace, pod string, wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Infof("Waiting on logs %s", pod)
+	go func() {
+		defer wg.Done()
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshDashboardContainerName)
+		appendGlobalErr(err)
+		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "dashboard.log"), clog)
+		log.Infof("Done with logs %s", pod)
+	}()
+}
+
+// getGlooMeshDiscoveryLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
+// Runs if a goroutine, with errors reported through gErrors.
+func getGlooMeshDiscoveryLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
+	namespace, pod string, wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Infof("Waiting on logs %s", pod)
+	go func() {
+		defer wg.Done()
+		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshDiscoveryContainerName)
+		appendGlobalErr(err)
+		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "dashboard.log"), clog)
 		log.Infof("Done with logs %s", pod)
 	}()
 }
@@ -500,21 +549,6 @@ func getGlooMeshNetworkingLogs(client kube.ExtendedClient, config *config.BugRep
 	go func() {
 		defer wg.Done()
 		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshNetworkingContainerName)
-		appendGlobalErr(err)
-		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "enterprise-networking.log"), clog)
-		log.Infof("Done with logs %s", pod)
-	}()
-}
-
-// getGlooMeshNetworkingLogs fetches Gloo mesh logs for the given namespace/pod and writes the output.
-// Runs if a goroutine, with errors reported through gErrors.
-func getGlooMeshDashboardLogs(client kube.ExtendedClient, config *config.BugReportConfig, resources *cluster2.Resources,
-	namespace, pod string, wg *sync.WaitGroup) {
-	wg.Add(1)
-	log.Infof("Waiting on logs %s", pod)
-	go func() {
-		defer wg.Done()
-		clog, err := getGlooLog(client, resources, config, namespace, pod, cluster2.GlooMeshDashboardContainerName)
 		appendGlobalErr(err)
 		writeFile(filepath.Join(archive.GlooMeshPath(tempDir), "dashboard.log"), clog)
 		log.Infof("Done with logs %s", pod)

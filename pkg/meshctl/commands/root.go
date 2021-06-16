@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/bugreport"
-	"istio.io/pkg/log"
 	"os"
 
 	"github.com/fatih/color"
@@ -64,7 +62,6 @@ func RootCommand(ctx context.Context) *cobra.Command {
 		dashboard.Command(ctx),
 		version.Command(ctx),
 		initpluginmanager.Command(ctx),
-		bugreport.Cmd(log.DefaultOptions()),
 	)
 
 	if len(os.Args) > 1 {

@@ -2,6 +2,7 @@ package debug
 
 import (
 	"context"
+	bug_report "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report"
 
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/snapshot"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
@@ -17,6 +18,7 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 
 	cmd.AddCommand(
 		snapshot.Command(ctx, globalFlags),
+		bug_report.Command(ctx, globalFlags),
 	)
 
 	return cmd

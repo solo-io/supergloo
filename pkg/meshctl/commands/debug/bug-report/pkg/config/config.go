@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/bug-report/pkg/cluster"
+	cluster2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/bug-report/pkg/cluster"
 )
 
 // SelectionSpec is a spec for pods that will be Include in the capture
