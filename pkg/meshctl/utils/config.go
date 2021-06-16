@@ -170,7 +170,7 @@ func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 func NewMeshctlConfig() MeshctlConfig {
 	return MeshctlConfig{
 		ApiVersion: "v1",
-		Clusters: map[string]MeshctlCluster{managementPlane: MeshctlCluster{KubeConfig: "", KubeContext: ""}},
+		Clusters:   map[string]MeshctlCluster{managementPlane: MeshctlCluster{KubeConfig: "", KubeContext: ""}},
 	}
 }
 
