@@ -124,7 +124,7 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	tempDir = archive.GetRootDir(tempDir)
 	tempDirPlaceholder := tempDir
 
-	combos := buildKubeConfigList(kubeConfigs, contexts, len(config.KubeConfigPath+config.Context) > 0 )
+	combos := buildKubeConfigList(kubeConfigs, contexts, len(config.KubeConfigPath+config.Context) > 0)
 	for name, meshctlCluster := range combos {
 		kubeConfigPath := meshctlCluster.KubeConfig
 		kubeContext := meshctlCluster.KubeContext
