@@ -7,6 +7,7 @@ weight: 2
 
 |Option|Type|Default Value|Description|
 |------|----|-----------|-------------|
+|defaultMetricsPort|uint32|9091|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |relay|struct|{"cluster":"","serverAddress":"","authority":"enterprise-networking.gloo-mesh","insecure":false,"clientCertSecret":{"name":"relay-client-tls-secret"},"rootTlsSecret":{"name":"relay-root-tls-secret"},"tokenSecret":{"name":"relay-identity-token-secret","namespace":"","key":"token"},"maxGrpcMessageSize":"4294967295"}|options for connecting relay|
 |relay.cluster|string| |cluster identifier for the relay agent|
 |relay.serverAddress|string| |address of the relay server|
