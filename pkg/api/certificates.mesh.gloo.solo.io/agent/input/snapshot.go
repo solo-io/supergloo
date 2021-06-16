@@ -23,8 +23,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/hashicorp/go-multierror"
@@ -1004,22 +1006,22 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
 		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
-			issuedCertificates.Insert(obj)
+			i.insertIssuedCertificate(ctx, obj, issuedCertificates, opts)
 		// insert CertificateRequests
 		case *certificates_mesh_gloo_solo_io_v1_types.CertificateRequest:
-			certificateRequests.Insert(obj)
+			i.insertCertificateRequest(ctx, obj, certificateRequests, opts)
 		// insert PodBounceDirectives
 		case *certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective:
-			podBounceDirectives.Insert(obj)
+			i.insertPodBounceDirective(ctx, obj, podBounceDirectives, opts)
 		// insert Secrets
 		case *v1_types.Secret:
-			secrets.Insert(obj)
+			i.insertSecret(ctx, obj, secrets, opts)
 		// insert ConfigMaps
 		case *v1_types.ConfigMap:
-			configMaps.Insert(obj)
+			i.insertConfigMap(ctx, obj, configMaps, opts)
 		// insert Pods
 		case *v1_types.Pod:
-			pods.Insert(obj)
+			i.insertPod(ctx, obj, pods, opts)
 		}
 	})
 
@@ -1033,4 +1035,180 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		configMaps,
 		pods,
 	), nil
+}
+
+func (i *inMemoryBuilder) insertIssuedCertificate(
+	ctx context.Context,
+	issuedCertificate *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate,
+	issuedCertificateSet certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.IssuedCertificates.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = issuedCertificate.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(issuedCertificate.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		issuedCertificateSet.Insert(issuedCertificate)
+	}
+}
+func (i *inMemoryBuilder) insertCertificateRequest(
+	ctx context.Context,
+	certificateRequest *certificates_mesh_gloo_solo_io_v1_types.CertificateRequest,
+	certificateRequestSet certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.CertificateRequests.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = certificateRequest.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(certificateRequest.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		certificateRequestSet.Insert(certificateRequest)
+	}
+}
+func (i *inMemoryBuilder) insertPodBounceDirective(
+	ctx context.Context,
+	podBounceDirective *certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective,
+	podBounceDirectiveSet certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.PodBounceDirectives.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = podBounceDirective.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(podBounceDirective.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		podBounceDirectiveSet.Insert(podBounceDirective)
+	}
+}
+
+func (i *inMemoryBuilder) insertSecret(
+	ctx context.Context,
+	secret *v1_types.Secret,
+	secretSet v1_sets.SecretSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.Secrets.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = secret.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(secret.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		secretSet.Insert(secret)
+	}
+}
+func (i *inMemoryBuilder) insertConfigMap(
+	ctx context.Context,
+	configMap *v1_types.ConfigMap,
+	configMapSet v1_sets.ConfigMapSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.ConfigMaps.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = configMap.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(configMap.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		configMapSet.Insert(configMap)
+	}
+}
+func (i *inMemoryBuilder) insertPod(
+	ctx context.Context,
+	pod *v1_types.Pod,
+	podSet v1_sets.PodSet,
+	buildOpts BuildOptions,
+) {
+
+	opts := buildOpts.Pods.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = pod.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(pod.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		podSet.Insert(pod)
+	}
 }

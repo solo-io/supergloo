@@ -29,8 +29,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/hashicorp/go-multierror"
@@ -1951,40 +1953,40 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		switch obj := obj.(type) {
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1_types.Settings:
-			settings.Insert(obj)
+			i.insertSettings(ctx, obj, settings, opts)
 		// insert Destinations
 		case *discovery_mesh_gloo_solo_io_v1_types.Destination:
-			destinations.Insert(obj)
+			i.insertDestination(ctx, obj, destinations, opts)
 		// insert Workloads
 		case *discovery_mesh_gloo_solo_io_v1_types.Workload:
-			workloads.Insert(obj)
+			i.insertWorkload(ctx, obj, workloads, opts)
 		// insert Meshes
 		case *discovery_mesh_gloo_solo_io_v1_types.Mesh:
-			meshes.Insert(obj)
+			i.insertMesh(ctx, obj, meshes, opts)
 		// insert TrafficPolicies
 		case *networking_mesh_gloo_solo_io_v1_types.TrafficPolicy:
-			trafficPolicies.Insert(obj)
+			i.insertTrafficPolicy(ctx, obj, trafficPolicies, opts)
 		// insert AccessPolicies
 		case *networking_mesh_gloo_solo_io_v1_types.AccessPolicy:
-			accessPolicies.Insert(obj)
+			i.insertAccessPolicy(ctx, obj, accessPolicies, opts)
 		// insert VirtualMeshes
 		case *networking_mesh_gloo_solo_io_v1_types.VirtualMesh:
-			virtualMeshes.Insert(obj)
+			i.insertVirtualMesh(ctx, obj, virtualMeshes, opts)
 		// insert WasmDeployments
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.WasmDeployment:
-			wasmDeployments.Insert(obj)
+			i.insertWasmDeployment(ctx, obj, wasmDeployments, opts)
 		// insert VirtualDestinations
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination:
-			virtualDestinations.Insert(obj)
+			i.insertVirtualDestination(ctx, obj, virtualDestinations, opts)
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
-			accessLogRecords.Insert(obj)
+			i.insertAccessLogRecord(ctx, obj, accessLogRecords, opts)
 		// insert Secrets
 		case *v1_types.Secret:
-			secrets.Insert(obj)
+			i.insertSecret(ctx, obj, secrets, opts)
 		// insert KubernetesClusters
 		case *multicluster_solo_io_v1alpha1_types.KubernetesCluster:
-			kubernetesClusters.Insert(obj)
+			i.insertKubernetesCluster(ctx, obj, kubernetesClusters, opts)
 		}
 	})
 
@@ -2004,4 +2006,359 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		secrets,
 		kubernetesClusters,
 	), nil
+}
+
+func (i *inMemoryLocalBuilder) insertSettings(
+	ctx context.Context,
+	settings *settings_mesh_gloo_solo_io_v1_types.Settings,
+	settingsSet settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Settings.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = settings.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(settings.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		settingsSet.Insert(settings)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertDestination(
+	ctx context.Context,
+	destination *discovery_mesh_gloo_solo_io_v1_types.Destination,
+	destinationSet discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Destinations.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = destination.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(destination.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		destinationSet.Insert(destination)
+	}
+}
+func (i *inMemoryLocalBuilder) insertWorkload(
+	ctx context.Context,
+	workload *discovery_mesh_gloo_solo_io_v1_types.Workload,
+	workloadSet discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Workloads.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = workload.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(workload.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		workloadSet.Insert(workload)
+	}
+}
+func (i *inMemoryLocalBuilder) insertMesh(
+	ctx context.Context,
+	mesh *discovery_mesh_gloo_solo_io_v1_types.Mesh,
+	meshSet discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Meshes.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = mesh.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(mesh.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		meshSet.Insert(mesh)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertTrafficPolicy(
+	ctx context.Context,
+	trafficPolicy *networking_mesh_gloo_solo_io_v1_types.TrafficPolicy,
+	trafficPolicySet networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.TrafficPolicies.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = trafficPolicy.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(trafficPolicy.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		trafficPolicySet.Insert(trafficPolicy)
+	}
+}
+func (i *inMemoryLocalBuilder) insertAccessPolicy(
+	ctx context.Context,
+	accessPolicy *networking_mesh_gloo_solo_io_v1_types.AccessPolicy,
+	accessPolicySet networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.AccessPolicies.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = accessPolicy.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(accessPolicy.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		accessPolicySet.Insert(accessPolicy)
+	}
+}
+func (i *inMemoryLocalBuilder) insertVirtualMesh(
+	ctx context.Context,
+	virtualMesh *networking_mesh_gloo_solo_io_v1_types.VirtualMesh,
+	virtualMeshSet networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.VirtualMeshes.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = virtualMesh.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(virtualMesh.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		virtualMeshSet.Insert(virtualMesh)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertWasmDeployment(
+	ctx context.Context,
+	wasmDeployment *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.WasmDeployment,
+	wasmDeploymentSet networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.WasmDeployments.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = wasmDeployment.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(wasmDeployment.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		wasmDeploymentSet.Insert(wasmDeployment)
+	}
+}
+func (i *inMemoryLocalBuilder) insertVirtualDestination(
+	ctx context.Context,
+	virtualDestination *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination,
+	virtualDestinationSet networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.VirtualDestinations.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = virtualDestination.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(virtualDestination.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		virtualDestinationSet.Insert(virtualDestination)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertAccessLogRecord(
+	ctx context.Context,
+	accessLogRecord *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord,
+	accessLogRecordSet observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.AccessLogRecords.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = accessLogRecord.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(accessLogRecord.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		accessLogRecordSet.Insert(accessLogRecord)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertSecret(
+	ctx context.Context,
+	secret *v1_types.Secret,
+	secretSet v1_sets.SecretSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Secrets.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = secret.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(secret.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		secretSet.Insert(secret)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertKubernetesCluster(
+	ctx context.Context,
+	kubernetesCluster *multicluster_solo_io_v1alpha1_types.KubernetesCluster,
+	kubernetesClusterSet multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.KubernetesClusters.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = kubernetesCluster.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(kubernetesCluster.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		kubernetesClusterSet.Insert(kubernetesCluster)
+	}
 }
