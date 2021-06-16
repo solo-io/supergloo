@@ -47,8 +47,8 @@ before continuing.
 Let's set variables for the remaining values:
 
 ```bash
-CLUSTER_NAME=remote-cluster # Update value as needed
-REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
+CLUSTER_NAME=-cluster-2 # Update value as needed
+REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
 ```
 
 Now we are ready to register the remote cluster:
@@ -103,8 +103,8 @@ Without these prerequisites, the relay agent deployment will fail.
 First create the namespace in the remote cluster:
 
 ```shell
-CLUSTER_NAME=remote-cluster # Update value as needed
-REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
+CLUSTER_NAME=cluster-2 # Update value as needed
+REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
 
 kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
 ```
@@ -112,7 +112,7 @@ kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
 Now we will get the value of the root CA certificate and create a secret in the remote cluster:
 
 ```shell
-MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
+MGMT_CONTEXT=kind-cluster-1 # Update value as needed
 
 kubectl get secret relay-root-tls-secret -n gloo-mesh --context $MGMT_CONTEXT -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
 
@@ -175,8 +175,8 @@ before continuing.
 Then we will set our variables:
 
 ```shell
-CLUSTER_NAME=remote-cluster # Update value as needed
-REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
+CLUSTER_NAME=cluster-2 # Update value as needed
+REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
 ENTERPRISE_NETWORKING_VERSION=<current version> # Update based on meshctl version output
 ```
 
