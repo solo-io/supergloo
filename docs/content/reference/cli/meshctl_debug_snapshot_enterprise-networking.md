@@ -1,19 +1,19 @@
 ---
-title: "meshctl debug snapshot discovery"
+title: "meshctl debug snapshot enterprise-networking"
 weight: 5
 ---
-## meshctl debug snapshot discovery
+## meshctl debug snapshot enterprise-networking
 
-Input and output snapshots for the discovery pod
+Input and output snapshots for the enterprise networking pod
 
 ```
-meshctl debug snapshot discovery [flags]
+meshctl debug snapshot enterprise-networking [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for discovery
+  -h, --help   help for enterprise-networking
 ```
 
 ### Options inherited from parent commands
@@ -32,6 +32,6 @@ meshctl debug snapshot discovery [flags]
 ### SEE ALSO
 
 * [meshctl debug snapshot](../meshctl_debug_snapshot)	 - Input and Output snapshots for the discovery and networking pods. Requires jq to be installed if the --json flag is not being used.
-* [meshctl debug snapshot discovery input](../meshctl_debug_snapshot_discovery_input)	 - Input snapshot for the discovery pod
-* [meshctl debug snapshot discovery output](../meshctl_debug_snapshot_discovery_output)	 - Output snapshot for the discovery pod
+* [meshctl debug snapshot enterprise-networking input](../meshctl_debug_snapshot_enterprise-networking_input)	 - Input snapshot for the enterprise-networking pod
+* [meshctl debug snapshot enterprise-networking output](../meshctl_debug_snapshot_enterprise-networking_output)	 - Output snapshot for the enterprise-networking pod
 

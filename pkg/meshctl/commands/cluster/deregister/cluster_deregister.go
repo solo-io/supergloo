@@ -32,6 +32,10 @@ points then it an be provided via the --mgmt-context flag.`,
 		PersistentPreRun: func(*cobra.Command, []string) {
 			opts.Verbose = globalFlags.Verbose
 		},
+		PersistentPostRunE: func(*cobra.Command, []string) error {
+			return utils.UpdateMeshctlConfigWithDeregistrationInfo(opts.MgmtKubeConfigPath, opts.MgmtContext,
+				opts.ClusterName, opts.KubeConfigPath)
+		},
 	}
 
 	cmd.AddCommand(

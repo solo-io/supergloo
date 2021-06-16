@@ -31,6 +31,11 @@ The edition registered must match the edition installed on the management cluste
 		PersistentPreRun: func(*cobra.Command, []string) {
 			opts.Verbose = globalFlags.Verbose
 		},
+		PersistentPostRunE: func(*cobra.Command, []string) error {
+			// Update the meshctl config file
+			return utils.UpdateMeshctlConfigWithRegistrationInfo(opts.MgmtKubeConfigPath, opts.MgmtContext,
+				opts.ClusterName, opts.KubeConfigPath, opts.RemoteContext)
+		},
 	}
 
 	cmd.AddCommand(
