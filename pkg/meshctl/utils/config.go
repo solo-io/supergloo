@@ -1,19 +1,20 @@
 package utils
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
+
+	"io/ioutil"
 	"path/filepath"
 
-	"github.com/rotisserie/eris"
-
 	"github.com/ghodss/yaml"
+	"github.com/rotisserie/eris"
 )
 
 const managementPlane = "managementPlane"
 
-var invalidMeshctlConfigFileErr = eris.New("please either configure or pass in a valid meshctl config file (see the 'meshctl cluster config' command)")
+var (
+	invalidMeshctlConfigFileErr = eris.New("please either configure or pass in a valid meshctl config file (see the 'meshctl cluster config' command)")
+)
 
 type MeshctlConfig struct {
 	filepath   string
@@ -70,10 +71,14 @@ func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error
 // update the default meschtl config file with registration info
 func UpdateMeshctlConfigWithRegistrationInfo(mgmtKubeConfigPath, mgmtKubecontext,
 	remoteClusterName, remoteKubeConfigPath, remoteKubecontext string) error {
-	// if the existing meschtl config file matches, update it
-	config, err := ParseMeshctlConfig("")
+	meshctlConfigFile, err := DefaultMeshctlConfigFilePath()
 	if err != nil {
 		return err
+	}
+	// if the existing meschtl config file matches, update it
+	config, err := ParseMeshctlConfig(meshctlConfigFile)
+	if err != nil {
+		config = NewMeshctlConfig()
 	}
 	kubeConfig := mgmtKubeConfigPath
 	if kubeConfig == "" {
@@ -100,10 +105,14 @@ func UpdateMeshctlConfigWithRegistrationInfo(mgmtKubeConfigPath, mgmtKubecontext
 // update the default meschtl config file with deregistration info
 func UpdateMeshctlConfigWithDeregistrationInfo(mgmtKubeConfigPath, mgmtKubecontext,
 	remoteClusterName, remoteKubeConfigPath string) error {
-	// if the existing meschtl config file doesn't match, don't modify it
-	config, err := ParseMeshctlConfig("")
+	meshctlConfigFile, err := DefaultMeshctlConfigFilePath()
 	if err != nil {
 		return err
+	}
+	// if the existing meschtl config file doesn't match, don't modify it
+	config, err := ParseMeshctlConfig(meshctlConfigFile)
+	if err != nil {
+		config = NewMeshctlConfig()
 	}
 	kubeConfig := mgmtKubeConfigPath
 	if kubeConfig == "" {
@@ -133,15 +142,9 @@ func UpdateMeshctlConfigWithInstallInfo(mgmtKubeConfig, mgmtKubecontext string) 
 }
 
 // parse the meshctl config file into a MeshctlConfig struct
+// If the file doesn't exist or is invalid, return an error
 func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	config := NewMeshctlConfig()
-	if meshctlConfigPath == "" {
-		var err error
-		meshctlConfigPath, err = DefaultMeshctlConfigFilePath()
-		if err != nil {
-			return config, err
-		}
-	}
 	if _, err := os.Stat(meshctlConfigPath); err != nil {
 		return config, invalidMeshctlConfigFileErr
 	}
@@ -161,7 +164,7 @@ func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	}
 
 	if config.ApiVersion != "v1" {
-		return config, fmt.Errorf("unrecognized api version: %v", config.ApiVersion)
+		return config, eris.Errorf("meshctl config file has an unrecognized api version: %v", config.ApiVersion)
 	}
 
 	return config, nil
