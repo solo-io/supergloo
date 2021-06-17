@@ -27,10 +27,9 @@ meshctl cluster configure [flags]
 ### Options
 
 ```
-      --cluster-name string                                        data plane cluster name (ignored if this is the management cluster)
+      --cluster-name string                                        data plane cluster name (leave empty if this is the management cluster)
       --disable-prompt                                             Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.
   -h, --help                                                       help for configure
-      --is-mgmt-cluster                                            this is the management cluster (default true)
       --kubeconfig string                                          Path to the kubeconfig from which the cluster will be accessed
       --kubecontext string                                         Name of the kubeconfig context to use for the cluster
   -c, --meshctl-config-file $HOME/.gloo-mesh/meshctl-config.yaml   path to the meshctl config file. defaults to $HOME/.gloo-mesh/meshctl-config.yaml

@@ -15,7 +15,6 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/pointer"
@@ -71,8 +70,6 @@ func (t *destinationDetector) DetectDestination(
 		WorkloadSelectorLabels: service.Spec.Selector,
 		Labels:                 service.Labels,
 		Ports:                  convertPorts(service),
-		ExternalAddresses:      getExternalAddresses(ctx, service, pods, nodes),
-		ServiceType:            getServiceType(service.Spec.Type),
 	}
 
 	// add locality to the destination
@@ -311,7 +308,6 @@ func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeServ
 			Name:        kubePort.Name,
 			Protocol:    string(kubePort.Protocol),
 			AppProtocol: pointer.StringPtrDerefOr(kubePort.AppProtocol, ""),
-			NodePort:    uint32(kubePort.NodePort),
 		}
 		// Add the target port depending on the type
 		if kubePort.TargetPort.Type == intstr.Int {
@@ -326,163 +322,4 @@ func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeServ
 		ports = append(ports, discoveredPort)
 	}
 	return ports
-}
-
-// if the Service is a non ClusterIP type, fetch the external addresses
-func getExternalAddresses(
-	ctx context.Context,
-	svc *corev1.Service,
-	pods corev1sets.PodSet,
-	nodes corev1sets.NodeSet,
-) []*v1.DestinationSpec_KubeService_ExternalAddress {
-	var externalAddresses []*v1.DestinationSpec_KubeService_ExternalAddress
-
-	// include user set external IPs
-	for _, externalIP := range svc.Spec.ExternalIPs {
-		externalAddresses = append(externalAddresses, externalAddressIp(externalIP))
-	}
-
-	// TODO: add support for ExternalName Services
-	switch svc.Spec.Type {
-	case corev1.ServiceTypeNodePort:
-		externalAddresses = append(externalAddresses, getExternalNodeIps(ctx, svc, pods, nodes)...)
-	case corev1.ServiceTypeLoadBalancer:
-		externalAddresses = append(externalAddresses, getExternalLoadBalancerAddresses(svc)...)
-	}
-
-	return externalAddresses
-}
-
-// return all externally-addressable IPs or Hostnames for a LoadBalancer Service
-func getExternalLoadBalancerAddresses(
-	svc *corev1.Service,
-) []*v1.DestinationSpec_KubeService_ExternalAddress {
-	var externalLoadBalancerAddresses []*v1.DestinationSpec_KubeService_ExternalAddress
-
-	ingress := svc.Status.LoadBalancer.Ingress
-	for _, loadBalancerIngress := range ingress {
-
-		var externalAddress *v1.DestinationSpec_KubeService_ExternalAddress
-		// If the IP address is set in the ingress, use that
-		if loadBalancerIngress.IP != "" {
-			externalAddress = externalAddressIp(loadBalancerIngress.IP)
-		} else if loadBalancerIngress.Hostname != "" {
-			// Otherwise use the hostname
-			externalAddress = externalAddressDns(loadBalancerIngress.Hostname)
-		}
-		externalLoadBalancerAddresses = append(externalLoadBalancerAddresses, externalAddress)
-	}
-
-	return externalLoadBalancerAddresses
-}
-
-// return all externally-addressable NodeIPs for a NodePort Service
-func getExternalNodeIps(
-	ctx context.Context,
-	svc *corev1.Service,
-	pods corev1sets.PodSet,
-	nodes corev1sets.NodeSet,
-) []*v1.DestinationSpec_KubeService_ExternalAddress {
-	var externalNodeIps []*v1.DestinationSpec_KubeService_ExternalAddress
-
-	// fetch all backing Pods for the Service
-	backingPods := pods.List(func(pod *corev1.Pod) bool {
-		return pod.ClusterName != svc.ClusterName ||
-			pod.Namespace != svc.Namespace ||
-			!labels.SelectorFromSet(svc.Spec.Selector).Matches(labels.Set(pod.Labels))
-	})
-	if len(backingPods) < 1 {
-		contextutils.LoggerFrom(ctx).Warnf("no pods found backing service %v", sets2.Key(svc))
-		return nil
-	}
-
-	for _, backingPod := range backingPods {
-		ingressNode, err := nodes.Find(&skv2corev1.ClusterObjectRef{
-			ClusterName: backingPod.ClusterName,
-			Name:        backingPod.Spec.NodeName,
-		})
-		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("failed to find ingress node for pod %v", sets2.Key(backingPod))
-			continue
-		}
-
-		isKindNode := isKindNode(ingressNode)
-
-		var foundExternalNodeIp bool
-		for _, addr := range ingressNode.Status.Addresses {
-
-			// For Kind clusters, we use the NodeInternalIP for the external IP address.
-			if isKindNode && addr.Type == corev1.NodeInternalIP {
-				foundExternalNodeIp = true
-				externalNodeIps = append(externalNodeIps, &v1.DestinationSpec_KubeService_ExternalAddress{
-					ExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
-						Ip: addr.Address,
-					},
-				})
-				continue
-			}
-
-			// k8s reference: https://kubernetes.io/docs/concepts/architecture/nodes/#addresses
-			switch addr.Type {
-			case corev1.NodeExternalIP:
-				foundExternalNodeIp = true
-				externalNodeIps = append(externalNodeIps, externalAddressIp(addr.Address))
-			case corev1.NodeHostName:
-				foundExternalNodeIp = true
-				externalNodeIps = append(externalNodeIps, externalAddressDns(addr.Address))
-			}
-		}
-
-		if !foundExternalNodeIp {
-			contextutils.LoggerFrom(ctx).Debugf("no external addresses reported for ingress node %v", sets2.Key(ingressNode))
-		}
-	}
-
-	return externalNodeIps
-}
-
-// return true is the Node is provisioned by Kind
-func isKindNode(node *corev1.Node) bool {
-	for _, image := range node.Status.Images {
-		for _, name := range image.Names {
-			if strings.Contains(name, "kindnetd") {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func externalAddressIp(ip string) *v1.DestinationSpec_KubeService_ExternalAddress {
-	return &v1.DestinationSpec_KubeService_ExternalAddress{
-		ExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_Ip{
-			Ip: ip,
-		},
-	}
-}
-
-func externalAddressDns(hostname string) *v1.DestinationSpec_KubeService_ExternalAddress {
-	return &v1.DestinationSpec_KubeService_ExternalAddress{
-		ExternalAddressType: &v1.DestinationSpec_KubeService_ExternalAddress_DnsName{
-			DnsName: hostname,
-		},
-	}
-}
-
-// convert Kubernetes service type to internal enum for service type
-func getServiceType(svcType corev1.ServiceType) v1.DestinationSpec_KubeService_ServiceType {
-	var serviceType v1.DestinationSpec_KubeService_ServiceType
-
-	switch svcType {
-	case corev1.ServiceTypeClusterIP:
-		serviceType = v1.DestinationSpec_KubeService_CLUSTER_IP
-	case corev1.ServiceTypeNodePort:
-		serviceType = v1.DestinationSpec_KubeService_NODE_PORT
-	case corev1.ServiceTypeLoadBalancer:
-		serviceType = v1.DestinationSpec_KubeService_LOAD_BALANCER
-	case corev1.ServiceTypeExternalName:
-		serviceType = v1.DestinationSpec_KubeService_EXTERNAL_NAME
-	}
-
-	return serviceType
 }

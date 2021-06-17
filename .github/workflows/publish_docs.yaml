@@ -31,13 +31,13 @@ jobs:
     - name: Update deps
       run: |
         make install-go-tools
-    - name: Gcloud Login
-      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+
+    - name: Docker Login
+      uses: docker/login-action@v1
       with:
-        version: '290.0.1'
-        project_id: ${{ secrets.GC_FIREBASE_GHA_PROJECT_ID }}
-        service_account_key: ${{ secrets.GC_FIREBASE_GHA_SA_JSON_KEY }}
-        export_default_credentials: true
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.GC_GHA_SA_JSON_KEY }}
 
     - name: Generate versioned docs site
       env:
@@ -45,10 +45,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       run: make -C docs build-site
     - name: Deploy to Firebase
-      uses: FirebaseExtended/action-hosting-deploy@v0
+      uses: w9jds/firebase-action@master
       with:
-        repoToken: ${{ secrets.GITHUB_TOKEN }}
-        firebaseServiceAccount: ${{ secrets.GC_FIREBASE_GHA_SA_JSON_KEY }}
-        projectId: ${{ secrets.GC_FIREBASE_GHA_PROJECT_ID }}
-        channelId: live
-        entryPoint: ./docs/ci
+        args: deploy --only hosting
+      env:
+        PROJECT_ID: solo-corp
+        PROJECT_PATH: ./docs/ci
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

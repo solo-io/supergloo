@@ -18,8 +18,8 @@ func AddManagementKubeconfigFlags(kubeconfig, kubecontext *string, flags *pflag.
 	flags.StringVar(kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the management cluster")
 }
 
-// Set the meshctl config file path
-func AddMeshctlConfigFlags(meshctlConfigPath *string, flags *pflag.FlagSet) {
-	flags.StringVarP(meshctlConfigPath, "meshctl-config-file", "c", "",
-		"path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
+// Set kubeconfig path and context flags for any cluster.
+func AddKubeconfigFlags(kubeconfig, kubecontext *string, flags *pflag.FlagSet) {
+	flags.StringVar(kubeconfig, "kubeconfig", "", "Path to the kubeconfig from which the cluster will be accessed")
+	flags.StringVar(kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the cluster")
 }

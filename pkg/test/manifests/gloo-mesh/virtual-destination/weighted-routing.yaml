@@ -4,6 +4,7 @@ metadata:
   name: virtual-mesh
   namespace: gloo-mesh
 spec:
+  federation:
     hostnameSuffix: solo.io
     selectors:
       - { }

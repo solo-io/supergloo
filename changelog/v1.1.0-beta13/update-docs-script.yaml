@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Updated docs script to use Service Account login

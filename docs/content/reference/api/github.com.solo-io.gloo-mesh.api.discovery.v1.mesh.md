@@ -119,7 +119,7 @@ Describes an Istio deployment.
 | installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Describes the Istio control plane deployment. |
   | trustDomain | string |  | The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity). If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118). |
   | istiodServiceAccount | string |  | The istiod service account which determines identity for the Istio CA cert. |
-  | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects. Describes the ingress gateway. |
+  | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | Describes the ingress gateway. |
   | smartDnsProxyingEnabled | bool |  | True if smart DNS proxying is enabled, which allows for arbitrary DNS domains. |
   
 
@@ -130,7 +130,7 @@ Describes an Istio deployment.
 <a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo"></a>
 
 ### MeshSpec.Istio.IngressGatewayInfo
-DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects. Describes the ingress gateway.
+Describes the ingress gateway.
 
 
 | Field | Type | Label | Description |
@@ -268,7 +268,7 @@ Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/ap
 <a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh"></a>
 
 ### MeshStatus.AppliedVirtualMesh
-Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh. If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
+Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh. If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 
 
 | Field | Type | Label | Description |

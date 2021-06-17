@@ -27,13 +27,6 @@ a cluster name. Note that if a cluster is both a management and data plane clust
 		Example: " meshctl cluster configure --disable-prompt --kubeconfig ${HOME}/.kube/config --kubecontext cluster1 ## Registers a management plane cluster\n" +
 			" meshctl cluster configure --disable-prompt --cluster-name cluster2 --kubeconfig ${HOME}/.kube/config --kubecontext cluster2 ## Registers a data plane cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.meshctlConfigPath == "" {
-				var err error
-				opts.meshctlConfigPath, err = utils.DefaultMeshctlConfigFilePath()
-				if err != nil {
-					return err
-				}
-			}
 			if opts.disablePrompt {
 				if opts.kubeconfig == "" || opts.kubecontext == "" {
 					return eris.Errorf("must pass in --kubeconfig and --kubecontext flags when configuring in non-interactive mode")
@@ -51,23 +44,19 @@ type options struct {
 	meshctlConfigPath string
 
 	disablePrompt bool
-	mgmtCluster   bool
 	clusterName   string
 	kubeconfig    string
 	kubecontext   string
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "c", "",
-		"path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
+	flags.StringVarP(&o.meshctlConfigPath, "meshctl-config-file", "c", "", "path to the meshctl config file. defaults to `$HOME/.gloo-mesh/meshctl-config.yaml`")
+
 	flags.BoolVar(&o.disablePrompt, "disable-prompt", false,
 		"Disable the interactive prompt. Use this to configure the meshctl config file with flags instead.")
 	flags.StringVar(&o.clusterName, "cluster-name", "",
-		"data plane cluster name (ignored if this is the management cluster)")
-	flags.BoolVar(&o.mgmtCluster, "is-mgmt-cluster", true,
-		"this is the management cluster")
-	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to the kubeconfig from which the cluster will be accessed")
-	flags.StringVar(&o.kubecontext, "kubecontext", "", "Name of the kubeconfig context to use for the cluster")
+		"data plane cluster name (leave empty if this is the management cluster)")
+	utils.AddKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
 }
 
 func configure(opts *options) error {
@@ -96,22 +85,15 @@ func configure(opts *options) error {
 		KubeConfig:  opts.kubeconfig,
 		KubeContext: opts.kubecontext,
 	}
-	if opts.mgmtCluster {
-		config.AddMgmtCluster(cluster)
-	} else {
+	if opts.clusterName != "" {
 		if err := config.AddDataPlaneCluster(opts.clusterName, cluster); err != nil {
 			return err
 		}
+	} else {
+		config.AddMgmtCluster(cluster)
 	}
-	err = utils.WriteConfigToFile(config, opts.meshctlConfigPath)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", opts.meshctlConfigPath)
-	return nil
+	return writeConfigToFile(config, opts.meshctlConfigPath)
 }
-
-var defaultConfigFile string
 
 func configureInteractive(meshctlConfigPath string) error {
 	config, err := utils.ParseMeshctlConfig(meshctlConfigPath)
@@ -122,7 +104,7 @@ func configureInteractive(meshctlConfigPath string) error {
 	keepGoing := "Yes"
 	for keepGoing == "Yes" {
 		answer, err := selectValueInteractive("Are you configuring a management cluster or a data plane cluster?",
-			[]string{"Management Plane", "Data Plane", "Both"})
+			[]string{"Management Plane", "Data Plane"})
 		if err != nil {
 			return err
 		}
@@ -141,15 +123,6 @@ func configureInteractive(meshctlConfigPath string) error {
 			if err := config.AddDataPlaneCluster(clusterName, dataPlaneContext); err != nil {
 				return err
 			}
-		case "Both":
-			clusterName, clusterContext, err := configureDataPlaneCluster()
-			if err != nil {
-				return err
-			}
-			if err := config.AddDataPlaneCluster(clusterName, clusterContext); err != nil {
-				return err
-			}
-			config.AddMgmtCluster(clusterContext)
 		}
 		keepGoing, err = selectValueInteractive("Would you like to configure another cluster?",
 			[]string{"Yes", "No"})
@@ -158,12 +131,20 @@ func configureInteractive(meshctlConfigPath string) error {
 		}
 	}
 
-	err = utils.WriteConfigToFile(config, meshctlConfigPath)
+	return writeConfigToFile(config, meshctlConfigPath)
+}
+
+func writeConfigToFile(config utils.MeshctlConfig, meshctlConfigPath string) error {
+	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		return err
 	}
+	if err := ioutil.WriteFile(meshctlConfigPath, bytes, 0644); err != nil {
+		return err
+	}
+
 	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", meshctlConfigPath)
-	return nil
+	return err
 }
 
 func configureDataPlaneCluster() (string, utils.MeshctlCluster, error) {
@@ -184,13 +165,11 @@ func configureCluster() (utils.MeshctlCluster, error) {
 	kubeConfigFilePrompt := promptui.Prompt{
 		Label:    "What is the path to your kubernetes config file?",
 		Validate: validateKubeConfigExists,
-		Default:  defaultConfigFile,
 	}
 	kubeConfigFile, err := kubeConfigFilePrompt.Run()
 	if err != nil {
 		return meshctlCluster, err
 	}
-	defaultConfigFile = kubeConfigFile
 
 	clusters, err := getKubeContextOptions(kubeConfigFile)
 	if err != nil {

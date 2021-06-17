@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := &Options{}
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display the version of meshctl and installed Gloo Mesh components",
@@ -30,29 +30,29 @@ func Command(ctx context.Context) *cobra.Command {
 	return cmd
 }
 
-type Options struct {
-	Kubeconfig  string
-	Kubecontext string
-	Namespace   string
+type options struct {
+	kubeconfig  string
+	kubecontext string
+	namespace   string
 }
 
-func (o *Options) addToFlags(flags *pflag.FlagSet) {
-	utils.AddManagementKubeconfigFlags(&o.Kubeconfig, &o.Kubecontext, flags)
-	flags.StringVar(&o.Namespace, "namespace", "gloo-mesh", "Namespace that gloo mesh components are deployed to")
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	flags.StringVar(&o.namespace, "namespace", "gloo-mesh", "namespace that glooo mesh components are deployed to")
 }
 
 type versionInfo struct {
 	Client clientVersion   `json:"client"`
-	Server []ServerVersion `json:"server"`
+	Server []serverVersion `json:"server"`
 }
 type clientVersion struct {
 	Version string `json:"version"`
 }
-type ServerVersion struct {
-	Namespace  string      `json:"Namespace"`
-	Components []Component `json:"components"`
+type serverVersion struct {
+	Namespace  string      `json:"namespace"`
+	Components []component `json:"components"`
 }
-type Component struct {
+type component struct {
 	ComponentName string           `json:"componentName"`
 	Images        []componentImage `json:"images"`
 }
@@ -63,8 +63,8 @@ type componentImage struct {
 	Version string `json:"version"`
 }
 
-func printVersion(ctx context.Context, opts *Options) error {
-	serverVersions := MakeServerVersions(ctx, opts)
+func printVersion(ctx context.Context, opts *options) error {
+	serverVersions := makeServerVersions(ctx, opts)
 	versions := versionInfo{
 		Client: clientVersion{Version: version.Version},
 		Server: serverVersions,
@@ -78,21 +78,21 @@ func printVersion(ctx context.Context, opts *Options) error {
 	return nil
 }
 
-func MakeServerVersions(ctx context.Context, opts *Options) []ServerVersion {
-	kubeClient, err := utils.BuildClient(opts.Kubeconfig, opts.Kubecontext)
+func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
+	kubeClient, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to Kubernetes: %s\n", err.Error())
 		return nil
 	}
 	deploymentClient := appsv1.NewDeploymentClient(kubeClient)
-	deployments, err := deploymentClient.ListDeployment(ctx, &client.ListOptions{Namespace: opts.Namespace})
+	deployments, err := deploymentClient.ListDeployment(ctx, &client.ListOptions{Namespace: opts.namespace})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to list deployments: %s\n", err.Error())
 		return nil
 	}
 
-	// map of Namespace to list of components
-	componentMap := make(map[string][]Component)
+	// map of namespace to list of components
+	componentMap := make(map[string][]component)
 	for _, deployment := range deployments.Items {
 		images, err := getImages(&deployment)
 		if err != nil {
@@ -106,7 +106,7 @@ func MakeServerVersions(ctx context.Context, opts *Options) []ServerVersion {
 		namespace := deployment.GetObjectMeta().GetNamespace()
 		componentMap[namespace] = append(
 			componentMap[namespace],
-			Component{
+			component{
 				ComponentName: deployment.GetName(),
 				Images:        images,
 			},
@@ -114,9 +114,9 @@ func MakeServerVersions(ctx context.Context, opts *Options) []ServerVersion {
 	}
 
 	// convert to output format
-	var serverVersions []ServerVersion
+	var serverVersions []serverVersion
 	for namespace, components := range componentMap {
-		serverVersions = append(serverVersions, ServerVersion{Namespace: namespace, Components: components})
+		serverVersions = append(serverVersions, serverVersion{Namespace: namespace, Components: components})
 	}
 
 	return serverVersions
