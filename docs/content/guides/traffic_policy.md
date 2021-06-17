@@ -202,6 +202,70 @@ spec:
 
 As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Gloo Mesh TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" %}}) in our API provides more information on using traffic policies.
 
+## Configuring a Default Route
+
+Consider the following TrafficPolicy that specifies a request matcher (note that in our environment `petstore-test`
+does not actually exist, but we reference it here for illustration purposes):
+
+```yaml
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: petstore-canary
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: cluster-1
+        name: petstore
+        namespace: default
+  httpRequestMatchers:
+  - headers:
+    - name: version
+      value: test
+  policy:
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: cluster-1
+            name: petstore-test
+            namespace: default
+```
+
+This will generate an Istio VirtualService that routes any requests with the header `version: test` to the `petstore-test` service.
+**Any requests that do not have that header will, by default, will return a 404.**
+
+This behavior may be suitable in certain situations, but in other scenarios you may also want
+to route all non-matching requests to the original intended destination. This is a common pattern for canary
+deployments, where a portion of the overall traffic gets routed to a canary deployment based on certain request
+properties (i.e. headers), and all other traffic proceeds as normal to the original intended destination.
+
+To declare a default fallback route for all non-matching requests, you must create an additional
+TrafficPolicy with no request matcher and a traffic shift to the selected destination:
+
+```yaml
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: petstore-default
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: cluster-1
+        name: petstore
+        namespace: default
+  policy:
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: cluster-1
+            name: petstore
+            namespace: default
+```
+
 ## Next Steps
 
 Now that we have seen a simple example of how Gloo Mesh can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
