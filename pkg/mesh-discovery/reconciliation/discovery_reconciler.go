@@ -56,6 +56,9 @@ func Start(
 	verboseMode bool,
 	settingsRef *v1.ObjectRef,
 ) error {
+
+	ctx = contextutils.WithLogger(ctx, "discovery")
+
 	settingsBuilder := input.NewSingleClusterSettingsBuilder(localMgr)
 
 	var discoveryInputBuilder input.DiscoveryInputBuilder
