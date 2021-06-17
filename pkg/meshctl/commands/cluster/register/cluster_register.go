@@ -31,6 +31,11 @@ The edition registered must match the edition installed on the management cluste
 		PersistentPreRun: func(*cobra.Command, []string) {
 			opts.Verbose = globalFlags.Verbose
 		},
+		PersistentPostRun: func(cmd *cobra.Command, args []string) {
+			// Update the meshctl config file
+			utils.UpdateMeshctlConfigWithRegistrationInfo(opts.MgmtKubeConfigPath, opts.MgmtContext,
+				args[0], opts.KubeConfigPath, opts.RemoteContext)
+		},
 	}
 
 	cmd.AddCommand(
@@ -144,6 +149,7 @@ bootstrap token from the gloo-mesh cluster, if these are not explicitly provided
 type EnterpriseOptions enterprise.RegistrationOptions
 
 func (o *EnterpriseOptions) addToFlags(flags *pflag.FlagSet) {
+
 	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
 	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", false, "Communicate with the relay server over an insecure connection.")
 
