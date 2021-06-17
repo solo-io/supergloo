@@ -246,7 +246,7 @@ message DestinationStatus {
     // The set of TrafficPolicy traffic shifts that reference subsets on this Destination.
     repeated RequiredSubsets required_subsets = 7;
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination.
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination.
     // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
     message AppliedTrafficPolicy {
 
@@ -260,7 +260,7 @@ message DestinationStatus {
         .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
     }
 
-    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}})
     // that applies to this Destination.
     // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
     message AppliedAccessPolicy {
@@ -275,7 +275,7 @@ message DestinationStatus {
         .networking.mesh.gloo.solo.io.AccessPolicySpec spec = 3;
     }
 
-    // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+    // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}).
     // Federation allows access to the Destination from other meshes/clusters.
     message AppliedFederation {
 
@@ -290,7 +290,7 @@ message DestinationStatus {
         repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
 
         // Whether the Destination has been federated to the given meshes using a VirtualMesh where
-        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}})
         // is true.
         bool flat_network = 3;
 
@@ -298,7 +298,7 @@ message DestinationStatus {
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
     }
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}})
     // that references subsets on this Destination in a traffic shift.
     // Note: this is an Istio-specific feature.
     message RequiredSubsets {

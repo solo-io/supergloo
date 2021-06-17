@@ -266,7 +266,7 @@ Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/ap
 <a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh"></a>
 
 ### MeshStatus.AppliedVirtualMesh
-Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh. If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
+Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh. If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 
 
 | Field | Type | Label | Description |

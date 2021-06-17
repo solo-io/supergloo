@@ -490,7 +490,7 @@ spec:
                 flatNetwork:
                   description: |-
                     Whether the Destination has been federated to the given meshes using a VirtualMesh where
-                    [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+                    [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
                 virtualMeshRef:

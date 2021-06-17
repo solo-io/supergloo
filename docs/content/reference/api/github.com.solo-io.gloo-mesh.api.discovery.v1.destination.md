@@ -362,7 +362,7 @@ Subsets for routing, based on labels.
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy"></a>
 
 ### DestinationStatus.AppliedAccessPolicy
-Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}}) that applies to this Destination. If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
+Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}}) that applies to this Destination. If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
 
 
 | Field | Type | Label | Description |
@@ -379,14 +379,14 @@ Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation"></a>
 
 ### DestinationStatus.AppliedFederation
-Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}). Federation allows access to the Destination from other meshes/clusters.
+Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}). Federation allows access to the Destination from other meshes/clusters.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | federatedHostname | string |  | For any Workload that this Destination has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`), that Workload will be able to reach this Destination using this DNS name. For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination. |
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this Destination's `federated_hostname`. |
-  | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
+  | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   | virtualMeshRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh object. |
   
 
@@ -397,7 +397,7 @@ Describes the federation configuration applied to this Destination through a [Vi
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy"></a>
 
 ### DestinationStatus.AppliedTrafficPolicy
-Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 
 
 | Field | Type | Label | Description |
@@ -414,7 +414,7 @@ Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets"></a>
 
 ### DestinationStatus.RequiredSubsets
-Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that references subsets on this Destination in a traffic shift. Note: this is an Istio-specific feature.
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that references subsets on this Destination in a traffic shift. Note: this is an Istio-specific feature.
 
 
 | Field | Type | Label | Description |
