@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: Fix VirtualMesh link in traffic policy doc.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1385
+  - type: FIX
+    description: Fix TrafficPolicySpec link in traffic policy doc.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1540
