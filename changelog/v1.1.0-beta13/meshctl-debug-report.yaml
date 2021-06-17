@@ -1,0 +1,12 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/581
+    description: >
+      Add a `meshctl debug report` command that selectively captures cluster
+      information and logs into an archive to help diagnose problems.
+    resolvesIssue: false
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1562
+    description: >
+      Modify the `meshctl check` command such that we are reporting the number
+      of connected pull and push agents instead of checking that it is a number.

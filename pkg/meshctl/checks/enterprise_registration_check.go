@@ -56,10 +56,10 @@ func (d *enterpriseRegistrationCheck) GetDescription() string {
 }
 
 type connectionStatus struct {
-	cluster      string
-	registered   bool
-	agentPulling bool
-	agentPushing bool
+	cluster       string
+	registered    bool
+	agentsPulling int
+	agentsPushing int
 }
 
 func isEnterpriseVersion(ctx context.Context, c client.Client, installNamespace string) (bool, error) {
@@ -119,12 +119,12 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, c client.Client, 
 	for _, status := range clusterStatuses {
 		switch {
 		// cluster registered, agents are not pulling or pushing
-		case status.registered && (!status.agentPulling || !status.agentPushing):
-			errs = append(errs, eris.Errorf("cluster %v registered but agent is not connected (pull: %v, push: %v)", status.cluster, status.agentPulling, status.agentPushing))
+		case status.registered && ((status.agentsPulling < 0) || (status.agentsPushing < 0)):
+			errs = append(errs, eris.Errorf("cluster %v registered but agent is not connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
 			hint += "check the logs of the agent on " + status.cluster + " and investigate whether/why the gRPC connection failed from the agent to the mgmt server.\n"
 		// cluster not registered, agents are pulling or pushing
-		case !status.registered && (status.agentPulling || status.agentPushing):
-			errs = append(errs, eris.Errorf("cluster %v is not currently registered but agent is connected (pull: %v, push: %v)", status.cluster, status.agentPulling, status.agentPushing))
+		case !status.registered && ((status.agentsPulling < 0) || (status.agentsPushing < 0)):
+			errs = append(errs, eris.Errorf("cluster %v is not currently registered but agent is connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
 			hint += "create a corresponding KubernetesCluster CR to register the " + status.cluster + ".\n"
 		}
 	}
@@ -150,8 +150,8 @@ func printClusterStatuses(clusterStatuses []connectionStatus) {
 		table.Append([]string{
 			status.cluster,
 			fmt.Sprintf("%v", status.registered),
-			fmt.Sprintf("%v", status.agentPulling),
-			fmt.Sprintf("%v", status.agentPushing),
+			fmt.Sprintf("%v", status.agentsPulling),
+			fmt.Sprintf("%v", status.agentsPushing),
 		})
 	}
 	table.Render()
@@ -160,7 +160,7 @@ func printClusterStatuses(clusterStatuses []connectionStatus) {
 
 func calculateClusterStatuses(
 	registeredClusters *v1alpha1.KubernetesClusterList,
-	connectedPullAgents, connectedPushAgents map[string]bool,
+	connectedPullAgents, connectedPushAgents map[string]int,
 ) []connectionStatus {
 
 	clusterStatuses := map[string]connectionStatus{}
@@ -168,30 +168,30 @@ func calculateClusterStatuses(
 	for _, registeredCluster := range registeredClusters.Items {
 		cluster := registeredCluster.Name
 		clusterStatuses[cluster] = connectionStatus{
-			cluster:      cluster,
-			registered:   true,
-			agentPulling: connectedPullAgents[cluster],
-			agentPushing: connectedPushAgents[cluster],
+			cluster:       cluster,
+			registered:    true,
+			agentsPulling: connectedPullAgents[cluster],
+			agentsPushing: connectedPushAgents[cluster],
 		}
 	}
 	// find agents who are connected/disconnected for unregistered clusters
 	for cluster, connected := range connectedPullAgents {
 		if _, ok := clusterStatuses[cluster]; !ok {
 			clusterStatuses[cluster] = connectionStatus{
-				cluster:      cluster,
-				registered:   false,
-				agentPulling: connected,
-				agentPushing: connectedPushAgents[cluster],
+				cluster:       cluster,
+				registered:    false,
+				agentsPulling: connected,
+				agentsPushing: connectedPushAgents[cluster],
 			}
 		}
 	}
 	for cluster, connected := range connectedPushAgents {
 		if _, ok := clusterStatuses[cluster]; !ok {
 			clusterStatuses[cluster] = connectionStatus{
-				cluster:      cluster,
-				registered:   false,
-				agentPulling: connectedPullAgents[cluster],
-				agentPushing: connected,
+				cluster:       cluster,
+				registered:    false,
+				agentsPulling: connectedPullAgents[cluster],
+				agentsPushing: connected,
 			}
 		}
 	}
@@ -205,7 +205,7 @@ func calculateClusterStatuses(
 	return sortedStatuses
 }
 
-func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, mgmtDeployNamespace string) (map[string]bool, map[string]bool, error, string) {
+func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, mgmtDeployNamespace string) (map[string]int, map[string]int, error, string) {
 	portFwdContext, cancelPtFwd := context.WithCancel(ctx)
 	// start port forward to mgmt server stats port
 	localPort, err := utils.PortForwardFromDeployment(
@@ -261,8 +261,8 @@ func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, mg
 	return pullClientsConnected, pushClientsConnected, nil, ""
 }
 
-func getClientClustersConnected(clientConnectionMetrics *dto.MetricFamily) (map[string]bool, error, string) {
-	clustersConnected := map[string]bool{}
+func getClientClustersConnected(clientConnectionMetrics *dto.MetricFamily) (map[string]int, error, string) {
+	clustersConnected := map[string]int{}
 	for _, metric := range clientConnectionMetrics.GetMetric() {
 		var cluster string
 		for _, pair := range metric.GetLabel() {
@@ -274,8 +274,7 @@ func getClientClustersConnected(clientConnectionMetrics *dto.MetricFamily) (map[
 			return nil, eris.Errorf("parsed metrics missing cluster label %v", clientConnectionMetrics), "ensure your version of `meshctl` matches the installed version of Gloo Mesh Enterprise."
 		}
 		// gauge value can either be 0 for disconnected, 1 for connected
-		clusterConnected := metric.GetGauge().GetValue() == 1
-		clustersConnected[cluster] = clusterConnected
+		clustersConnected[cluster] = int(metric.GetGauge().GetValue())
 	}
 	return clustersConnected, nil, ""
 }
