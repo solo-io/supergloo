@@ -57,7 +57,7 @@ func Start(
 	settingsRef *v1.ObjectRef,
 ) error {
 
-	ctx = contextutils.WithLogger(ctx, "discovery")
+	ctx = contextutils.WithLogger(ctx, "mesh-discovery")
 
 	settingsBuilder := input.NewSingleClusterSettingsBuilder(localMgr)
 
