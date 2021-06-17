@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Add an Openshift section to the metrics docs page.
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1465

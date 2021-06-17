@@ -1,5 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1644
-    description: Update `meshctl uninstall` to delete all Gloo Mesh management plane CRDs.
-

@@ -57,7 +57,7 @@ Istio-specific discovery settings
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ingressGatewayDetectors | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry" >}}) | repeated | DEPRECATED: all externally addressable destinations are captured in the Destination CRD, and the VirtualMesh and VirtualGateway enables selecting specific Destinations to act as ingress gateways.<br>Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values. |
+| ingressGatewayDetectors | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry" >}}) | repeated | Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values. |
   
 
 

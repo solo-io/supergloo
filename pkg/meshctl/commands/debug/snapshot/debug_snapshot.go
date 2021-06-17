@@ -3,34 +3,31 @@ package snapshot
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 
-	"github.com/rotisserie/eris"
-
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
+	"github.com/solo-io/go-utils/cliutils"
+	"github.com/solo-io/go-utils/tarutils"
 	"github.com/solo-io/k8s-utils/debugutils"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	filePermissions = 0644
 
 	// filters for snapshots
-	networking           = "networking"
-	discovery            = "discovery"
-	enterpriseNetworking = "enterprise-networking"
-	enterpriseAgent      = "enterprise-agent"
-	input                = "input"
-	output               = "output"
+	networking = "networking"
+	discovery  = "discovery"
+	input      = "input"
+	output     = "output"
 
 	// jq query
 	query = "to_entries | .[] | select(.key != \"clusters\") | select(.key != \"name\") | {kind: .key, list : [.value[]? | {name: .metadata.name, namespace: .metadata.namespace, cluster: .metadata.clusterName}]}"
@@ -39,12 +36,8 @@ const (
 type DebugSnapshotOpts struct {
 	json    bool
 	file    string
-	dir     string
 	zip     string
 	verbose bool
-
-	kubeconfig  string
-	kubecontext string
 
 	// hidden optional values
 	metricsBindPort uint32
@@ -52,10 +45,8 @@ type DebugSnapshotOpts struct {
 }
 
 func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
-	utils.AddManagementKubeconfigFlags(&opts.kubeconfig, &opts.kubecontext, flags)
 	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:\n meshctl debug snapshot discovery input | jq '.'")
 	flags.StringVarP(&opts.file, "file", "f", "", "file to write output to")
-	flags.StringVar(&opts.dir, "dir", "", "dir to write file outputs to")
 	flags.StringVar(&opts.zip, "zip", "", "zip file output")
 	flags.Uint32Var(&opts.metricsBindPort, "port", defaults.MetricsPort, "metrics port")
 	flags.StringVarP(&opts.namespace, "namespace", "n", defaults.GetPodNamespace(), "gloo-mesh namespace")
@@ -66,52 +57,19 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 
 	cmd := &cobra.Command{
 		Use:   "snapshot",
-		Short: "Input and Output snapshots for the discovery and networking pods. Requires jq to be installed if the --json flag is not being used.",
+		Short: "Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.verbose = globalFlags.Verbose
-			return debugSnapshot(ctx, opts, []string{discovery, networking, enterpriseNetworking, enterpriseAgent}, []string{input, output})
+			return debugSnapshot(ctx, opts, []string{discovery, networking}, []string{input, output})
 		},
 	}
 	cmd.AddCommand(
 		Networking(ctx, opts),
 		Discovery(ctx, opts),
-		EnterpriseNetworking(ctx, opts),
-		EnterpriseAgent(ctx, opts),
 	)
 	AddDebugSnapshotFlags(cmd.PersistentFlags(), opts)
-
 	cmd.PersistentFlags().Lookup("namespace").Hidden = true
 	cmd.PersistentFlags().Lookup("port").Hidden = true
-	return cmd
-}
-
-func EnterpriseNetworking(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "enterprise-networking",
-		Short: "Input and output snapshots for the enterprise networking pod",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return debugSnapshot(ctx, opts, []string{enterpriseNetworking}, []string{input, output})
-		},
-	}
-	cmd.AddCommand(
-		Input(ctx, opts, enterpriseNetworking),
-		Output(ctx, opts, enterpriseNetworking),
-	)
-	return cmd
-}
-
-func EnterpriseAgent(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "enterprise-agent",
-		Short: "Input and output snapshots for the enterprise agent pod",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return debugSnapshot(ctx, opts, []string{enterpriseAgent}, []string{input, output})
-		},
-	}
-	cmd.AddCommand(
-		Input(ctx, opts, enterpriseAgent),
-		Output(ctx, opts, enterpriseAgent),
-	)
 	return cmd
 }
 
@@ -175,24 +133,26 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 		return err
 	}
 
+	freePort, err := cliutils.GetFreePort()
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	localPort := strconv.Itoa(freePort)
+
 	f, err := os.Create(opts.file)
 	defer f.Close()
 
 	fs := afero.NewOsFs()
-	zipDir, err := afero.TempDir(fs, "", "")
+	dir, err := afero.TempDir(fs, "", "")
 	if err != nil {
 		return err
 	}
-	defer fs.RemoveAll(zipDir)
+	defer fs.RemoveAll(dir)
 	storageClient := debugutils.NewFileStorageClient(fs)
 	for _, podName := range pods {
 		for _, snapshotType := range types {
-			fmt.Printf("%s snapshot for %s\n", snapshotType, podName)
-			snapshot, snapshotErr := getSnapshot(ctx, opts, "", podName, snapshotType)
-			if snapshotErr != nil {
-				fmt.Println(snapshotErr.Error())
-				continue
-			}
+			snapshot := getSnapshot(ctx, opts, localPort, podName, snapshotType)
 			fileName := fmt.Sprintf("%s-%s-snapshot.json", podName, snapshotType)
 			var snapshotStr string
 			if opts.json {
@@ -219,15 +179,7 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 					fmt.Println(err.Error())
 					return err
 				}
-				fmt.Printf("Written to %s\n", opts.file)
-			} else if opts.zip != "" || opts.dir != "" {
-				if len(snapshotStr) == 0 {
-					continue
-				}
-				dir := zipDir
-				if opts.dir != "" {
-					dir = opts.dir
-				}
+			} else if opts.zip != "" {
 				err = storageClient.Save(dir, &debugutils.StorageObject{
 					Resource: strings.NewReader(snapshotStr),
 					Name:     fileName,
@@ -235,57 +187,42 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 				if err != nil {
 					return err
 				}
-				fmt.Printf("Written to %s\n", fileName)
 			} else {
 				fmt.Print(snapshotStr)
-				fmt.Print("\n")
 			}
 		}
 	}
 	if opts.zip != "" {
-		err = utils.Zip(fs, zipDir, opts.zip)
+		err = zip(fs, dir, opts.zip)
 	}
 	return nil
 }
 
-func getSnapshot(ctx context.Context, opts *DebugSnapshotOpts, localPort, podName, snapshotType string) (string, error) {
-	kubeClient, err := utils.BuildClientset(opts.kubeconfig, opts.kubecontext)
+func getSnapshot(ctx context.Context, opts *DebugSnapshotOpts, localPort, podName, snapshotType string) string {
+	snapshot, portFwdCmd, err := cliutils.PortForwardGet(ctx, opts.namespace, "deploy/"+podName,
+		localPort, strconv.Itoa(int(opts.metricsBindPort)), opts.verbose, "/snapshots/"+snapshotType)
 	if err != nil {
-		return "", err
+		fmt.Println(err.Error())
+		return ""
 	}
-	_, err = kubeClient.AppsV1().Deployments(opts.namespace).Get(ctx, podName, metav1.GetOptions{})
-	if err != nil {
-		return "", eris.Errorf("No %s.%s deployment found - skipping the %s snapshot\n", opts.namespace, podName, snapshotType)
+	if portFwdCmd.Process != nil {
+		defer portFwdCmd.Process.Release()
+		defer portFwdCmd.Process.Kill()
 	}
+	return snapshot
+}
 
-	portFwdContext, cancelPtFwd := context.WithCancel(ctx)
-	mgmtDeployNamespace := opts.namespace
-	mgmtDeployName := podName
-	remotePort := strconv.Itoa(int(opts.metricsBindPort))
-	// start port forward to mgmt server stats port
-	localPort, err = utils.PortForwardFromDeployment(
-		portFwdContext,
-		opts.kubeconfig,
-		opts.kubecontext,
-		mgmtDeployName,
-		mgmtDeployNamespace,
-		fmt.Sprintf("%v", localPort),
-		fmt.Sprintf("%v", remotePort),
-	)
+func zip(fs afero.Fs, dir string, file string) error {
+	tarball, err := fs.Create(file)
 	if err != nil {
-		return "", eris.Errorf("try verifying that `kubectl port-forward -n %v deployment/%v %v:%v` can be run successfully.", mgmtDeployNamespace, mgmtDeployName, localPort, remotePort)
+		return err
 	}
-	// request snapshots page
-	snapshotUrl := fmt.Sprintf("http://localhost:%v/snapshots/%s", localPort, snapshotType)
-	resp, err := http.DefaultClient.Get(snapshotUrl)
+	if err := tarutils.Tar(dir, fs, tarball); err != nil {
+		return err
+	}
+	_, err = tarball.Seek(0, io.SeekStart)
 	if err != nil {
-		return "", eris.Errorf("try verifying that the %s pod is listening on port %v", podName, remotePort)
+		return err
 	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	snapshot := string(b)
-
-	cancelPtFwd()
-
-	return snapshot, nil
+	return nil
 }
