@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
@@ -52,6 +53,7 @@ func Start(
 	podBouncer podbouncer.PodBouncer,
 	translator translation.Translator,
 ) error {
+	ctx = contextutils.WithLogger(ctx, "cert-agent")
 	d := &certAgentReconciler{
 		ctx:         ctx,
 		builder:     builder,
