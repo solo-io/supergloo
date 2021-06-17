@@ -16,10 +16,9 @@ Gloo Mesh provides the ability to configure a *VirtualDestination*, which is a v
 
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both the `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) under the names `mgmt-cluster` and `remote-cluster` respectively
-* The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* There are two clusters managed by Gloo Mesh named `cluster-1` and `cluster-2`. 
+* Istio is [installed on both client clusters]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* The `bookinfo` app is [installed across the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 * You have run through the guides for [Federated Trust and Identity]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) and [Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro/" %}}).
 
 {{% notice note %}}
@@ -30,40 +29,40 @@ Set the following variables in your environment:
 
 {{< tabs >}}
 {{< tab name="Definitions" codelang="shell">}}
-MGMT_CONTEXT=your_management_plane_context
-REMOTE_CONTEXT=your_remote_context
-MGMT_CLUSTER_NAME=your_management_cluster_name
-REMOTE_CLUSTER_NAME=your_remote_cluster_name
-MGMT_CLUSTER_NODE_NAME=your_management_cluster_node_name
-REMOTE_CLUSTER_NODE_NAME=your_remote_cluster_node_name
+CONTEXT_1=your_first_context
+CONTEXT_2=your_second_context
+CLUSTER_1_NAME=your_first_cluster_name
+CLUSTER_2_NAME=your_second_cluster_name
+CLUSTER_1_NODE_NAME=your_first_cluster_node_name
+CLUSTER_2_NODE_NAME=your_second_cluster_node_name
 {{< /tab >}}
 {{< tab name="Kind Demo example" codelang="shell">}}
-MGMT_CONTEXT=kind-mgmt-cluster
-REMOTE_CONTEXT=kind-remote-cluster
-MGMT_CLUSTER_NAME=mgmt-cluster
-REMOTE_CLUSTER_NAME=remote-cluster
-MGMT_CLUSTER_NODE_NAME=mgmt-cluster-control-plane
-REMOTE_CLUSTER_NODE_NAME=remote-cluster-control-plane
+CONTEXT_1=kind-cluster-1
+CONTEXT_2=kind-cluster-2
+CLUSTER_1_NAME=cluster-1
+CLUSTER_2_NAME=cluster-2
+CLUSTER_1_NODE_NAME=cluster-1-control-plane
+CLUSTER_2_NODE_NAME=cluster-2-control-plane
 {{< /tab >}}
 {{< /tabs >}}
 
 ## Configure the Region and Zone for the Nodes
 
-Gloo Mesh uses the configured [region and zone labels](https://v1-18.docs.kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#topologykubernetesioregion) on nodes to indicate locality for services. If you do not already have the region and zone labels set, you will need to do so now. In our example, we will set the `mgmt-cluster` node to use `us-east-1` for the region and `us-east-1a` for the zone. The `remote-cluster` node will be set to `us-east-2` and `us-east-2b` respectively. In a cloud-based deployment, these labels will typically be set by the cloud provider.
+Gloo Mesh uses the configured [region and zone labels](https://v1-18.docs.kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#topologykubernetesioregion) on nodes to indicate locality for services. If you do not already have the region and zone labels set, you will need to do so now. In our example, we will set the `cluster-1` node to use `us-east-1` for the region and `us-east-1a` for the zone. The `cluster-2` node will be set to `us-east-2` and `us-east-2b` respectively. In a cloud-based deployment, these labels will typically be set by the cloud provider.
 
 ```bash
-kubectl label node $MGMT_CLUSTER_NODE_NAME --context $MGMT_CONTEXT \
+kubectl label node $CLUSTER_1_NODE_NAME --context $CONTEXT_1 \
   topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
-kubectl label node $REMOTE_CLUSTER_NODE_NAME --context $REMOTE_CONTEXT \
+kubectl label node $CLUSTER_2_NODE_NAME --context $CONTEXT_2 \
   topology.kubernetes.io/region=us-east-2 topology.kubernetes.io/zone=us-east-2b
 ```
 
 ## Create the VirtualDestination
 
-Now we will create the VirtualDestination for the `reviews` service, composed of the reviews service on the `mgmt-cluster` cluster and on the `remote-cluster`. If the `reviews` service on the local (`mgmt-cluster`) cluster is unhealthy, requests will automatically be routed to the reviews service on the remote cluster.
+Now we will create the VirtualDestination for the `reviews` service, composed of the reviews services on both `cluster-1` and `cluster-2`. If the `reviews` service on the local (`cluster-1`) cluster is unhealthy, requests will automatically be routed to the reviews service on `cluster-2`.
 
-Apply the following config to the `mgmt-cluster` cluster:
+Apply the following config to `cluster-1`:
  
 {{< tabs >}}
 {{< tab name="YAML file" codelang="yaml">}}
@@ -157,7 +156,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-      - clusterName: mgmt-cluster
+      - clusterName: cluster-1
         name: reviews
         namespace: bookinfo
   policy:
@@ -178,7 +177,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-      - clusterName: mgmt-cluster
+      - clusterName: cluster-1
         name: reviews
         namespace: bookinfo
   policy:
@@ -199,7 +198,7 @@ kubectl -n bookinfo port-forward deployments/productpage-v1 9080
 
 Reloading the page a few times should show the "Book Reviews" section with either no stars (for requests routed to the `reviews-v1` pod) or black stars (for requests routed to the `reviews-v2` pod). This shows that the `productpage` is routing to the local service. This is the desired behavior. The product page requests are coming from the local cluster and being routed to a local destination.
 
-Recall from the [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) that `reviews-v1` and `reviews-v2` only exist on the `mgmt-cluster` and `reviews-v3` only exists on the `remote-cluster`, which we'll use to distinguish requests routing to either cluster.
+Recall from the [multicluster setup guide]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) that `reviews-v1` and `reviews-v2` only exist on `cluster-1`, and `reviews-v3` only exists on `cluster-2`, which we'll use to distinguish requests routing to either cluster.
 
 Now, to trigger the failover, we'll modify the `reviews-v1` and `reviews-v2` deployments to disable the web servers. 
 
@@ -210,7 +209,7 @@ kubectl -n bookinfo patch deploy reviews-v1 --patch '{"spec": {"template": {"spe
 kubectl -n bookinfo patch deploy reviews-v2 --patch '{"spec": {"template": {"spec": {"containers": [{"name": "reviews","command": ["sleep", "20h"]}]}}}}'
 ```
 
-Once the modified deployment has rolled out, refresh the `productpage` and you should see reviews with red stars, corresponding to `reviews-v3`, which only exists on `remote-cluster`, demonstrating that the requests are indeed failing locally, and so instead they are being routed to the remote instance.
+Once the modified deployment has rolled out, refresh the `productpage` and you should see reviews with red stars, corresponding to `reviews-v3`, which only exists on `cluster-2`, demonstrating that the requests are indeed failing locally, and so instead they are being routed to the remote instance.
 
 To restore the disabled `reviews-v1` and `reviews-v2`, run the following:
 
@@ -219,7 +218,7 @@ kubectl -n bookinfo patch deployment reviews-v1  --type json   -p '[{"op": "remo
 kubectl -n bookinfo patch deployment reviews-v2  --type json   -p '[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
 ```
 
-Once the deployment has rolled out, reloading the `productpage` should show reviews with no stars or black stars, indicating that our localized virtual destination is routing requests to the local service in the `mgmt-cluster`.
+Once the deployment has rolled out, reloading the `productpage` should show reviews with no stars or black stars, indicating that our localized virtual destination is routing requests to the local service in `cluster-1`.
 
 ## Next Steps
 

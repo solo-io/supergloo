@@ -43,6 +43,42 @@ type SettingsList struct {
 	Items           []Settings `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for Dashboard
+var DashboardGVK = schema.GroupVersionKind{
+	Group:   "settings.mesh.gloo.solo.io",
+	Version: "v1",
+	Kind:    "Dashboard",
+}
+
+// Dashboard is the Schema for the dashboard API
+type Dashboard struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   DashboardSpec   `json:"spec,omitempty"`
+	Status DashboardStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (Dashboard) GVK() schema.GroupVersionKind {
+	return DashboardGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DashboardList contains a list of Dashboard
+type DashboardList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Dashboard `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&Settings{}, &SettingsList{})
+	SchemeBuilder.Register(&Dashboard{}, &DashboardList{})
 }

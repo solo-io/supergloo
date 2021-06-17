@@ -155,7 +155,7 @@ func MakeDestinationRuleSubsetsForDestination(
 	destination *discoveryv1.Destination,
 	sourceCluster string,
 ) []*networkingv1alpha3spec.Subset {
-	subsets := makeDestinationRuleSubsets(destination.Status.GetRequiredSubsets())
+	subsets := MakeDestinationRuleSubsets(destination.Status.GetRequiredSubsets())
 
 	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated Destination,
 	// which contain all the matching subset names for the remote destination rule.
@@ -183,7 +183,7 @@ func MakeDestinationRuleSubsetsForDestination(
 func MakeDestinationRuleSubsetsForVirtualDestination(
 	virtualDestination *v1beta1.VirtualDestination,
 ) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(virtualDestination.Status.GetRequiredSubsets())
+	return MakeDestinationRuleSubsets(virtualDestination.Status.GetRequiredSubsets())
 }
 
 // used in DestinationRule translator as well
@@ -213,7 +213,7 @@ func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 	}
 }
 
-func makeDestinationRuleSubsets(
+func MakeDestinationRuleSubsets(
 	requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string

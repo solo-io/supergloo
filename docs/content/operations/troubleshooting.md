@@ -49,29 +49,29 @@ spec:
   destinationSelector:
     - kubeServiceRefs:
         services:
-        - clusterName: mgmt-cluster
+        - clusterName: cluster-1
           name: reviews
           namespace: bookinfo
-        - clusterName: remote-cluster
+        - clusterName: cluster-2
           name: reviews
           namespace: bookinfo
 status:
   observedGeneration: 1
   state: ACCEPTED
   destinations:
-    reviews-bookinfo-mgmt-cluster.gloo-mesh.:
+    reviews-bookinfo-cluster-1.gloo-mesh.:
       state: ACCEPTED
-    reviews-bookinfo-remote-cluster.gloo-mesh.:
+    reviews-bookinfo-cluster-2.gloo-mesh.:
       state: ACCEPTED
   workloads:
-  - istio-ingressgateway-istio-system-mgmt-cluster-deployment.gloo-mesh.
-  - istio-ingressgateway-istio-system-remote-cluster-deployment.gloo-mesh.
-  - productpage-v1-bookinfo-mgmt-cluster-deployment.gloo-mesh.
-  - ratings-v1-bookinfo-mgmt-cluster-deployment.gloo-mesh.
-  - ratings-v1-bookinfo-remote-cluster-deployment.gloo-mesh.
-  - reviews-v1-bookinfo-mgmt-cluster-deployment.gloo-mesh.
-  - reviews-v2-bookinfo-mgmt-cluster-deployment.gloo-mesh.
-  - reviews-v3-bookinfo-remote-cluster-deployment.gloo-mesh.
+  - istio-ingressgateway-istio-system-cluster-1-deployment.gloo-mesh.
+  - istio-ingressgateway-istio-system-cluster-2-deployment.gloo-mesh.
+  - productpage-v1-bookinfo-cluster-1-deployment.gloo-mesh.
+  - ratings-v1-bookinfo-cluster-1-deployment.gloo-mesh.
+  - ratings-v1-bookinfo-cluster-2-deployment.gloo-mesh.
+  - reviews-v1-bookinfo-cluster-1-deployment.gloo-mesh.
+  - reviews-v2-bookinfo-cluster-1-deployment.gloo-mesh.
+  - reviews-v3-bookinfo-cluster-2-deployment.gloo-mesh.
 ```
 
 **Observed generation:** 
@@ -129,16 +129,16 @@ When following the guides for multi-cluster and multi-mesh communication, the fo
 
 ##### Cluster shared identity failed
 
-You can check that the remote cluster is reachable, that it has the `gloo-mesh` namespace, that it has the `csr-agent` running successfully, and that a `VirtualMeshCertificateSigningRequest` has been created:
+You can check that the second cluster is reachable, that it has the `gloo-mesh` namespace, that it has the `csr-agent` running successfully, and that a `VirtualMeshCertificateSigningRequest` has been created:
 
 ```shell
-kubectl get virtualmeshcertificatesigningrequest -n gloo-mesh --context remote-cluster-context
+kubectl get virtualmeshcertificatesigningrequest -n gloo-mesh --context cluster-2-context
 ```
 
 If everything looks fine, ie the `status` field is in `ACCEPTED` state, make sure the Istio cacerts were created in the `istio-system-namespace`
 
 ```shell
-kubectl get secret -n istio-system cacerts --context remote-cluster-context
+kubectl get secret -n istio-system cacerts --context cluster-2-context
 ```
 
 {{% notice warning %}}
@@ -147,7 +147,7 @@ One thing to NOT overlook is the fact that Istio's control plane, `istiod` needs
 For example:
 
 ```shell
-kubectl --context remote-cluster-context delete pod -n istio-system -l app=istiod 
+kubectl --context cluster-2-context delete pod -n istio-system -l app=istiod 
 ```
 
 This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993)
@@ -178,7 +178,7 @@ If not, you can manually set up the DNS yourself. See the [customizing DNS for I
 
 ##### What if I'm managing Istio installations across clusters on a flat network?
 
-In a flat network environment, where pod IPs in one cluster are directly accessible via pods in another, you may wish to bypass the ingress gateways that typically mediate cross-cluster routing in a [multi-primary, multi-network deployment](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/). Gloo Mesh Enterprise users can leverage the [flat network flag]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" %}}) on the Virtual Mesh API to configure Gloo Mesh to federate services such that remote services are accessed directly without first passing through an ingress gateway.
+In a flat network environment, where pod IPs in one cluster are directly accessible via pods in another, you may wish to bypass the ingress gateways that typically mediate cross-cluster routing in a [multi-primary, multi-network deployment](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/). Gloo Mesh Enterprise users can leverage the [flat network flag]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" %}}) on the Virtual Mesh API to configure Gloo Mesh to federate services such that remote services are accessed directly without first passing through an ingress gateway.
 
 ##### What Istio versions are supported?
 

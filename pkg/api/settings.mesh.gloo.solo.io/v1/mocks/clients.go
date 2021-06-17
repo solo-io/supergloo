@@ -74,6 +74,20 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
+// Dashboards mocks base method.
+func (m *MockClientset) Dashboards() v1.DashboardClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Dashboards")
+	ret0, _ := ret[0].(v1.DashboardClient)
+	return ret0
+}
+
+// Dashboards indicates an expected call of Dashboards.
+func (mr *MockClientsetMockRecorder) Dashboards() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dashboards", reflect.TypeOf((*MockClientset)(nil).Dashboards))
+}
+
 // Settings mocks base method.
 func (m *MockClientset) Settings() v1.SettingsClient {
 	m.ctrl.T.Helper()
@@ -590,4 +604,508 @@ func (m *MockMulticlusterSettingsClient) Cluster(cluster string) (v1.SettingsCli
 func (mr *MockMulticlusterSettingsClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterSettingsClient)(nil).Cluster), cluster)
+}
+
+// MockDashboardReader is a mock of DashboardReader interface.
+type MockDashboardReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardReaderMockRecorder
+}
+
+// MockDashboardReaderMockRecorder is the mock recorder for MockDashboardReader.
+type MockDashboardReaderMockRecorder struct {
+	mock *MockDashboardReader
+}
+
+// NewMockDashboardReader creates a new mock instance.
+func NewMockDashboardReader(ctrl *gomock.Controller) *MockDashboardReader {
+	mock := &MockDashboardReader{ctrl: ctrl}
+	mock.recorder = &MockDashboardReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardReader) EXPECT() *MockDashboardReaderMockRecorder {
+	return m.recorder
+}
+
+// GetDashboard mocks base method.
+func (m *MockDashboardReader) GetDashboard(ctx context.Context, key client.ObjectKey) (*v1.Dashboard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDashboard", ctx, key)
+	ret0, _ := ret[0].(*v1.Dashboard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDashboard indicates an expected call of GetDashboard.
+func (mr *MockDashboardReaderMockRecorder) GetDashboard(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDashboard", reflect.TypeOf((*MockDashboardReader)(nil).GetDashboard), ctx, key)
+}
+
+// ListDashboard mocks base method.
+func (m *MockDashboardReader) ListDashboard(ctx context.Context, opts ...client.ListOption) (*v1.DashboardList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListDashboard", varargs...)
+	ret0, _ := ret[0].(*v1.DashboardList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListDashboard indicates an expected call of ListDashboard.
+func (mr *MockDashboardReaderMockRecorder) ListDashboard(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDashboard", reflect.TypeOf((*MockDashboardReader)(nil).ListDashboard), varargs...)
+}
+
+// MockDashboardWriter is a mock of DashboardWriter interface.
+type MockDashboardWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardWriterMockRecorder
+}
+
+// MockDashboardWriterMockRecorder is the mock recorder for MockDashboardWriter.
+type MockDashboardWriterMockRecorder struct {
+	mock *MockDashboardWriter
+}
+
+// NewMockDashboardWriter creates a new mock instance.
+func NewMockDashboardWriter(ctrl *gomock.Controller) *MockDashboardWriter {
+	mock := &MockDashboardWriter{ctrl: ctrl}
+	mock.recorder = &MockDashboardWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardWriter) EXPECT() *MockDashboardWriterMockRecorder {
+	return m.recorder
+}
+
+// CreateDashboard mocks base method.
+func (m *MockDashboardWriter) CreateDashboard(ctx context.Context, obj *v1.Dashboard, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateDashboard indicates an expected call of CreateDashboard.
+func (mr *MockDashboardWriterMockRecorder) CreateDashboard(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDashboard", reflect.TypeOf((*MockDashboardWriter)(nil).CreateDashboard), varargs...)
+}
+
+// DeleteAllOfDashboard mocks base method.
+func (m *MockDashboardWriter) DeleteAllOfDashboard(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfDashboard indicates an expected call of DeleteAllOfDashboard.
+func (mr *MockDashboardWriterMockRecorder) DeleteAllOfDashboard(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfDashboard", reflect.TypeOf((*MockDashboardWriter)(nil).DeleteAllOfDashboard), varargs...)
+}
+
+// DeleteDashboard mocks base method.
+func (m *MockDashboardWriter) DeleteDashboard(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDashboard indicates an expected call of DeleteDashboard.
+func (mr *MockDashboardWriterMockRecorder) DeleteDashboard(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDashboard", reflect.TypeOf((*MockDashboardWriter)(nil).DeleteDashboard), varargs...)
+}
+
+// PatchDashboard mocks base method.
+func (m *MockDashboardWriter) PatchDashboard(ctx context.Context, obj *v1.Dashboard, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchDashboard indicates an expected call of PatchDashboard.
+func (mr *MockDashboardWriterMockRecorder) PatchDashboard(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDashboard", reflect.TypeOf((*MockDashboardWriter)(nil).PatchDashboard), varargs...)
+}
+
+// UpdateDashboard mocks base method.
+func (m *MockDashboardWriter) UpdateDashboard(ctx context.Context, obj *v1.Dashboard, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDashboard indicates an expected call of UpdateDashboard.
+func (mr *MockDashboardWriterMockRecorder) UpdateDashboard(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDashboard", reflect.TypeOf((*MockDashboardWriter)(nil).UpdateDashboard), varargs...)
+}
+
+// UpsertDashboard mocks base method.
+func (m *MockDashboardWriter) UpsertDashboard(ctx context.Context, obj *v1.Dashboard, transitionFuncs ...v1.DashboardTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertDashboard indicates an expected call of UpsertDashboard.
+func (mr *MockDashboardWriterMockRecorder) UpsertDashboard(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDashboard", reflect.TypeOf((*MockDashboardWriter)(nil).UpsertDashboard), varargs...)
+}
+
+// MockDashboardStatusWriter is a mock of DashboardStatusWriter interface.
+type MockDashboardStatusWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardStatusWriterMockRecorder
+}
+
+// MockDashboardStatusWriterMockRecorder is the mock recorder for MockDashboardStatusWriter.
+type MockDashboardStatusWriterMockRecorder struct {
+	mock *MockDashboardStatusWriter
+}
+
+// NewMockDashboardStatusWriter creates a new mock instance.
+func NewMockDashboardStatusWriter(ctrl *gomock.Controller) *MockDashboardStatusWriter {
+	mock := &MockDashboardStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockDashboardStatusWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardStatusWriter) EXPECT() *MockDashboardStatusWriterMockRecorder {
+	return m.recorder
+}
+
+// PatchDashboardStatus mocks base method.
+func (m *MockDashboardStatusWriter) PatchDashboardStatus(ctx context.Context, obj *v1.Dashboard, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchDashboardStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchDashboardStatus indicates an expected call of PatchDashboardStatus.
+func (mr *MockDashboardStatusWriterMockRecorder) PatchDashboardStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDashboardStatus", reflect.TypeOf((*MockDashboardStatusWriter)(nil).PatchDashboardStatus), varargs...)
+}
+
+// UpdateDashboardStatus mocks base method.
+func (m *MockDashboardStatusWriter) UpdateDashboardStatus(ctx context.Context, obj *v1.Dashboard, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateDashboardStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDashboardStatus indicates an expected call of UpdateDashboardStatus.
+func (mr *MockDashboardStatusWriterMockRecorder) UpdateDashboardStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDashboardStatus", reflect.TypeOf((*MockDashboardStatusWriter)(nil).UpdateDashboardStatus), varargs...)
+}
+
+// MockDashboardClient is a mock of DashboardClient interface.
+type MockDashboardClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockDashboardClientMockRecorder
+}
+
+// MockDashboardClientMockRecorder is the mock recorder for MockDashboardClient.
+type MockDashboardClientMockRecorder struct {
+	mock *MockDashboardClient
+}
+
+// NewMockDashboardClient creates a new mock instance.
+func NewMockDashboardClient(ctrl *gomock.Controller) *MockDashboardClient {
+	mock := &MockDashboardClient{ctrl: ctrl}
+	mock.recorder = &MockDashboardClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDashboardClient) EXPECT() *MockDashboardClientMockRecorder {
+	return m.recorder
+}
+
+// CreateDashboard mocks base method.
+func (m *MockDashboardClient) CreateDashboard(ctx context.Context, obj *v1.Dashboard, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateDashboard indicates an expected call of CreateDashboard.
+func (mr *MockDashboardClientMockRecorder) CreateDashboard(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDashboard", reflect.TypeOf((*MockDashboardClient)(nil).CreateDashboard), varargs...)
+}
+
+// DeleteAllOfDashboard mocks base method.
+func (m *MockDashboardClient) DeleteAllOfDashboard(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfDashboard indicates an expected call of DeleteAllOfDashboard.
+func (mr *MockDashboardClientMockRecorder) DeleteAllOfDashboard(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfDashboard", reflect.TypeOf((*MockDashboardClient)(nil).DeleteAllOfDashboard), varargs...)
+}
+
+// DeleteDashboard mocks base method.
+func (m *MockDashboardClient) DeleteDashboard(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDashboard indicates an expected call of DeleteDashboard.
+func (mr *MockDashboardClientMockRecorder) DeleteDashboard(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDashboard", reflect.TypeOf((*MockDashboardClient)(nil).DeleteDashboard), varargs...)
+}
+
+// GetDashboard mocks base method.
+func (m *MockDashboardClient) GetDashboard(ctx context.Context, key client.ObjectKey) (*v1.Dashboard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDashboard", ctx, key)
+	ret0, _ := ret[0].(*v1.Dashboard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDashboard indicates an expected call of GetDashboard.
+func (mr *MockDashboardClientMockRecorder) GetDashboard(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDashboard", reflect.TypeOf((*MockDashboardClient)(nil).GetDashboard), ctx, key)
+}
+
+// ListDashboard mocks base method.
+func (m *MockDashboardClient) ListDashboard(ctx context.Context, opts ...client.ListOption) (*v1.DashboardList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListDashboard", varargs...)
+	ret0, _ := ret[0].(*v1.DashboardList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListDashboard indicates an expected call of ListDashboard.
+func (mr *MockDashboardClientMockRecorder) ListDashboard(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDashboard", reflect.TypeOf((*MockDashboardClient)(nil).ListDashboard), varargs...)
+}
+
+// PatchDashboard mocks base method.
+func (m *MockDashboardClient) PatchDashboard(ctx context.Context, obj *v1.Dashboard, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchDashboard indicates an expected call of PatchDashboard.
+func (mr *MockDashboardClientMockRecorder) PatchDashboard(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDashboard", reflect.TypeOf((*MockDashboardClient)(nil).PatchDashboard), varargs...)
+}
+
+// PatchDashboardStatus mocks base method.
+func (m *MockDashboardClient) PatchDashboardStatus(ctx context.Context, obj *v1.Dashboard, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchDashboardStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchDashboardStatus indicates an expected call of PatchDashboardStatus.
+func (mr *MockDashboardClientMockRecorder) PatchDashboardStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDashboardStatus", reflect.TypeOf((*MockDashboardClient)(nil).PatchDashboardStatus), varargs...)
+}
+
+// UpdateDashboard mocks base method.
+func (m *MockDashboardClient) UpdateDashboard(ctx context.Context, obj *v1.Dashboard, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDashboard indicates an expected call of UpdateDashboard.
+func (mr *MockDashboardClientMockRecorder) UpdateDashboard(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDashboard", reflect.TypeOf((*MockDashboardClient)(nil).UpdateDashboard), varargs...)
+}
+
+// UpdateDashboardStatus mocks base method.
+func (m *MockDashboardClient) UpdateDashboardStatus(ctx context.Context, obj *v1.Dashboard, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateDashboardStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDashboardStatus indicates an expected call of UpdateDashboardStatus.
+func (mr *MockDashboardClientMockRecorder) UpdateDashboardStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDashboardStatus", reflect.TypeOf((*MockDashboardClient)(nil).UpdateDashboardStatus), varargs...)
+}
+
+// UpsertDashboard mocks base method.
+func (m *MockDashboardClient) UpsertDashboard(ctx context.Context, obj *v1.Dashboard, transitionFuncs ...v1.DashboardTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertDashboard", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertDashboard indicates an expected call of UpsertDashboard.
+func (mr *MockDashboardClientMockRecorder) UpsertDashboard(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDashboard", reflect.TypeOf((*MockDashboardClient)(nil).UpsertDashboard), varargs...)
+}
+
+// MockMulticlusterDashboardClient is a mock of MulticlusterDashboardClient interface.
+type MockMulticlusterDashboardClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterDashboardClientMockRecorder
+}
+
+// MockMulticlusterDashboardClientMockRecorder is the mock recorder for MockMulticlusterDashboardClient.
+type MockMulticlusterDashboardClientMockRecorder struct {
+	mock *MockMulticlusterDashboardClient
+}
+
+// NewMockMulticlusterDashboardClient creates a new mock instance.
+func NewMockMulticlusterDashboardClient(ctrl *gomock.Controller) *MockMulticlusterDashboardClient {
+	mock := &MockMulticlusterDashboardClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterDashboardClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterDashboardClient) EXPECT() *MockMulticlusterDashboardClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterDashboardClient) Cluster(cluster string) (v1.DashboardClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.DashboardClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterDashboardClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterDashboardClient)(nil).Cluster), cluster)
 }

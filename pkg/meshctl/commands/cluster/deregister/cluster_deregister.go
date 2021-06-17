@@ -32,6 +32,10 @@ points then it an be provided via the --mgmt-context flag.`,
 		PersistentPreRun: func(*cobra.Command, []string) {
 			opts.Verbose = globalFlags.Verbose
 		},
+		PersistentPostRun: func(*cobra.Command, []string) {
+			utils.UpdateMeshctlConfigWithDeregistrationInfo(opts.MgmtKubeConfigPath, opts.MgmtContext,
+				opts.ClusterName, opts.KubeConfigPath)
+		},
 	}
 
 	cmd.AddCommand(
@@ -51,7 +55,8 @@ type options registration.Options
 func (o *options) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&o.KubeConfigPath, "kubeconfig", "", "path to the kubeconfig from which the registered cluster will be accessed")
 	set.StringVar(&o.MgmtContext, "mgmt-context", "", "name of the kubeconfig context to use for the management cluster")
-	set.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "", "path to the kubeconfig context to use for the management cluster (defaults to ~/.kube/config)")
+	set.StringVar(&o.MgmtKubeConfigPath, "mgmt-kubeconfig", "",
+		"path to the kubeconfig file to use for the management cluster if different from control plane kubeconfig file location")
 	set.StringVar(&o.RemoteContext, "remote-context", "", "name of the kubeconfig context to use for the remote cluster")
 	set.StringVar(&o.ClusterName, "cluster-name", "", "name of the cluster to deregister")
 	set.StringVar(&o.MgmtNamespace, "mgmt-namespace", defaults.DefaultPodNamespace, "namespace of the Gloo Mesh control plane in which the secret for the deregistered cluster will be created")

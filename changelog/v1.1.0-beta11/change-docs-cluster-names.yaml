@@ -1,0 +1,7 @@
+changelog:
+  - type: UPGRADE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1452
+    description: >
+      Rename most instances of 'mgmt' and 'remote' contexts and clusters in docs to 1 and 2.
+      The few exceptions that remain are for contexts where the distinction matters, and for
+      values produced from meshctl, which still uses 'mgmt' and 'remote' and its default naming.

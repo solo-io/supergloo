@@ -7,6 +7,10 @@ option (extproto.equal_all) = true;
 
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 
 // Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
 message SettingsSpec {
@@ -24,7 +28,6 @@ message SettingsSpec {
 
     // Enable and configure use of Relay mode to communicate with remote clusters. This is an enterprise-only feature.
     RelaySettings relay = 4;
-
 }
 
 // RelaySettings contains options for configuring Gloo Mesh to use Relay for cluster management.
@@ -66,6 +69,9 @@ message DiscoverySettings {
     // Istio-specific discovery settings
     message Istio {
 
+        // DEPRECATED: all externally addressable destinations are captured in the Destination CRD, and
+        // the VirtualMesh and VirtualGateway enables selecting specific Destinations to act as ingress gateways.
+        //
         // Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or
         // `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
         // wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values.

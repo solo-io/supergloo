@@ -204,10 +204,7 @@ func (t *translator) initializeDestinationRule(
 		Spec: networkingv1alpha3spec.DestinationRule{
 			Host:          hostname,
 			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
-			Subsets: routeutils.MakeDestinationRuleSubsetsForDestination(
-				destination,
-				sourceMeshInstallation.GetCluster(),
-			),
+			Subsets:       routeutils.MakeDestinationRuleSubsets(destination.Status.GetRequiredSubsets()),
 		},
 	}
 

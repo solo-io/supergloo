@@ -396,7 +396,7 @@ Next We'll set up a Traffic Shifting rule which will force all traffic to the "r
 
 ## Configuring a Traffic Policy
 
-Let's create a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy//">}}) CR to instruct
+Let's create a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy//">}}) CR to instruct
 Gloo Mesh to direct all traffic to the `reviews-v3` version of the reviews service:
 
 
