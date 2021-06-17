@@ -178,7 +178,7 @@ If not, you can manually set up the DNS yourself. See the [customizing DNS for I
 
 ##### What if I'm managing Istio installations across clusters on a flat network?
 
-In a flat network environment, where pod IPs in one cluster are directly accessible via pods in another, you may wish to bypass the ingress gateways that typically mediate cross-cluster routing in a [multi-primary, multi-network deployment](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/). Gloo Mesh Enterprise users can leverage the [flat network flag]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" %}}) on the Virtual Mesh API to configure Gloo Mesh to federate services such that remote services are accessed directly without first passing through an ingress gateway.
+In a flat network environment, where pod IPs in one cluster are directly accessible via pods in another, you may wish to bypass the ingress gateways that typically mediate cross-cluster routing in a [multi-primary, multi-network deployment](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/). Gloo Mesh Enterprise users can leverage the [flat network flag]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" %}}) on the Virtual Mesh API to configure Gloo Mesh to federate services such that remote services are accessed directly without first passing through an ingress gateway.
 
 ##### What Istio versions are supported?
 

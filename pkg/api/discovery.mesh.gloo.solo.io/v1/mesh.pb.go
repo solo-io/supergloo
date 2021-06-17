@@ -831,7 +831,7 @@ func (*MeshSpec_Istio_IngressGatewayInfo_DnsName) isMeshSpec_Istio_IngressGatewa
 func (*MeshSpec_Istio_IngressGatewayInfo_Ip) isMeshSpec_Istio_IngressGatewayInfo_ExternalAddressType() {
 }
 
-// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
+// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
 // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 type MeshStatus_AppliedVirtualMesh struct {
 	state         protoimpl.MessageState
