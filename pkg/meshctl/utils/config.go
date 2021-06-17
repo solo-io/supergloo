@@ -55,7 +55,10 @@ func (c MeshctlConfig) IsMgmtCluster(name string) bool {
 }
 
 // add the management cluster config
-// returns the path of the file storing the config
+func (c MeshctlConfig) AddMgmtCluster(kc MeshctlCluster) {
+	c.Clusters[managementPlane] = kc
+}
+
 // add a data plane cluster config
 func (c MeshctlConfig) AddDataPlaneCluster(name string, kc MeshctlCluster) error {
 	if name == managementPlane {

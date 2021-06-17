@@ -158,20 +158,6 @@ func configureInteractive(meshctlConfigPath string) error {
 		}
 	}
 
-	return writeConfigToFile(config, meshctlConfigPath)
-}
-
-func writeConfigToFile(config utils.MeshctlConfig, meshctlConfigPath string) error {
-	bytes, err := yaml.Marshal(&config)
-	if err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(meshctlConfigPath, bytes, 0644); err != nil {
-		return err
-	}
-
-	fmt.Printf("Done! Please see your configured meshctl config file at %s\n", meshctlConfigPath)
-	return err
 	err = utils.WriteConfigToFile(config, meshctlConfigPath)
 	if err != nil {
 		return err

@@ -10,6 +10,7 @@ import (
 	reflect "reflect"
 	sync "sync"
 
+	proto "github.com/golang/protobuf/proto"
 	_ "github.com/golang/protobuf/ptypes/wrappers"
 	v11 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
@@ -24,6 +25,10 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+// This is a compile-time assertion that a sufficiently up-to-date version
+// of the legacy proto package is being used.
+const _ = proto.ProtoPackageIsVersion4
 
 // Describes the Kubernetes Service type.
 type DestinationSpec_KubeService_ServiceType int32
