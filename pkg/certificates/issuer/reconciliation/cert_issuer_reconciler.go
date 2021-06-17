@@ -40,7 +40,12 @@ func Start(
 	translator translation.Translator,
 ) error {
 
-	reconcileFunc := NewCertificateRequestReconciler(ctx, builder, syncInputStatuses, translator)
+	reconcileFunc := NewCertificateRequestReconciler(
+		contextutils.WithLogger(ctx, "cert-issuer"),
+		builder,
+		syncInputStatuses,
+		translator,
+	)
 	return registerReconciler(ctx, reconcileFunc, time.Second/2)
 }
 
