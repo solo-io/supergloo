@@ -57,6 +57,42 @@ message DestinationSpec {
         // This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
         repeated EndpointsSubset endpoint_subsets = 7;
 
+        // Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
+        repeated ExternalAddress external_addresses = 8;
+
+        // Describes the Kubernetes Service type.
+        ServiceType service_type = 9;
+
+        // Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
+        message ExternalAddress {
+
+            // The externally-reachable address for this Kubernetes Service, either an IP address or DNS name.
+            oneof external_address_type {
+
+                // An externally accessible DNS name.
+                string dns_name = 5;
+
+                // An externally accessible IP address.
+                string ip = 6;
+            }
+        }
+
+        // Describes the Kubernetes Service type.
+        enum ServiceType {
+
+            // A ClusterIP Service.
+            CLUSTER_IP = 0;
+
+            // A NodePort Service.
+            NODE_PORT = 1;
+
+            // A LoadBalancer Service.
+            LOAD_BALANCER = 2;
+
+            // An ExternalName Service.
+            EXTERNAL_NAME = 3;
+        }
+
         // Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services) for more information.
         message KubeServicePort {
 
@@ -79,6 +115,9 @@ message DestinationSpec {
                 // Number of the target port
                 uint32 target_port_number = 6;
             }
+
+            // Populated for NodePort or LoadBalancer Services.
+            uint32 node_port = 7;
         }
 
         // Subsets for routing, based on labels.
@@ -207,7 +246,7 @@ message DestinationStatus {
     // The set of TrafficPolicy traffic shifts that reference subsets on this Destination.
     repeated RequiredSubsets required_subsets = 7;
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination.
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination.
     // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
     message AppliedTrafficPolicy {
 
@@ -221,7 +260,7 @@ message DestinationStatus {
         .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
     }
 
-    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}})
     // that applies to this Destination.
     // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
     message AppliedAccessPolicy {
@@ -236,7 +275,7 @@ message DestinationStatus {
         .networking.mesh.gloo.solo.io.AccessPolicySpec spec = 3;
     }
 
-    // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+    // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}).
     // Federation allows access to the Destination from other meshes/clusters.
     message AppliedFederation {
 
@@ -251,7 +290,7 @@ message DestinationStatus {
         repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
 
         // Whether the Destination has been federated to the given meshes using a VirtualMesh where
-        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}})
         // is true.
         bool flat_network = 3;
 
@@ -259,7 +298,7 @@ message DestinationStatus {
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
     }
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}})
     // that references subsets on this Destination in a traffic shift.
     // Note: this is an Istio-specific feature.
     message RequiredSubsets {

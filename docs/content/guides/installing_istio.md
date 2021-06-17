@@ -40,14 +40,14 @@ For following some of the Gloo Mesh guides, we assume two clusters with Istio in
 
 We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
-Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-mgmt-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
+Let's install Istio into **both** clusters. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-cluster-1` and `kind-cluster-2`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
 The manifest for Istio 1.7 is different from other versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3, 1.8.3, and 1.9.0.
 
 Before running the following, make sure your context names are set as environment variables:
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-REMOTE_CONTEXT=your_remote_context
+MGMT_CONTEXT=your_context_with_gloo_mesh_installed
+REMOTE_CONTEXT=your_other_context
 ```
 
 #### Management plane install
@@ -252,7 +252,7 @@ EOF
 {{< /tab >}}
 {{< /tabs >}}
 
-With Gloo Mesh and Istio installed into the `mgmt-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
+With Gloo Mesh and Istio installed into `cluster-1`, and Istio installed into `cluster-2`, we have an architecture that looks like this:
 
 ![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-2clusters.png" %}})
 

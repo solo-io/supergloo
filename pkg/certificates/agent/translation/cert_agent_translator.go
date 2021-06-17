@@ -86,6 +86,15 @@ type Translator interface {
 		inputs input.Snapshot,
 		outputs certagent.Builder,
 	) error
+
+	// This function is called when the IssuedCertiticate has been FINISHED, this means that the
+	// Cert has been issued, and the pod bounce directive has completed.
+	IssuedCertificateFinished(
+		ctx context.Context,
+		issuedCertificate *certificatesv1.IssuedCertificate,
+		inputs input.Snapshot,
+		outputs certagent.Builder,
+	) error
 }
 
 func NewCertAgentTranslator() Translator {
@@ -213,5 +222,26 @@ func (c *certAgentTranslator) IssuedCertificateIssued(
 		// add secret output to prevent it from being GC'ed
 		outputs.AddSecrets(issuedCertificateSecret)
 	}
+	return nil
+}
+
+func (c *certAgentTranslator) IssuedCertificateFinished(
+	ctx context.Context,
+	issuedCertificate *certificatesv1.IssuedCertificate,
+	inputs input.Snapshot,
+	outputs certagent.Builder,
+) error {
+	// Search for the issued certificate secret, so it can be readded to the output snap
+	issuedCertificateSecret, err := inputs.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret)
+	if err != nil {
+		// If it can't be found, return that error
+		return eris.Wrapf(
+			err,
+			"could not find issued cert secret (%s), restarting workflow",
+			sets.Key(issuedCertificate.Spec.IssuedCertificateSecret),
+		)
+	}
+	// Add the issuedCert to the output
+	outputs.AddSecrets(issuedCertificateSecret)
 	return nil
 }

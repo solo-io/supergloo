@@ -44,3 +44,31 @@ func SettingsClientFromConfigFactoryProvider() SettingsClientFromConfigFactory {
 		return clients.Settings(), nil
 	}
 }
+
+// Provider for DashboardClient from Clientset
+func DashboardClientFromClientsetProvider(clients settings_mesh_gloo_solo_io_v1.Clientset) settings_mesh_gloo_solo_io_v1.DashboardClient {
+	return clients.Dashboards()
+}
+
+// Provider for Dashboard Client from Client
+func DashboardClientProvider(client client.Client) settings_mesh_gloo_solo_io_v1.DashboardClient {
+	return settings_mesh_gloo_solo_io_v1.NewDashboardClient(client)
+}
+
+type DashboardClientFactory func(client client.Client) settings_mesh_gloo_solo_io_v1.DashboardClient
+
+func DashboardClientFactoryProvider() DashboardClientFactory {
+	return DashboardClientProvider
+}
+
+type DashboardClientFromConfigFactory func(cfg *rest.Config) (settings_mesh_gloo_solo_io_v1.DashboardClient, error)
+
+func DashboardClientFromConfigFactoryProvider() DashboardClientFromConfigFactory {
+	return func(cfg *rest.Config) (settings_mesh_gloo_solo_io_v1.DashboardClient, error) {
+		clients, err := settings_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.Dashboards(), nil
+	}
+}

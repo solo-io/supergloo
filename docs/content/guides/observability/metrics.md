@@ -15,15 +15,10 @@ This guide describes how to get started with Gloo Mesh Enterprise's out of the b
 
 This guide assumes the following:
 
-* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Istio is [installed on both `cluster-1` and `cluster-2`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
     * Istio is configured according to what's described in "Environment Prerequisites" below
     * `istio-system` is the root namespace for both Istio deployments
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}}) under the `bookinfo` namespace
-* the following environment variables are set:
-    ```shell
-    MGMT_CONTEXT=your_management_plane_context
-    REMOTE_CONTEXT=your_remote_context
-    ```
 
 ## Environment Prerequisites
 
@@ -68,11 +63,40 @@ the following argument to `Helm install`, `--set metricsBackend.prometheus.enabl
 This configures Gloo Mesh to install a Prometheus server which comes preconfigured to scrape the centralized metrics from the Enterprise Networking
 metrics endpoint.
 
-After installation of the Gloo Mesh management plane, you should see the following deployments:
+After installation of the Gloo Mesh management plane into `cluster-1`, you should see the following deployments:
 
 ```shell
 gloo-mesh      enterprise-networking-69d74c9744-8nlkd               1/1     Running   0          23m
 gloo-mesh      prometheus-server-68b58c79f8-rlq54                   2/2     Running   0          23m
+```
+
+#### OpenShift Integration
+
+If you are installing Gloo Mesh Enterprise on an [OpenShift](https://www.openshift.com/) cluster, you will need some additional helm values to make Prometheus run, as Openshift will require a user ID:
+
+ - `gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true`
+ - `enterprise-networking.prometheus.server.securityContext.runAsUser=$OPENSHIFT_ID`
+ - `enterprise-networking.prometheus.server.securityContext.runAsGroup=$OPENSHIFT_ID`
+ - `enterprise-networking.prometheus.server.securityContext.fsGroup=$OPENSHIFT_ID`
+ 
+ Where `$OPENSHIFT_ID` is a single valid ID from the range that OpenShift has assigned to your intended Gloo Mesh Enterprise namespace. The valid ID range can be found by examining your namespace's metadata:
+ 
+ ```shell 
+% MESH_NAMESPACE='gloo-mesh' # Replace with your namespace if are installing Gloo Mesh Enterprise elsewhere.
+% kubectl get ns $MESH_NAMESPACE -ojsonpath='{.metadata.annotations}' 
+map[openshift.io/sa.scc.mcs: s0:c27,c9 openshift.io/sa.scc.supplemental-groups: 1000720000/10000 openshift.io/sa.scc.uid-range: 1000720000/10000]
+```
+
+The range syntax is N through N + M - 1 inclusive, given the format N/M. So in this case, the valid ID range would be 1000720000 through 1000729999. Select a number from this range to be your ID. Assuming the number`1000720000` is a valid option, an example installation command would look like this: 
+
+```shell 
+% OPENSHIFT_ID=1000720000
+% helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh   --set licenseKey=${GLOO_MESH_LICENSE_KEY}  \
+--set enterprise-networking.metricsBackend.prometheus.enabled=true \
+--set gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true \
+--set enterprise-networking.prometheus.server.securityContext.runAsUser=$OPENSHIFT_ID \
+--set enterprise-networking.prometheus.server.securityContext.runAsGroup=$OPENSHIFT_ID \
+--set enterprise-networking.prometheus.server.securityContext.fsGroup=$OPENSHIFT_ID
 ```
 
 ## Functionality
@@ -125,13 +149,13 @@ kubectl -n gloo-mesh port-forward deploy/prometheus-server 9090
 Then open `localhost:9090` in your browser of choice. 
 Here is a simple promql query to get you started with navigating the collected metrics.
 This query fetches the `istio_requests_total` metric (which counts the total number of requests) emitted by the
-`productpage-v1.bookinfo.mgmt-cluster` workload's Envoy proxy. You can read more about PromQL in the [official documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+`productpage-v1.bookinfo.cluster-1` workload's Envoy proxy. You can read more about PromQL in the [official documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/).
 
 ```promql
 sum(
   increase(
     istio_requests_total{
-      gm_workload_ref="productpage-v1.bookinfo.mgmt-cluster",
+      gm_workload_ref="productpage-v1.bookinfo.cluster-1",
     }[2m]
   )
 ) by (
@@ -163,7 +187,7 @@ curl -XPOST --data '{
         "workloadRef": {
           "name": "productpage-v1",
           "namespace": "bookinfo",
-          "clusterName": "mgmt-cluster"
+          "clusterName": "cluster-1"
 
       }
     }
@@ -182,14 +206,14 @@ curl -XPOST --data '{
            "workloadRef":{
               "name":"productpage-v1",
               "namespace":"bookinfo",
-              "clusterName":"mgmt-cluster"
+              "clusterName":"cluster-1"
            }
          },
          "target": {
            "workloadRef":{
              "name":"details-v1",
              "namespace":"bookinfo",
-             "clusterName":"mgmt-cluster"
+             "clusterName":"cluster-1"
            }
          }
       }

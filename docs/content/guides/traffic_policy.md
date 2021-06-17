@@ -22,9 +22,9 @@ In this guide we will examine how Gloo Mesh can configure Istio to apply retry a
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* Istio is [installed on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* The management cluster is [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Gloo Mesh is [installed and running on `cluster-1`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
+* Istio is [installed on the `cluster-1`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* `cluster-1` is also [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}), making it both the management cluster and a managed cluster.
 
 
 {{% notice note %}}
@@ -38,7 +38,7 @@ First we are going to deploy the Pet Store application to the management cluster
 Ensure that your `kubeconfig` has the management cluster set as its current context:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
+MGMT_CONTEXT=your_management_plane_context (in this case cluster-1's context)
 kubectl config use-context $MGMT_CONTEXT
 ```
 
@@ -97,9 +97,8 @@ kubectl get workloads -n gloo-mesh
 
 ```shell
 NAME                                                              AGE
-istio-ingressgateway-istio-system-mgmt-cluster-deployment         3h4m
-istio-ingressgateway-istio-system-remote-cluster-deployment       3h4m
-petstore-default-mgmt-cluster-deployment                          3h4m
+istio-ingressgateway-istio-system-cluster-1-deployment            3h4m
+petstore-default-cluster-1-deployment                             3h4m
 ```
 
 If you've also deployed the Bookstore application, you may see entries for that as well. We can see the naming for the Pet Store application is the deployment name, followed by the namespace, and then the cluster name. We can also check for the *Destination*, which represents the service associated with the pods in the Workload resource.
@@ -110,12 +109,11 @@ kubectl get destination -n gloo-mesh
 
 ```shell
 NAME                                                   AGE
-istio-ingressgateway-istio-system-mgmt-cluster         3h7m
-istio-ingressgateway-istio-system-remote-cluster       3h6m
-petstore-default-mgmt-cluster                          3h7m
+istio-ingressgateway-istio-system-cluster-1            3h7m
+petstore-default-cluster-1                             3h7m
 ```
 
-We are going to create a TrafficPolicy that uses the `petstore-default-mgmt-cluster` as a Destination. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for [TrafficPolicy in the API reference section]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}).
+We are going to create a TrafficPolicy that uses the `petstore-default-cluster-1` as a Destination. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for [TrafficPolicy in the API reference section]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" %}}).
 
 Here is the configuration we will apply:
 
@@ -130,7 +128,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-      - clusterName: mgmt-cluster
+      - clusterName: cluster-1
         name: petstore
         namespace: default
   policy:
@@ -150,7 +148,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-      - clusterName: mgmt-cluster
+      - clusterName: cluster-1
         name: petstore
         namespace: default
   policy:
@@ -178,11 +176,11 @@ metadata:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"service":"petstore"},"name":"petstore","namespace":"default"},"spec":{"ports":[{"port":8080,"protocol":"TCP"}],"selector":{"app":"petstore"}}}
     parents.networking.mesh.gloo.solo.io: '{"discovery.mesh.gloo.solo.io/v1,
-      Kind=Destination":[{"name":"petstore-default-mgmt-cluster","namespace":"gloo-mesh"}]}'
+      Kind=Destination":[{"name":"petstore-default-cluster-1","namespace":"gloo-mesh"}]}'
   creationTimestamp: "2020-12-16T20:39:22Z"
   generation: 1
   labels:
-    cluster.multicluster.solo.io: mgmt-cluster
+    cluster.multicluster.solo.io: cluster-1
     owner.networking.mesh.gloo.solo.io: gloo-mesh
   name: petstore
   namespace: default
@@ -202,8 +200,72 @@ spec:
     timeout: 0.100s
 ```
 
-As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Gloo Mesh TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}) in our API provides more information on using traffic policies.
+As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Gloo Mesh TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" %}}) in our API provides more information on using traffic policies.
+
+## Configuring a Default Route
+
+Consider the following TrafficPolicy that specifies a request matcher (note that in our environment `petstore-test`
+does not actually exist, but we reference it here for illustration purposes):
+
+```yaml
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: petstore-canary
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: cluster-1
+        name: petstore
+        namespace: default
+  httpRequestMatchers:
+  - headers:
+    - name: version
+      value: test
+  policy:
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: cluster-1
+            name: petstore-test
+            namespace: default
+```
+
+This will generate an Istio VirtualService that routes any requests with the header `version: test` to the `petstore-test` service.
+**Any requests that do not have that header will, by default, will return a 404.**
+
+This behavior may be suitable in certain situations, but in other scenarios you may also want
+to route all non-matching requests to the original intended destination. This is a common pattern for canary
+deployments, where a portion of the overall traffic gets routed to a canary deployment based on certain request
+properties (i.e. headers), and all other traffic proceeds as normal to the original intended destination.
+
+To declare a default fallback route for all non-matching requests, you must create an additional
+TrafficPolicy with no request matcher and a traffic shift to the selected destination:
+
+```yaml
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: petstore-default
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: cluster-1
+        name: petstore
+        namespace: default
+  policy:
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: cluster-1
+            name: petstore
+            namespace: default
+```
 
 ## Next Steps
 
-Now that we have seen a simple example of how Gloo Mesh can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
+Now that we have seen a simple example of how Gloo Mesh can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).

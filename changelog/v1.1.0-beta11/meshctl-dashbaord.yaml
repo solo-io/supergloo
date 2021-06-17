@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Honor the kubeconfig flag in the meshctl dashboard command.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1616

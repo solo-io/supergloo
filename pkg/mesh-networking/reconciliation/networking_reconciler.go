@@ -108,6 +108,8 @@ func Start(
 	watchOutputTypes bool,
 ) error {
 
+	ctx = contextutils.WithLogger(ctx, "networking-reconciler")
+
 	remoteResourceVerifier := buildRemoteResourceVerifier(ctx)
 
 	r := &networkingReconciler{

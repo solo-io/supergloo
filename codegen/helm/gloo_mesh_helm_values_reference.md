@@ -37,7 +37,7 @@ weight: 2
 |watchOutputTypes|bool|true|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|9091|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |verbose|bool|false|If true, enables verbose/debug logging.|
-|discovery|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"ClusterIP","ports":{"metrics":9091},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the discovery deployment.|
+|discovery|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"ClusterIP","ports":{"metrics":9091},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the discovery deployment.|
 |discovery.image|struct|{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |discovery.image.tag|string| |Tag for the container.|
 |discovery.image.repository|string|gloo-mesh|Image name (repository).|
@@ -50,7 +50,20 @@ weight: 2
 |discovery.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |discovery.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
 |discovery.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
-|networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"","ports":{},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the networking deployment.|
+|discovery.customPodLabels|map[string, string]| |Custom labels for the pod|
+|discovery.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
+|discovery.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
+|discovery.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
+|discovery.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
+|discovery.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
+|discovery.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
+|discovery.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
+|discovery.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
+|discovery.customServiceLabels|map[string, string]| |Custom labels for the service|
+|discovery.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
+|discovery.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
+|discovery.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
+|networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"","ports":{},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the networking deployment.|
 |networking.image|struct|{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |networking.image.tag|string| |Tag for the container.|
 |networking.image.repository|string|gloo-mesh|Image name (repository).|
@@ -62,3 +75,16 @@ weight: 2
 |networking.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |networking.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |networking.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|networking.customPodLabels|map[string, string]| |Custom labels for the pod|
+|networking.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
+|networking.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
+|networking.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
+|networking.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
+|networking.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
+|networking.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
+|networking.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
+|networking.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
+|networking.customServiceLabels|map[string, string]| |Custom labels for the service|
+|networking.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
+|networking.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
+|networking.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|

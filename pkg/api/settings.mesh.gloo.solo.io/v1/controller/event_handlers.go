@@ -123,3 +123,110 @@ func (h genericSettingsHandler) Generic(object client.Object) error {
 	}
 	return h.handler.GenericSettings(obj)
 }
+
+// Handle events for the Dashboard Resource
+// DEPRECATED: Prefer reconciler pattern.
+type DashboardEventHandler interface {
+	CreateDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+	UpdateDashboard(old, new *settings_mesh_gloo_solo_io_v1.Dashboard) error
+	DeleteDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+	GenericDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+}
+
+type DashboardEventHandlerFuncs struct {
+	OnCreate  func(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+	OnUpdate  func(old, new *settings_mesh_gloo_solo_io_v1.Dashboard) error
+	OnDelete  func(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+	OnGeneric func(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error
+}
+
+func (f *DashboardEventHandlerFuncs) CreateDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *DashboardEventHandlerFuncs) DeleteDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *DashboardEventHandlerFuncs) UpdateDashboard(objOld, objNew *settings_mesh_gloo_solo_io_v1.Dashboard) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *DashboardEventHandlerFuncs) GenericDashboard(obj *settings_mesh_gloo_solo_io_v1.Dashboard) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type DashboardEventWatcher interface {
+	AddEventHandler(ctx context.Context, h DashboardEventHandler, predicates ...predicate.Predicate) error
+}
+
+type dashboardEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewDashboardEventWatcher(name string, mgr manager.Manager) DashboardEventWatcher {
+	return &dashboardEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &settings_mesh_gloo_solo_io_v1.Dashboard{}),
+	}
+}
+
+func (c *dashboardEventWatcher) AddEventHandler(ctx context.Context, h DashboardEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericDashboardHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericDashboardHandler implements a generic events.EventHandler
+type genericDashboardHandler struct {
+	handler DashboardEventHandler
+}
+
+func (h genericDashboardHandler) Create(object client.Object) error {
+	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return errors.Errorf("internal error: Dashboard handler received event for %T", object)
+	}
+	return h.handler.CreateDashboard(obj)
+}
+
+func (h genericDashboardHandler) Delete(object client.Object) error {
+	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return errors.Errorf("internal error: Dashboard handler received event for %T", object)
+	}
+	return h.handler.DeleteDashboard(obj)
+}
+
+func (h genericDashboardHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return errors.Errorf("internal error: Dashboard handler received event for %T", old)
+	}
+	objNew, ok := new.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return errors.Errorf("internal error: Dashboard handler received event for %T", new)
+	}
+	return h.handler.UpdateDashboard(objOld, objNew)
+}
+
+func (h genericDashboardHandler) Generic(object client.Object) error {
+	obj, ok := object.(*settings_mesh_gloo_solo_io_v1.Dashboard)
+	if !ok {
+		return errors.Errorf("internal error: Dashboard handler received event for %T", object)
+	}
+	return h.handler.GenericDashboard(obj)
+}

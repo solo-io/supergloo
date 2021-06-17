@@ -118,7 +118,7 @@ func (d *meshDetector) detectMesh(
 
 	region, err := localityutils.GetClusterRegion(deployment.ClusterName, in.Nodes())
 	if err != nil {
-		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName, zap.Error(err))
+		contextutils.LoggerFrom(d.ctx).Debugw("could not get region for cluster", deployment.ClusterName, zap.Error(err))
 	}
 
 	mesh := &discoveryv1.Mesh{
@@ -147,6 +147,8 @@ func (d *meshDetector) detectMesh(
 	return mesh, nil
 }
 
+// DEPRECATED: in favor of Destination discovery, which captures all external address information
+// TODO: remove this code when Mesh.spec.Type.Istio.IngressGateways is deleted
 func getIngressGateways(
 	ctx context.Context,
 	namespace string,

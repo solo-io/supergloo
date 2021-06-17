@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Reduce verbosity of discovery region log.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1656
