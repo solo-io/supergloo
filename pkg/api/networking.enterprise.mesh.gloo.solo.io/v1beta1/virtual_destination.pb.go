@@ -174,7 +174,7 @@ type VirtualDestinationSpec_Static struct {
 }
 
 type VirtualDestinationSpec_Localized struct {
-	// Failover priority is determined by the localities of the traffic source and destination.
+	// Failover priority is determined by the localities of the traffic source and Destination.
 	Localized *VirtualDestinationSpec_LocalityConfig `protobuf:"bytes,6,opt,name=localized,proto3,oneof"`
 }
 
@@ -350,14 +350,14 @@ func (x *VirtualDestinationStatus) GetRequiredSubsets() []*v13.DestinationStatus
 	return nil
 }
 
-// VirtualDestination port infomation.
+// VirtualDestination port information.
 // Contains information about which port to listen on, as well as which backend port to target.
 type VirtualDestinationSpec_Port struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// REQUIRED: Port number which the VirutalDestination will listen on.
+	// REQUIRED: Port number which the VirtualDestination will listen on.
 	Number uint32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
 	// OPTIONAL: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
 	// Default: HTTP
@@ -574,7 +574,7 @@ type VirtualDestinationSpec_LocalityConfig struct {
 	// Directives describing the locality failover behavior.
 	FailoverDirectives []*VirtualDestinationSpec_LocalityConfig_LocalityFailoverDirective `protobuf:"bytes,2,rep,name=failover_directives,json=failoverDirectives,proto3" json:"failover_directives,omitempty"`
 	// Outlier detection to determine the health of the selected services.
-	// If not set will default to the folling:
+	// If not set will default to the following:
 	// consecutiveGatewayErrors: 10
 	// consecutive5XXErrors: 10
 	// interval: 5s

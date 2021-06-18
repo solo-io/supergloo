@@ -19,7 +19,6 @@ title: "traffic_policy.proto"
 
 ## Table of Contents
   - [CsrfPolicy](#networking.mesh.gloo.solo.io.CsrfPolicy)
-  - [StringMatch](#networking.mesh.gloo.solo.io.StringMatch)
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
@@ -56,26 +55,7 @@ CSRF filter config.
 | filterEnabled | bool |  | Specifies that CSRF policies will be evaluated, tracked and enforced. |
   | shadowEnabled | bool |  | Specifies that CSRF policies will be evaluated and tracked, but not enforced.<br>This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise. |
   | percentage | double |  | Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests evaluated and tracked, but not enforced.<br>If filter_enabled or shadow_enabled is true. Envoy will lookup the runtime key to get the percentage of requests to filter.<br>.. note:: This field defaults to 100 |
-  | additionalOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.StringMatch"></a>
-
-### StringMatch
-Describes how to match a given string in HTTP headers. Match is case-sensitive.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| exact | string |  | Exact string match. |
-  | prefix | string |  | Prefix-based match. |
-  | regex | string |  | ECMAscript style regex-based match. |
-  | suffix | string |  | Suffix-based match. |
-  | ignoreCase | bool |  | If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match. |
+  | additionalOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.core#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
   
 
 
@@ -92,7 +72,7 @@ Applies L7 routing and post-routing configuration on selected network edges.
 | ----- | ---- | ----- | ----------- |
 | sourceSelector | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Specify the Workloads (traffic sources) this TrafficPolicy applies to. Omit to apply to all Workloads. |
   | destinationSelector | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Specify the Destinations (destinations) this TrafficPolicy applies to. Omit to apply to all Destinations. |
-  | httpRequestMatchers | [][common.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
+  | httpRequestMatchers | [][networking.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
   | policy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Specify L7 routing and post-routing configuration. |
   
 
@@ -132,7 +112,7 @@ Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| allowOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
+| allowOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.core#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
   | allowMethods | []string | repeated | List of HTTP methods allowed to access the resource. The content will be serialized to the `Access-Control-Allow-Methods` header. |
   | allowHeaders | []string | repeated | List of HTTP headers that can be used when requesting the resource. Serialized to the `Access-Control-Allow-Headers` header. |
   | exposeHeaders | []string | repeated | A list of HTTP headers that browsers are allowed to access. Serialized to the `Access-Control-Expose-Headers` header. |

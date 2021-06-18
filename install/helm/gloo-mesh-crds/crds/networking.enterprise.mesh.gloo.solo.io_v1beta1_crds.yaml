@@ -82,7 +82,7 @@ spec:
                     description: |-
                       Select `http_uri_source` to deploy the filter from an HTTP/S URI accessible
                       to the workload proxy. Note that Gloo Mesh cannot verify
-                      whether the target workload proxy containers have HTTP accesss the given URI.
+                      whether the target workload proxy containers have HTTP access the given URI.
                       If filters do not load, please inspect the sidecar proxy logs.
                       TODO(ilackarms): see if we can somehow verify the filter exists in the proxy container and surface that on the WasmDeployment status
                       TODO(ilackarms): we may need to provide options for customizing the Cluster given to envoy along with the HTTP Fetch URI. currently Gloo Mesh will create a simple plaintext HTTP cluster from the Host/Port specified in the URI.
@@ -168,8 +168,8 @@ spec:
                       clusters:
                         description: |-
                           If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                                     When used in a networking policy, omission matches any cluster.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                 When used in a networking policy, omission matches any cluster.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
@@ -178,14 +178,14 @@ spec:
                           type: string
                         description: |-
                           If specified, all labels must exist on Kubernetes workload.
-                                 When used in a networking policy, omission matches any labels.
-                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                             When used in a networking policy, omission matches any labels.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                         type: object
                       namespaces:
                         description: |-
                           If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                                     When used in a networking policy, omission matches any namespace.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                 When used in a networking policy, omission matches any namespace.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array
@@ -286,7 +286,7 @@ spec:
               type: string
             localized:
               description: Failover priority is determined by the localities of the
-                traffic source and destination.
+                traffic source and Destination.
               properties:
                 destinationSelectors:
                   description: |-
@@ -303,8 +303,8 @@ spec:
                           clusters:
                             description: |-
                               If specified, match Kubernetes Services if they exist in one of the specified clusters.
-                                         When used in a networking policy, omission matches any cluster.
-                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                     When used in a networking policy, omission matches any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                             items:
                               type: string
                             type: array
@@ -313,14 +313,14 @@ spec:
                               type: string
                             description: |-
                               If specified, a match requires all labels to exist on a Kubernetes Service.
-                                         When used in a networking policy, omission matches any labels.
-                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                     When used in a networking policy, omission matches any labels.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                             type: object
                           namespaces:
                             description: |-
                               If specified, match Kubernetes Services if they exist in one of the specified namespaces.
-                                         When used in a networking policy, omission matches any namespace.
-                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                     When used in a networking policy, omission matches any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                             items:
                               type: string
                             type: array
@@ -331,7 +331,7 @@ spec:
                           services:
                             description: |-
                               Match Kubernetes Services by direct reference. All fields are required.
-                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                             items:
                               properties:
                                 clusterName:
@@ -392,7 +392,7 @@ spec:
                 outlierDetection:
                   description: |-
                     Outlier detection to determine the health of the selected services.
-                    If not set will default to the folling:
+                    If not set will default to the following:
                     consecutiveGatewayErrors: 10
                     consecutive5XXErrors: 10
                     interval: 5s
@@ -454,7 +454,7 @@ spec:
                 - targetNumber
               properties:
                 number:
-                  description: 'REQUIRED: Port number which the VirutalDestination
+                  description: 'REQUIRED: Port number which the VirtualDestination
                     will listen on.'
                   maximum: 4294967295
                   minimum: 0
@@ -608,7 +608,7 @@ spec:
                               - required:
                                 - virtualDestination
                               - required:
-                                - static
+                                - staticDestination
                               - required:
                                 - clusterHeader
                           - required:
@@ -616,7 +616,7 @@ spec:
                           - required:
                             - virtualDestination
                           - required:
-                            - static
+                            - staticDestination
                           - required:
                             - clusterHeader
                           properties:
@@ -690,7 +690,7 @@ spec:
                                       type: array
                                   type: object
                               type: object
-                            static:
+                            staticDestination:
                               description: Reference to a gloo mesh Static Destination
                               properties:
                                 name:
@@ -1298,7 +1298,7 @@ spec:
                                                     - required:
                                                       - virtualDestination
                                                     - required:
-                                                      - static
+                                                      - staticDestination
                                                     - required:
                                                       - clusterHeader
                                                 - required:
@@ -1306,7 +1306,7 @@ spec:
                                                 - required:
                                                   - virtualDestination
                                                 - required:
-                                                  - static
+                                                  - staticDestination
                                                 - required:
                                                   - clusterHeader
                                                 properties:
@@ -1394,7 +1394,7 @@ spec:
                                                             type: array
                                                         type: object
                                                     type: object
-                                                  static:
+                                                  staticDestination:
                                                     description: Reference to a gloo
                                                       mesh Static Destination
                                                     properties:
@@ -1497,7 +1497,7 @@ spec:
                                           the given matcher to one or more RouteTables.
                                         properties:
                                           refs:
-                                            description: Delegate to the Route Table
+                                            description: Delegate to the RouteTable
                                               resources with matching `name` and `namespace`.
                                             items:
                                               properties:
@@ -1512,7 +1512,7 @@ spec:
                                               type: object
                                             type: array
                                           selector:
-                                            description: Delegate to the Route Tables
+                                            description: Delegate to the RouteTables
                                               that match the given selector.
                                             properties:
                                               expressions:
@@ -1574,8 +1574,8 @@ spec:
                                               Specifies the content of the response body. If this setting is omitted,
                                               no body is included in the generated response.
 
-                                                Note: Headers can be specified using the Header Modification feature in the enclosing
-                                                Route, ConnectionHandler, or Gateway options.
+                                              Note: Headers can be specified using the Header Modification feature in the enclosing
+                                              Route, ConnectionHandler, or Gateway options.
                                             type: string
                                           status:
                                             description: Specifies the HTTP response
@@ -1590,26 +1590,7 @@ spec:
                                           If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
                                           For delegated routes, any parent matcher must have a `prefix` path matcher.
                                         items:
-                                          oneOf:
-                                          - not:
-                                              anyOf:
-                                              - required:
-                                                - prefix
-                                              - required:
-                                                - exact
-                                              - required:
-                                                - regex
-                                          - required:
-                                            - prefix
-                                          - required:
-                                            - exact
-                                          - required:
-                                            - regex
                                           properties:
-                                            exact:
-                                              description: If specified, the targeted
-                                                path must exactly match the value.
-                                              type: string
                                             headers:
                                               description: Specify a set of headers
                                                 which requests must match in entirety
@@ -1652,10 +1633,6 @@ spec:
                                                 concatenated with the parent route's name and will be logged in
                                                 the access logs for requests matching this route.
                                               type: string
-                                            prefix:
-                                              description: If specified, the targeted
-                                                path must begin with the prefix.
-                                              type: string
                                             queryParameters:
                                               description: Specify a set of URL query
                                                 parameters which requests must match
@@ -1680,16 +1657,55 @@ spec:
                                                     type: string
                                                 type: object
                                               type: array
-                                            regex:
-                                              description: If specified, the targeted
-                                                path must match the regex.
-                                              type: string
+                                            uri:
+                                              description: Specify match criteria
+                                                against the targeted path.
+                                              oneOf:
+                                              - not:
+                                                  anyOf:
+                                                  - required:
+                                                    - exact
+                                                  - required:
+                                                    - prefix
+                                                  - required:
+                                                    - regex
+                                                  - required:
+                                                    - suffix
+                                              - required:
+                                                - exact
+                                              - required:
+                                                - prefix
+                                              - required:
+                                                - regex
+                                              - required:
+                                                - suffix
+                                              properties:
+                                                exact:
+                                                  description: Exact string match.
+                                                  type: string
+                                                ignoreCase:
+                                                  description: If true, indicates
+                                                    the exact/prefix/suffix matching
+                                                    should be case insensitive. This
+                                                    has no effect for the regex match.
+                                                  type: boolean
+                                                prefix:
+                                                  description: Prefix-based match.
+                                                  type: string
+                                                regex:
+                                                  description: ECMAscript style regex-based
+                                                    match.
+                                                  type: string
+                                                suffix:
+                                                  description: Suffix-based match.
+                                                  type: string
+                                              type: object
                                           type: object
                                         type: array
                                       name:
                                         description: |-
                                           The name provides a convenience for users to be able to refer to a route by name.
-                                          It includes names of vs, route, and route table ancestors of the route.
+                                          It includes names of VS, Route, and RouteTable ancestors of the Route.
                                         type: string
                                       options:
                                         description: |-
@@ -2061,7 +2077,7 @@ spec:
                                                       - required:
                                                         - virtualDestination
                                                       - required:
-                                                        - static
+                                                        - staticDestination
                                                       - required:
                                                         - clusterHeader
                                                   - required:
@@ -2069,7 +2085,7 @@ spec:
                                                   - required:
                                                     - virtualDestination
                                                   - required:
-                                                    - static
+                                                    - staticDestination
                                                   - required:
                                                     - clusterHeader
                                                   properties:
@@ -2159,7 +2175,7 @@ spec:
                                                               type: array
                                                           type: object
                                                       type: object
-                                                    static:
+                                                    staticDestination:
                                                       description: Reference to a
                                                         gloo mesh Static Destination
                                                       properties:
@@ -2268,7 +2284,7 @@ spec:
                                                   - required:
                                                     - virtualDestination
                                                   - required:
-                                                    - static
+                                                    - staticDestination
                                                   - required:
                                                     - clusterHeader
                                               - required:
@@ -2276,7 +2292,7 @@ spec:
                                               - required:
                                                 - virtualDestination
                                               - required:
-                                                - static
+                                                - staticDestination
                                               - required:
                                                 - clusterHeader
                                               properties:
@@ -2362,7 +2378,7 @@ spec:
                                                           type: array
                                                       type: object
                                                   type: object
-                                                static:
+                                                staticDestination:
                                                   description: Reference to a gloo
                                                     mesh Static Destination
                                                   properties:
@@ -2863,8 +2879,8 @@ spec:
                           clusters:
                             description: |-
                               If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                                         When used in a networking policy, omission matches any cluster.
-                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                     When used in a networking policy, omission matches any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                             items:
                               type: string
                             type: array
@@ -2873,14 +2889,14 @@ spec:
                               type: string
                             description: |-
                               If specified, all labels must exist on Kubernetes workload.
-                                     When used in a networking policy, omission matches any labels.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                 When used in a networking policy, omission matches any labels.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                             type: object
                           namespaces:
                             description: |-
                               If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                                         When used in a networking policy, omission matches any namespace.
-                                         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                     When used in a networking policy, omission matches any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                             items:
                               type: string
                             type: array
@@ -2901,8 +2917,8 @@ spec:
                       clusters:
                         description: |-
                           If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                                     When used in a networking policy, omission matches any cluster.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                 When used in a networking policy, omission matches any cluster.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
@@ -2911,14 +2927,14 @@ spec:
                           type: string
                         description: |-
                           If specified, all labels must exist on Kubernetes workload.
-                                 When used in a networking policy, omission matches any labels.
-                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                             When used in a networking policy, omission matches any labels.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                         type: object
                       namespaces:
                         description: |-
                           If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                                     When used in a networking policy, omission matches any namespace.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                 When used in a networking policy, omission matches any namespace.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array
@@ -3409,7 +3425,7 @@ spec:
                                 - required:
                                   - virtualDestination
                                 - required:
-                                  - static
+                                  - staticDestination
                                 - required:
                                   - clusterHeader
                             - required:
@@ -3417,7 +3433,7 @@ spec:
                             - required:
                               - virtualDestination
                             - required:
-                              - static
+                              - staticDestination
                             - required:
                               - clusterHeader
                             properties:
@@ -3492,7 +3508,7 @@ spec:
                                         type: array
                                     type: object
                                 type: object
-                              static:
+                              staticDestination:
                                 description: Reference to a gloo mesh Static Destination
                                 properties:
                                   name:
@@ -3590,7 +3606,7 @@ spec:
                       one or more RouteTables.
                     properties:
                       refs:
-                        description: Delegate to the Route Table resources with matching
+                        description: Delegate to the RouteTable resources with matching
                           `name` and `namespace`.
                         items:
                           properties:
@@ -3603,7 +3619,7 @@ spec:
                           type: object
                         type: array
                       selector:
-                        description: Delegate to the Route Tables that match the given
+                        description: Delegate to the RouteTables that match the given
                           selector.
                         properties:
                           expressions:
@@ -3663,8 +3679,8 @@ spec:
                           Specifies the content of the response body. If this setting is omitted,
                           no body is included in the generated response.
 
-                            Note: Headers can be specified using the Header Modification feature in the enclosing
-                            Route, ConnectionHandler, or Gateway options.
+                          Note: Headers can be specified using the Header Modification feature in the enclosing
+                          Route, ConnectionHandler, or Gateway options.
                         type: string
                       status:
                         description: Specifies the HTTP response status to be returned.
@@ -3678,26 +3694,7 @@ spec:
                       If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
                       For delegated routes, any parent matcher must have a `prefix` path matcher.
                     items:
-                      oneOf:
-                      - not:
-                          anyOf:
-                          - required:
-                            - prefix
-                          - required:
-                            - exact
-                          - required:
-                            - regex
-                      - required:
-                        - prefix
-                      - required:
-                        - exact
-                      - required:
-                        - regex
                       properties:
-                        exact:
-                          description: If specified, the targeted path must exactly
-                            match the value.
-                          type: string
                         headers:
                           description: Specify a set of headers which requests must
                             match in entirety (all headers must match).
@@ -3737,10 +3734,6 @@ spec:
                             concatenated with the parent route's name and will be logged in
                             the access logs for requests matching this route.
                           type: string
-                        prefix:
-                          description: If specified, the targeted path must begin
-                            with the prefix.
-                          type: string
                         queryParameters:
                           description: Specify a set of URL query parameters which
                             requests must match in entirety (all query params must
@@ -3760,16 +3753,53 @@ spec:
                                 type: string
                             type: object
                           type: array
-                        regex:
-                          description: If specified, the targeted path must match
-                            the regex.
-                          type: string
+                        uri:
+                          description: Specify match criteria against the targeted
+                            path.
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - exact
+                              - required:
+                                - prefix
+                              - required:
+                                - regex
+                              - required:
+                                - suffix
+                          - required:
+                            - exact
+                          - required:
+                            - prefix
+                          - required:
+                            - regex
+                          - required:
+                            - suffix
+                          properties:
+                            exact:
+                              description: Exact string match.
+                              type: string
+                            ignoreCase:
+                              description: If true, indicates the exact/prefix/suffix
+                                matching should be case insensitive. This has no effect
+                                for the regex match.
+                              type: boolean
+                            prefix:
+                              description: Prefix-based match.
+                              type: string
+                            regex:
+                              description: ECMAscript style regex-based match.
+                              type: string
+                            suffix:
+                              description: Suffix-based match.
+                              type: string
+                          type: object
                       type: object
                     type: array
                   name:
                     description: |-
                       The name provides a convenience for users to be able to refer to a route by name.
-                      It includes names of vs, route, and route table ancestors of the route.
+                      It includes names of VS, Route, and RouteTable ancestors of the Route.
                     type: string
                   options:
                     description: |-
@@ -4107,7 +4137,7 @@ spec:
                                   - required:
                                     - virtualDestination
                                   - required:
-                                    - static
+                                    - staticDestination
                                   - required:
                                     - clusterHeader
                               - required:
@@ -4115,7 +4145,7 @@ spec:
                               - required:
                                 - virtualDestination
                               - required:
-                                - static
+                                - staticDestination
                               - required:
                                 - clusterHeader
                               properties:
@@ -4191,7 +4221,7 @@ spec:
                                           type: array
                                       type: object
                                   type: object
-                                static:
+                                staticDestination:
                                   description: Reference to a gloo mesh Static Destination
                                   properties:
                                     name:
@@ -4293,7 +4323,7 @@ spec:
                               - required:
                                 - virtualDestination
                               - required:
-                                - static
+                                - staticDestination
                               - required:
                                 - clusterHeader
                           - required:
@@ -4301,7 +4331,7 @@ spec:
                           - required:
                             - virtualDestination
                           - required:
-                            - static
+                            - staticDestination
                           - required:
                             - clusterHeader
                           properties:
@@ -4375,7 +4405,7 @@ spec:
                                       type: array
                                   type: object
                               type: object
-                            static:
+                            staticDestination:
                               description: Reference to a gloo mesh Static Destination
                               properties:
                                 name:
@@ -4494,14 +4524,14 @@ spec:
         spec:
           description: |-
             RouteTable is a resource which can be referenced either from the top level VirtualHost resource, or from
-               other RouteTables. It's primary use is to organizationally and logically separate the configuration of routes,
-               so that the responsbilities of route configuration and maintenance can be divided between teams where appropriate.
+               other RouteTables. It's primary use is to organizationally and logically separate the configuration of Routes,
+               so that the responsibilities of Route configuration and maintenance can be divided between teams where appropriate.
           properties:
             routes:
               description: |-
-                The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
-                this virtual host. If the request matches more than one route in the list, the first route matched will be selected.
-                If the list of routes is empty, the virtual host will be ignored by Gloo.
+                The list of HTTP Routes define routing actions to be taken for incoming HTTP requests whose host header matches
+                this virtual host. If the request matches more than one Route in the list, the first Route matched will be selected.
+                If the list of Routes is empty, the virtual host will be ignored by Gloo.
               items:
                 oneOf:
                 - not:
@@ -4554,7 +4584,7 @@ spec:
                       one or more RouteTables.
                     properties:
                       refs:
-                        description: Delegate to the Route Table resources with matching
+                        description: Delegate to the RouteTable resources with matching
                           `name` and `namespace`.
                         items:
                           properties:
@@ -4567,7 +4597,7 @@ spec:
                           type: object
                         type: array
                       selector:
-                        description: Delegate to the Route Tables that match the given
+                        description: Delegate to the RouteTables that match the given
                           selector.
                         properties:
                           expressions:
@@ -4627,8 +4657,8 @@ spec:
                           Specifies the content of the response body. If this setting is omitted,
                           no body is included in the generated response.
 
-                            Note: Headers can be specified using the Header Modification feature in the enclosing
-                            Route, ConnectionHandler, or Gateway options.
+                          Note: Headers can be specified using the Header Modification feature in the enclosing
+                          Route, ConnectionHandler, or Gateway options.
                         type: string
                       status:
                         description: Specifies the HTTP response status to be returned.
@@ -4642,26 +4672,7 @@ spec:
                       If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
                       For delegated routes, any parent matcher must have a `prefix` path matcher.
                     items:
-                      oneOf:
-                      - not:
-                          anyOf:
-                          - required:
-                            - prefix
-                          - required:
-                            - exact
-                          - required:
-                            - regex
-                      - required:
-                        - prefix
-                      - required:
-                        - exact
-                      - required:
-                        - regex
                       properties:
-                        exact:
-                          description: If specified, the targeted path must exactly
-                            match the value.
-                          type: string
                         headers:
                           description: Specify a set of headers which requests must
                             match in entirety (all headers must match).
@@ -4701,10 +4712,6 @@ spec:
                             concatenated with the parent route's name and will be logged in
                             the access logs for requests matching this route.
                           type: string
-                        prefix:
-                          description: If specified, the targeted path must begin
-                            with the prefix.
-                          type: string
                         queryParameters:
                           description: Specify a set of URL query parameters which
                             requests must match in entirety (all query params must
@@ -4724,16 +4731,53 @@ spec:
                                 type: string
                             type: object
                           type: array
-                        regex:
-                          description: If specified, the targeted path must match
-                            the regex.
-                          type: string
+                        uri:
+                          description: Specify match criteria against the targeted
+                            path.
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - exact
+                              - required:
+                                - prefix
+                              - required:
+                                - regex
+                              - required:
+                                - suffix
+                          - required:
+                            - exact
+                          - required:
+                            - prefix
+                          - required:
+                            - regex
+                          - required:
+                            - suffix
+                          properties:
+                            exact:
+                              description: Exact string match.
+                              type: string
+                            ignoreCase:
+                              description: If true, indicates the exact/prefix/suffix
+                                matching should be case insensitive. This has no effect
+                                for the regex match.
+                              type: boolean
+                            prefix:
+                              description: Prefix-based match.
+                              type: string
+                            regex:
+                              description: ECMAscript style regex-based match.
+                              type: string
+                            suffix:
+                              description: Suffix-based match.
+                              type: string
+                          type: object
                       type: object
                     type: array
                   name:
                     description: |-
                       The name provides a convenience for users to be able to refer to a route by name.
-                      It includes names of vs, route, and route table ancestors of the route.
+                      It includes names of VS, Route, and RouteTable ancestors of the Route.
                     type: string
                   options:
                     description: |-
@@ -5071,7 +5115,7 @@ spec:
                                   - required:
                                     - virtualDestination
                                   - required:
-                                    - static
+                                    - staticDestination
                                   - required:
                                     - clusterHeader
                               - required:
@@ -5079,7 +5123,7 @@ spec:
                               - required:
                                 - virtualDestination
                               - required:
-                                - static
+                                - staticDestination
                               - required:
                                 - clusterHeader
                               properties:
@@ -5155,7 +5199,7 @@ spec:
                                           type: array
                                       type: object
                                   type: object
-                                static:
+                                staticDestination:
                                   description: Reference to a gloo mesh Static Destination
                                   properties:
                                     name:
@@ -5257,7 +5301,7 @@ spec:
                               - required:
                                 - virtualDestination
                               - required:
-                                - static
+                                - staticDestination
                               - required:
                                 - clusterHeader
                           - required:
@@ -5265,7 +5309,7 @@ spec:
                           - required:
                             - virtualDestination
                           - required:
-                            - static
+                            - staticDestination
                           - required:
                             - clusterHeader
                           properties:
@@ -5339,7 +5383,7 @@ spec:
                                       type: array
                                   type: object
                               type: object
-                            static:
+                            staticDestination:
                               description: Reference to a gloo mesh Static Destination
                               properties:
                                 name:
@@ -5489,8 +5533,8 @@ spec:
                       clusters:
                         description: |-
                           If specified, match Kubernetes Services if they exist in one of the specified clusters.
-                                     When used in a networking policy, omission matches any cluster.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                 When used in a networking policy, omission matches any cluster.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
@@ -5499,14 +5543,14 @@ spec:
                           type: string
                         description: |-
                           If specified, a match requires all labels to exist on a Kubernetes Service.
-                                     When used in a networking policy, omission matches any labels.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                 When used in a networking policy, omission matches any labels.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                         type: object
                       namespaces:
                         description: |-
                           If specified, match Kubernetes Services if they exist in one of the specified namespaces.
-                                     When used in a networking policy, omission matches any namespace.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                 When used in a networking policy, omission matches any namespace.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array
@@ -5517,7 +5561,7 @@ spec:
                       services:
                         description: |-
                           Match Kubernetes Services by direct reference. All fields are required.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                         items:
                           properties:
                             clusterName:
@@ -5547,8 +5591,8 @@ spec:
                       clusters:
                         description: |-
                           If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                                     When used in a networking policy, omission matches any cluster.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                 When used in a networking policy, omission matches any cluster.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
@@ -5557,14 +5601,14 @@ spec:
                           type: string
                         description: |-
                           If specified, all labels must exist on Kubernetes workload.
-                                 When used in a networking policy, omission matches any labels.
-                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                             When used in a networking policy, omission matches any labels.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                         type: object
                       namespaces:
                         description: |-
                           If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                                     When used in a networking policy, omission matches any namespace.
-                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                 When used in a networking policy, omission matches any namespace.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array

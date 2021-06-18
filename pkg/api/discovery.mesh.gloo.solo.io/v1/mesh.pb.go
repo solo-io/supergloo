@@ -173,9 +173,9 @@ type MeshStatus struct {
 	// When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh
 	// has processed the latest version of the Mesh.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// The VirtualMesh, if any, which contains this mesh.
+	// The VirtualMesh, if any, which contains this Mesh.
 	AppliedVirtualMesh *MeshStatus_AppliedVirtualMesh `protobuf:"bytes,2,opt,name=applied_virtual_mesh,json=appliedVirtualMesh,proto3" json:"applied_virtual_mesh,omitempty"`
-	// The VirtualDestinations, if any, which apply to this mesh.
+	// The VirtualDestinations, if any, which apply to this Mesh.
 	AppliedVirtualDestinations []*MeshStatus_AppliedVirtualDestination `protobuf:"bytes,3,rep,name=applied_virtual_destinations,json=appliedVirtualDestinations,proto3" json:"applied_virtual_destinations,omitempty"`
 }
 
@@ -707,6 +707,7 @@ type MeshSpec_Istio_IngressGatewayInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// TODO: remove name and namespace as ingress gw info now contains a ref
 	// The name of the Ingress Gateway Service
 	Name string `protobuf:"bytes,8,opt,name=name,proto3" json:"name,omitempty"`
 	// The namespace in which the ingress gateway is running.

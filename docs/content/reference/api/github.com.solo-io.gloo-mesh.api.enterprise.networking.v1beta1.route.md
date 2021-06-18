@@ -34,13 +34,13 @@ title: "route.proto"
 <a name="networking.enterprise.mesh.gloo.solo.io.DelegateAction"></a>
 
 ### DelegateAction
-Note: This message needs to be at this level (rather than nested) due to cue restrictions. DelegateActions are used to delegate routing decisions to other resources, for example Route Tables.
+Note: This message needs to be at this level (rather than nested) due to cue restrictions. DelegateActions are used to delegate routing decisions to other resources, for example RouteTables.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| refs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Delegate to the Route Table resources with matching `name` and `namespace`. |
-  | selector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | Delegate to the Route Tables that match the given selector. |
+| refs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Delegate to the RouteTable resources with matching `name` and `namespace`. |
+  | selector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | Delegate to the RouteTables that match the given selector. |
   
 
 
@@ -56,7 +56,7 @@ TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | status | uint32 |  | Specifies the HTTP response status to be returned. |
-  | body | string |  | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response.<br>  Note: Headers can be specified using the Header Modification feature in the enclosing   Route, ConnectionHandler, or Gateway options. |
+  | body | string |  | Specifies the content of the response body. If this setting is omitted, no body is included in the generated response.<br>Note: Headers can be specified using the Header Modification feature in the enclosing Route, ConnectionHandler, or Gateway options. |
   
 
 
@@ -91,8 +91,8 @@ A route specifies how to match a request and what action to take when the reques
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | The name provides a convenience for users to be able to refer to a route by name. It includes names of vs, route, and route table ancestors of the route. |
-  | matchers | [][common.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.). If empty, the route will match all requests (i.e, a single "/" path prefix matcher). For delegated routes, any parent matcher must have a `prefix` path matcher. |
+| name | string |  | The name provides a convenience for users to be able to refer to a route by name. It includes names of VS, Route, and RouteTable ancestors of the Route. |
+  | matchers | [][networking.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.). If empty, the route will match all requests (i.e, a single "/" path prefix matcher). For delegated routes, any parent matcher must have a `prefix` path matcher. |
   | routeAction | [networking.enterprise.mesh.gloo.solo.io.Route.RouteAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction" >}}) |  | This action is the primary action to be selected for most routes. The RouteAction tells the proxy to route requests to an upstream. |
   | redirectAction | [networking.enterprise.mesh.gloo.solo.io.RedirectAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.RedirectAction" >}}) |  | Redirect actions tell the proxy to return a redirect response to the downstream client. |
   | directResponseAction | [networking.enterprise.mesh.gloo.solo.io.DirectResponseAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DirectResponseAction" >}}) |  | Return an arbitrary HTTP response directly, without proxying. |

@@ -253,7 +253,7 @@ type SharedTrust struct {
 	//	*SharedTrust_RootCertificateAuthority
 	//	*SharedTrust_IntermediateCertificateAuthority
 	CertificateAuthority isSharedTrust_CertificateAuthority `protobuf_oneof:"certificate_authority"`
-	// Configuration options for generated intermediate certs
+	// Configuration options for generated intermediate certs.
 	IntermediateCertOptions *v11.CommonCertOptions `protobuf:"bytes,3,opt,name=intermediate_cert_options,json=intermediateCertOptions,proto3" json:"intermediate_cert_options,omitempty"`
 }
 
@@ -428,7 +428,7 @@ func (x *VirtualMeshStatus) GetDestinations() map[string]*ApprovalStatus {
 }
 
 // Specify mTLS options.
-// This includes options for configuring Mutual TLS within an individual mesh, as
+// This includes options for configuring Mutual TLS within an individual Mesh, as
 // well as enabling mTLS across Meshes by establishing cross-mesh trust.
 type VirtualMeshSpec_MTLSConfig struct {
 	state         protoimpl.MessageState
@@ -533,7 +533,7 @@ type VirtualMeshSpec_Federation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Selectively federate Destinations to specific external meshes.
+	// Selectively federate Destinations to specific external Meshes.
 	// If omitted, no Destinations will be federated.
 	Selectors []*VirtualMeshSpec_Federation_FederationSelector `protobuf:"bytes,4,rep,name=selectors,proto3" json:"selectors,omitempty"`
 	// DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.

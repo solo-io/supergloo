@@ -261,7 +261,7 @@ TODO: Fill ConnectionOptions
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| virtualHostSelector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
+| virtualHostSelector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
   | virtualHost | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec" >}}) |  | VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs. |
   
 
@@ -486,7 +486,7 @@ TODO: Fill in more options<br>gateway-level options (only apply to gateway/liste
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [common.mesh.gloo.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.refs#common.mesh.gloo.solo.io.ObjectRefList" >}}) |  |  |
+  | value | [core.skv2.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRefList" >}}) |  |  |
   
 
 
