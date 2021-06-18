@@ -4,22 +4,20 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
-	"istio.io/istio/pkg/util/protomarshal"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
+	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
+	"istio.io/istio/pkg/util/protomarshal"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/istio"
 )
 
 var _ = Describe("IstioMeshDetector", func() {
@@ -27,7 +25,6 @@ var _ = Describe("IstioMeshDetector", func() {
 	serviceAccountName := "service-account-name"
 	meshNs := "namespace"
 	clusterName := "cluster"
-	pilotDeploymentName := "istio-pilot"
 	istiodDeploymentName := "istiod"
 
 	istioDeployment := func(deploymentName string) *appsv1.Deployment {
@@ -109,43 +106,6 @@ var _ = Describe("IstioMeshDetector", func() {
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(0))
-	})
-
-	It("detects a mesh from a deployment named istio-pilot", func() {
-		configMaps := istioConfigMap()
-		deployment := istioDeployment(pilotDeploymentName)
-
-		detector := NewMeshDetector(
-			ctx,
-		)
-
-		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inRemote.AddConfigMaps(configMaps.List())
-
-		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(meshes).To(HaveLen(1))
-		Expect(meshes[0]).To(Equal(&discoveryv1.Mesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "istio-pilot-namespace-cluster",
-				Namespace: defaults.GetPodNamespace(),
-				Labels:    labelutils.ClusterLabels(clusterName),
-			},
-			Spec: discoveryv1.MeshSpec{
-				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
-					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
-					Installation: &discoveryv1.MeshSpec_MeshInstallation{
-						Namespace: meshNs,
-						Cluster:   clusterName,
-						Version:   "latest",
-						PodLabels: map[string]string{"app": "istiod"},
-					},
-					TrustDomain:          trustDomain,
-					IstiodServiceAccount: serviceAccountName,
-				}},
-			},
-		}))
 	})
 
 	It("detects a mesh from a deployment named istiod", func() {
