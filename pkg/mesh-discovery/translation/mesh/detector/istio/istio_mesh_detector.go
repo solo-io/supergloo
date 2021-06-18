@@ -27,7 +27,6 @@ import (
 )
 
 const (
-	legacyPilotDeploymentName = "istio-pilot"
 	istiodDeploymentName      = "istiod"
 	istioContainerKeyword     = "istio"
 	pilotContainerKeyword     = "pilot"
@@ -356,7 +355,7 @@ func (d *meshDetector) getIstiodVersion(deployment *appsv1.Deployment) (string, 
 // Return true if deployment is inferred to be an Istiod deployment
 func isIstiod(deployment *appsv1.Deployment, container *corev1.Container) bool {
 	// Istio revision deployments may take the form `istiod-<revision-name>`
-	return (strings.HasPrefix(deployment.GetName(), istiodDeploymentName) || strings.HasPrefix(deployment.GetName(), legacyPilotDeploymentName)) &&
+	return strings.HasPrefix(deployment.GetName(), istiodDeploymentName) &&
 		strings.Contains(container.Image, istioContainerKeyword) &&
 		strings.Contains(container.Image, pilotContainerKeyword)
 }
