@@ -42,7 +42,7 @@ message VirtualGatewaySpec {
     repeated ConnectionHandler connection_handlers = 3;
 
     // Options applied to all clients who connect to this gateway
-    GatewayOptions options = 5;
+    GatewayOptions options = 4;
 
     // Options for deploying the VirtualGateway to an Istio Ingress Gateway
     message DeployToIngressGateway {
@@ -110,10 +110,10 @@ message VirtualGatewaySpec {
 
             // Restricts filter from being added to the corresponding Envoy Listener unless they are explicitly configured
             // in the connection handler options
-            bool strict_filter_management = 8;
+            bool strict_filter_management = 2;
 
             // enable PROXY protocol for this connection handler.
-            bool enable_proxy_protocol = 4;
+            bool enable_proxy_protocol = 3;
 
             message TlsTerminationOptions {
                 // If specified, the route will match against whether or not a certificate is presented.
@@ -131,7 +131,7 @@ message VirtualGatewaySpec {
             repeated RouteSpecifier route_config = 1;
             
             // HTTP Listener Options // Root level RouteTable + VirtualHost + routes level
-            HttpOptions route_options = 8;
+            HttpOptions route_options = 2;
             
             message RouteSpecifier {
                 oneof route_type{
@@ -159,7 +159,7 @@ message VirtualGatewaySpec {
                 // healthcheck.options.gloo.solo.io.HealthCheck health_check = 4;
 
                 // Configure the Envoy based CSRF filter for this Gateway.
-                .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
+                .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 1;
 
             }
         }
@@ -189,7 +189,7 @@ message VirtualGatewaySpec {
                         // SSLFiles reference paths to certificates which are local to the proxy
                         SSLFiles ssl_files = 2;
                         // Use secret discovery service.
-                        SDSConfig sds = 4;
+                        SDSConfig sds = 3;
 
                         // SSLFiles reference paths to certificates which can be read by the proxy off of its local filesystem
                     }
@@ -197,7 +197,7 @@ message VirtualGatewaySpec {
                     
 
                     // optional. the SNI domains that should be considered for TLS connections
-                    repeated string sni_domains = 3;
+                    repeated string sni_domains = 4;
                     
                     // Verify that the Subject Alternative Name in the peer certificate is one of the specified values.
                     // note that a root_ca must be provided if this option is used.
@@ -285,7 +285,7 @@ message VirtualGatewaySpec {
                     // If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP
                     // payloads over a shared HTTP tunnel. If this message is absent, the payload
                     // will be proxied upstream as per usual.
-                    TunnelingConfig tunneling_config = 12;
+                    TunnelingConfig tunneling_config = 3;
 
                     // Configuration for tunneling TCP over other transports or application layers.
                     message TunnelingConfig {
@@ -361,10 +361,9 @@ message SelectedGatewayWorkload {
     // the cluster where the gateway workload is running
     string cluster_name = 3;
     // the labels used to identify the gateway workload
-    map<string, string> labels = 5;
-
+    map<string, string> labels = 4;
     // the external URL by which the gateway can be accessed on the given workload, if it exists
-    string external_url = 4;
+    string external_url = 5;
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
@@ -375,12 +374,12 @@ message SDSConfig {
         // Call credentials.
         CallCredentials call_credentials = 2;
         // The name of the sds cluster in envoy
-        string cluster_name = 5;
+        string cluster_name = 3;
     }
     // The name of the secret containing the certificate
-    string certificates_secret_name = 3;
+    string certificates_secret_name = 4;
     // The name of secret containing the validation context (i.e. root ca)
-    string validation_context_name = 4;
+    string validation_context_name = 5;
 
     message CallCredentials {
         // Call credentials are coming from a file,

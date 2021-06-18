@@ -37,23 +37,23 @@ message Route {
     oneof action {
         // This action is the primary action to be selected for most routes. The RouteAction tells the proxy to
         // route requests to an upstream.
-        RouteAction route_action = 5;
+        RouteAction route_action = 3;
 
         // Redirect actions tell the proxy to return a redirect response to the downstream client.
-        RedirectAction redirect_action = 6;
+        RedirectAction redirect_action = 4;
 
         // Return an arbitrary HTTP response directly, without proxying.
-        DirectResponseAction direct_response_action = 7;
+        DirectResponseAction direct_response_action = 5;
 
         // Delegate routing actions for the given matcher to one or more RouteTables.
-        DelegateAction delegate_action = 8;
+        DelegateAction delegate_action = 6;
 
     }
 
     // Route Options extend the behavior of routes.
     // Route options include configuration such as retries, rate limiting, and request/response transformation.
     // RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
-    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 9;
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 7;
 
     // RouteActions are used to route matched requests to upstreams.
     message RouteAction {
