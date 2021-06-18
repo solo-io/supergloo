@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"net"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -234,7 +235,7 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 			Addresses:  []string{serviceEntryIP.String()},
 			Hosts:      []string{federatedHostname},
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+			Resolution: ResolutionForEndpointIpVersions(workloadEntries),
 			Endpoints:  workloadEntries,
 			Ports:      ports,
 		},
@@ -289,7 +290,7 @@ func (t *translator) translateForLocalMesh(
 			// only export to Gateway workload namespace
 			ExportTo:   []string{"."},
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+			Resolution: ResolutionForEndpointIpVersions(workloadEntries),
 			Endpoints:  workloadEntries,
 			Ports:      remoteServiceEntryTemplate.Spec.Ports,
 		},
@@ -373,4 +374,20 @@ func ConvertKubePortProtocol(port *discoveryv1.DestinationSpec_KubeService_KubeS
 func getHostnameSuffix(hostname string) string {
 	split := strings.Split(hostname, ".")
 	return split[len(split)-1]
+}
+
+// Workaround for Istio issue where ipv6 addresses are supplied to Envoy incorrectly: https://github.com/envoyproxy/envoy/issues/10489#issuecomment-606290733.
+// If any endpoints have an ipv6 address, set the resolution to STATIC,
+// else, set the resolution to DNS.
+// exported for use in enterprise
+func ResolutionForEndpointIpVersions(
+	workloadEntries []*networkingv1alpha3spec.WorkloadEntry,
+) networkingv1alpha3spec.ServiceEntry_Resolution {
+	for _, workloadEntry := range workloadEntries {
+		// if endpoint addr is an IP (instead of hostname) and ipv6 format, return STATIC
+		if ip := net.ParseIP(workloadEntry.Address); ip != nil && ip.To4() == nil {
+			return networkingv1alpha3spec.ServiceEntry_STATIC
+		}
+	}
+	return networkingv1alpha3spec.ServiceEntry_DNS
 }
