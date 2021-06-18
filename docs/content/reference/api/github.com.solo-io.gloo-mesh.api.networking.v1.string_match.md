@@ -1,7 +1,7 @@
 
 ---
 
-title: "core.proto"
+title: "string_match.proto"
 
 ---
 
@@ -11,10 +11,10 @@ title: "core.proto"
 
 <a name="top"></a>
 
-<a name="API Reference for core.proto"></a>
+<a name="API Reference for string_match.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## core.proto
+## string_match.proto
 
 
 ## Table of Contents

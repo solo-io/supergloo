@@ -55,7 +55,7 @@ CSRF filter config.
 | filterEnabled | bool |  | Specifies that CSRF policies will be evaluated, tracked and enforced. |
   | shadowEnabled | bool |  | Specifies that CSRF policies will be evaluated and tracked, but not enforced.<br>This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise. |
   | percentage | double |  | Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests evaluated and tracked, but not enforced.<br>If filter_enabled or shadow_enabled is true. Envoy will lookup the runtime key to get the percentage of requests to filter.<br>.. note:: This field defaults to 100 |
-  | additionalOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.core#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
+  | additionalOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.string_match#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | Specifies additional source origins that will be allowed in addition to the destination origin. |
   
 
 
@@ -112,7 +112,7 @@ Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| allowOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.core#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
+| allowOrigins | [][networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.string_match#networking.mesh.gloo.solo.io.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. |
   | allowMethods | []string | repeated | List of HTTP methods allowed to access the resource. The content will be serialized to the `Access-Control-Allow-Methods` header. |
   | allowHeaders | []string | repeated | List of HTTP headers that can be used when requesting the resource. Serialized to the `Access-Control-Allow-Headers` header. |
   | exposeHeaders | []string | repeated | A list of HTTP headers that browsers are allowed to access. Serialized to the `Access-Control-Expose-Headers` header. |

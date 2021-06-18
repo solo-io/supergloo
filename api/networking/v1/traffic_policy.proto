@@ -11,7 +11,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/string_match.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 
 import "extproto/ext.proto";
