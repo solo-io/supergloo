@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Handle istio revision deployments.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1662
