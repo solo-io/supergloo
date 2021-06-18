@@ -29,6 +29,10 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 Go to https://www.solo.io/products/gloo-mesh/ to learn more about the
 difference between the editions.
 `,
+		PersistentPostRun: func(cmd *cobra.Command, args []string) {
+			// Update the meshctl config file
+			utils.UpdateMeshctlConfigWithInstallInfo(opts.KubeCfgPath, opts.KubeContext)
+		},
 	}
 
 	cmd.AddCommand(

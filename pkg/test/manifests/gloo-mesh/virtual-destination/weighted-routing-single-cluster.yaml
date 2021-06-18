@@ -1,0 +1,78 @@
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: VirtualMesh
+metadata:
+  name: virtual-mesh
+  namespace: gloo-mesh
+spec:
+  federation:
+    selectors:
+      - { }
+  meshes:
+    - name: istiod-istio-system-cluster-0
+      namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-1
+      namespace: gloo-mesh
+---
+apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
+kind: VirtualDestination
+metadata:
+  name: subset
+  namespace: gloo-mesh
+spec:
+  hostname: http-subset.solo.io
+  localized:
+    destinationSelectors:
+      - kubeServiceMatcher:
+          clusters:
+            - cluster-1
+          labels:
+            app: subset
+    failoverDirectives:
+      - from:
+          region: us-east-1
+        to:
+          - region: us-west-1
+      - from:
+          region: us-west-1
+        to:
+          - region: us-east-1
+    outlierDetection:
+      baseEjectionTime: 30s
+      consecutiveErrors: 1
+      interval: 5s
+      maxEjectionPercent: 100
+  port:
+    number: 8090
+    protocol: http
+    targetNumber: 8090
+  virtualMesh:
+    name: virtual-mesh
+    namespace: gloo-mesh
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: subset-failover
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+    - kubeServiceMatcher:
+       clusters:
+         - cluster-1
+        labels:
+          app: subset
+  policy:
+    trafficShift:
+      destinations:
+        - virtualDestination:
+            name: subset
+            namespace: gloo-mesh
+            subset:
+              version: v1
+          weight: 10
+        - virtualDestination:
+            name: subset
+            namespace: gloo-mesh
+            subset:
+              version: v2
+          weight: 90

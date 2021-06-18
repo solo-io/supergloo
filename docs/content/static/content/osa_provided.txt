@@ -5,17 +5,22 @@ Name|Version|License
 [aws/aws-sdk-go](https://github.com/aws/aws-sdk-go)|v1.38.3|Apache License 2.0
 [docker/distribution](https://github.com/docker/distribution)|v0.0.0-20191216044856-a8371794149d|Apache License 2.0
 [envoyproxy/go-control-plane](https://github.com/envoyproxy/go-control-plane)|v0.9.9-0.20210115003313-31f9241a16e6|Apache License 2.0
+[evanphx/json-patch](https://github.com/evanphx/json-patch)|v4.9.0+incompatible|BSD 3-clause "New" or "Revised" License
 [fatih/color](https://github.com/fatih/color)|v1.10.0|MIT License
 [gertd/go-pluralize](https://github.com/gertd/go-pluralize)|v0.1.1|MIT License
+[ghodss/yaml](https://github.com/ghodss/yaml)|v1.0.1-0.20190212211648-25d852aebe32|MIT License
 [go-openapi/swag](https://github.com/go-openapi/swag)|v0.19.6|Apache License 2.0
 [go-test/deep](https://github.com/go-test/deep)|v1.0.2|MIT License
 [gobuffalo/packr](https://github.com/gobuffalo/packr)|v1.30.1|MIT License
 [gogo/protobuf](https://github.com/gogo/protobuf)|v1.3.2|BSD 3-clause "New" or "Revised" License
 [golang/protobuf](https://github.com/golang/protobuf)|v1.5.2|BSD 3-clause "New" or "Revised" License
+[google/go-cmp](https://github.com/google/go-cmp)|v0.5.5|BSD 3-clause "New" or "Revised" License
 [google/go-github](https://github.com/google/go-github)|v17.0.0+incompatible|BSD 3-clause "New" or "Revised" License
 [iancoleman/strcase](https://github.com/iancoleman/strcase)|v0.1.3|MIT License
+[kr/pretty](https://github.com/kr/pretty)|v0.2.1|MIT License
 [linkerd/linkerd2](https://github.com/linkerd/linkerd2)|v0.5.1-0.20200402173539-fee70c064bc0|Apache License 2.0
 [aurora/v3](https://github.com/logrusorgru/aurora)|v3.0.0|The Unlicense
+[manifoldco/promptui](https://github.com/manifoldco/promptui)|v0.8.0|BSD 3-clause "New" or "Revised" License
 [mitchellh/hashstructure](https://github.com/mitchellh/hashstructure)|v1.0.0|MIT License
 [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter)|v0.0.4|MIT License
 [onsi/ginkgo](https://github.com/onsi/ginkgo)|v1.15.0|MIT License
@@ -37,6 +42,7 @@ Name|Version|License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.16.0|MIT License
 [x/oauth2](https://golang.org/x/oauth2)|v0.0.0-20210413134643-5e61552d6c78|BSD 3-clause "New" or "Revised" License
+[x/time](https://golang.org/x/time)|v0.0.0-20201208040808-7e3f01d25324|BSD 3-clause "New" or "Revised" License
 [google.golang.org/grpc](https://google.golang.org/grpc)|v1.37.0|Apache License 2.0
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.26.0|BSD 3-clause "New" or "Revised" License
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)|v2.4.0|Apache License 2.0

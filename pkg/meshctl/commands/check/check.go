@@ -51,12 +51,12 @@ func Command(ctx context.Context) *cobra.Command {
 		Use:   "check",
 		Short: "Perform health checks on the Gloo Mesh system",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
+			kubeClient, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			checks := constructChecks(opts)
-			return runChecks(ctx, client, opts.namespace, checks)
+			meshctlChecks := constructChecks(opts)
+			return runChecks(ctx, kubeClient, opts.namespace, meshctlChecks)
 		},
 	}
 	opts.addToFlags(cmd.Flags())

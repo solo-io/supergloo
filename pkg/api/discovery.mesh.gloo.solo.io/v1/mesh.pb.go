@@ -245,6 +245,7 @@ type MeshSpec_Istio struct {
 	TrustDomain string `protobuf:"bytes,2,opt,name=trust_domain,json=trustDomain,proto3" json:"trust_domain,omitempty"`
 	// The istiod service account which determines identity for the Istio CA cert.
 	IstiodServiceAccount string `protobuf:"bytes,3,opt,name=istiod_service_account,json=istiodServiceAccount,proto3" json:"istiod_service_account,omitempty"`
+	// DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
 	// Describes the ingress gateway.
 	IngressGateways []*MeshSpec_Istio_IngressGatewayInfo `protobuf:"bytes,4,rep,name=ingress_gateways,json=ingressGateways,proto3" json:"ingress_gateways,omitempty"`
 	// True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
@@ -699,6 +700,7 @@ func (x *MeshSpec_AgentInfo) GetAgentNamespace() string {
 	return ""
 }
 
+// DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
 // Describes the ingress gateway.
 type MeshSpec_Istio_IngressGatewayInfo struct {
 	state         protoimpl.MessageState
@@ -847,7 +849,7 @@ func (*MeshSpec_Istio_IngressGatewayInfo_DnsName) isMeshSpec_Istio_IngressGatewa
 func (*MeshSpec_Istio_IngressGatewayInfo_Ip) isMeshSpec_Istio_IngressGatewayInfo_ExternalAddressType() {
 }
 
-// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
+// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
 // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 type MeshStatus_AppliedVirtualMesh struct {
 	state         protoimpl.MessageState

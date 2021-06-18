@@ -1,0 +1,65 @@
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: VirtualMesh
+metadata:
+  name: virtual-mesh
+  namespace: gloo-mesh
+spec:
+  federation:
+    selectors:
+      - { }
+  meshes:
+    - name: istiod-istio-system-cluster-0
+      namespace: gloo-mesh
+    - name: istiod-istio-system-cluster-1
+      namespace: gloo-mesh
+---
+apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
+kind: VirtualDestination
+metadata:
+  name: backend
+  namespace: gloo-mesh
+spec:
+  hostname: tcp-backend.solo.io
+  port:
+    number: 9000
+    protocol: tcp
+    targetNumber: 9000
+  localized:
+    failoverDirectives:
+      - from:
+          region: us-east-1
+        to:
+          - region: us-west-1
+      - from:
+          region: us-west-1
+        to:
+          - region: us-east-1
+    outlierDetection:
+      consecutiveErrors: 1
+      maxEjectionPercent: 100
+      interval: 5s
+      baseEjectionTime: 30s
+    destinationSelectors:
+      - kubeServiceMatcher:
+          labels:
+            app: backend
+  virtualMesh:
+    name: virtual-mesh
+    namespace: gloo-mesh
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: backend-failover
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+    - kubeServiceMatcher:
+        labels:
+          app: backend
+  policy:
+    trafficShift:
+      destinations:
+        - virtualDestination:
+            name: backend
+            namespace: gloo-mesh

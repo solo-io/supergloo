@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/translation"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
@@ -52,6 +53,7 @@ func Start(
 	podBouncer podbouncer.PodBouncer,
 	translator translation.Translator,
 ) error {
+	ctx = contextutils.WithLogger(ctx, "cert-agent")
 	d := &certAgentReconciler{
 		ctx:         ctx,
 		builder:     builder,
@@ -128,19 +130,12 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	switch issuedCertificate.Status.State {
 	case certificatesv1.IssuedCertificateStatus_FINISHED:
 
-		// If issued cert secret is nil, simply return
-		if issuedCertificate.Spec.GetIssuedCertificateSecret() == nil {
-			return nil
+		// If the translator errors, set the Status to failed so we can restart the workflow
+		if err := r.translator.IssuedCertificateFinished(r.ctx, issuedCertificate, inputSnap, outputs); err != nil {
+			issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_FAILED
+			issuedCertificate.Status.Error = err.Error()
 		}
 
-		if issuedCertificateSecret, err := inputSnap.Secrets().Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
-			// ensure issued cert secret exists, nothing to do for this issued certificate
-			// add secret output to prevent it from being GC'ed
-			outputs.AddSecrets(issuedCertificateSecret)
-			return nil
-		}
-		// otherwise, restart the workflow from PENDING
-		fallthrough
 	case certificatesv1.IssuedCertificateStatus_FAILED:
 		// restart the workflow from PENDING
 		fallthrough
