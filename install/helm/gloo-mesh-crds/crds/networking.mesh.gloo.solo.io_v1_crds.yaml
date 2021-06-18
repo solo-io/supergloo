@@ -84,6 +84,43 @@ spec:
                     type: object
                 type: object
               type: array
+            gatewaySelector:
+              description: |-
+                Specify which ingress gateway traffic this trafficPolicy should
+                apply to. Multiple policies from different sources defining
+                different policies (eg retries, timeouts) will be merged.
+                If a conflicting policy value is defined in both a TrafficPolicy
+                resource (or multiple TrafficPolicy resources) and in-line on a VirtualHost,
+                or Route - then the in-line values will take precedence. If multiple
+                TrafficPolicies select the same VirtualHost or Route, then the older
+                TrafficPolicy (by CreationTime) takes precedence over any newer Traffic policy.
+                Omit to apply to all VirtualHosts and all of their routes.
+              items:
+                properties:
+                  routeLabelMatcher:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Map of labels to match. All labels listed here must be
+                      present on a route for that route to be selected.
+                      If omitted, all routes on the selected VirtualHosts are selected.
+                    type: object
+                  virtualHosts:
+                    description: |-
+                      Specify the VirtualHosts the TrafficPolicy will apply to.
+                      If omitted, all VirtualHosts are selected by default.
+                    items:
+                      properties:
+                        name:
+                          description: name of the resource being referenced
+                          type: string
+                        namespace:
+                          description: namespace of the resource being referenced
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              type: array
             httpRequestMatchers:
               description: |-
                 Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
@@ -1127,7 +1164,7 @@ spec:
               type: object
             sourceSelector:
               description: |-
-                Specify the Workloads (traffic sources) this TrafficPolicy applies to.
+                Specify the Workloads (sources for east-west traffic) this TrafficPolicy applies to.
                 Omit to apply to all Workloads.
               items:
                 properties:

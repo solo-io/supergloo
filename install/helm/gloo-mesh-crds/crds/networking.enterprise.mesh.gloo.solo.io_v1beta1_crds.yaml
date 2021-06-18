@@ -2774,6 +2774,13 @@ spec:
                         minimum: 0
                         type: integer
                     type: object
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Route level labels. Can be used by other resources (eg a TrafficPolicy) to
+                      select specific routes within a given gateway object.
+                    type: object
                   matchers:
                     description: |-
                       Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.).
@@ -4241,6 +4248,13 @@ spec:
                         maximum: 4294967295
                         minimum: 0
                         type: integer
+                    type: object
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Route level labels. Can be used by other resources (eg a TrafficPolicy) to
+                      select specific routes within a given gateway object.
                     type: object
                   matchers:
                     description: |-

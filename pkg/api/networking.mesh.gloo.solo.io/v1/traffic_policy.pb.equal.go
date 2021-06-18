@@ -80,6 +80,23 @@ func (m *TrafficPolicySpec) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetGatewaySelector()) != len(target.GetGatewaySelector()) {
+		return false
+	}
+	for idx, v := range m.GetGatewaySelector() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGatewaySelector()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetGatewaySelector()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	if len(m.GetHttpRequestMatchers()) != len(target.GetHttpRequestMatchers()) {
 		return false
 	}
@@ -310,6 +327,58 @@ func (m *TrafficPolicySpec_Policy) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetRateLimit(), target.GetRateLimit()) {
 			return false
 		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficPolicySpec_GatewaySelector) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficPolicySpec_GatewaySelector)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_GatewaySelector)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetVirtualHosts()) != len(target.GetVirtualHosts()) {
+		return false
+	}
+	for idx, v := range m.GetVirtualHosts() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVirtualHosts()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetVirtualHosts()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetRouteLabelMatcher()) != len(target.GetRouteLabelMatcher()) {
+		return false
+	}
+	for k, v := range m.GetRouteLabelMatcher() {
+
+		if strings.Compare(v, target.GetRouteLabelMatcher()[k]) != 0 {
+			return false
+		}
+
 	}
 
 	return true
