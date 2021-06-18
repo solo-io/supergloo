@@ -49,9 +49,9 @@ weight: 2
 |tokenSecret.namespace|string| |Namespace of the Kubernetes Secret|
 |tokenSecret.key|string|token|Key value of the data within the Kubernetes Secret|
 |maxGrpcMessageSize|string|4294967295|Specify to set a custom maximum message size for grpc messages sent and received by the Relay server|
-|metricsBackend|struct|{"prometheus":{"enabled":true,"url":"http://prometheus-server"}}|Specify a metrics backend for persisting and querying aggregated metrics|
-|metricsBackend.prometheus|struct|{"enabled":true,"url":"http://prometheus-server"}|Specify settings for using Prometheus as the metrics storage backend.|
-|metricsBackend.prometheus.enabled|bool|true|If true, use Prometheus as the metrics storage backend.|
+|metricsBackend|struct|{"prometheus":{"enabled":false,"url":"http://prometheus-server"}}|Specify a metrics backend for persisting and querying aggregated metrics|
+|metricsBackend.prometheus|struct|{"enabled":false,"url":"http://prometheus-server"}|Specify settings for using Prometheus as the metrics storage backend.|
+|metricsBackend.prometheus.enabled|bool|false|If true, use Prometheus as the metrics storage backend.|
 |metricsBackend.prometheus.url|string|http://prometheus-server|Specify the URL of the Prometheus server.|
 |Prometheus|map| |Helm values for configuring Prometheus. See the [Prometheus Helm chart](https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml) for the complete set of values.|
 |selfSigned|bool|true|Provision self signed certificates and bootstrap token for the relay server.|
@@ -59,7 +59,6 @@ weight: 2
 |admin.port|struct|{"name":"admin","port":11100}||
 |admin.port.name|string|admin|The name of this port within the service.|
 |admin.port.port|int32|11100|The default port that will be exposed by this service.|
-|disableRelayCa|bool|false||
 |enterpriseNetworking|struct|{"image":{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"LoadBalancer","ports":{"grpc":9900,"http":8080},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"LICENSE_KEY","valueFrom":{"secretKeyRef":{"name":"gloo-mesh-enterprise-license","key":"key"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the enterpriseNetworking deployment.|
 |enterpriseNetworking.image|struct|{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |enterpriseNetworking.image.tag|string| |Tag for the container.|

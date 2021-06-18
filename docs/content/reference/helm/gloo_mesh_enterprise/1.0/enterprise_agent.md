@@ -27,11 +27,6 @@ weight: 2
 |settingsRef|struct|{"name":"settings","namespace":"gloo-mesh"}|ref to the settings object that will be received from the networking server.|
 |settingsRef.name|string|settings||
 |settingsRef.namespace|string|gloo-mesh||
-|istiodSidecar|struct|{"createRoleBinding":false,"istiodServiceAccount":{"name":"istiod-service-account","namespace":"istio-system"}}|settings pretaining to the istiod sidecar deployment|
-|istiodSidecar.createRoleBinding|bool|false|create cluster role binding needed by istiod sidecar|
-|istiodSidecar.istiodServiceAccount|struct|{"name":"istiod-service-account","namespace":"istio-system"}|object reference to istiod service account|
-|istiodSidecar.istiodServiceAccount.name|string|istiod-service-account||
-|istiodSidecar.istiodServiceAccount.namespace|string|istio-system||
 |verbose|bool|false||
 |enterpriseAgent|struct|{"image":{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"grpc":9977,"http":9988},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the enterpriseAgent deployment.|
 |enterpriseAgent.image|struct|{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
