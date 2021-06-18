@@ -4,7 +4,6 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
@@ -137,7 +136,7 @@ message VirtualGatewaySpec {
             message RouteSpecifier {
                 oneof route_type{
                     // RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
-                    .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 1;
+                    .core.skv2.solo.io.ObjectSelector virtual_host_selector = 1;
 
                     // VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
                     VirtualHostSpec virtual_host = 2;
@@ -336,7 +335,7 @@ message VirtualGatewayStatus{
 
 
     // List of Istio Gateway CRs created by this VirtualGateway in each cluster
-    map<string, .common.mesh.gloo.solo.io.ObjectRefList> created_istio_gateways = 7;
+    map<string, .core.skv2.solo.io.ObjectRefList> created_istio_gateways = 7;
 
     // Relationships between objects
     // on Gw -> RTs selected

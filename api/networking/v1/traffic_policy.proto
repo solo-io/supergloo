@@ -7,10 +7,11 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 
 import "extproto/ext.proto";
@@ -31,7 +32,7 @@ message TrafficPolicySpec {
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
     // Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
     // Omit to apply to any HTTP request.
-    repeated .common.mesh.gloo.solo.io.HttpMatcher http_request_matchers = 3;
+    repeated .networking.mesh.gloo.solo.io.HttpMatcher http_request_matchers = 3;
 
     // Specify L7 routing and post-routing configuration.
     Policy policy = 4;
@@ -124,7 +125,7 @@ message TrafficPolicySpec {
         message CorsPolicy {
 
             // String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
-            repeated StringMatch allow_origins = 7;
+            repeated .networking.mesh.gloo.solo.io.StringMatch allow_origins = 7;
 
             // List of HTTP methods allowed to access the resource. The content will
             // be serialized to the `Access-Control-Allow-Methods` header.
@@ -290,29 +291,6 @@ message CsrfPolicy {
 
     // Specifies additional source origins that will be allowed in addition to
     // the destination origin.
-    repeated StringMatch additional_origins = 4;
+    repeated .networking.mesh.gloo.solo.io.StringMatch additional_origins = 4;
 
-}
-
-// Describes how to match a given string in HTTP headers. Match is case-sensitive.
-message StringMatch {
-
-    // The string match type.
-    oneof match_type {
-
-        // Exact string match.
-        string exact = 1;
-
-        // Prefix-based match.
-        string prefix = 2;
-
-        // ECMAscript style regex-based match.
-        string regex = 3;
-
-        // Suffix-based match.
-        string suffix = 4;
-    }
-
-      //If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match.
-      bool ignore_case = 5;
 }

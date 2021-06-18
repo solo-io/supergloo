@@ -56,6 +56,7 @@ message MeshSpec {
 
         // Describes the ingress gateway.
         message IngressGatewayInfo {
+            // TODO: remove name and namespace as ingress gw info now contains a ref
             // The name of the Ingress Gateway Service
             string name = 8;
 
@@ -177,10 +178,10 @@ message MeshStatus {
     // has processed the latest version of the Mesh.
     int64 observed_generation = 1;
 
-    // The VirtualMesh, if any, which contains this mesh.
+    // The VirtualMesh, if any, which contains this Mesh.
     AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // The VirtualDestinations, if any, which apply to this mesh.
+    // The VirtualDestinations, if any, which apply to this Mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
