@@ -27,7 +27,7 @@ This guide assumes the following:
 
 ## Installing Vault
 
-{{% notice note %}} Installing Vault is an optional step. An existing Vault deployment may be used if your organization already has one. {{% /notice %}}
+{{% notice note %}} Installing Vault is an optional step. An existing Vault deployment may be used if you or your organization already has one. {{% /notice %}}
 
 1. Install Vault using helm
 ```shell
@@ -129,6 +129,23 @@ spec:
   - name: istiod-istio-system-cluster-2
     namespace: gloo-mesh
 {{< /highlight >}}
+
+## Updating RBAC
+
+In order for the new istio-agent sidecar we are going to install in the next step to work, we will need to give it the necessary RBAC permissions. These include reading and modifying gloo-mesh resources. To do this we are going to update our `enterprise-agent` helm release on both clusters.
+
+If you have the `values` file for each agent on your local machine, then you should insert the following value. Otherwise run the following to get the currently deployed values.
+
+```shell
+for cluster in ${CONTEXT_1} ${CONTEXT_2}; do
+  helm get values -n gloo-mesh enterprise-agent --kube-context="${cluster}" > $cluster-values.yaml
+  echo "istiodSidecar:
+  createRoleBinding: false" > $cluster-values.yaml
+  helm upgrade -n gloo-mesh enterprise-agent --kube-context="${cluster}" -f $cluster-values.yaml
+  rm $cluster-values.yaml
+done
+```
+
 
 ## Modifying Istiod
 
