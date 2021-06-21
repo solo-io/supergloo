@@ -2,7 +2,6 @@ package federation
 
 import (
 	"context"
-	"net"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -384,8 +383,9 @@ func ResolutionForEndpointIpVersions(
 	workloadEntries []*networkingv1alpha3spec.WorkloadEntry,
 ) networkingv1alpha3spec.ServiceEntry_Resolution {
 	for _, workloadEntry := range workloadEntries {
-		// if endpoint addr is an IP (instead of hostname) and ipv6 format, return STATIC
-		if ip := net.ParseIP(workloadEntry.Address); ip != nil && ip.To4() == nil {
+		// if endpoint addr is an ipv6 addr, return STATIC
+		// only ipv6 addresses will have 2 or more colons, reference: https://datatracker.ietf.org/doc/html/rfc5952
+		if strings.Count(workloadEntry.Address, ":") >= 2 {
 			return networkingv1alpha3spec.ServiceEntry_STATIC
 		}
 	}
