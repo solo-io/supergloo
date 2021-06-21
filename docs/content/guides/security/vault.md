@@ -129,3 +129,175 @@ spec:
   - name: istiod-istio-system-cluster-2
     namespace: gloo-mesh
 {{< /highlight >}}
+
+## Modifying Istiod
+
+Now that we have created our VirtualMesh to use vault as an intermediate CA, we need to go ahead and modify our istio deployment to support fetching and dynamically reloading the intermediate CA from Vault.
+
+First things first, we need to get the verison of our components running in cluster:
+```shell
+export MGMT_PLANE_VERSION=$(meshctl version | jq '.server[].components[] | select(.componentName == "enterprise-networking") | .images[] | select(.name == "enterprise-networking") | .version')
+```
+
+{{< tabs >}}
+{{< tab name="Standard" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  meshConfig:
+    enableAutoMtls: true
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32000
+  values:
+    global:
+      pilotCertProvider: istiod
+EOF
+{{< /tab >}}
+{{< tab name="Kind" codelang="shell" >}}
+kubectl patch -n istio-system istiod --patch '{
+	"spec": {
+			"template": {
+				"spec": {
+						"initContainers": [
+							{
+									"args": [
+										"init-container"
+									],
+									"env": [
+										{
+												"name": "PILOT_CERT_PROVIDER",
+												"value": "istiod"
+										},
+										{
+												"name": "POD_NAME",
+												"valueFrom": {
+													"fieldRef": {
+															"apiVersion": "v1",
+															"fieldPath": "metadata.name"
+													}
+												}
+										},
+										{
+												"name": "POD_NAMESPACE",
+												"valueFrom": {
+													"fieldRef": {
+															"apiVersion": "v1",
+															"fieldPath": "metadata.namespace"
+													}
+												}
+										},
+										{
+												"name": "SERVICE_ACCOUNT",
+												"valueFrom": {
+													"fieldRef": {
+															"apiVersion": "v1",
+															"fieldPath": "spec.serviceAccountName"
+													}
+												}
+										}
+									],
+									"volumeMounts": [
+										{
+												"mountPath": "/etc/cacerts",
+												"name": "cacerts"
+										}
+									],
+									"imagePullPolicy": "IfNotPresent",
+									"image": "gcr.io/gloo-mesh/istiod-agent:$MGMT_PLANE_VERSION",
+									"name": "istiod-agent-init"
+							}
+						],
+						"containers": [
+							{
+									"args": [
+										"sidecar"
+									],
+									"env": [
+										{
+												"name": "PILOT_CERT_PROVIDER",
+												"value": "istiod"
+										},
+										{
+												"name": "POD_NAME",
+												"valueFrom": {
+													"fieldRef": {
+															"apiVersion": "v1",
+															"fieldPath": "metadata.name"
+													}
+												}
+										},
+										{
+												"name": "POD_NAMESPACE",
+												"valueFrom": {
+													"fieldRef": {
+															"apiVersion": "v1",
+															"fieldPath": "metadata.namespace"
+													}
+												}
+										},
+										{
+												"name": "SERVICE_ACCOUNT",
+												"valueFrom": {
+													"fieldRef": {
+															"apiVersion": "v1",
+															"fieldPath": "spec.serviceAccountName"
+													}
+												}
+										}
+									],
+									"volumeMounts": [
+										{
+												"mountPath": "/etc/cacerts",
+												"name": "cacerts"
+										}
+									],
+									"imagePullPolicy": "IfNotPresent",
+									"image": "gcr.io/gloo-mesh/istiod-agent:$MGMT_PLANE_VERSION",
+									"name": "istiod-agent"
+							}
+						],
+						"volumes": [
+							{
+									"name": "cacerts",
+									"secret": null,
+									"emptyDir": {
+										"medium": "Memory"
+									}
+							}
+						]
+				}
+			}
+	}
+}'
+{{< /tab >}}
+{{< /tabs >}}
