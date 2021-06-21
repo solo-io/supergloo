@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Set ServiceEntry resolution to `STATIC` if any endpoint addresses are ipv6 to workaround [this Istio issue](https://github.com/envoyproxy/envoy/issues/10489#issuecomment-606290733).
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/697
+    resolvesIssue: false
