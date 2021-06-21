@@ -379,6 +379,10 @@ Now that istio has been patched with the gloo-mesh istiod-agent sidecar, we can 
 
 The easiest way to do this will be to check the ca cert which istio propogates for initial TLS connection. This command will check the propogated root-cert against the local cert which we supplied to vault in an earlier step. If Vault was not setup using the earlier part of the tutorial, the Vault root-cert should instead be fetched and saved to the file `root-cert.pem` in the current directory.
 
+If installed correctly, the output from the following command should be empty.
+
 ```shell
-kubectl get cm -n bookinfo istio-ca-root-cert -ojson | jq -r  '.data["root-cert.pem"]' | diff root-cert.pem -
+for cluster in ${CONTEXT_1} ${CONTEXT_2}; do
+  kubectl --context="${cluster}" get cm -n bookinfo istio-ca-root-cert -ojson | jq -r  '.data["root-cert.pem"]' | diff root-cert.pem -
+done
 ```
