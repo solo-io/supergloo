@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Improve wording of meshctl check cluster output column names and hint message.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1562
+
