@@ -141,7 +141,7 @@ export MGMT_PLANE_VERSION=$(meshctl version | jq '.server[].components[] | selec
 
 {{< tabs >}}
 {{< tab name="Standard" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
+cat << EOF | istioctl manifest generate -f - > out.yaml
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -157,6 +157,75 @@ spec:
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
   components:
+    pilot:
+      k8s:
+        overlays:
+        - apiVersion: apps/v1
+          kind: Deployment
+          name: istiod
+          patches:
+          - path: spec.template.spec.volumes
+            value: 
+              name: cacerts,
+              secret: null,
+              emptyDir:
+                medium: Memory
+          - path: spec.template.spec.containers[1]
+            value: 
+              name: istiod-agent
+              image: gcr.io/gloo-mesh/istiod-agent:$MGMT_PLANE_VERSION
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+              - mountPath: /etc/cacerts
+                name: cacerts
+              args: 
+              - sidecar
+              env:
+              - name: PILOT_CERT_PROVIDER
+                value: istiod
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.name
+              - name: POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+              - name: SERVICE_ACCOUNT
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.serviceAccountName
+          - path: spec.template.spec.initContainers
+            value: 
+            - name: istiod-agent
+              image: gcr.io/gloo-mesh/istiod-agent:$MGMT_PLANE_VERSION
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+              - mountPath: /etc/cacerts
+                name: cacerts
+              args: 
+              - init-container
+              env:
+              - name: PILOT_CERT_PROVIDER
+                value: istiod
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.name
+              - name: POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+              - name: SERVICE_ACCOUNT
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.serviceAccountName
     # Istio Gateway feature
     ingressGateways:
     - name: istio-ingressgateway
