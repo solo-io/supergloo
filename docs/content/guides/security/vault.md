@@ -124,9 +124,9 @@ spec:
     selectors:
     - {}
   meshes:
-  - name: istiod-istio-system-cluster-1 
+  - name: istiod-istio-system-mgmt-cluster
     namespace: gloo-mesh
-  - name: istiod-istio-system-cluster-2
+  - name: istiod-istio-system-remote-cluster
     namespace: gloo-mesh
 {{< /highlight >}}
 
@@ -139,9 +139,11 @@ First things first, we need to get the verison of our components running in clus
 export MGMT_PLANE_VERSION=$(meshctl version | jq '.server[].components[] | select(.componentName == "enterprise-networking") | .images[] | select(.name == "enterprise-networking") | .version')
 ```
 
+Then we need to update our istiod deployment with the sidecar to load and store the certificates. Most installations can use the `istioctl` command for this. However, when running in `kind` a manual json patch is necessary. This operation should be performed on both clusters
+
 {{< tabs >}}
 {{< tab name="Standard" codelang="shell" >}}
-cat << EOF | istioctl manifest generate -f - > out.yaml
+cat << EOF | istioctl manifest install -y -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -164,10 +166,10 @@ spec:
           kind: Deployment
           name: istiod
           patches:
-          - path: spec.template.spec.volumes
+          - path: spec.template.spec.volumes[name:cacerts]
             value: 
-              name: cacerts,
-              secret: null,
+              name: cacerts
+              secret: null
               emptyDir:
                 medium: Memory
           - path: spec.template.spec.containers[1]
@@ -197,10 +199,10 @@ spec:
                 valueFrom:
                   fieldRef:
                     apiVersion: v1
-                    fieldPath: metadata.serviceAccountName
+                    fieldPath: spec.serviceAccountName
           - path: spec.template.spec.initContainers
             value: 
-            - name: istiod-agent
+            - name: istiod-agent-init
               image: gcr.io/gloo-mesh/istiod-agent:$MGMT_PLANE_VERSION
               imagePullPolicy: IfNotPresent
               volumeMounts:
@@ -225,7 +227,7 @@ spec:
                 valueFrom:
                   fieldRef:
                     apiVersion: v1
-                    fieldPath: metadata.serviceAccountName
+                    fieldPath: spec.serviceAccountName
     # Istio Gateway feature
     ingressGateways:
     - name: istio-ingressgateway
