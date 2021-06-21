@@ -119,11 +119,12 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, c client.Client, 
 	for _, status := range clusterStatuses {
 		switch {
 		// cluster registered, agents are not pulling or pushing
-		case status.registered && ((status.agentsPulling < 0) || (status.agentsPushing < 0)):
+		case status.registered && ((status.agentsPulling < 1) || (status.agentsPushing < 1)):
 			errs = append(errs, eris.Errorf("cluster %v registered but agent is not connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
-			hint += "check the logs of the agent on " + status.cluster + " and investigate whether/why the gRPC connection failed from the agent to the mgmt server.\n"
-		// cluster not registered, agents are pulling or pushing
-		case !status.registered && ((status.agentsPulling < 0) || (status.agentsPushing < 0)):
+			hint += "check the logs of the agent on " + status.cluster + " and investigate whether/why the gRPC connection failed from the agent to the mgmt server. " +
+				"Additionally, if the pushing value zero and pulling is non-zero, that usually indicates a connected dashboard and an unconnected agent.\n"
+		// cluster not registered, agents are pushing. Cannot use positive pull status as agent evidence, since it may also be a dashboard connection.
+		case !status.registered && status.agentsPushing > 0:
 			errs = append(errs, eris.Errorf("cluster %v is not currently registered but agent is connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
 			hint += "create a corresponding KubernetesCluster CR to register the " + status.cluster + ".\n"
 		}
@@ -142,7 +143,7 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, c client.Client, 
 func printClusterStatuses(clusterStatuses []connectionStatus) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Cluster", "Registered", "Pulling", "Pushing"})
+	table.SetHeader([]string{"Cluster", "Registered", "Dashboards and Agents Pulling", " Agents Pushing"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
