@@ -4,7 +4,7 @@ menuTitle: Access Control
 weight: 30
 ---
 
-In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}), we federated multiple meshes and established a [shared root CA for a shared identity]({{% versioned_link_path fromRoot="/guides/federate_identity/#understanding-the-shared-root-process" %}}) domain. Now that we have a logical [VirtualMesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/" %}}), we need a way to establish **access** policies across the multiple meshes, without treating each of them individually. Gloo Mesh helps by establishing a single, unified API that understands the logical VirtualMesh construct.
+In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}), we federated multiple meshes and established a [shared root CA for a shared identity]({{% versioned_link_path fromRoot="/guides/federate_identity/#understanding-the-shared-root-process" %}}) domain. Now that we have a logical [VirtualMesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/" %}}), we need a way to establish **access** policies across the multiple meshes, without treating each of them individually. Gloo Mesh helps by establishing a single, unified API that understands the logical VirtualMesh construct.
 
 
 ## Before you begin
@@ -39,7 +39,7 @@ kubectl --context $CONTEXT_1 -n bookinfo port-forward deployment/productpage-v1 
 
 In a browser, visit [http://localhost:9080](http://localhost:9080) (potentially selecting "normal user" if this is your first time using the app) and verify that both the book details and the reviews are loading correctly. Depending on which review service is accessed you will see reviews with no stars or black stars. You can refresh the page to see the review source change.
 
-Let's use the Gloo Mesh [AccessPolicy]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" %}}) resource to enforce access control across the logical VirtualMesh. The default behavior is to `deny-all`.
+Let's use the Gloo Mesh [AccessPolicy]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" %}}) resource to enforce access control across the logical VirtualMesh. The default behavior is to `deny-all`.
 
 In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_path fromRoot="/guides/federate_identity/#creating-a-virtual-mesh" %}}), but we had access control disabled. Let's take a look at the same VirtualService, with access control enabled:
 

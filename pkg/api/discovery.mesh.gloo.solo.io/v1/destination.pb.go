@@ -832,7 +832,7 @@ func (x *DestinationSpec_ExternalService_ServicePort) GetProtocol() string {
 	return ""
 }
 
-// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination.
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination.
 // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 type DestinationStatus_AppliedTrafficPolicy struct {
 	state         protoimpl.MessageState
@@ -900,7 +900,7 @@ func (x *DestinationStatus_AppliedTrafficPolicy) GetSpec() *v11.TrafficPolicySpe
 	return nil
 }
 
-// Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+// Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}})
 // that applies to this Destination.
 // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
 type DestinationStatus_AppliedAccessPolicy struct {
@@ -969,7 +969,7 @@ func (x *DestinationStatus_AppliedAccessPolicy) GetSpec() *v11.AccessPolicySpec 
 	return nil
 }
 
-// Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+// Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}).
 // Federation allows access to the Destination from other meshes/clusters.
 type DestinationStatus_AppliedFederation struct {
 	state         protoimpl.MessageState
@@ -983,8 +983,8 @@ type DestinationStatus_AppliedFederation struct {
 	FederatedHostname string `protobuf:"bytes,1,opt,name=federated_hostname,json=federatedHostname,proto3" json:"federated_hostname,omitempty"`
 	// The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
 	FederatedToMeshes []*v1.ObjectRef `protobuf:"bytes,2,rep,name=federated_to_meshes,json=federatedToMeshes,proto3" json:"federated_to_meshes,omitempty"`
-	// Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
-	// [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+	// Whether the Destination has been federated to the given meshes using a VirtualMesh where
+	// [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}})
 	// is true.
 	FlatNetwork bool `protobuf:"varint,3,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
 }

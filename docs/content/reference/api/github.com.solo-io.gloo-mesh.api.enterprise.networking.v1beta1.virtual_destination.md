@@ -54,7 +54,7 @@ A backing Destination. Has to be at the top level, as cue does not function well
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec"></a>
 
 ### VirtualDestinationSpec
-A VirtualDestination creates a new hostname to which client workloads can send requests. The hostname abstracts over a set of underlying Destinations and provides failover functionality between them. Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).<br>Each Destination backing the VirtualDestination must be configured with a [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}). Currently this feature only supports Destinations backed by Istio.
+A VirtualDestination creates a new hostname to which client workloads can send requests. The hostname abstracts over a set of underlying Destinations and provides failover functionality between them. Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).<br>Each Destination backing the VirtualDestination must be configured with a [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" >}}). Currently this feature only supports Destinations backed by Istio.
 
 
 | Field | Type | Label | Description |

@@ -178,7 +178,7 @@ message DestinationStatus {
     // Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
     AppliedFederation applied_federation = 6;
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination.
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination.
     // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
     message AppliedTrafficPolicy {
 
@@ -192,7 +192,7 @@ message DestinationStatus {
         .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
     }
 
-    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}})
     // that applies to this Destination.
     // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
     message AppliedAccessPolicy {
@@ -207,7 +207,7 @@ message DestinationStatus {
         .networking.mesh.gloo.solo.io.AccessPolicySpec spec = 3;
     }
 
-    // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+    // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}).
     // Federation allows access to the Destination from other meshes/clusters.
     message AppliedFederation {
 
@@ -221,8 +221,8 @@ message DestinationStatus {
         // The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
         repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
 
-        // Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
-        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+        // Whether the Destination has been federated to the given meshes using a VirtualMesh where
+        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}})
         // is true.
         bool flat_network = 3;
     }

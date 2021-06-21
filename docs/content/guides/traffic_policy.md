@@ -113,7 +113,7 @@ istio-ingressgateway-istio-system-cluster-1            3h7m
 petstore-default-cluster-1                             3h7m
 ```
 
-We are going to create a TrafficPolicy that uses the `petstore-default-cluster-1` as a Destination. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for [TrafficPolicy in the API reference section]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}).
+We are going to create a TrafficPolicy that uses the `petstore-default-cluster-1` as a Destination. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for [TrafficPolicy in the API reference section]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" %}}).
 
 Here is the configuration we will apply:
 
@@ -200,7 +200,7 @@ spec:
     timeout: 0.100s
 ```
 
-As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Gloo Mesh TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}) in our API provides more information on using traffic policies.
+As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Gloo Mesh TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" %}}) in our API provides more information on using traffic policies.
 
 ## Configuring a Default Route
 
@@ -268,4 +268,4 @@ spec:
 
 ## Next Steps
 
-Now that we have seen a simple example of how Gloo Mesh can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
+Now that we have seen a simple example of how Gloo Mesh can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
