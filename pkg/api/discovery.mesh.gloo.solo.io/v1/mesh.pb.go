@@ -782,7 +782,7 @@ func (x *MeshSpec_Istio_IngressGatewayInfo) GetTlsContainerPort() uint32 {
 	return 0
 }
 
-// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
+// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
 // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 type MeshStatus_AppliedVirtualMesh struct {
 	state         protoimpl.MessageState
