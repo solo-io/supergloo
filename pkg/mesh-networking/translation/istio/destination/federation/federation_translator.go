@@ -230,12 +230,12 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 
 	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
 
-	// ObjectMeta's Namespace and ClusterName will be populated when translating federated outputs
 	resolution, err := ResolutionForEndpointIpVersions(workloadEntries)
 	if err != nil {
 		return nil, err
 	}
 
+	// ObjectMeta's Namespace and ClusterName will be populated when translating federated outputs
 	return &networkingv1alpha3.ServiceEntry{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   federatedHostname,
@@ -410,14 +410,10 @@ func ResolutionForEndpointIpVersions(
 		}
 	}
 
-	if !foundHostname {
-		// if all endpoint addresses are IPs, return STATIC
-		return networkingv1alpha3spec.ServiceEntry_STATIC, nil
-	} else if !foundIpv6 {
-		// if all endpoint addresses are either hostnames or ipv4, return DNS
-		return networkingv1alpha3spec.ServiceEntry_DNS, nil
-	} else {
-		// if both hostnames and ipv6 found, return error
+	if foundHostname && foundIpv6 {
 		return networkingv1alpha3spec.ServiceEntry_NONE, eris.New("endpoints contain both ipv6 and hostname addresses")
+	} else if foundHostname && !foundIpv6 {
+		return networkingv1alpha3spec.ServiceEntry_DNS, nil
 	}
+	return networkingv1alpha3spec.ServiceEntry_STATIC, nil
 }
