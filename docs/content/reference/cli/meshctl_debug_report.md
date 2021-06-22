@@ -17,6 +17,8 @@ For multiple clusters use commas to separate kube configs or kube contexts
 --kubeconfig ~/.kube/config --context cluster-1,cluster-2
 --kubeconfig ~/.kube/cluster1,~/.kube/cluster2 --context cluster-1,cluster-2
 
+The --kubeconfig and --context flags are not needed if you already have your meshctl config file set up (see meshctl cluster configure).
+
 The filter spec is interpreted as 'must be in (ns1 OR ns2) AND (dep1 OR dep2) AND (cntr1 OR cntr2)...'
 The log will be included only if the container matches at least one include filter and does not match any exclude filters.
 All parts of the filter are optional and can be omitted e.g. ns1//pod1 filters only for namespace ns1 and pod1.
@@ -33,6 +35,7 @@ meshctl debug report [flags]
 ### Options
 
 ```
+      --config string                set the path to the meshctl config file (default "<home_directory>/.gloo-mesh/meshctl-config.yaml")
       --context string               Name of the kubeconfig Context. For multiple contexts use a comma (Ex. cluster1,cluster2)
       --critical-errs strings        List of comma separated glob patters to match against log error strings. If any pattern matches an error in the log, the logs is given the highest priority for archive inclusion.
       --dir string                   Set a specific directory for temporary artifact storage.
