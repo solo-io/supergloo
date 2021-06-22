@@ -381,5 +381,10 @@ var _ = Describe("FederationTranslator", func() {
 		workloadEntriesWithIpv4MappedIpv6 = append(workloadEntriesWithIpv4MappedIpv6, &networkingv1alpha3spec.WorkloadEntry{Address: "hostname"})
 		_, err = federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv4MappedIpv6)
 		Expect(err).ToNot(BeNil())
+
+		workloadEntriesWithHostname := append(workloadEntries, &networkingv1alpha3spec.WorkloadEntry{Address: "hostname"})
+		res, err = federation.ResolutionForEndpointIpVersions(workloadEntriesWithHostname)
+		Expect(err).To(BeNil())
+		Expect(res).To(Equal(networkingv1alpha3spec.ServiceEntry_DNS))
 	})
 })
