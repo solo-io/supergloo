@@ -304,7 +304,7 @@ var _ = Describe("FederationTranslator", func() {
 				// only export to Gateway workload namespace
 				ExportTo:   []string{"."},
 				Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-				Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+				Resolution: networkingv1alpha3spec.ServiceEntry_STATIC,
 				Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
 					{
 						// map to the local hostname
@@ -354,21 +354,32 @@ var _ = Describe("FederationTranslator", func() {
 			{
 				Address: "192.168.21.2",
 			},
-			{
-				Address: "hostname",
-			},
 		}
-		Expect(federation.ResolutionForEndpointIpVersions(workloadEntries)).To(Equal(networkingv1alpha3spec.ServiceEntry_DNS))
+		res, err := federation.ResolutionForEndpointIpVersions(workloadEntries)
+		Expect(err).To(BeNil())
+		Expect(res).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
 
 		workloadEntriesWithIpv6 := append(workloadEntries, &networkingv1alpha3spec.WorkloadEntry{Address: "fd00:10:96::dcc0"})
-		Expect(federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv6)).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
+		res, err = federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv6)
+		Expect(err).To(BeNil())
+		Expect(res).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
 
 		// ipv4 addresses represented as ipv6 should still be handled with STATIC resolution
 		workloadEntriesWithIpv4MappedIpv6 := append(workloadEntries, &networkingv1alpha3spec.WorkloadEntry{Address: "::FFFF:C0A8:1"})
-		Expect(federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv4MappedIpv6)).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
+		res, err = federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv4MappedIpv6)
+		Expect(err).To(BeNil())
+		Expect(res).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
 
 		// ipv4 addresses represented as ipv6 should still be handled with STATIC resolution
 		workloadEntriesWithIpv4MappedIpv6 = append(workloadEntries, &networkingv1alpha3spec.WorkloadEntry{Address: "::FFFF:C0A8:0001"})
-		Expect(federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv4MappedIpv6)).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
+		res, err = federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv4MappedIpv6)
+		Expect(err).To(BeNil())
+		Expect(res).To(Equal(networkingv1alpha3spec.ServiceEntry_STATIC))
+
+		// error should be thrown if both ipv6 and hostname found
+		workloadEntriesWithIpv4MappedIpv6 = append(workloadEntries, &networkingv1alpha3spec.WorkloadEntry{Address: "::FFFF:C0A8:0001"})
+		workloadEntriesWithIpv4MappedIpv6 = append(workloadEntriesWithIpv4MappedIpv6, &networkingv1alpha3spec.WorkloadEntry{Address: "hostname"})
+		_, err = federation.ResolutionForEndpointIpVersions(workloadEntriesWithIpv4MappedIpv6)
+		Expect(err).ToNot(BeNil())
 	})
 })
