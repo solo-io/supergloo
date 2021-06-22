@@ -77,6 +77,8 @@ For multiple clusters use commas to separate kube configs or kube contexts
 --kubeconfig ~/.kube/config --context cluster-1,cluster-2
 --kubeconfig ~/.kube/cluster1,~/.kube/cluster2 --context cluster-1,cluster-2
 
+The --kubeconfig and --context flags are not needed if you already have your meshctl config file set up (see meshctl cluster configure).
+
 The filter spec is interpreted as 'must be in (ns1 OR ns2) AND (dep1 OR dep2) AND (cntr1 OR cntr2)...'
 The log will be included only if the container matches at least one include filter and does not match any exclude filters.
 All parts of the filter are optional and can be omitted e.g. ns1//pod1 filters only for namespace ns1 and pod1.
@@ -124,6 +126,10 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	tempDir = archive.GetRootDir(tempDir)
 	tempDirPlaceholder := tempDir
 
+	currentClusterContext, err := content.GetClusterContext()
+	if err == nil {
+		common.LogAndPrintf("\nCurrent cluster context: %s\n", currentClusterContext)
+	}
 	combos := buildKubeConfigList(kubeConfigs, contexts, len(config.KubeConfigPath+config.Context) > 0)
 	for name, meshctlCluster := range combos {
 		kubeConfigPath := meshctlCluster.KubeConfig
@@ -198,16 +204,15 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	return nil
 }
 
-// this is kinda tricky because you can provide the following combinations
-// no kubeconfig no context (use default for both)
+// If no flags were passed in or if a non-default meshctl config file path was passed in,
+// use the meshctl config file.
+// Otherwise, parse the combos from the following combinations
 // no kubeconfig, list of contexts (meaning use default kubeconfig)
 // all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
 // and equal list of kubeconfigs and contexts (use each corresponding context per kubeconfig)
 func buildKubeConfigList(kubeconfigs, kubecontexts []string, useFlags bool) map[string]utils.MeshctlCluster {
-	// If no flags were passed in, use the meshctl config file if it exists.
-	if !useFlags {
-		clusters, err := utils.ParseMeshctlConfig("")
-		if err == nil {
+	if !useFlags || gConfig.ConfigFilePath != utils.DefaultConfigPath {
+		if clusters, err := utils.ParseMeshctlConfig(gConfig.ConfigFilePath); err == nil {
 			return clusters.Clusters
 		}
 	}

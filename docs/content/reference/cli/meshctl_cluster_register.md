@@ -16,7 +16,7 @@ The name of the context of the target cluster must be provided via the
 --remote-context flag.
 
 If the management cluster is different than the one that the current context
-points then it an be provided via the --mgmt-context flag.
+points to then it an be provided via the --mgmt-context flag.
 
 The edition registered must match the edition installed on the management cluster
 
