@@ -1,4 +1,7 @@
 changelog:
   - type: FIX
+    description: Add documentation for the meshctl config.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1584
+  - type: FIX
     description: Document examples for overriding arbitrary Deployment and Service spec fields.
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1635
