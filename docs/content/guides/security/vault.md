@@ -140,7 +140,7 @@ If you have the `values` file for each agent on your local machine, then you sho
 for cluster in ${CONTEXT_1} ${CONTEXT_2}; do
   helm get values -n gloo-mesh enterprise-agent --kube-context="${cluster}" > $cluster-values.yaml
   echo "istiodSidecar:
-  createRoleBinding: false" > $cluster-values.yaml
+  createRoleBinding: true" > $cluster-values.yaml
   helm upgrade -n gloo-mesh enterprise-agent --kube-context="${cluster}" -f $cluster-values.yaml
   rm $cluster-values.yaml
 done
