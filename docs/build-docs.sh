@@ -75,14 +75,14 @@ if [ ! -z ${PREVIEW_DOCS} ]; then # If doing a preview docs build,
   generateHugoVersionsYaml $version
 
   # Use partials from master
-  mkdir -p layouts/partials
-  cp -a "$workingDir/layouts/partials/." layouts/partials/
-  cp -f "$workingDir/Makefile" Makefile
-  cp -af "$workingDir/docsgen/." docsgen
-  cp -f "$workingDir/docs.toml" docs.toml
-  mkdir -p cmd
-  cp -f "$workingDir/cmd/docsgen.go" cmd/docsgen.go
-  # Generate the versioned static site.
+  # mkdir -p layouts/partials
+  # cp -a "$workingDir/layouts/partials/." layouts/partials/
+  # cp -f "$workingDir/Makefile" Makefile
+  # cp -af "$workingDir/docsgen/." docsgen
+  # cp -f "$workingDir/docs.toml" docs.toml
+  # mkdir -p cmd
+  # cp -f "$workingDir/cmd/docsgen.go" cmd/docsgen.go
+  # # Generate the versioned static site.
   make site-release
 
   # Generate the search index
