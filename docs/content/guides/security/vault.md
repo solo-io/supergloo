@@ -24,10 +24,10 @@ This guide assumes the following:
   * `istio-system` is the root namespace for both Istio deployments
   * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}}) under the `bookinfo` namespace
   * the following environment variables are set:
-    ```shell
-    CONTEXT_1=cluster_1's_context
-    CONTEXT_2=cluster_2's_context
-    ```
+```shell
+CONTEXT_1="cluster_1's_context"
+CONTEXT_2="cluster_2's_context"
+```
 
 ## Installing Vault
 
@@ -100,7 +100,7 @@ done
 
 ## Enabling Vault as an intermediate CA
 
-Now we need to federate our 2 meshes together using Vault to federate identity. To do this we will need to create/edit a `VirtualMesh` with the new Vault shared mTLS config.
+Now we need to federate our 2 meshes together using Vault to federate identity. To do this we will need to create/edit a `VirtualMesh` with the new Vault shared mTLS config. The highlighted lines are the new config which the remote clusters will use to authenticate, and communicate with vault. There are brief explinations below, but for further information see the [API docs]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.vault_ca/" %}})
 
 {{< highlight yaml "hl_lines=10-20" >}}
 apiVersion: networking.mesh.gloo.solo.io/v1
@@ -134,6 +134,7 @@ spec:
     namespace: gloo-mesh
 {{< /highlight >}}
 
+Run the following command to apply this `VirtualMesh` to the mgmt-cluster.
 ```shell
 cat << EOF | kubectl apply --context=${CONTEXT_1} -f -
 apiVersion: networking.mesh.gloo.solo.io/v1
