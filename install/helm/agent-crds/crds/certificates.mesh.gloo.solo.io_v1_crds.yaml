@@ -705,6 +705,31 @@ spec:
           type: object
         status:
           properties:
+            conditions:
+              description: |-
+                A list of all conditions which have occured
+                Examples of reported events may be individual meshes which have been properly rotated.
+              items:
+                properties:
+                  lastTransitionTime:
+                    type: string
+                  lastUpdateTime:
+                    type: string
+                  message:
+                    description: Human readable message about condition
+                    type: string
+                  state:
+                    description: State observed during condition
+                    enum:
+                    - PENDING
+                    - ROTATING_MULTI_ROOT
+                    - ROTATING_NEW_ROOT
+                    - VERIFYING
+                    - FINISHED
+                    - FAILED
+                    type: string
+                type: object
+              type: array
             error:
               description: |-
                 Any error observed which prevented the CertificateRotation from being processed.
@@ -722,7 +747,8 @@ spec:
                 by the issuer.
               enum:
               - PENDING
-              - ROTATING
+              - ROTATING_MULTI_ROOT
+              - ROTATING_NEW_ROOT
               - VERIFYING
               - FINISHED
               - FAILED

@@ -116,5 +116,62 @@ func (m *CertificateRotationStatus) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetConditions()) != len(target.GetConditions()) {
+		return false
+	}
+	for idx, v := range m.GetConditions() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetConditions()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetConditions()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *CertificateRotationStatus_Condition) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*CertificateRotationStatus_Condition)
+	if !ok {
+		that2, ok := that.(CertificateRotationStatus_Condition)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetLastTransitionTime(), target.GetLastTransitionTime()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetLastUpdateTime(), target.GetLastUpdateTime()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetMessage(), target.GetMessage()) != 0 {
+		return false
+	}
+
+	if m.GetState() != target.GetState() {
+		return false
+	}
+
 	return true
 }
