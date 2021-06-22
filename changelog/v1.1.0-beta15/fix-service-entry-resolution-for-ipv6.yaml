@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Report error if ServiceEntry endpoints have both ipv6 and hostname addresses.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/697
+    resolvesIssue: false
