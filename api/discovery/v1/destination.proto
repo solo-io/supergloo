@@ -259,17 +259,18 @@ message DestinationStatus {
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
     }
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
-    // that references subsets on this Destination in a traffic shift.
-    // Note: this is an Istio-specific feature.
-    message RequiredSubsets {
-        // Reference to the TrafficPolicy object.
-        .core.skv2.solo.io.ObjectRef traffic_policy_ref = 1;
+}
 
-        // The observed generation of the TrafficPolicy.
-        int64 observedGeneration = 2;
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
+// that references subsets on this Destination in a traffic shift.
+// Note: this is an Istio-specific feature.
+message RequiredSubsets {
+    // Reference to the TrafficPolicy object.
+    .core.skv2.solo.io.ObjectRef traffic_policy_ref = 1;
 
-        // The applied traffic shift.
-        .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination traffic_shift = 3;
-    }
+    // The observed generation of the TrafficPolicy.
+    int64 observedGeneration = 2;
+
+    // The applied traffic shift.
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination traffic_shift = 3;
 }

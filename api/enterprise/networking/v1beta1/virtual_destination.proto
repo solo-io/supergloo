@@ -169,7 +169,7 @@ message VirtualDestinationStatus {
     repeated string errors = 5;
 
     // The set of TrafficPolicies that reference subsets on this VirtualDestination as a traffic shift.
-    repeated discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets required_subsets = 6;
+    repeated discovery.mesh.gloo.solo.io.RequiredSubsets required_subsets = 6;
 
     message SelectedDestinations {
 

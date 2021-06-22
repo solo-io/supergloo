@@ -23,5 +23,15 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 		"common-protos/google/api/field_behavior.proto",
 	}
 
+	// used for a proto option which disables openapi validation on fields
+	anyVendorImports.External["github.com/solo-io/solo-apis"] = []string{
+		"api/rate-limiter/v1alpha1/ratelimit.proto",
+	}
+
+	// used for a proto option which disables openapi validation on fields
+	anyVendorImports.External["cuelang.org/go"] = []string{
+		"encoding/protobuf/cue/cue.proto",
+	}
+
 	return anyVendorImports
 }

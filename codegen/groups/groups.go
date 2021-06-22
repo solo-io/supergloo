@@ -54,10 +54,10 @@ var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceT
 })
 
 var GlooMeshGroups = []model.Group{
+	GlooMeshEnterpriseNetworkingGroup,
+	GlooMeshNetworkingGroup, // TODO revert
 	GlooMeshSettingsGroup,
 	GlooMeshDiscoveryGroup,
-	GlooMeshNetworkingGroup,
-	GlooMeshEnterpriseNetworkingGroup,
 	GlooMeshEnterpriseObservabilityGroup,
 	GlooMeshEnterpriseRbacGroup,
 }

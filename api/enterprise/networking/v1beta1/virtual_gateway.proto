@@ -7,12 +7,13 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
+
+import "encoding/protobuf/cue/cue.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -35,7 +36,7 @@ message VirtualGatewaySpec {
     repeated .common.mesh.gloo.solo.io.WorkloadSelector deploy_to_sidecars = 2;
 
     // Each Gateway must implement one or more ConnectionHandlers.
-    // A ConnectionHandler instructs the gateway how to handle clients 
+    // A ConnectionHandler instructs the gateway how to handle clients
     // which have connected to the specified bind address.
     // Typically `connectionHandlers` will consist of a single `http` handler
     // which serves HTTP Routes defined in a set of VirtualHosts.
@@ -70,7 +71,7 @@ message VirtualGatewaySpec {
     message ConnectionHandler {
         // Additional options for matching a connection to a specific gateway.
         // This is required when more than one `connectionHandler` is specified for a single gateway.
-        // Typically this is used to serve different 
+        // Typically this is used to serve different
         ConnectionMatch connection_match = 1;
 
         // The type of routes this handler will serve.
@@ -87,7 +88,7 @@ message VirtualGatewaySpec {
         message ConnectionMatch {
             // Look at what Envoy exposes, put them all(maybe?) here
             // Should expose everything we can do with Envoy, ideally.
-            
+
             // Protocol
             string transport_protocol = 1;
 
@@ -131,17 +132,18 @@ message VirtualGatewaySpec {
         message HttpRoutes {
 
             repeated RouteSpecifier route_config = 1;
-            
+
             // HTTP Listener Options // Root level RouteTable + VirtualHost + routes level
             HttpOptions route_options = 8;
-            
+
             message RouteSpecifier {
                 oneof route_type{
                     // RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
                     .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 1;
 
                     // VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
-                    VirtualHostSpec virtual_host = 2;
+                    // Note that Kubernetes admission validation of inline virtual hosts is disabled. For production, the use of `virtualHostSelector` is recommended.
+                    VirtualHostSpec virtual_host = 2 [(cue.opt).disable_openapi_validation = true];
                 }
 
             }
@@ -164,11 +166,19 @@ message VirtualGatewaySpec {
                 .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
 
                 // Configure the Envoy based Ratelimit filter for this Gateway.
-                .networking.mesh.gloo.solo.io.Ratelimit ratelimit = 3;
+                RateLimitFilter rate_limit = 3;
 
-                // Configure the Envoy based Ratelimit filter for this Gateway.
-                .networking.mesh.gloo.solo.io.RatelimitSettings ratelimit_settings = 4;
+                // Filter-level config
+                message RateLimitFilter {
+                    .core.skv2.solo.io.ObjectRef ratelimit_server_ref = 1;
+                    google.protobuf.Duration request_timeout = 2;
 
+                    bool deny_on_fail = 3;
+
+                    // Set this is set to true if you would like to rate limit traffic before applying external auth to it.
+                    // *Note*: When this is true, you will lose some features like being able to rate limit a request based on its auth state
+                    bool rate_limit_before_auth = 9;
+                }
             }
         }
 
@@ -202,11 +212,11 @@ message VirtualGatewaySpec {
                         // SSLFiles reference paths to certificates which can be read by the proxy off of its local filesystem
                     }
 
-                    
+
 
                     // optional. the SNI domains that should be considered for TLS connections
                     repeated string sni_domains = 3;
-                    
+
                     // Verify that the Subject Alternative Name in the peer certificate is one of the specified values.
                     // note that a root_ca must be provided if this option is used.
                     repeated string verify_subject_alt_name = 5;
@@ -230,21 +240,21 @@ message VirtualGatewaySpec {
                         enum ProtocolVersion {
                             // Envoy will choose the optimal TLS version.
                             TLS_AUTO = 0;
-                        
+
                             // TLS 1.0
                             TLSv1_0 = 1;
-                        
+
                             // TLS 1.1
                             TLSv1_1 = 2;
-                        
+
                             // TLS 1.2
                             TLSv1_2 = 3;
-                        
+
                             // TLS 1.3
                             TLSv1_3 = 4;
                         }
 
-                        
+
                         ProtocolVersion minimum_protocol_version = 1;
                         ProtocolVersion maximum_protocol_version = 2;
                         repeated string cipher_suites = 3;
@@ -264,7 +274,7 @@ message VirtualGatewaySpec {
                         // Reference to a gloo mesh VirtualDestination
                         .core.skv2.solo.io.ObjectRef virtual  = 2;
 
-                        // Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as 
+                        // Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
                         // each gateway workload which routes to this destination.
                         .core.skv2.solo.io.ClusterObjectRef kube  = 3;
 
@@ -278,7 +288,7 @@ message VirtualGatewaySpec {
                     // If omitted, all destinations in the route will be load balanced between evenly.
                     uint32 weight = 5;
                 }
-            
+
             }
 
              message TcpOptions {
@@ -289,7 +299,7 @@ message VirtualGatewaySpec {
                     // See here for more information: https://www.envoyproxy.io/docs/envoy/v1.10.0/api-v2/config/filter/network/tcp_proxy/v2/tcp_proxy.proto#envoy-api-msg-config-filter-network-tcp-proxy-v2-tcpproxy
                     google.protobuf.UInt32Value max_connect_attempts = 1;
                     google.protobuf.Duration idle_timeout = 2;
-                    
+
                     // If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP
                     // payloads over a shared HTTP tunnel. If this message is absent, the payload
                     // will be proxied upstream as per usual.
@@ -307,10 +317,10 @@ message VirtualGatewaySpec {
         }
     }
 
-    // TODO: Fill in more options 
+    // TODO: Fill in more options
     message GatewayOptions {
         // gateway-level options (only apply to gateway/listener)
-        
+
         // configure access logging service for all traffic on this gateway
         // als.options.gloo.solo.io.AccessLoggingService access_logging_service = 2;
 
@@ -349,7 +359,7 @@ message VirtualGatewayStatus{
     // on Gw -> RTs selected
     // on Rts -> GWs selecting us + DRTs we sekect
     // on DRT -> which RTs select us
-    
+
     // Optionally (via flag?) show DRTs on GW.
 
     // Optionally, show additive paths on Rts/DRTs. (might be too much, status too big. Further research needed)

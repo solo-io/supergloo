@@ -1,0 +1,50 @@
+syntax = "proto3";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/rate_limit.proto";
+import "github.com/solo-io/solo-apis/api/rate-limiter/v1alpha1/ratelimit.proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+import "google/protobuf/struct.proto";
+
+// Copied from Gloo Edge solo-apis: https://github.com/solo-io/solo-apis/blob/master/api/rate-limiter/v1alpha1/ratelimit.proto
+
+// A `RateLimitConfig` describes a rate limit policy.
+message RateLimitServerConfigSpec {
+    // The per-server rate limit config objects will be generated from the given config for each provided ref.
+    // Each rate limit server must be configured to read its server configuration from one of these refs.
+    repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
+
+    // the configuration which will be deployed to the selected rate limit servers.
+    .ratelimit.api.solo.io.RateLimitConfigSpec rate_limit_config = 2;
+}
+
+// The current status of the `RateLimitConfig`.
+message RateLimitServerConfigStatus {
+
+    enum State {
+        PENDING = 0;
+        ACCEPTED = 1;
+        REJECTED = 2;
+    }
+
+    // The current state of the `RateLimitConfig`.
+    State state = 1;
+
+    // A human-readable string explaining the status.
+    string message = 2;
+
+    // a list of rate limit server workloads which have been configured with this RateLimitServerConfig
+    repeated .core.skv2.solo.io.ObjectRef configured_servers = 4;
+
+    // The observed generation of the resource.
+    // When this matches the metadata.generation of the resource, it indicates the status is up-to-date.
+    int64 observed_generation = 3;
+}
