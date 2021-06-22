@@ -20,7 +20,7 @@ Once you have those pieces in place, you will simply run the following commands 
 
 ```bash
 # Create cluster-1
-#Set version, cluster name, and port
+# Set version, cluster name, and port
 kindImage=kindest/node:v1.17.5
 cluster=cluster-1
 port=32001
@@ -77,7 +77,7 @@ kubeadmConfigPatches:
       authorization-mode: "AlwaysAllow"
 EOF
 
-#Switch to the cluster-1 context
+# Switch to the cluster-1 context
 kubectl config use-context kind-cluster-1
 ```
 
