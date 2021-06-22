@@ -71,8 +71,6 @@ function generateHugoVersionsYaml() {
 if [ ! -z ${PREVIEW_DOCS} ]; then # If doing a preview docs build, 
   version="latest"
 
-  cd docs
-
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
 
@@ -96,12 +94,7 @@ if [ ! -z ${PREVIEW_DOCS} ]; then # If doing a preview docs build,
 
   # If we are on the latest version, then copy over `404.html` so firebase uses that.
   # https://firebase.google.com/docs/hosting/full-config#404
-  [[ "$version" ==  "latest" ]] && cp site-latest/404.html "$docsSiteDir/public/404.html"
-
-  # Discard git changes and vendor_any for subsequent checkouts
-  cd "$repoDir"
-  git reset --hard
-  rm -fr vendor_any
+  cp site-latest/404.html "$docsSiteDir/public/404.html"
 
 else # Release docs build
   for version in "${versions[@]}"; do
