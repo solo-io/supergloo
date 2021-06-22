@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Add documentation for the meshctl config file.
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1584
