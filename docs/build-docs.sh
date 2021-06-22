@@ -67,17 +67,9 @@ function generateHugoVersionsYaml() {
   } > "$yamlFile"
 }
 
-for version in "${versions[@]}"; do
-  echo "Generating site for version $version"
-  cd "$repoDir"
-  if [[ "$version" == "main" ]]; then
-    git checkout main
-  else
-    git checkout tags/v"$version"
-  fi
 
-  # Replace version with "latest" if it's the latest version. This enables URLs with "/latest/..."
-  [[ "$version" ==  "$latestVersion" ]] && version="latest"
+if [ ! -z ${PREVIEW_DOCS} ]; then # If doing a preview docs build, 
+  version="latest"
 
   cd docs
 
@@ -110,4 +102,52 @@ for version in "${versions[@]}"; do
   cd "$repoDir"
   git reset --hard
   rm -fr vendor_any
-done
+
+else # Release docs build
+  for version in "${versions[@]}"; do
+    echo "Generating site for version $version"
+    cd "$repoDir"
+    if [[ "$version" == "main" ]]; then
+      git checkout main
+    else
+      git checkout tags/v"$version"
+    fi
+
+    # Replace version with "latest" if it's the latest version. This enables URLs with "/latest/..."
+    [[ "$version" ==  "$latestVersion" ]] && version="latest"
+
+    cd docs
+
+    # Generate data/Solo.yaml file with version info populated.
+    generateHugoVersionsYaml $version
+
+    # Use partials from master
+    mkdir -p layouts/partials
+    cp -a "$workingDir/layouts/partials/." layouts/partials/
+    cp -f "$workingDir/Makefile" Makefile
+    cp -af "$workingDir/docsgen/." docsgen
+    cp -f "$workingDir/docs.toml" docs.toml
+    mkdir -p cmd
+    cp -f "$workingDir/cmd/docsgen.go" cmd/docsgen.go
+    # Generate the versioned static site.
+    make site-release
+
+    # Generate the search index
+    cat site-latest/index.json | node $workingDir/search/generate-search-index.js > site-latest/search-index.json
+
+    # Copy over versioned static site to firebase content folder.
+    mkdir -p "$docsSiteDir/public/gloo-mesh/$version"
+    cp -a site-latest/. "$docsSiteDir/public/gloo-mesh/$version/"
+
+    # If we are on the latest version, then copy over `404.html` so firebase uses that.
+    # https://firebase.google.com/docs/hosting/full-config#404
+    [[ "$version" ==  "latest" ]] && cp site-latest/404.html "$docsSiteDir/public/404.html"
+
+    # Discard git changes and vendor_any for subsequent checkouts
+    cd "$repoDir"
+    git reset --hard
+    rm -fr vendor_any
+  done
+
+fi
+
