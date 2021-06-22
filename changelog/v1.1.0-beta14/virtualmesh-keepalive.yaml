@@ -1,0 +1,3 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add TCPKeepalive value to virtual mesh config. This sets the corresponding value in all istio destinations associated with this virtualmesh.
