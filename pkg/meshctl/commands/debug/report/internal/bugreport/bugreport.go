@@ -126,9 +126,9 @@ func runBugReportCommand(_ *cobra.Command, logOpts *log.Options) error {
 	tempDir = archive.GetRootDir(tempDir)
 	tempDirPlaceholder := tempDir
 
-	currentClusterInfo, err := content.GetClusterInfo(&content.Params{})
+	currentClusterContext, err := content.GetClusterContext()
 	if err == nil {
-		writeFiles(tempDirPlaceholder, currentClusterInfo)
+		common.LogAndPrintf("\nCurrent cluster context: %s\n", currentClusterContext)
 	}
 	combos := buildKubeConfigList(kubeConfigs, contexts, len(config.KubeConfigPath+config.Context) > 0)
 	for name, meshctlCluster := range combos {
