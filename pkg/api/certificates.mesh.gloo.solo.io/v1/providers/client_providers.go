@@ -100,3 +100,31 @@ func PodBounceDirectiveClientFromConfigFactoryProvider() PodBounceDirectiveClien
 		return clients.PodBounceDirectives(), nil
 	}
 }
+
+// Provider for CertificateRotationClient from Clientset
+func CertificateRotationClientFromClientsetProvider(clients certificates_mesh_gloo_solo_io_v1.Clientset) certificates_mesh_gloo_solo_io_v1.CertificateRotationClient {
+	return clients.CertificateRotations()
+}
+
+// Provider for CertificateRotation Client from Client
+func CertificateRotationClientProvider(client client.Client) certificates_mesh_gloo_solo_io_v1.CertificateRotationClient {
+	return certificates_mesh_gloo_solo_io_v1.NewCertificateRotationClient(client)
+}
+
+type CertificateRotationClientFactory func(client client.Client) certificates_mesh_gloo_solo_io_v1.CertificateRotationClient
+
+func CertificateRotationClientFactoryProvider() CertificateRotationClientFactory {
+	return CertificateRotationClientProvider
+}
+
+type CertificateRotationClientFromConfigFactory func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.CertificateRotationClient, error)
+
+func CertificateRotationClientFromConfigFactoryProvider() CertificateRotationClientFromConfigFactory {
+	return func(cfg *rest.Config) (certificates_mesh_gloo_solo_io_v1.CertificateRotationClient, error) {
+		clients, err := certificates_mesh_gloo_solo_io_v1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.CertificateRotations(), nil
+	}
+}

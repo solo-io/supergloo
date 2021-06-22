@@ -337,3 +337,110 @@ func (h genericPodBounceDirectiveHandler) Generic(object client.Object) error {
 	}
 	return h.handler.GenericPodBounceDirective(obj)
 }
+
+// Handle events for the CertificateRotation Resource
+// DEPRECATED: Prefer reconciler pattern.
+type CertificateRotationEventHandler interface {
+	CreateCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+	UpdateCertificateRotation(old, new *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+	DeleteCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+	GenericCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+}
+
+type CertificateRotationEventHandlerFuncs struct {
+	OnCreate  func(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+	OnUpdate  func(old, new *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+	OnDelete  func(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+	OnGeneric func(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+}
+
+func (f *CertificateRotationEventHandlerFuncs) CreateCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *CertificateRotationEventHandlerFuncs) DeleteCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *CertificateRotationEventHandlerFuncs) UpdateCertificateRotation(objOld, objNew *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *CertificateRotationEventHandlerFuncs) GenericCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type CertificateRotationEventWatcher interface {
+	AddEventHandler(ctx context.Context, h CertificateRotationEventHandler, predicates ...predicate.Predicate) error
+}
+
+type certificateRotationEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewCertificateRotationEventWatcher(name string, mgr manager.Manager) CertificateRotationEventWatcher {
+	return &certificateRotationEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &certificates_mesh_gloo_solo_io_v1.CertificateRotation{}),
+	}
+}
+
+func (c *certificateRotationEventWatcher) AddEventHandler(ctx context.Context, h CertificateRotationEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericCertificateRotationHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericCertificateRotationHandler implements a generic events.EventHandler
+type genericCertificateRotationHandler struct {
+	handler CertificateRotationEventHandler
+}
+
+func (h genericCertificateRotationHandler) Create(object client.Object) error {
+	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return errors.Errorf("internal error: CertificateRotation handler received event for %T", object)
+	}
+	return h.handler.CreateCertificateRotation(obj)
+}
+
+func (h genericCertificateRotationHandler) Delete(object client.Object) error {
+	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return errors.Errorf("internal error: CertificateRotation handler received event for %T", object)
+	}
+	return h.handler.DeleteCertificateRotation(obj)
+}
+
+func (h genericCertificateRotationHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return errors.Errorf("internal error: CertificateRotation handler received event for %T", old)
+	}
+	objNew, ok := new.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return errors.Errorf("internal error: CertificateRotation handler received event for %T", new)
+	}
+	return h.handler.UpdateCertificateRotation(objOld, objNew)
+}
+
+func (h genericCertificateRotationHandler) Generic(object client.Object) error {
+	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return errors.Errorf("internal error: CertificateRotation handler received event for %T", object)
+	}
+	return h.handler.GenericCertificateRotation(obj)
+}

@@ -88,6 +88,20 @@ func (mr *MockClientsetMockRecorder) CertificateRequests() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockClientset)(nil).CertificateRequests))
 }
 
+// CertificateRotations mocks base method.
+func (m *MockClientset) CertificateRotations() v1.CertificateRotationClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CertificateRotations")
+	ret0, _ := ret[0].(v1.CertificateRotationClient)
+	return ret0
+}
+
+// CertificateRotations indicates an expected call of CertificateRotations.
+func (mr *MockClientsetMockRecorder) CertificateRotations() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRotations", reflect.TypeOf((*MockClientset)(nil).CertificateRotations))
+}
+
 // IssuedCertificates mocks base method.
 func (m *MockClientset) IssuedCertificates() v1.IssuedCertificateClient {
 	m.ctrl.T.Helper()
@@ -1626,4 +1640,508 @@ func (m *MockMulticlusterPodBounceDirectiveClient) Cluster(cluster string) (v1.P
 func (mr *MockMulticlusterPodBounceDirectiveClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveClient)(nil).Cluster), cluster)
+}
+
+// MockCertificateRotationReader is a mock of CertificateRotationReader interface.
+type MockCertificateRotationReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockCertificateRotationReaderMockRecorder
+}
+
+// MockCertificateRotationReaderMockRecorder is the mock recorder for MockCertificateRotationReader.
+type MockCertificateRotationReaderMockRecorder struct {
+	mock *MockCertificateRotationReader
+}
+
+// NewMockCertificateRotationReader creates a new mock instance.
+func NewMockCertificateRotationReader(ctrl *gomock.Controller) *MockCertificateRotationReader {
+	mock := &MockCertificateRotationReader{ctrl: ctrl}
+	mock.recorder = &MockCertificateRotationReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCertificateRotationReader) EXPECT() *MockCertificateRotationReaderMockRecorder {
+	return m.recorder
+}
+
+// GetCertificateRotation mocks base method.
+func (m *MockCertificateRotationReader) GetCertificateRotation(ctx context.Context, key client.ObjectKey) (*v1.CertificateRotation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCertificateRotation", ctx, key)
+	ret0, _ := ret[0].(*v1.CertificateRotation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCertificateRotation indicates an expected call of GetCertificateRotation.
+func (mr *MockCertificateRotationReaderMockRecorder) GetCertificateRotation(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCertificateRotation", reflect.TypeOf((*MockCertificateRotationReader)(nil).GetCertificateRotation), ctx, key)
+}
+
+// ListCertificateRotation mocks base method.
+func (m *MockCertificateRotationReader) ListCertificateRotation(ctx context.Context, opts ...client.ListOption) (*v1.CertificateRotationList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListCertificateRotation", varargs...)
+	ret0, _ := ret[0].(*v1.CertificateRotationList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCertificateRotation indicates an expected call of ListCertificateRotation.
+func (mr *MockCertificateRotationReaderMockRecorder) ListCertificateRotation(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCertificateRotation", reflect.TypeOf((*MockCertificateRotationReader)(nil).ListCertificateRotation), varargs...)
+}
+
+// MockCertificateRotationWriter is a mock of CertificateRotationWriter interface.
+type MockCertificateRotationWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockCertificateRotationWriterMockRecorder
+}
+
+// MockCertificateRotationWriterMockRecorder is the mock recorder for MockCertificateRotationWriter.
+type MockCertificateRotationWriterMockRecorder struct {
+	mock *MockCertificateRotationWriter
+}
+
+// NewMockCertificateRotationWriter creates a new mock instance.
+func NewMockCertificateRotationWriter(ctrl *gomock.Controller) *MockCertificateRotationWriter {
+	mock := &MockCertificateRotationWriter{ctrl: ctrl}
+	mock.recorder = &MockCertificateRotationWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCertificateRotationWriter) EXPECT() *MockCertificateRotationWriterMockRecorder {
+	return m.recorder
+}
+
+// CreateCertificateRotation mocks base method.
+func (m *MockCertificateRotationWriter) CreateCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateCertificateRotation indicates an expected call of CreateCertificateRotation.
+func (mr *MockCertificateRotationWriterMockRecorder) CreateCertificateRotation(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCertificateRotation", reflect.TypeOf((*MockCertificateRotationWriter)(nil).CreateCertificateRotation), varargs...)
+}
+
+// DeleteAllOfCertificateRotation mocks base method.
+func (m *MockCertificateRotationWriter) DeleteAllOfCertificateRotation(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfCertificateRotation indicates an expected call of DeleteAllOfCertificateRotation.
+func (mr *MockCertificateRotationWriterMockRecorder) DeleteAllOfCertificateRotation(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfCertificateRotation", reflect.TypeOf((*MockCertificateRotationWriter)(nil).DeleteAllOfCertificateRotation), varargs...)
+}
+
+// DeleteCertificateRotation mocks base method.
+func (m *MockCertificateRotationWriter) DeleteCertificateRotation(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCertificateRotation indicates an expected call of DeleteCertificateRotation.
+func (mr *MockCertificateRotationWriterMockRecorder) DeleteCertificateRotation(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRotation", reflect.TypeOf((*MockCertificateRotationWriter)(nil).DeleteCertificateRotation), varargs...)
+}
+
+// PatchCertificateRotation mocks base method.
+func (m *MockCertificateRotationWriter) PatchCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCertificateRotation indicates an expected call of PatchCertificateRotation.
+func (mr *MockCertificateRotationWriterMockRecorder) PatchCertificateRotation(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRotation", reflect.TypeOf((*MockCertificateRotationWriter)(nil).PatchCertificateRotation), varargs...)
+}
+
+// UpdateCertificateRotation mocks base method.
+func (m *MockCertificateRotationWriter) UpdateCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRotation indicates an expected call of UpdateCertificateRotation.
+func (mr *MockCertificateRotationWriterMockRecorder) UpdateCertificateRotation(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRotation", reflect.TypeOf((*MockCertificateRotationWriter)(nil).UpdateCertificateRotation), varargs...)
+}
+
+// UpsertCertificateRotation mocks base method.
+func (m *MockCertificateRotationWriter) UpsertCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, transitionFuncs ...v1.CertificateRotationTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertCertificateRotation indicates an expected call of UpsertCertificateRotation.
+func (mr *MockCertificateRotationWriterMockRecorder) UpsertCertificateRotation(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertCertificateRotation", reflect.TypeOf((*MockCertificateRotationWriter)(nil).UpsertCertificateRotation), varargs...)
+}
+
+// MockCertificateRotationStatusWriter is a mock of CertificateRotationStatusWriter interface.
+type MockCertificateRotationStatusWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockCertificateRotationStatusWriterMockRecorder
+}
+
+// MockCertificateRotationStatusWriterMockRecorder is the mock recorder for MockCertificateRotationStatusWriter.
+type MockCertificateRotationStatusWriterMockRecorder struct {
+	mock *MockCertificateRotationStatusWriter
+}
+
+// NewMockCertificateRotationStatusWriter creates a new mock instance.
+func NewMockCertificateRotationStatusWriter(ctrl *gomock.Controller) *MockCertificateRotationStatusWriter {
+	mock := &MockCertificateRotationStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockCertificateRotationStatusWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCertificateRotationStatusWriter) EXPECT() *MockCertificateRotationStatusWriterMockRecorder {
+	return m.recorder
+}
+
+// PatchCertificateRotationStatus mocks base method.
+func (m *MockCertificateRotationStatusWriter) PatchCertificateRotationStatus(ctx context.Context, obj *v1.CertificateRotation, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchCertificateRotationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCertificateRotationStatus indicates an expected call of PatchCertificateRotationStatus.
+func (mr *MockCertificateRotationStatusWriterMockRecorder) PatchCertificateRotationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRotationStatus", reflect.TypeOf((*MockCertificateRotationStatusWriter)(nil).PatchCertificateRotationStatus), varargs...)
+}
+
+// UpdateCertificateRotationStatus mocks base method.
+func (m *MockCertificateRotationStatusWriter) UpdateCertificateRotationStatus(ctx context.Context, obj *v1.CertificateRotation, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRotationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRotationStatus indicates an expected call of UpdateCertificateRotationStatus.
+func (mr *MockCertificateRotationStatusWriterMockRecorder) UpdateCertificateRotationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRotationStatus", reflect.TypeOf((*MockCertificateRotationStatusWriter)(nil).UpdateCertificateRotationStatus), varargs...)
+}
+
+// MockCertificateRotationClient is a mock of CertificateRotationClient interface.
+type MockCertificateRotationClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockCertificateRotationClientMockRecorder
+}
+
+// MockCertificateRotationClientMockRecorder is the mock recorder for MockCertificateRotationClient.
+type MockCertificateRotationClientMockRecorder struct {
+	mock *MockCertificateRotationClient
+}
+
+// NewMockCertificateRotationClient creates a new mock instance.
+func NewMockCertificateRotationClient(ctrl *gomock.Controller) *MockCertificateRotationClient {
+	mock := &MockCertificateRotationClient{ctrl: ctrl}
+	mock.recorder = &MockCertificateRotationClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCertificateRotationClient) EXPECT() *MockCertificateRotationClientMockRecorder {
+	return m.recorder
+}
+
+// CreateCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) CreateCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateCertificateRotation indicates an expected call of CreateCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) CreateCertificateRotation(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).CreateCertificateRotation), varargs...)
+}
+
+// DeleteAllOfCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) DeleteAllOfCertificateRotation(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfCertificateRotation indicates an expected call of DeleteAllOfCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) DeleteAllOfCertificateRotation(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).DeleteAllOfCertificateRotation), varargs...)
+}
+
+// DeleteCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) DeleteCertificateRotation(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCertificateRotation indicates an expected call of DeleteCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) DeleteCertificateRotation(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).DeleteCertificateRotation), varargs...)
+}
+
+// GetCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) GetCertificateRotation(ctx context.Context, key client.ObjectKey) (*v1.CertificateRotation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCertificateRotation", ctx, key)
+	ret0, _ := ret[0].(*v1.CertificateRotation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCertificateRotation indicates an expected call of GetCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) GetCertificateRotation(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).GetCertificateRotation), ctx, key)
+}
+
+// ListCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) ListCertificateRotation(ctx context.Context, opts ...client.ListOption) (*v1.CertificateRotationList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListCertificateRotation", varargs...)
+	ret0, _ := ret[0].(*v1.CertificateRotationList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCertificateRotation indicates an expected call of ListCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) ListCertificateRotation(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).ListCertificateRotation), varargs...)
+}
+
+// PatchCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) PatchCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCertificateRotation indicates an expected call of PatchCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) PatchCertificateRotation(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).PatchCertificateRotation), varargs...)
+}
+
+// PatchCertificateRotationStatus mocks base method.
+func (m *MockCertificateRotationClient) PatchCertificateRotationStatus(ctx context.Context, obj *v1.CertificateRotation, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchCertificateRotationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchCertificateRotationStatus indicates an expected call of PatchCertificateRotationStatus.
+func (mr *MockCertificateRotationClientMockRecorder) PatchCertificateRotationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchCertificateRotationStatus", reflect.TypeOf((*MockCertificateRotationClient)(nil).PatchCertificateRotationStatus), varargs...)
+}
+
+// UpdateCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) UpdateCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRotation indicates an expected call of UpdateCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) UpdateCertificateRotation(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).UpdateCertificateRotation), varargs...)
+}
+
+// UpdateCertificateRotationStatus mocks base method.
+func (m *MockCertificateRotationClient) UpdateCertificateRotationStatus(ctx context.Context, obj *v1.CertificateRotation, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateCertificateRotationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCertificateRotationStatus indicates an expected call of UpdateCertificateRotationStatus.
+func (mr *MockCertificateRotationClientMockRecorder) UpdateCertificateRotationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCertificateRotationStatus", reflect.TypeOf((*MockCertificateRotationClient)(nil).UpdateCertificateRotationStatus), varargs...)
+}
+
+// UpsertCertificateRotation mocks base method.
+func (m *MockCertificateRotationClient) UpsertCertificateRotation(ctx context.Context, obj *v1.CertificateRotation, transitionFuncs ...v1.CertificateRotationTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertCertificateRotation", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertCertificateRotation indicates an expected call of UpsertCertificateRotation.
+func (mr *MockCertificateRotationClientMockRecorder) UpsertCertificateRotation(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertCertificateRotation", reflect.TypeOf((*MockCertificateRotationClient)(nil).UpsertCertificateRotation), varargs...)
+}
+
+// MockMulticlusterCertificateRotationClient is a mock of MulticlusterCertificateRotationClient interface.
+type MockMulticlusterCertificateRotationClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterCertificateRotationClientMockRecorder
+}
+
+// MockMulticlusterCertificateRotationClientMockRecorder is the mock recorder for MockMulticlusterCertificateRotationClient.
+type MockMulticlusterCertificateRotationClientMockRecorder struct {
+	mock *MockMulticlusterCertificateRotationClient
+}
+
+// NewMockMulticlusterCertificateRotationClient creates a new mock instance.
+func NewMockMulticlusterCertificateRotationClient(ctrl *gomock.Controller) *MockMulticlusterCertificateRotationClient {
+	mock := &MockMulticlusterCertificateRotationClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterCertificateRotationClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterCertificateRotationClient) EXPECT() *MockMulticlusterCertificateRotationClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterCertificateRotationClient) Cluster(cluster string) (v1.CertificateRotationClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1.CertificateRotationClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterCertificateRotationClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterCertificateRotationClient)(nil).Cluster), cluster)
 }

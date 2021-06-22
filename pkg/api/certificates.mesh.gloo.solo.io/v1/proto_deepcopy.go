@@ -43,3 +43,15 @@ func (in *PodBounceDirectiveStatus) DeepCopyInto(out *PodBounceDirectiveStatus) 
 	p := proto.Clone(in).(*PodBounceDirectiveStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the CertificateRotation.Spec
+func (in *CertificateRotationSpec) DeepCopyInto(out *CertificateRotationSpec) {
+	p := proto.Clone(in).(*CertificateRotationSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the CertificateRotation.Status
+func (in *CertificateRotationStatus) DeepCopyInto(out *CertificateRotationStatus) {
+	p := proto.Clone(in).(*CertificateRotationStatus)
+	*out = *p
+}

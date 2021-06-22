@@ -230,3 +230,74 @@ func (g genericPodBounceDirectiveMulticlusterReconciler) Reconcile(cluster strin
 	}
 	return g.reconciler.ReconcilePodBounceDirective(cluster, obj)
 }
+
+// Reconcile Upsert events for the CertificateRotation Resource across clusters.
+// implemented by the user
+type MulticlusterCertificateRotationReconciler interface {
+	ReconcileCertificateRotation(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the CertificateRotation Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterCertificateRotationDeletionReconciler interface {
+	ReconcileCertificateRotationDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterCertificateRotationReconcilerFuncs struct {
+	OnReconcileCertificateRotation         func(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) (reconcile.Result, error)
+	OnReconcileCertificateRotationDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterCertificateRotationReconcilerFuncs) ReconcileCertificateRotation(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) (reconcile.Result, error) {
+	if f.OnReconcileCertificateRotation == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileCertificateRotation(clusterName, obj)
+}
+
+func (f *MulticlusterCertificateRotationReconcilerFuncs) ReconcileCertificateRotationDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileCertificateRotationDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileCertificateRotationDeletion(clusterName, req)
+}
+
+type MulticlusterCertificateRotationReconcileLoop interface {
+	// AddMulticlusterCertificateRotationReconciler adds a MulticlusterCertificateRotationReconciler to the MulticlusterCertificateRotationReconcileLoop.
+	AddMulticlusterCertificateRotationReconciler(ctx context.Context, rec MulticlusterCertificateRotationReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterCertificateRotationReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterCertificateRotationReconcileLoop) AddMulticlusterCertificateRotationReconciler(ctx context.Context, rec MulticlusterCertificateRotationReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericCertificateRotationMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterCertificateRotationReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterCertificateRotationReconcileLoop {
+	return &multiclusterCertificateRotationReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_mesh_gloo_solo_io_v1.CertificateRotation{}, options)}
+}
+
+type genericCertificateRotationMulticlusterReconciler struct {
+	reconciler MulticlusterCertificateRotationReconciler
+}
+
+func (g genericCertificateRotationMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterCertificateRotationDeletionReconciler); ok {
+		return deletionReconciler.ReconcileCertificateRotationDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericCertificateRotationMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: CertificateRotation handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileCertificateRotation(cluster, obj)
+}

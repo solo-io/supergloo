@@ -359,3 +359,118 @@ func (mr *MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder) AddMultic
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterPodBounceDirectiveReconciler", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveReconcileLoop)(nil).AddMulticlusterPodBounceDirectiveReconciler), varargs...)
 }
+
+// MockMulticlusterCertificateRotationReconciler is a mock of MulticlusterCertificateRotationReconciler interface.
+type MockMulticlusterCertificateRotationReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterCertificateRotationReconcilerMockRecorder
+}
+
+// MockMulticlusterCertificateRotationReconcilerMockRecorder is the mock recorder for MockMulticlusterCertificateRotationReconciler.
+type MockMulticlusterCertificateRotationReconcilerMockRecorder struct {
+	mock *MockMulticlusterCertificateRotationReconciler
+}
+
+// NewMockMulticlusterCertificateRotationReconciler creates a new mock instance.
+func NewMockMulticlusterCertificateRotationReconciler(ctrl *gomock.Controller) *MockMulticlusterCertificateRotationReconciler {
+	mock := &MockMulticlusterCertificateRotationReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterCertificateRotationReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterCertificateRotationReconciler) EXPECT() *MockMulticlusterCertificateRotationReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileCertificateRotation mocks base method.
+func (m *MockMulticlusterCertificateRotationReconciler) ReconcileCertificateRotation(clusterName string, obj *v1.CertificateRotation) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileCertificateRotation", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileCertificateRotation indicates an expected call of ReconcileCertificateRotation.
+func (mr *MockMulticlusterCertificateRotationReconcilerMockRecorder) ReconcileCertificateRotation(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateRotation", reflect.TypeOf((*MockMulticlusterCertificateRotationReconciler)(nil).ReconcileCertificateRotation), clusterName, obj)
+}
+
+// MockMulticlusterCertificateRotationDeletionReconciler is a mock of MulticlusterCertificateRotationDeletionReconciler interface.
+type MockMulticlusterCertificateRotationDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterCertificateRotationDeletionReconcilerMockRecorder
+}
+
+// MockMulticlusterCertificateRotationDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterCertificateRotationDeletionReconciler.
+type MockMulticlusterCertificateRotationDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterCertificateRotationDeletionReconciler
+}
+
+// NewMockMulticlusterCertificateRotationDeletionReconciler creates a new mock instance.
+func NewMockMulticlusterCertificateRotationDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterCertificateRotationDeletionReconciler {
+	mock := &MockMulticlusterCertificateRotationDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterCertificateRotationDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterCertificateRotationDeletionReconciler) EXPECT() *MockMulticlusterCertificateRotationDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileCertificateRotationDeletion mocks base method.
+func (m *MockMulticlusterCertificateRotationDeletionReconciler) ReconcileCertificateRotationDeletion(clusterName string, req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileCertificateRotationDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileCertificateRotationDeletion indicates an expected call of ReconcileCertificateRotationDeletion.
+func (mr *MockMulticlusterCertificateRotationDeletionReconcilerMockRecorder) ReconcileCertificateRotationDeletion(clusterName, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateRotationDeletion", reflect.TypeOf((*MockMulticlusterCertificateRotationDeletionReconciler)(nil).ReconcileCertificateRotationDeletion), clusterName, req)
+}
+
+// MockMulticlusterCertificateRotationReconcileLoop is a mock of MulticlusterCertificateRotationReconcileLoop interface.
+type MockMulticlusterCertificateRotationReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterCertificateRotationReconcileLoopMockRecorder
+}
+
+// MockMulticlusterCertificateRotationReconcileLoopMockRecorder is the mock recorder for MockMulticlusterCertificateRotationReconcileLoop.
+type MockMulticlusterCertificateRotationReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterCertificateRotationReconcileLoop
+}
+
+// NewMockMulticlusterCertificateRotationReconcileLoop creates a new mock instance.
+func NewMockMulticlusterCertificateRotationReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterCertificateRotationReconcileLoop {
+	mock := &MockMulticlusterCertificateRotationReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterCertificateRotationReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterCertificateRotationReconcileLoop) EXPECT() *MockMulticlusterCertificateRotationReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// AddMulticlusterCertificateRotationReconciler mocks base method.
+func (m *MockMulticlusterCertificateRotationReconcileLoop) AddMulticlusterCertificateRotationReconciler(ctx context.Context, rec controller.MulticlusterCertificateRotationReconciler, predicates ...predicate.Predicate) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMulticlusterCertificateRotationReconciler", varargs...)
+}
+
+// AddMulticlusterCertificateRotationReconciler indicates an expected call of AddMulticlusterCertificateRotationReconciler.
+func (mr *MockMulticlusterCertificateRotationReconcileLoopMockRecorder) AddMulticlusterCertificateRotationReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterCertificateRotationReconciler", reflect.TypeOf((*MockMulticlusterCertificateRotationReconcileLoop)(nil).AddMulticlusterCertificateRotationReconciler), varargs...)
+}

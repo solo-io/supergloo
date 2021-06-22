@@ -1,0 +1,65 @@
+syntax = "proto3";
+package certificates.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+message CertificateRotationSpec {
+    // VirtualMesh which you would like to rotate the Certificate for.
+    .core.skv2.solo.io.ObjectRef virtual_mesh = 1;
+
+    oneof new_root_ca_source {
+      // Reference to a secret containing the new root_ca.
+      .core.skv2.solo.io.ObjectRef new_root_ca_secret = 2;
+    }
+}
+
+message CertificateRotationStatus {
+
+    // The most recent generation observed in the the CertificateRotation metadata.
+    // If the `observedGeneration` does not match `metadata.generation`, the issuer has not processed the most
+    // recent version of this request.
+    int64 observed_generation = 1;
+
+    // Any error observed which prevented the CertificateRotation from being processed.
+    // If the error is empty, the request has been processed successfully
+    string error = 2;
+
+    // The current state of the CertificateRotation workflow reported by the issuer.
+    State state = 3;
+
+    // Possible states in which a CertificateRotation can exist.
+    enum State {
+        // The CertificateRotation has yet to be picked up by the management-plane.
+        PENDING = 0;
+
+        // The CertificateRotation is underway, this can mean 1 of 2 things:
+        // 1. Both roots are set, and the new root is being propogated 
+        // 2. The initial verification is over, the traffic continues to work with both roots present.
+        //    Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters
+        ROTATING = 1;
+
+        // Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified.
+        // This can either be manual or in the future automated
+        VERIFYING = 2;
+
+        // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
+        // been verified for a 2nd time.
+        FINISHED = 3;
+
+        // Processing the certificate rotation workflow failed.
+        FAILED = 4;
+    }
+  // message Condition {
+  //   string last_transition_time = 1;
+
+  //   string LastUpdateTime = 2;
+
+
+  // }
+
+  // repeated Condition conditions = 1;
+}

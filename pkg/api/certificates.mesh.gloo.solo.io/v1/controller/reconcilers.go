@@ -367,3 +367,120 @@ func (r genericPodBounceDirectiveFinalizer) Finalize(object ezkube.Object) error
 	}
 	return r.finalizingReconciler.FinalizePodBounceDirective(obj)
 }
+
+// Reconcile Upsert events for the CertificateRotation Resource.
+// implemented by the user
+type CertificateRotationReconciler interface {
+	ReconcileCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the CertificateRotation Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type CertificateRotationDeletionReconciler interface {
+	ReconcileCertificateRotationDeletion(req reconcile.Request) error
+}
+
+type CertificateRotationReconcilerFuncs struct {
+	OnReconcileCertificateRotation         func(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) (reconcile.Result, error)
+	OnReconcileCertificateRotationDeletion func(req reconcile.Request) error
+}
+
+func (f *CertificateRotationReconcilerFuncs) ReconcileCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) (reconcile.Result, error) {
+	if f.OnReconcileCertificateRotation == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileCertificateRotation(obj)
+}
+
+func (f *CertificateRotationReconcilerFuncs) ReconcileCertificateRotationDeletion(req reconcile.Request) error {
+	if f.OnReconcileCertificateRotationDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileCertificateRotationDeletion(req)
+}
+
+// Reconcile and finalize the CertificateRotation Resource
+// implemented by the user
+type CertificateRotationFinalizer interface {
+	CertificateRotationReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	CertificateRotationFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeCertificateRotation(obj *certificates_mesh_gloo_solo_io_v1.CertificateRotation) error
+}
+
+type CertificateRotationReconcileLoop interface {
+	RunCertificateRotationReconciler(ctx context.Context, rec CertificateRotationReconciler, predicates ...predicate.Predicate) error
+}
+
+type certificateRotationReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewCertificateRotationReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) CertificateRotationReconcileLoop {
+	return &certificateRotationReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &certificates_mesh_gloo_solo_io_v1.CertificateRotation{}, options),
+	}
+}
+
+func (c *certificateRotationReconcileLoop) RunCertificateRotationReconciler(ctx context.Context, reconciler CertificateRotationReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericCertificateRotationReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(CertificateRotationFinalizer); ok {
+		reconcilerWrapper = genericCertificateRotationFinalizer{
+			genericCertificateRotationReconciler: genericReconciler,
+			finalizingReconciler:                 finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericCertificateRotationHandler implements a generic reconcile.Reconciler
+type genericCertificateRotationReconciler struct {
+	reconciler CertificateRotationReconciler
+}
+
+func (r genericCertificateRotationReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: CertificateRotation handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileCertificateRotation(obj)
+}
+
+func (r genericCertificateRotationReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(CertificateRotationDeletionReconciler); ok {
+		return deletionReconciler.ReconcileCertificateRotationDeletion(request)
+	}
+	return nil
+}
+
+// genericCertificateRotationFinalizer implements a generic reconcile.FinalizingReconciler
+type genericCertificateRotationFinalizer struct {
+	genericCertificateRotationReconciler
+	finalizingReconciler CertificateRotationFinalizer
+}
+
+func (r genericCertificateRotationFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.CertificateRotationFinalizerName()
+}
+
+func (r genericCertificateRotationFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1.CertificateRotation)
+	if !ok {
+		return errors.Errorf("internal error: CertificateRotation handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeCertificateRotation(obj)
+}

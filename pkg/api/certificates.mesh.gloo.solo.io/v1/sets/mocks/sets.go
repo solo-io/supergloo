@@ -740,3 +740,245 @@ func (mr *MockPodBounceDirectiveSetMockRecorder) UnsortedList(filterResource ...
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).UnsortedList), filterResource...)
 }
+
+// MockCertificateRotationSet is a mock of CertificateRotationSet interface.
+type MockCertificateRotationSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockCertificateRotationSetMockRecorder
+}
+
+// MockCertificateRotationSetMockRecorder is the mock recorder for MockCertificateRotationSet.
+type MockCertificateRotationSetMockRecorder struct {
+	mock *MockCertificateRotationSet
+}
+
+// NewMockCertificateRotationSet creates a new mock instance.
+func NewMockCertificateRotationSet(ctrl *gomock.Controller) *MockCertificateRotationSet {
+	mock := &MockCertificateRotationSet{ctrl: ctrl}
+	mock.recorder = &MockCertificateRotationSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCertificateRotationSet) EXPECT() *MockCertificateRotationSetMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockCertificateRotationSet) Delete(certificateRotation ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", certificateRotation)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCertificateRotationSetMockRecorder) Delete(certificateRotation interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCertificateRotationSet)(nil).Delete), certificateRotation)
+}
+
+// Delta mocks base method.
+func (m *MockCertificateRotationSet) Delta(newSet v1sets.CertificateRotationSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta.
+func (mr *MockCertificateRotationSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockCertificateRotationSet)(nil).Delta), newSet)
+}
+
+// Difference mocks base method.
+func (m *MockCertificateRotationSet) Difference(set v1sets.CertificateRotationSet) v1sets.CertificateRotationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1sets.CertificateRotationSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockCertificateRotationSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockCertificateRotationSet)(nil).Difference), set)
+}
+
+// Equal mocks base method.
+func (m *MockCertificateRotationSet) Equal(certificateRotationSet v1sets.CertificateRotationSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", certificateRotationSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockCertificateRotationSetMockRecorder) Equal(certificateRotationSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockCertificateRotationSet)(nil).Equal), certificateRotationSet)
+}
+
+// Find mocks base method.
+func (m *MockCertificateRotationSet) Find(id ezkube.ResourceId) (*v1.CertificateRotation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1.CertificateRotation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockCertificateRotationSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockCertificateRotationSet)(nil).Find), id)
+}
+
+// Generic mocks base method.
+func (m *MockCertificateRotationSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockCertificateRotationSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockCertificateRotationSet)(nil).Generic))
+}
+
+// Has mocks base method.
+func (m *MockCertificateRotationSet) Has(certificateRotation ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", certificateRotation)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockCertificateRotationSetMockRecorder) Has(certificateRotation interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockCertificateRotationSet)(nil).Has), certificateRotation)
+}
+
+// Insert mocks base method.
+func (m *MockCertificateRotationSet) Insert(certificateRotation ...*v1.CertificateRotation) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range certificateRotation {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockCertificateRotationSetMockRecorder) Insert(certificateRotation ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockCertificateRotationSet)(nil).Insert), certificateRotation...)
+}
+
+// Intersection mocks base method.
+func (m *MockCertificateRotationSet) Intersection(set v1sets.CertificateRotationSet) v1sets.CertificateRotationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1sets.CertificateRotationSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockCertificateRotationSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockCertificateRotationSet)(nil).Intersection), set)
+}
+
+// Keys mocks base method.
+func (m *MockCertificateRotationSet) Keys() sets0.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets0.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys.
+func (mr *MockCertificateRotationSetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockCertificateRotationSet)(nil).Keys))
+}
+
+// Length mocks base method.
+func (m *MockCertificateRotationSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockCertificateRotationSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockCertificateRotationSet)(nil).Length))
+}
+
+// List mocks base method.
+func (m *MockCertificateRotationSet) List(filterResource ...func(*v1.CertificateRotation) bool) []*v1.CertificateRotation {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].([]*v1.CertificateRotation)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *MockCertificateRotationSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCertificateRotationSet)(nil).List), filterResource...)
+}
+
+// Map mocks base method.
+func (m *MockCertificateRotationSet) Map() map[string]*v1.CertificateRotation {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1.CertificateRotation)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockCertificateRotationSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockCertificateRotationSet)(nil).Map))
+}
+
+// Union mocks base method.
+func (m *MockCertificateRotationSet) Union(set v1sets.CertificateRotationSet) v1sets.CertificateRotationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1sets.CertificateRotationSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockCertificateRotationSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockCertificateRotationSet)(nil).Union), set)
+}
+
+// UnsortedList mocks base method.
+func (m *MockCertificateRotationSet) UnsortedList(filterResource ...func(*v1.CertificateRotation) bool) []*v1.CertificateRotation {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.CertificateRotation)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList.
+func (mr *MockCertificateRotationSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockCertificateRotationSet)(nil).UnsortedList), filterResource...)
+}
