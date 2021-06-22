@@ -3,7 +3,6 @@ package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/rate_limit.proto";
 import "github.com/solo-io/solo-apis/api/rate-limiter/v1alpha1/ratelimit.proto";
 
 import "google/protobuf/wrappers.proto";
@@ -16,8 +15,11 @@ import "google/protobuf/struct.proto";
 
 // Copied from Gloo Edge solo-apis: https://github.com/solo-io/solo-apis/blob/master/api/rate-limiter/v1alpha1/ratelimit.proto
 
-// A `RateLimitConfig` describes a rate limit policy.
-message RateLimitServerConfigSpec {
+// RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the external rate-limiting server used by
+// mesh proxies to rate-limit HTTP requests. One or more rate limiter servers may be deployed in order to
+// rate limit traffic across East-West and North-South routes. The RateLimiterConfig allows users to map
+// a single rate-limiter configuration to multiple rate-limiter server instances, deployed across managed clusters.
+message RateLimiterConfigSpec {
     // The per-server rate limit config objects will be generated from the given config for each provided ref.
     // Each rate limit server must be configured to read its server configuration from one of these refs.
     repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
@@ -27,7 +29,7 @@ message RateLimitServerConfigSpec {
 }
 
 // The current status of the `RateLimitConfig`.
-message RateLimitServerConfigStatus {
+message RateLimiterConfigStatus {
 
     enum State {
         PENDING = 0;
@@ -41,8 +43,8 @@ message RateLimitServerConfigStatus {
     // A human-readable string explaining the status.
     string message = 2;
 
-    // a list of rate limit server workloads which have been configured with this RateLimitServerConfig
-    repeated .core.skv2.solo.io.ObjectRef configured_servers = 4;
+    // a list of rate limit server workloads which have been configured with this RateLimiterConfig
+    repeated .core.skv2.solo.io.ClusterObjectRef configured_servers = 4;
 
     // The observed generation of the resource.
     // When this matches the metadata.generation of the resource, it indicates the status is up-to-date.

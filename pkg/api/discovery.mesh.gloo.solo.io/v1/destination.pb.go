@@ -147,7 +147,7 @@ type DestinationStatus struct {
 	// Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
 	AppliedFederation *DestinationStatus_AppliedFederation `protobuf:"bytes,6,opt,name=applied_federation,json=appliedFederation,proto3" json:"applied_federation,omitempty"`
 	// The set of TrafficPolicy traffic shifts that reference subsets on this Destination.
-	RequiredSubsets []*DestinationStatus_RequiredSubsets `protobuf:"bytes,7,rep,name=required_subsets,json=requiredSubsets,proto3" json:"required_subsets,omitempty"`
+	RequiredSubsets []*RequiredSubsets `protobuf:"bytes,7,rep,name=required_subsets,json=requiredSubsets,proto3" json:"required_subsets,omitempty"`
 }
 
 func (x *DestinationStatus) Reset() {
@@ -217,9 +217,78 @@ func (x *DestinationStatus) GetAppliedFederation() *DestinationStatus_AppliedFed
 	return nil
 }
 
-func (x *DestinationStatus) GetRequiredSubsets() []*DestinationStatus_RequiredSubsets {
+func (x *DestinationStatus) GetRequiredSubsets() []*RequiredSubsets {
 	if x != nil {
 		return x.RequiredSubsets
+	}
+	return nil
+}
+
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
+// that references subsets on this Destination in a traffic shift.
+// Note: this is an Istio-specific feature.
+type RequiredSubsets struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Reference to the TrafficPolicy object.
+	TrafficPolicyRef *v1.ObjectRef `protobuf:"bytes,1,opt,name=traffic_policy_ref,json=trafficPolicyRef,proto3" json:"traffic_policy_ref,omitempty"`
+	// The observed generation of the TrafficPolicy.
+	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
+	// The applied traffic shift.
+	TrafficShift *v11.TrafficPolicySpec_Policy_MultiDestination `protobuf:"bytes,3,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
+}
+
+func (x *RequiredSubsets) Reset() {
+	*x = RequiredSubsets{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RequiredSubsets) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequiredSubsets) ProtoMessage() {}
+
+func (x *RequiredSubsets) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequiredSubsets.ProtoReflect.Descriptor instead.
+func (*RequiredSubsets) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RequiredSubsets) GetTrafficPolicyRef() *v1.ObjectRef {
+	if x != nil {
+		return x.TrafficPolicyRef
+	}
+	return nil
+}
+
+func (x *RequiredSubsets) GetObservedGeneration() int64 {
+	if x != nil {
+		return x.ObservedGeneration
+	}
+	return 0
+}
+
+func (x *RequiredSubsets) GetTrafficShift() *v11.TrafficPolicySpec_Policy_MultiDestination {
+	if x != nil {
+		return x.TrafficShift
 	}
 	return nil
 }
@@ -250,7 +319,7 @@ type DestinationSpec_KubeService struct {
 func (x *DestinationSpec_KubeService) Reset() {
 	*x = DestinationSpec_KubeService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[2]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -263,7 +332,7 @@ func (x *DestinationSpec_KubeService) String() string {
 func (*DestinationSpec_KubeService) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[2]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -352,7 +421,7 @@ type DestinationSpec_ExternalService struct {
 func (x *DestinationSpec_ExternalService) Reset() {
 	*x = DestinationSpec_ExternalService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[3]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -365,7 +434,7 @@ func (x *DestinationSpec_ExternalService) String() string {
 func (*DestinationSpec_ExternalService) ProtoMessage() {}
 
 func (x *DestinationSpec_ExternalService) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[3]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -441,7 +510,7 @@ type DestinationSpec_KubeService_KubeServicePort struct {
 func (x *DestinationSpec_KubeService_KubeServicePort) Reset() {
 	*x = DestinationSpec_KubeService_KubeServicePort{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[7]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -454,7 +523,7 @@ func (x *DestinationSpec_KubeService_KubeServicePort) String() string {
 func (*DestinationSpec_KubeService_KubeServicePort) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService_KubeServicePort) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[7]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -551,7 +620,7 @@ type DestinationSpec_KubeService_Subset struct {
 func (x *DestinationSpec_KubeService_Subset) Reset() {
 	*x = DestinationSpec_KubeService_Subset{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -564,7 +633,7 @@ func (x *DestinationSpec_KubeService_Subset) String() string {
 func (*DestinationSpec_KubeService_Subset) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService_Subset) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -601,7 +670,7 @@ type DestinationSpec_KubeService_EndpointsSubset struct {
 func (x *DestinationSpec_KubeService_EndpointsSubset) Reset() {
 	*x = DestinationSpec_KubeService_EndpointsSubset{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[9]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -614,7 +683,7 @@ func (x *DestinationSpec_KubeService_EndpointsSubset) String() string {
 func (*DestinationSpec_KubeService_EndpointsSubset) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService_EndpointsSubset) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[9]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -663,7 +732,7 @@ type DestinationSpec_KubeService_EndpointPort struct {
 func (x *DestinationSpec_KubeService_EndpointPort) Reset() {
 	*x = DestinationSpec_KubeService_EndpointPort{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[10]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -676,7 +745,7 @@ func (x *DestinationSpec_KubeService_EndpointPort) String() string {
 func (*DestinationSpec_KubeService_EndpointPort) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService_EndpointPort) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[10]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -736,7 +805,7 @@ type DestinationSpec_KubeService_EndpointsSubset_Endpoint struct {
 func (x *DestinationSpec_KubeService_EndpointsSubset_Endpoint) Reset() {
 	*x = DestinationSpec_KubeService_EndpointsSubset_Endpoint{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[11]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -749,7 +818,7 @@ func (x *DestinationSpec_KubeService_EndpointsSubset_Endpoint) String() string {
 func (*DestinationSpec_KubeService_EndpointsSubset_Endpoint) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService_EndpointsSubset_Endpoint) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[11]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -801,7 +870,7 @@ type DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality struct {
 func (x *DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) Reset() {
 	*x = DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[13]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -814,7 +883,7 @@ func (x *DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) Strin
 func (*DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) ProtoMessage() {}
 
 func (x *DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[13]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -860,7 +929,7 @@ type DestinationSpec_ExternalService_ExternalEndpoint struct {
 func (x *DestinationSpec_ExternalService_ExternalEndpoint) Reset() {
 	*x = DestinationSpec_ExternalService_ExternalEndpoint{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[14]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -873,7 +942,7 @@ func (x *DestinationSpec_ExternalService_ExternalEndpoint) String() string {
 func (*DestinationSpec_ExternalService_ExternalEndpoint) ProtoMessage() {}
 
 func (x *DestinationSpec_ExternalService_ExternalEndpoint) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[14]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -921,7 +990,7 @@ type DestinationSpec_ExternalService_ServicePort struct {
 func (x *DestinationSpec_ExternalService_ServicePort) Reset() {
 	*x = DestinationSpec_ExternalService_ServicePort{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[15]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -934,7 +1003,7 @@ func (x *DestinationSpec_ExternalService_ServicePort) String() string {
 func (*DestinationSpec_ExternalService_ServicePort) ProtoMessage() {}
 
 func (x *DestinationSpec_ExternalService_ServicePort) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[15]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -989,7 +1058,7 @@ type DestinationStatus_AppliedTrafficPolicy struct {
 func (x *DestinationStatus_AppliedTrafficPolicy) Reset() {
 	*x = DestinationStatus_AppliedTrafficPolicy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[17]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1002,7 +1071,7 @@ func (x *DestinationStatus_AppliedTrafficPolicy) String() string {
 func (*DestinationStatus_AppliedTrafficPolicy) ProtoMessage() {}
 
 func (x *DestinationStatus_AppliedTrafficPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[17]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1058,7 +1127,7 @@ type DestinationStatus_AppliedAccessPolicy struct {
 func (x *DestinationStatus_AppliedAccessPolicy) Reset() {
 	*x = DestinationStatus_AppliedAccessPolicy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[18]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1071,7 +1140,7 @@ func (x *DestinationStatus_AppliedAccessPolicy) String() string {
 func (*DestinationStatus_AppliedAccessPolicy) ProtoMessage() {}
 
 func (x *DestinationStatus_AppliedAccessPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[18]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1133,7 +1202,7 @@ type DestinationStatus_AppliedFederation struct {
 func (x *DestinationStatus_AppliedFederation) Reset() {
 	*x = DestinationStatus_AppliedFederation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[19]
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1146,7 +1215,7 @@ func (x *DestinationStatus_AppliedFederation) String() string {
 func (*DestinationStatus_AppliedFederation) ProtoMessage() {}
 
 func (x *DestinationStatus_AppliedFederation) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[19]
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1186,75 +1255,6 @@ func (x *DestinationStatus_AppliedFederation) GetFlatNetwork() bool {
 func (x *DestinationStatus_AppliedFederation) GetVirtualMeshRef() *v1.ObjectRef {
 	if x != nil {
 		return x.VirtualMeshRef
-	}
-	return nil
-}
-
-// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}})
-// that references subsets on this Destination in a traffic shift.
-// Note: this is an Istio-specific feature.
-type DestinationStatus_RequiredSubsets struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Reference to the TrafficPolicy object.
-	TrafficPolicyRef *v1.ObjectRef `protobuf:"bytes,1,opt,name=traffic_policy_ref,json=trafficPolicyRef,proto3" json:"traffic_policy_ref,omitempty"`
-	// The observed generation of the TrafficPolicy.
-	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// The applied traffic shift.
-	TrafficShift *v11.TrafficPolicySpec_Policy_MultiDestination `protobuf:"bytes,3,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
-}
-
-func (x *DestinationStatus_RequiredSubsets) Reset() {
-	*x = DestinationStatus_RequiredSubsets{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[20]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DestinationStatus_RequiredSubsets) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DestinationStatus_RequiredSubsets) ProtoMessage() {}
-
-func (x *DestinationStatus_RequiredSubsets) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[20]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DestinationStatus_RequiredSubsets.ProtoReflect.Descriptor instead.
-func (*DestinationStatus_RequiredSubsets) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_rawDescGZIP(), []int{1, 3}
-}
-
-func (x *DestinationStatus_RequiredSubsets) GetTrafficPolicyRef() *v1.ObjectRef {
-	if x != nil {
-		return x.TrafficPolicyRef
-	}
-	return nil
-}
-
-func (x *DestinationStatus_RequiredSubsets) GetObservedGeneration() int64 {
-	if x != nil {
-		return x.ObservedGeneration
-	}
-	return 0
-}
-
-func (x *DestinationStatus_RequiredSubsets) GetTrafficShift() *v11.TrafficPolicySpec_Policy_MultiDestination {
-	if x != nil {
-		return x.TrafficShift
 	}
 	return nil
 }
@@ -1458,7 +1458,7 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_rawDesc
 	0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12,
 	0x1a, 0x0a, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x42, 0x06, 0x0a, 0x04, 0x74,
-	0x79, 0x70, 0x65, 0x22, 0xb0, 0x0b, 0x0a, 0x11, 0x44, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x61, 0x74,
+	0x79, 0x70, 0x65, 0x22, 0xa0, 0x09, 0x0a, 0x11, 0x44, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x61, 0x74,
 	0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x2f, 0x0a, 0x13, 0x6f, 0x62, 0x73,
 	0x65, 0x72, 0x76, 0x65, 0x64, 0x5f, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64,
@@ -1487,74 +1487,73 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_rawDesc
 	0x65, 0x73, 0x74, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
 	0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x46, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x52, 0x11, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x46, 0x65, 0x64, 0x65, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x69, 0x0a, 0x10, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x57, 0x0a, 0x10, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65,
 	0x64, 0x5f, 0x73, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x3e, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68,
-	0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x44, 0x65,
-	0x73, 0x74, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2e,
-	0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x52,
-	0x0f, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73,
-	0x1a, 0xbb, 0x01, 0x0a, 0x14, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x54, 0x72, 0x61, 0x66,
-	0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x2e, 0x0a, 0x03, 0x72, 0x65, 0x66,
+	0x2c, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68,
+	0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x65,
+	0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x52, 0x0f, 0x72,
+	0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x1a, 0xbb,
+	0x01, 0x0a, 0x14, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69,
+	0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x2e, 0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32,
+	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52,
+	0x65, 0x66, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12, 0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72,
+	0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e,
+	0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x43, 0x0a, 0x04, 0x73, 0x70, 0x65, 0x63, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2f, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69,
+	0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c,
+	0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69,
+	0x63, 0x79, 0x53, 0x70, 0x65, 0x63, 0x52, 0x04, 0x73, 0x70, 0x65, 0x63, 0x1a, 0xb9, 0x01, 0x0a,
+	0x13, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x50, 0x6f,
+	0x6c, 0x69, 0x63, 0x79, 0x12, 0x2e, 0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f,
+	0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52,
+	0x03, 0x72, 0x65, 0x66, 0x12, 0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64,
+	0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x42, 0x0a, 0x04, 0x73, 0x70, 0x65, 0x63, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e,
+	0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
+	0x6f, 0x2e, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x70,
+	0x65, 0x63, 0x52, 0x04, 0x73, 0x70, 0x65, 0x63, 0x1a, 0xfb, 0x01, 0x0a, 0x11, 0x41, 0x70, 0x70,
+	0x6c, 0x69, 0x65, 0x64, 0x46, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2d,
+	0x0a, 0x12, 0x66, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x68, 0x6f, 0x73, 0x74,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x66, 0x65, 0x64, 0x65,
+	0x72, 0x61, 0x74, 0x65, 0x64, 0x48, 0x6f, 0x73, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x4c, 0x0a,
+	0x13, 0x66, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x5f, 0x6d, 0x65,
+	0x73, 0x68, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72,
+	0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x11, 0x66, 0x65, 0x64, 0x65, 0x72, 0x61,
+	0x74, 0x65, 0x64, 0x54, 0x6f, 0x4d, 0x65, 0x73, 0x68, 0x65, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x66,
+	0x6c, 0x61, 0x74, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x08, 0x52, 0x0b, 0x66, 0x6c, 0x61, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x46,
+	0x0a, 0x10, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x6d, 0x65, 0x73, 0x68, 0x5f, 0x72,
+	0x65, 0x66, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e,
+	0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d,
+	0x65, 0x73, 0x68, 0x52, 0x65, 0x66, 0x22, 0xfb, 0x01, 0x0a, 0x0f, 0x52, 0x65, 0x71, 0x75, 0x69,
+	0x72, 0x65, 0x64, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x12, 0x4a, 0x0a, 0x12, 0x74, 0x72,
+	0x61, 0x66, 0x66, 0x69, 0x63, 0x5f, 0x70, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x5f, 0x72, 0x65, 0x66,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b,
 	0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x52, 0x65, 0x66, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12, 0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73,
-	0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47,
-	0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x43, 0x0a, 0x04, 0x73, 0x70, 0x65,
-	0x63, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2f, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73,
-	0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f,
-	0x6c, 0x69, 0x63, 0x79, 0x53, 0x70, 0x65, 0x63, 0x52, 0x04, 0x73, 0x70, 0x65, 0x63, 0x1a, 0xb9,
-	0x01, 0x0a, 0x13, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73,
-	0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x2e, 0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e,
-	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65,
-	0x66, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12, 0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76,
+	0x74, 0x52, 0x65, 0x66, 0x52, 0x10, 0x74, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c,
+	0x69, 0x63, 0x79, 0x52, 0x65, 0x66, 0x12, 0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x42, 0x0a, 0x04, 0x73, 0x70, 0x65, 0x63, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
-	0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f,
-	0x2e, 0x69, 0x6f, 0x2e, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79,
-	0x53, 0x70, 0x65, 0x63, 0x52, 0x04, 0x73, 0x70, 0x65, 0x63, 0x1a, 0xfb, 0x01, 0x0a, 0x11, 0x41,
-	0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x46, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x12, 0x2d, 0x0a, 0x12, 0x66, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x68, 0x6f,
-	0x73, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x66, 0x65,
-	0x64, 0x65, 0x72, 0x61, 0x74, 0x65, 0x64, 0x48, 0x6f, 0x73, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x12,
-	0x4c, 0x0a, 0x13, 0x66, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x5f,
-	0x6d, 0x65, 0x73, 0x68, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63,
-	0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
-	0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x11, 0x66, 0x65, 0x64, 0x65,
-	0x72, 0x61, 0x74, 0x65, 0x64, 0x54, 0x6f, 0x4d, 0x65, 0x73, 0x68, 0x65, 0x73, 0x12, 0x21, 0x0a,
-	0x0c, 0x66, 0x6c, 0x61, 0x74, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x08, 0x52, 0x0b, 0x66, 0x6c, 0x61, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x12, 0x46, 0x0a, 0x10, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x6d, 0x65, 0x73, 0x68,
-	0x5f, 0x72, 0x65, 0x66, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72,
-	0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61,
-	0x6c, 0x4d, 0x65, 0x73, 0x68, 0x52, 0x65, 0x66, 0x1a, 0xfb, 0x01, 0x0a, 0x0f, 0x52, 0x65, 0x71,
-	0x75, 0x69, 0x72, 0x65, 0x64, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x12, 0x4a, 0x0a, 0x12,
-	0x74, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x5f, 0x70, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x5f, 0x72,
-	0x65, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e,
-	0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a,
-	0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x10, 0x74, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50,
-	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x65, 0x66, 0x12, 0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65,
-	0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x6c, 0x0a, 0x0d, 0x74, 0x72, 0x61, 0x66,
-	0x66, 0x69, 0x63, 0x5f, 0x73, 0x68, 0x69, 0x66, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x47, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73,
-	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54,
-	0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x70, 0x65, 0x63,
-	0x2e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x44, 0x65, 0x73,
-	0x74, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0c, 0x74, 0x72, 0x61, 0x66, 0x66, 0x69,
-	0x63, 0x53, 0x68, 0x69, 0x66, 0x74, 0x42, 0x4d, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f,
-	0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x64,
-	0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
-	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5, 0x04,
-	0x01, 0xb8, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x6c, 0x0a, 0x0d, 0x74, 0x72, 0x61, 0x66, 0x66, 0x69,
+	0x63, 0x5f, 0x73, 0x68, 0x69, 0x66, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x47, 0x2e,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e,
+	0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61,
+	0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x70, 0x65, 0x63, 0x2e, 0x50,
+	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x44, 0x65, 0x73, 0x74, 0x69,
+	0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0c, 0x74, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x53,
+	0x68, 0x69, 0x66, 0x74, 0x42, 0x4d, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d,
+	0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x69, 0x73,
+	0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f,
+	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0xb8,
+	0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1573,61 +1572,61 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgType
 var file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_goTypes = []interface{}{
 	(*DestinationSpec)(nil),                 // 0: discovery.mesh.gloo.solo.io.DestinationSpec
 	(*DestinationStatus)(nil),               // 1: discovery.mesh.gloo.solo.io.DestinationStatus
-	(*DestinationSpec_KubeService)(nil),     // 2: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService
-	(*DestinationSpec_ExternalService)(nil), // 3: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService
-	nil,                                     // 4: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.WorkloadSelectorLabelsEntry
-	nil,                                     // 5: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.LabelsEntry
-	nil,                                     // 6: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry
-	(*DestinationSpec_KubeService_KubeServicePort)(nil),          // 7: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort
-	(*DestinationSpec_KubeService_Subset)(nil),                   // 8: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.Subset
-	(*DestinationSpec_KubeService_EndpointsSubset)(nil),          // 9: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset
-	(*DestinationSpec_KubeService_EndpointPort)(nil),             // 10: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort
-	(*DestinationSpec_KubeService_EndpointsSubset_Endpoint)(nil), // 11: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint
-	nil, // 12: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry
-	(*DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality)(nil), // 13: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality
-	(*DestinationSpec_ExternalService_ExternalEndpoint)(nil),                 // 14: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint
-	(*DestinationSpec_ExternalService_ServicePort)(nil),                      // 15: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort
-	nil, // 16: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry
-	(*DestinationStatus_AppliedTrafficPolicy)(nil),        // 17: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy
-	(*DestinationStatus_AppliedAccessPolicy)(nil),         // 18: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy
-	(*DestinationStatus_AppliedFederation)(nil),           // 19: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation
-	(*DestinationStatus_RequiredSubsets)(nil),             // 20: discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets
+	(*RequiredSubsets)(nil),                 // 2: discovery.mesh.gloo.solo.io.RequiredSubsets
+	(*DestinationSpec_KubeService)(nil),     // 3: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService
+	(*DestinationSpec_ExternalService)(nil), // 4: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService
+	nil,                                     // 5: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.WorkloadSelectorLabelsEntry
+	nil,                                     // 6: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.LabelsEntry
+	nil,                                     // 7: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry
+	(*DestinationSpec_KubeService_KubeServicePort)(nil),          // 8: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort
+	(*DestinationSpec_KubeService_Subset)(nil),                   // 9: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.Subset
+	(*DestinationSpec_KubeService_EndpointsSubset)(nil),          // 10: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset
+	(*DestinationSpec_KubeService_EndpointPort)(nil),             // 11: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort
+	(*DestinationSpec_KubeService_EndpointsSubset_Endpoint)(nil), // 12: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint
+	nil, // 13: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry
+	(*DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality)(nil), // 14: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality
+	(*DestinationSpec_ExternalService_ExternalEndpoint)(nil),                 // 15: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint
+	(*DestinationSpec_ExternalService_ServicePort)(nil),                      // 16: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort
+	nil, // 17: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry
+	(*DestinationStatus_AppliedTrafficPolicy)(nil),        // 18: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy
+	(*DestinationStatus_AppliedAccessPolicy)(nil),         // 19: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy
+	(*DestinationStatus_AppliedFederation)(nil),           // 20: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation
 	(*v1.ObjectRef)(nil),                                  // 21: core.skv2.solo.io.ObjectRef
-	(*v1.ClusterObjectRef)(nil),                           // 22: core.skv2.solo.io.ClusterObjectRef
-	(*v11.TrafficPolicySpec)(nil),                         // 23: networking.mesh.gloo.solo.io.TrafficPolicySpec
-	(*v11.AccessPolicySpec)(nil),                          // 24: networking.mesh.gloo.solo.io.AccessPolicySpec
-	(*v11.TrafficPolicySpec_Policy_MultiDestination)(nil), // 25: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination
+	(*v11.TrafficPolicySpec_Policy_MultiDestination)(nil), // 22: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination
+	(*v1.ClusterObjectRef)(nil),                           // 23: core.skv2.solo.io.ClusterObjectRef
+	(*v11.TrafficPolicySpec)(nil),                         // 24: networking.mesh.gloo.solo.io.TrafficPolicySpec
+	(*v11.AccessPolicySpec)(nil),                          // 25: networking.mesh.gloo.solo.io.AccessPolicySpec
 }
 var file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_depIdxs = []int32{
-	2,  // 0: discovery.mesh.gloo.solo.io.DestinationSpec.kube_service:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService
-	3,  // 1: discovery.mesh.gloo.solo.io.DestinationSpec.external_service:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService
+	3,  // 0: discovery.mesh.gloo.solo.io.DestinationSpec.kube_service:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService
+	4,  // 1: discovery.mesh.gloo.solo.io.DestinationSpec.external_service:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService
 	21, // 2: discovery.mesh.gloo.solo.io.DestinationSpec.mesh:type_name -> core.skv2.solo.io.ObjectRef
-	17, // 3: discovery.mesh.gloo.solo.io.DestinationStatus.applied_traffic_policies:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy
-	18, // 4: discovery.mesh.gloo.solo.io.DestinationStatus.applied_access_policies:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy
-	19, // 5: discovery.mesh.gloo.solo.io.DestinationStatus.applied_federation:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation
-	20, // 6: discovery.mesh.gloo.solo.io.DestinationStatus.required_subsets:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets
-	22, // 7: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ref:type_name -> core.skv2.solo.io.ClusterObjectRef
-	4,  // 8: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.workload_selector_labels:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.WorkloadSelectorLabelsEntry
-	5,  // 9: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.labels:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.LabelsEntry
-	7,  // 10: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort
-	6,  // 11: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.subsets:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry
-	9,  // 12: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.endpoint_subsets:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset
-	15, // 13: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort
-	14, // 14: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.endpoints:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint
-	8,  // 15: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry.value:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.Subset
-	11, // 16: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.endpoints:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint
-	10, // 17: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort
-	12, // 18: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.labels:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry
-	13, // 19: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.sub_locality:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality
-	16, // 20: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry
-	21, // 21: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy.ref:type_name -> core.skv2.solo.io.ObjectRef
-	23, // 22: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy.spec:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec
-	21, // 23: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy.ref:type_name -> core.skv2.solo.io.ObjectRef
-	24, // 24: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy.spec:type_name -> networking.mesh.gloo.solo.io.AccessPolicySpec
-	21, // 25: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.federated_to_meshes:type_name -> core.skv2.solo.io.ObjectRef
-	21, // 26: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.virtual_mesh_ref:type_name -> core.skv2.solo.io.ObjectRef
-	21, // 27: discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets.traffic_policy_ref:type_name -> core.skv2.solo.io.ObjectRef
-	25, // 28: discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets.traffic_shift:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination
+	18, // 3: discovery.mesh.gloo.solo.io.DestinationStatus.applied_traffic_policies:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy
+	19, // 4: discovery.mesh.gloo.solo.io.DestinationStatus.applied_access_policies:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy
+	20, // 5: discovery.mesh.gloo.solo.io.DestinationStatus.applied_federation:type_name -> discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation
+	2,  // 6: discovery.mesh.gloo.solo.io.DestinationStatus.required_subsets:type_name -> discovery.mesh.gloo.solo.io.RequiredSubsets
+	21, // 7: discovery.mesh.gloo.solo.io.RequiredSubsets.traffic_policy_ref:type_name -> core.skv2.solo.io.ObjectRef
+	22, // 8: discovery.mesh.gloo.solo.io.RequiredSubsets.traffic_shift:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination
+	23, // 9: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ref:type_name -> core.skv2.solo.io.ClusterObjectRef
+	5,  // 10: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.workload_selector_labels:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.WorkloadSelectorLabelsEntry
+	6,  // 11: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.labels:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.LabelsEntry
+	8,  // 12: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort
+	7,  // 13: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.subsets:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry
+	10, // 14: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.endpoint_subsets:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset
+	16, // 15: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort
+	15, // 16: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.endpoints:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint
+	9,  // 17: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry.value:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.Subset
+	12, // 18: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.endpoints:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint
+	11, // 19: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort
+	13, // 20: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.labels:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry
+	14, // 21: discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.sub_locality:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality
+	17, // 22: discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.ports:type_name -> discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry
+	21, // 23: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy.ref:type_name -> core.skv2.solo.io.ObjectRef
+	24, // 24: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy.spec:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec
+	21, // 25: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy.ref:type_name -> core.skv2.solo.io.ObjectRef
+	25, // 26: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy.spec:type_name -> networking.mesh.gloo.solo.io.AccessPolicySpec
+	21, // 27: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.federated_to_meshes:type_name -> core.skv2.solo.io.ObjectRef
+	21, // 28: discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.virtual_mesh_ref:type_name -> core.skv2.solo.io.ObjectRef
 	29, // [29:29] is the sub-list for method output_type
 	29, // [29:29] is the sub-list for method input_type
 	29, // [29:29] is the sub-list for extension type_name
@@ -1666,7 +1665,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DestinationSpec_KubeService); i {
+			switch v := v.(*RequiredSubsets); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1678,6 +1677,18 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DestinationSpec_KubeService); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_ExternalService); i {
 			case 0:
 				return &v.state
@@ -1689,7 +1700,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_KubeService_KubeServicePort); i {
 			case 0:
 				return &v.state
@@ -1701,7 +1712,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_KubeService_Subset); i {
 			case 0:
 				return &v.state
@@ -1713,7 +1724,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_KubeService_EndpointsSubset); i {
 			case 0:
 				return &v.state
@@ -1725,7 +1736,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_KubeService_EndpointPort); i {
 			case 0:
 				return &v.state
@@ -1737,7 +1748,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_KubeService_EndpointsSubset_Endpoint); i {
 			case 0:
 				return &v.state
@@ -1749,7 +1760,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality); i {
 			case 0:
 				return &v.state
@@ -1761,7 +1772,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_ExternalService_ExternalEndpoint); i {
 			case 0:
 				return &v.state
@@ -1773,7 +1784,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationSpec_ExternalService_ServicePort); i {
 			case 0:
 				return &v.state
@@ -1785,7 +1796,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationStatus_AppliedTrafficPolicy); i {
 			case 0:
 				return &v.state
@@ -1797,7 +1808,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DestinationStatus_AppliedAccessPolicy); i {
 			case 0:
 				return &v.state
@@ -1809,20 +1820,8 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DestinationStatus_AppliedFederation); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 		file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DestinationStatus_RequiredSubsets); i {
+			switch v := v.(*DestinationStatus_AppliedFederation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1838,7 +1837,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_init()
 		(*DestinationSpec_KubeService_)(nil),
 		(*DestinationSpec_ExternalService_)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[7].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_discovery_v1_destination_proto_msgTypes[8].OneofWrappers = []interface{}{
 		(*DestinationSpec_KubeService_KubeServicePort_TargetPortName)(nil),
 		(*DestinationSpec_KubeService_KubeServicePort_TargetPortNumber)(nil),
 	}

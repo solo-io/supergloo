@@ -952,42 +952,574 @@ spec:
                                 minimum: 0
                                 type: integer
                             type: object
-                          ratelimit:
+                          rateLimit:
                             description: Config the Envoy based Ratelimit filter
                             oneOf:
                             - not:
                                 anyOf:
-                                - {}
                                 - required:
-                                  - rateLimitConfigs
-                            - not:
-                                anyOf:
-                                - {}
+                                  - basic
                                 - required:
-                                  - rateLimitConfigs
+                                  - advanced
+                                - required:
+                                  - configRefs
                             - required:
-                              - rateLimitConfigs
+                              - basic
+                            - required:
+                              - advanced
+                            - required:
+                              - configRefs
                             properties:
-                              rateLimitConfigs:
+                              advanced:
                                 description: |-
-                                  References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
+                                  Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
+                                  supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
+                                  Configure rate-limit *actions* here, which define how request characteristics get translated into
+                                  descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
+                                  their associated limits on the Gloo settings.
                                   Only one of `ratelimit` or `rate_limit_configs` can be set.
                                 properties:
-                                  refs:
+                                  actions:
+                                    description: |-
+                                      Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
+                                      would be throttled, the entire request returns a 429 (gets throttled)
                                     items:
                                       properties:
-                                        name:
-                                          type: string
-                                        namespace:
-                                          type: string
+                                        actions:
+                                          description: 'TODO: come up with descriptive
+                                            names and comments for these fields'
+                                          items:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - sourceCluster
+                                                - required:
+                                                  - destinationCluster
+                                                - required:
+                                                  - requestHeaders
+                                                - required:
+                                                  - remoteAddress
+                                                - required:
+                                                  - genericKey
+                                                - required:
+                                                  - headerValueMatch
+                                                - required:
+                                                  - metadata
+                                            - required:
+                                              - sourceCluster
+                                            - required:
+                                              - destinationCluster
+                                            - required:
+                                              - requestHeaders
+                                            - required:
+                                              - remoteAddress
+                                            - required:
+                                              - genericKey
+                                            - required:
+                                              - headerValueMatch
+                                            - required:
+                                              - metadata
+                                            properties:
+                                              destinationCluster:
+                                                description: Rate limit on destination
+                                                  cluster.
+                                                type: object
+                                              genericKey:
+                                                description: Rate limit on a generic
+                                                  key.
+                                                properties:
+                                                  descriptorValue:
+                                                    description: The value to use
+                                                      in the descriptor entry.
+                                                    type: string
+                                                type: object
+                                              headerValueMatch:
+                                                description: Rate limit on the existence
+                                                  of request headers.
+                                                properties:
+                                                  descriptorValue:
+                                                    description: The value to use
+                                                      in the descriptor entry.
+                                                    type: string
+                                                  expectMatch:
+                                                    description: |-
+                                                      If set to true, the action will append a descriptor entry when the
+                                                      request matches the headers. If set to false, the action will append a
+                                                      descriptor entry when the request does not match the headers. The
+                                                      default value is true.
+                                                    type: boolean
+                                                  headers:
+                                                    description: |-
+                                                      Specifies a set of headers that the rate limit action should match
+                                                      on. The action will check the request’s headers against all the
+                                                      specified headers in the config. A match will happen if all the
+                                                      headers in the config are present in the request with the same values
+                                                      (or based on presence if the value field is not in the config).
+                                                    items:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - exactMatch
+                                                          - required:
+                                                            - regexMatch
+                                                          - required:
+                                                            - rangeMatch
+                                                          - required:
+                                                            - presentMatch
+                                                          - required:
+                                                            - prefixMatch
+                                                          - required:
+                                                            - suffixMatch
+                                                      - required:
+                                                        - exactMatch
+                                                      - required:
+                                                        - regexMatch
+                                                      - required:
+                                                        - rangeMatch
+                                                      - required:
+                                                        - presentMatch
+                                                      - required:
+                                                        - prefixMatch
+                                                      - required:
+                                                        - suffixMatch
+                                                      properties:
+                                                        exactMatch:
+                                                          description: If specified,
+                                                            header match will be performed
+                                                            based on the value of
+                                                            the header.
+                                                          type: string
+                                                        invertMatch:
+                                                          description: |-
+                                                            If specified, the match result will be inverted before checking. Defaults to false.
+
+                                                            Examples:
+
+                                                            * The regex *\d{3}* does not match the value *1234*, so it will match when inverted.
+                                                            * The range [-10,0) will match the value -1, so it will not match when inverted.
+                                                          type: boolean
+                                                        name:
+                                                          description: Specifies the
+                                                            name of the header in
+                                                            the request.
+                                                          type: string
+                                                        prefixMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on the prefix of the header value.
+                                                            Note: empty prefix is not allowed, please use present_match instead.
+
+                                                            Examples:
+
+                                                            * The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.
+                                                          type: string
+                                                        presentMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on whether the header is in the
+                                                            request.
+                                                          type: boolean
+                                                        rangeMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on range.
+                                                            The rule will match if the request header value is within this range.
+                                                            The entire request header value must represent an integer in base 10 notation: consisting of
+                                                            an optional plus or minus sign followed by a sequence of digits. The rule will not match if
+                                                            the header value does not represent an integer. Match will fail for empty values, floating
+                                                            point numbers or if only a subsequence of the header value is an integer.
+
+                                                            Examples:
+
+                                                            * For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,
+                                                              "-1somestring"
+                                                          properties:
+                                                            end:
+                                                              description: end of
+                                                                the range (exclusive)
+                                                              format: int64
+                                                              type: integer
+                                                            start:
+                                                              description: start of
+                                                                the range (inclusive)
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
+                                                        regexMatch:
+                                                          description: |-
+                                                            If specified, this regex string is a regular expression rule which implies the entire request
+                                                            header value must match the regex. The rule will not match if only a subsequence of the
+                                                            request header value matches the regex. The regex grammar used in the value field is defined
+                                                            `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.
+
+                                                            Examples:
+
+                                                            * The regex *\d{3}* matches the value *123*
+                                                            * The regex *\d{3}* does not match the value *1234*
+                                                            * The regex *\d{3}* does not match the value *123.456*
+                                                          type: string
+                                                        suffixMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on the suffix of the header value.
+                                                            Note: empty suffix is not allowed, please use present_match instead.
+
+                                                            Examples:
+
+                                                            * The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.
+                                                          type: string
+                                                      type: object
+                                                    type: array
+                                                type: object
+                                              metadata:
+                                                description: Rate limit on metadata.
+                                                properties:
+                                                  defaultValue:
+                                                    description: |-
+                                                      An optional value to use if *metadata_key* is empty. If not set and
+                                                      no value is present under the metadata_key then no descriptor is generated.
+                                                    type: string
+                                                  descriptorKey:
+                                                    description: Required. The key
+                                                      to use in the descriptor entry.
+                                                    type: string
+                                                  metadataKey:
+                                                    description: |-
+                                                      Required. Metadata struct that defines the key and path to retrieve the string value. A match will
+                                                      only happen if the value in the metadata is of type string.
+                                                    properties:
+                                                      key:
+                                                        description: |-
+                                                          Required. The key name of Metadata to retrieve the Struct from the metadata.
+                                                          Typically, it represents a builtin subsystem or custom extension.
+                                                        type: string
+                                                      path:
+                                                        description: |-
+                                                          Must have at least one element. The path to retrieve the Value from the Struct. It can be a prefix or a full path,
+                                                          e.g. ``[prop, xyz]`` for a struct or ``[prop, foo]`` for a string in the example,
+                                                          which depends on the particular scenario.
+
+                                                          Note: Due to that only the key type segment is supported, the path can not specify a list
+                                                          unless the list is the last segment.
+                                                        items:
+                                                          oneOf:
+                                                          - not:
+                                                              anyOf:
+                                                              - required:
+                                                                - key
+                                                          - required:
+                                                            - key
+                                                          properties:
+                                                            key:
+                                                              description: Required.
+                                                                If specified, use
+                                                                the key to retrieve
+                                                                the value in a Struct.
+                                                              type: string
+                                                          type: object
+                                                        type: array
+                                                    type: object
+                                                  source:
+                                                    description: Source of metadata
+                                                    enum:
+                                                    - DYNAMIC
+                                                    - ROUTE_ENTRY
+                                                    type: string
+                                                type: object
+                                              remoteAddress:
+                                                description: Rate limit on remote
+                                                  address.
+                                                type: object
+                                              requestHeaders:
+                                                description: Rate limit on request
+                                                  headers.
+                                                properties:
+                                                  descriptorKey:
+                                                    description: The key to use in
+                                                      the descriptor entry.
+                                                    type: string
+                                                  headerName:
+                                                    description: |-
+                                                      The header name to be queried from the request headers. The header’s
+                                                      value is used to populate the value of the descriptor entry for the
+                                                      descriptor_key.
+                                                    type: string
+                                                type: object
+                                              sourceCluster:
+                                                description: Rate limit on source
+                                                  cluster.
+                                                type: object
+                                            type: object
+                                          type: array
+                                        setActions:
+                                          items:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - sourceCluster
+                                                - required:
+                                                  - destinationCluster
+                                                - required:
+                                                  - requestHeaders
+                                                - required:
+                                                  - remoteAddress
+                                                - required:
+                                                  - genericKey
+                                                - required:
+                                                  - headerValueMatch
+                                                - required:
+                                                  - metadata
+                                            - required:
+                                              - sourceCluster
+                                            - required:
+                                              - destinationCluster
+                                            - required:
+                                              - requestHeaders
+                                            - required:
+                                              - remoteAddress
+                                            - required:
+                                              - genericKey
+                                            - required:
+                                              - headerValueMatch
+                                            - required:
+                                              - metadata
+                                            properties:
+                                              destinationCluster:
+                                                description: Rate limit on destination
+                                                  cluster.
+                                                type: object
+                                              genericKey:
+                                                description: Rate limit on a generic
+                                                  key.
+                                                properties:
+                                                  descriptorValue:
+                                                    description: The value to use
+                                                      in the descriptor entry.
+                                                    type: string
+                                                type: object
+                                              headerValueMatch:
+                                                description: Rate limit on the existence
+                                                  of request headers.
+                                                properties:
+                                                  descriptorValue:
+                                                    description: The value to use
+                                                      in the descriptor entry.
+                                                    type: string
+                                                  expectMatch:
+                                                    description: |-
+                                                      If set to true, the action will append a descriptor entry when the
+                                                      request matches the headers. If set to false, the action will append a
+                                                      descriptor entry when the request does not match the headers. The
+                                                      default value is true.
+                                                    type: boolean
+                                                  headers:
+                                                    description: |-
+                                                      Specifies a set of headers that the rate limit action should match
+                                                      on. The action will check the request’s headers against all the
+                                                      specified headers in the config. A match will happen if all the
+                                                      headers in the config are present in the request with the same values
+                                                      (or based on presence if the value field is not in the config).
+                                                    items:
+                                                      oneOf:
+                                                      - not:
+                                                          anyOf:
+                                                          - required:
+                                                            - exactMatch
+                                                          - required:
+                                                            - regexMatch
+                                                          - required:
+                                                            - rangeMatch
+                                                          - required:
+                                                            - presentMatch
+                                                          - required:
+                                                            - prefixMatch
+                                                          - required:
+                                                            - suffixMatch
+                                                      - required:
+                                                        - exactMatch
+                                                      - required:
+                                                        - regexMatch
+                                                      - required:
+                                                        - rangeMatch
+                                                      - required:
+                                                        - presentMatch
+                                                      - required:
+                                                        - prefixMatch
+                                                      - required:
+                                                        - suffixMatch
+                                                      properties:
+                                                        exactMatch:
+                                                          description: If specified,
+                                                            header match will be performed
+                                                            based on the value of
+                                                            the header.
+                                                          type: string
+                                                        invertMatch:
+                                                          description: |-
+                                                            If specified, the match result will be inverted before checking. Defaults to false.
+
+                                                            Examples:
+
+                                                            * The regex *\d{3}* does not match the value *1234*, so it will match when inverted.
+                                                            * The range [-10,0) will match the value -1, so it will not match when inverted.
+                                                          type: boolean
+                                                        name:
+                                                          description: Specifies the
+                                                            name of the header in
+                                                            the request.
+                                                          type: string
+                                                        prefixMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on the prefix of the header value.
+                                                            Note: empty prefix is not allowed, please use present_match instead.
+
+                                                            Examples:
+
+                                                            * The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.
+                                                          type: string
+                                                        presentMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on whether the header is in the
+                                                            request.
+                                                          type: boolean
+                                                        rangeMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on range.
+                                                            The rule will match if the request header value is within this range.
+                                                            The entire request header value must represent an integer in base 10 notation: consisting of
+                                                            an optional plus or minus sign followed by a sequence of digits. The rule will not match if
+                                                            the header value does not represent an integer. Match will fail for empty values, floating
+                                                            point numbers or if only a subsequence of the header value is an integer.
+
+                                                            Examples:
+
+                                                            * For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,
+                                                              "-1somestring"
+                                                          properties:
+                                                            end:
+                                                              description: end of
+                                                                the range (exclusive)
+                                                              format: int64
+                                                              type: integer
+                                                            start:
+                                                              description: start of
+                                                                the range (inclusive)
+                                                              format: int64
+                                                              type: integer
+                                                          type: object
+                                                        regexMatch:
+                                                          description: |-
+                                                            If specified, this regex string is a regular expression rule which implies the entire request
+                                                            header value must match the regex. The rule will not match if only a subsequence of the
+                                                            request header value matches the regex. The regex grammar used in the value field is defined
+                                                            `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.
+
+                                                            Examples:
+
+                                                            * The regex *\d{3}* matches the value *123*
+                                                            * The regex *\d{3}* does not match the value *1234*
+                                                            * The regex *\d{3}* does not match the value *123.456*
+                                                          type: string
+                                                        suffixMatch:
+                                                          description: |-
+                                                            If specified, header match will be performed based on the suffix of the header value.
+                                                            Note: empty suffix is not allowed, please use present_match instead.
+
+                                                            Examples:
+
+                                                            * The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.
+                                                          type: string
+                                                      type: object
+                                                    type: array
+                                                type: object
+                                              metadata:
+                                                description: Rate limit on metadata.
+                                                properties:
+                                                  defaultValue:
+                                                    description: |-
+                                                      An optional value to use if *metadata_key* is empty. If not set and
+                                                      no value is present under the metadata_key then no descriptor is generated.
+                                                    type: string
+                                                  descriptorKey:
+                                                    description: Required. The key
+                                                      to use in the descriptor entry.
+                                                    type: string
+                                                  metadataKey:
+                                                    description: |-
+                                                      Required. Metadata struct that defines the key and path to retrieve the string value. A match will
+                                                      only happen if the value in the metadata is of type string.
+                                                    properties:
+                                                      key:
+                                                        description: |-
+                                                          Required. The key name of Metadata to retrieve the Struct from the metadata.
+                                                          Typically, it represents a builtin subsystem or custom extension.
+                                                        type: string
+                                                      path:
+                                                        description: |-
+                                                          Must have at least one element. The path to retrieve the Value from the Struct. It can be a prefix or a full path,
+                                                          e.g. ``[prop, xyz]`` for a struct or ``[prop, foo]`` for a string in the example,
+                                                          which depends on the particular scenario.
+
+                                                          Note: Due to that only the key type segment is supported, the path can not specify a list
+                                                          unless the list is the last segment.
+                                                        items:
+                                                          oneOf:
+                                                          - not:
+                                                              anyOf:
+                                                              - required:
+                                                                - key
+                                                          - required:
+                                                            - key
+                                                          properties:
+                                                            key:
+                                                              description: Required.
+                                                                If specified, use
+                                                                the key to retrieve
+                                                                the value in a Struct.
+                                                              type: string
+                                                          type: object
+                                                        type: array
+                                                    type: object
+                                                  source:
+                                                    description: Source of metadata
+                                                    enum:
+                                                    - DYNAMIC
+                                                    - ROUTE_ENTRY
+                                                    type: string
+                                                type: object
+                                              remoteAddress:
+                                                description: Rate limit on remote
+                                                  address.
+                                                type: object
+                                              requestHeaders:
+                                                description: Rate limit on request
+                                                  headers.
+                                                properties:
+                                                  descriptorKey:
+                                                    description: The key to use in
+                                                      the descriptor entry.
+                                                    type: string
+                                                  headerName:
+                                                    description: |-
+                                                      The header name to be queried from the request headers. The header’s
+                                                      value is used to populate the value of the descriptor entry for the
+                                                      descriptor_key.
+                                                    type: string
+                                                type: object
+                                              sourceCluster:
+                                                description: Rate limit on source
+                                                  cluster.
+                                                type: object
+                                            type: object
+                                          type: array
                                       type: object
                                     type: array
                                 type: object
-                              ratelimitBasic:
+                              basic:
                                 description: Config for rate-limiting using simplified
                                   (gloo-specific) API
                                 properties:
                                   anonymousLimits:
+                                    description: limits for unauthorized users
                                     properties:
                                       requestsPerUnit:
                                         maximum: 4294967295
@@ -1003,6 +1535,7 @@ spec:
                                         type: string
                                     type: object
                                   authorizedLimits:
+                                    description: limits for authorized users
                                     properties:
                                       requestsPerUnit:
                                         maximum: 4294967295
@@ -1017,6 +1550,25 @@ spec:
                                         - DAY
                                         type: string
                                     type: object
+                                type: object
+                              configRefs:
+                                description: |-
+                                  References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
+                                  Only one of `ratelimit` or `rate_limit_configs` can be set.
+                                properties:
+                                  refs:
+                                    items:
+                                      properties:
+                                        name:
+                                          description: name of the resource being
+                                            referenced
+                                          type: string
+                                        namespace:
+                                          description: namespace of the resource being
+                                            referenced
+                                          type: string
+                                      type: object
+                                    type: array
                                 type: object
                             type: object
                           requestTimeout:

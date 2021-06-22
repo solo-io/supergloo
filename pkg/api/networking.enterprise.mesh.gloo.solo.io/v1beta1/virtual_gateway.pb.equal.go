@@ -828,12 +828,12 @@ func (m *VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) Equal(that
 		}
 	}
 
-	if h, ok := interface{}(m.GetRatelimit()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRatelimit()) {
+	if h, ok := interface{}(m.GetRateLimit()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRateLimit()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetRatelimit(), target.GetRatelimit()) {
+		if !proto.Equal(m.GetRateLimit(), target.GetRateLimit()) {
 			return false
 		}
 	}

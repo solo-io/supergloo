@@ -476,36 +476,25 @@ spec:
                       minimum: 0
                       type: integer
                   type: object
-                ratelimit:
+                rateLimit:
                   description: Config the Envoy based Ratelimit filter
                   oneOf:
                   - not:
                       anyOf:
                       - required:
-                        - ratelimit
+                        - basic
                       - required:
-                        - rateLimitConfigs
+                        - advanced
+                      - required:
+                        - configRefs
                   - required:
-                    - ratelimit
+                    - basic
                   - required:
-                    - rateLimitConfigs
+                    - advanced
+                  - required:
+                    - configRefs
                   properties:
-                    rateLimitConfigs:
-                      description: |-
-                        References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
-                        Only one of `ratelimit` or `rate_limit_configs` can be set.
-                      properties:
-                        refs:
-                          items:
-                            properties:
-                              name:
-                                type: string
-                              namespace:
-                                type: string
-                            type: object
-                          type: array
-                      type: object
-                    ratelimit:
+                    advanced:
                       description: |-
                         Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
                         supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
@@ -514,13 +503,15 @@ spec:
                         their associated limits on the Gloo settings.
                         Only one of `ratelimit` or `rate_limit_configs` can be set.
                       properties:
-                        rateLimits:
+                        actions:
                           description: |-
                             Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
                             would be throttled, the entire request returns a 429 (gets throttled)
                           items:
                             properties:
                               actions:
+                                description: 'TODO: come up with descriptive names
+                                  and comments for these fields'
                                 items:
                                   oneOf:
                                   - not:
@@ -579,7 +570,6 @@ spec:
                                             request matches the headers. If set to false, the action will append a
                                             descriptor entry when the request does not match the headers. The
                                             default value is true.
-                                          nullable: true
                                           type: boolean
                                         headers:
                                           description: |-
@@ -730,6 +720,19 @@ spec:
                                                 Note: Due to that only the key type segment is supported, the path can not specify a list
                                                 unless the list is the last segment.
                                               items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - key
+                                                - required:
+                                                  - key
+                                                properties:
+                                                  key:
+                                                    description: Required. If specified,
+                                                      use the key to retrieve the
+                                                      value in a Struct.
+                                                    type: string
                                                 type: object
                                               type: array
                                           type: object
@@ -821,7 +824,6 @@ spec:
                                             request matches the headers. If set to false, the action will append a
                                             descriptor entry when the request does not match the headers. The
                                             default value is true.
-                                          nullable: true
                                           type: boolean
                                         headers:
                                           description: |-
@@ -972,6 +974,19 @@ spec:
                                                 Note: Due to that only the key type segment is supported, the path can not specify a list
                                                 unless the list is the last segment.
                                               items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - key
+                                                - required:
+                                                  - key
+                                                properties:
+                                                  key:
+                                                    description: Required. If specified,
+                                                      use the key to retrieve the
+                                                      value in a Struct.
+                                                    type: string
                                                 type: object
                                               type: array
                                           type: object
@@ -1007,11 +1022,12 @@ spec:
                             type: object
                           type: array
                       type: object
-                    ratelimitBasic:
+                    basic:
                       description: Config for rate-limiting using simplified (gloo-specific)
                         API
                       properties:
                         anonymousLimits:
+                          description: limits for unauthorized users
                           properties:
                             requestsPerUnit:
                               maximum: 4294967295
@@ -1027,6 +1043,7 @@ spec:
                               type: string
                           type: object
                         authorizedLimits:
+                          description: limits for authorized users
                           properties:
                             requestsPerUnit:
                               maximum: 4294967295
@@ -1041,6 +1058,23 @@ spec:
                               - DAY
                               type: string
                           type: object
+                      type: object
+                    configRefs:
+                      description: |-
+                        References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
+                        Only one of `ratelimit` or `rate_limit_configs` can be set.
+                      properties:
+                        refs:
+                          items:
+                            properties:
+                              name:
+                                description: name of the resource being referenced
+                                type: string
+                              namespace:
+                                description: namespace of the resource being referenced
+                                type: string
+                            type: object
+                          type: array
                       type: object
                   type: object
                 requestTimeout:

@@ -7,6 +7,8 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/access_policy.proto";
 import "google/protobuf/wrappers.proto";
 
+import "encoding/protobuf/cue/cue.proto";
+
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 // Generate hash functions for sublocality for easier grouping.
@@ -192,7 +194,8 @@ message DestinationStatus {
     int64 observed_generation = 1;
 
     // The set of TrafficPolicies that have been applied to this Destination.
-    repeated AppliedTrafficPolicy applied_traffic_policies = 3;
+    // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+    repeated AppliedTrafficPolicy applied_traffic_policies = 3  [(cue.opt).disable_openapi_validation = true];
 
     // The set of AccessPolicies that have been applied to this Destination.
     repeated AppliedAccessPolicy applied_access_policies = 4;

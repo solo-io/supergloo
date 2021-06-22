@@ -7,6 +7,7 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
 
 import "google/protobuf/empty.proto";
@@ -162,23 +163,13 @@ message VirtualGatewaySpec {
                 // enable [Envoy health checks](https://www.envoyproxy.io/docs/envoy/v1.7.0/api-v2/config/filter/http/health_check/v2/health_check.proto) on this listener
                 // healthcheck.options.gloo.solo.io.HealthCheck health_check = 4;
 
-                // Configure the Envoy based CSRF filter for this Gateway.
+                // Configure Global CSRF options for clients connected to this Gateway.
                 .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
 
-                // Configure the Envoy based Ratelimit filter for this Gateway.
-                RateLimitFilter rate_limit = 3;
+                // Configure Global Rate limit options for clients connected to this Gateway.
+                // Rate limits must be configured on specific routes in order to enable rate limiting for a Gateway.
+                .ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit rate_limit = 3;
 
-                // Filter-level config
-                message RateLimitFilter {
-                    .core.skv2.solo.io.ObjectRef ratelimit_server_ref = 1;
-                    google.protobuf.Duration request_timeout = 2;
-
-                    bool deny_on_fail = 3;
-
-                    // Set this is set to true if you would like to rate limit traffic before applying external auth to it.
-                    // *Note*: When this is true, you will lose some features like being able to rate limit a request based on its auth state
-                    bool rate_limit_before_auth = 9;
-                }
             }
         }
 

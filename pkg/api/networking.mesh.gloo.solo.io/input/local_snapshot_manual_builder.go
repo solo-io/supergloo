@@ -6,17 +6,17 @@
 package input
 
 import (
+	networking_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
+	networking_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
+
+	networking_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networking_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
+
 	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	settings_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 
 	discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discovery_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
-
-	networking_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
-	networking_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
-
-	networking_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
-	networking_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 
 	observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
@@ -31,22 +31,22 @@ import (
 type InputLocalSnapshotManualBuilder struct {
 	name string
 
-	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
-
-	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
-	workloads    discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
-	meshes       discovery_mesh_gloo_solo_io_v1_sets.MeshSet
-
-	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
-	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
-	virtualMeshes   networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
-
 	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
 	virtualGateways     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
 	virtualHosts        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
 	routeTables         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
 	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
+
+	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
+	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
+	virtualMeshes   networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
+
+	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
+
+	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
+	workloads    discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
+	meshes       discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -59,22 +59,22 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 	return &InputLocalSnapshotManualBuilder{
 		name: name,
 
-		settings: settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet(),
-
-		destinations: discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet(),
-		workloads:    discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet(),
-		meshes:       discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet(),
-
-		trafficPolicies: networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet(),
-		accessPolicies:  networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet(),
-		virtualMeshes:   networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet(),
-
 		wasmDeployments:     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet(),
 		virtualDestinations: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet(),
 		virtualGateways:     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet(),
 		virtualHosts:        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet(),
 		routeTables:         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet(),
 		serviceDependencies: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet(),
+
+		trafficPolicies: networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet(),
+		accessPolicies:  networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet(),
+		virtualMeshes:   networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet(),
+
+		settings: settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet(),
+
+		destinations: discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet(),
+		workloads:    discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet(),
+		meshes:       discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet(),
 
 		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet(),
 
@@ -88,16 +88,6 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 	return NewLocalSnapshot(
 		i.name,
 
-		i.settings,
-
-		i.destinations,
-		i.workloads,
-		i.meshes,
-
-		i.trafficPolicies,
-		i.accessPolicies,
-		i.virtualMeshes,
-
 		i.wasmDeployments,
 		i.virtualDestinations,
 		i.virtualGateways,
@@ -105,40 +95,22 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.routeTables,
 		i.serviceDependencies,
 
+		i.trafficPolicies,
+		i.accessPolicies,
+		i.virtualMeshes,
+
+		i.settings,
+
+		i.destinations,
+		i.workloads,
+		i.meshes,
+
 		i.accessLogRecords,
 
 		i.secrets,
 
 		i.kubernetesClusters,
 	)
-}
-func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1.Settings) *InputLocalSnapshotManualBuilder {
-	i.settings.Insert(settings...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddDestinations(destinations []*discovery_mesh_gloo_solo_io_v1.Destination) *InputLocalSnapshotManualBuilder {
-	i.destinations.Insert(destinations...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddWorkloads(workloads []*discovery_mesh_gloo_solo_io_v1.Workload) *InputLocalSnapshotManualBuilder {
-	i.workloads.Insert(workloads...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddMeshes(meshes []*discovery_mesh_gloo_solo_io_v1.Mesh) *InputLocalSnapshotManualBuilder {
-	i.meshes.Insert(meshes...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddTrafficPolicies(trafficPolicies []*networking_mesh_gloo_solo_io_v1.TrafficPolicy) *InputLocalSnapshotManualBuilder {
-	i.trafficPolicies.Insert(trafficPolicies...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddAccessPolicies(accessPolicies []*networking_mesh_gloo_solo_io_v1.AccessPolicy) *InputLocalSnapshotManualBuilder {
-	i.accessPolicies.Insert(accessPolicies...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networking_mesh_gloo_solo_io_v1.VirtualMesh) *InputLocalSnapshotManualBuilder {
-	i.virtualMeshes.Insert(virtualMeshes...)
-	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) *InputLocalSnapshotManualBuilder {
 	i.wasmDeployments.Insert(wasmDeployments...)
@@ -162,6 +134,34 @@ func (i *InputLocalSnapshotManualBuilder) AddRouteTables(routeTables []*networki
 }
 func (i *InputLocalSnapshotManualBuilder) AddServiceDependencies(serviceDependencies []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) *InputLocalSnapshotManualBuilder {
 	i.serviceDependencies.Insert(serviceDependencies...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddTrafficPolicies(trafficPolicies []*networking_mesh_gloo_solo_io_v1.TrafficPolicy) *InputLocalSnapshotManualBuilder {
+	i.trafficPolicies.Insert(trafficPolicies...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddAccessPolicies(accessPolicies []*networking_mesh_gloo_solo_io_v1.AccessPolicy) *InputLocalSnapshotManualBuilder {
+	i.accessPolicies.Insert(accessPolicies...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networking_mesh_gloo_solo_io_v1.VirtualMesh) *InputLocalSnapshotManualBuilder {
+	i.virtualMeshes.Insert(virtualMeshes...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1.Settings) *InputLocalSnapshotManualBuilder {
+	i.settings.Insert(settings...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddDestinations(destinations []*discovery_mesh_gloo_solo_io_v1.Destination) *InputLocalSnapshotManualBuilder {
+	i.destinations.Insert(destinations...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddWorkloads(workloads []*discovery_mesh_gloo_solo_io_v1.Workload) *InputLocalSnapshotManualBuilder {
+	i.workloads.Insert(workloads...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddMeshes(meshes []*discovery_mesh_gloo_solo_io_v1.Mesh) *InputLocalSnapshotManualBuilder {
+	i.meshes.Insert(meshes...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) *InputLocalSnapshotManualBuilder {
