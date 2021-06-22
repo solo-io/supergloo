@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
@@ -148,6 +149,39 @@ func (t *translator) Translate(
 			}
 		}
 		return nil
+	}
+
+	// retrieve the virtual mesh to use its keepalive value, if it exists.
+	destinationVirtualMesh, err := in.VirtualMeshes().Find(destination.Status.AppliedFederation.GetVirtualMeshRef())
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Errorf("Could not find parent VirtualMesh %v for Destination %v, keepalive will not be set.", destination.Status.AppliedFederation.GetVirtualMeshRef(), ezkube.MakeObjectRef(destination))
+		return destinationRule
+	}
+
+	keepalive := destinationVirtualMesh.Spec.GetTcpKeepalive()
+	if keepalive != nil {
+		// ensure the entire chain of values is instantiated.
+		trafficPolicy := destinationRule.Spec.GetTrafficPolicy()
+		if trafficPolicy == nil {
+			destinationRule.Spec.TrafficPolicy = &networkingv1alpha3spec.TrafficPolicy{}
+		}
+		connectionPool := destinationRule.Spec.GetTrafficPolicy().GetConnectionPool()
+		if connectionPool == nil {
+			destinationRule.Spec.TrafficPolicy.ConnectionPool = &networkingv1alpha3spec.ConnectionPoolSettings{}
+		}
+		tcp := destinationRule.Spec.GetTrafficPolicy().GetConnectionPool().GetTcp()
+		if tcp == nil {
+			destinationRule.Spec.TrafficPolicy.ConnectionPool.Tcp = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings{}
+		}
+
+		// Istio uses gogo duration structs. Since we don't use gogo in our protos, we have to convert durations during runtime.
+		gogoTime := gogoutils.DurationProtoToGogo(keepalive.GetTime())
+		gogoInterval := gogoutils.DurationProtoToGogo(keepalive.GetInterval())
+		destinationRule.Spec.GetTrafficPolicy().GetConnectionPool().GetTcp().TcpKeepalive = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings_TcpKeepalive{
+			Probes:   destinationVirtualMesh.Spec.GetTcpKeepalive().GetProbes(),
+			Time:     gogoTime,
+			Interval: gogoInterval,
+		}
 	}
 
 	return destinationRule

@@ -87,6 +87,16 @@ func (m *VirtualMeshSpec) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetTcpKeepalive()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTcpKeepalive()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTcpKeepalive(), target.GetTcpKeepalive()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -436,6 +446,54 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 	default:
 		// m is nil but target is not nil
 		if m.Mode != target.Mode {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualMeshSpec_TCPKeepalive) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualMeshSpec_TCPKeepalive)
+	if !ok {
+		that2, ok := that.(VirtualMeshSpec_TCPKeepalive)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetProbes() != target.GetProbes() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTime()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTime()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTime(), target.GetTime()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetInterval()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetInterval()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetInterval(), target.GetInterval()) {
 			return false
 		}
 	}
