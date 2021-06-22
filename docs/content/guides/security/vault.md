@@ -9,7 +9,7 @@ weight: 30
 
 [Vault](https://github.com/hashicorp/vault) is a popular open source secret management tool, one of it's many use cases is PKI (Private Key Infrastructure). Vault allows for easy and secure storage of our private keys, as well as generation of new leaf/intermediary certificates. This guide will explore using vault as an intermediate CA in conjunction with Gloo Mesh.
 
-In addition to using Vault as the intermediate CA, this guide will also explore the added security benefits of using Gloo Mesh Enterprise + Vault. Gloo Mesh Enterprise integration with vault uses a new component which we call the `istiod-agent`. This agent runs as a `sidecar` to the `istiod` pod, and communicates with Vault to request private keys and sign certificates. This allows gloo-mesh to load the private key directly into the pod filesystem, thereby allowing for an added layer of security by not saving the key to `etcd` (or any permanent storage).
+In addition to using Vault as the intermediate CA, this guide will also explore the added security benefits of using Gloo Mesh Enterprise + Vault. Gloo Mesh Enterprise integration with vault uses a new component which we call the `istiod-agent`. This agent runs as a `sidecar` to the `istiod` pod, and communicates with Vault to request private keys and sign certificates. This allows gloo-mesh to load the private key directly into the pod filesystem, thereby allowing for an added layer of security by not saving the key to `etcd` (or any permanent storage). 
 
 ## Before you begin
 
@@ -100,7 +100,7 @@ done
 
 ## Enabling Vault as an intermediate CA
 
-Now we need to federate our 2 meshes together using Vault to federate identity. To do this we will need to create/edit a `VirtualMesh` with the new Vault shared mTLS config
+Now we need to federate our 2 meshes together using Vault to federate identity. To do this we will need to create/edit a `VirtualMesh` with the new Vault shared mTLS config.
 
 {{< highlight yaml "hl_lines=10-20" >}}
 apiVersion: networking.mesh.gloo.solo.io/v1
@@ -133,6 +133,40 @@ spec:
   - name: istiod-istio-system-cluster-2
     namespace: gloo-mesh
 {{< /highlight >}}
+
+```shell
+cat << EOF | kubectl apply --context=${CONTEXT_1} -f -
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: VirtualMesh
+metadata:
+  name: virtual-mesh
+  namespace: gloo-mesh
+spec:
+  mtlsConfig:
+    autoRestartPods: true
+    shared:
+      intermediateCertificateAuthority:
+        vault:
+          # Vault path to the CA endpoint
+          caPath: "pki/root/sign-intermediate"
+          # Vault path to the CSR endpoint
+          csrPath: "pki_int/intermediate/generate/exported"
+          # Vault server endpoint
+          server: "http://vault.vault:8200"
+          # Auth mechanism to use
+          kubernetesAuth:
+            role: "gen-int-ca-istio"
+  federation:
+    # federate all Destinations to all external meshes
+    selectors:
+    - {}
+  meshes:
+  - name: istiod-istio-system-cluster-1
+    namespace: gloo-mesh
+  - name: istiod-istio-system-cluster-2
+    namespace: gloo-mesh
+EOF
+```
 
 ## Updating RBAC
 
