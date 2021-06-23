@@ -722,8 +722,9 @@ spec:
                     description: State observed during condition
                     enum:
                     - PENDING
-                    - ROTATING_MULTI_ROOT
-                    - ROTATING_NEW_ROOT
+                    - ADDING_NEW_ROOT
+                    - PROPOGATING_NEW_INTERMEDIATE
+                    - DELETING_OLD_ROOT
                     - VERIFYING
                     - FINISHED
                     - FAILED
@@ -747,8 +748,9 @@ spec:
                 by the issuer.
               enum:
               - PENDING
-              - ROTATING_MULTI_ROOT
-              - ROTATING_NEW_ROOT
+              - ADDING_NEW_ROOT
+              - PROPOGATING_NEW_INTERMEDIATE
+              - DELETING_OLD_ROOT
               - VERIFYING
               - FINISHED
               - FAILED

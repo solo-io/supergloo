@@ -91,11 +91,12 @@ Possible states in which a CertificateRotation can exist.
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | PENDING | 0 | The CertificateRotation has yet to be picked up by the management-plane. |
-| ROTATING_MULTI_ROOT | 1 | The CertificateRotation is underway, both roots are set, and the new root is being propogated |
-| ROTATING_NEW_ROOT | 2 | The CertificateRotation is underway again. The initial verification is over, the traffic continues to work with both roots present. Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters |
-| VERIFYING | 3 | Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified. This can either be manual or in the future automated |
-| FINISHED | 4 | The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has been verified for a 2nd time. |
-| FAILED | 5 | Processing the certificate rotation workflow failed. |
+| ADDING_NEW_ROOT | 1 | The CertificateRotation is underway, both roots are set, and the new root is being propogated |
+| PROPOGATING_NEW_INTERMEDIATE | 2 | The CertificateRotation is underway again. The initial verification is over, the traffic continues to work with both roots present. Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters |
+| DELETING_OLD_ROOT | 3 | The CertificateRotation is underway again. Removing the old-root from all data-plane clusters |
+| VERIFYING | 4 | Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified. This can either be manual or in the future automated |
+| FINISHED | 5 | The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has been verified for a 2nd time. |
+| FAILED | 6 | Processing the certificate rotation workflow failed. |
 
 
  <!-- end enums -->
