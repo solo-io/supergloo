@@ -20,22 +20,26 @@ yaml specified in this field will be merged with the default deployment and serv
 
 ## Examples
 
-The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will add a custom label to the dashboard pod:
+The following values.yaml file, passed into the Gloo Mesh community helm chart, will add a custom label to the dashboard pod:
 ```yaml
-dashboard:
+discovery:
   deploymentOverrides:
     spec:
-      replicas: 5
       template:
         metadata:
           annotations:
             test: new-annotation
 ```
 
+To see the new annotation being applied, run:
+```
+helm template gloo-mesh https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-1.1.0-beta15.tgz --namespace gloo-mesh --values values.yaml
+```
+
 The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will replace a volume mount for the dashboard pod:
 
 ```yaml
-dashboard:
+discovery:
   deploymentOverrides:
     spec:
       template:
