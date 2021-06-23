@@ -59,7 +59,8 @@ weight: 2
 |admin.port|struct|{"name":"admin","port":11100}||
 |admin.port.name|string|admin|The name of this port within the service.|
 |admin.port.port|int32|11100|The default port that will be exposed by this service.|
-|enterpriseNetworking|struct|{"image":{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"LoadBalancer","ports":{"grpc":9900,"http":8080},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"LICENSE_KEY","valueFrom":{"secretKeyRef":{"name":"gloo-mesh-enterprise-license","key":"key"}}}]}|Configuration for the enterpriseNetworking deployment.|
+|disableRelayCa|bool|false||
+|enterpriseNetworking|struct|{"image":{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"LoadBalancer","ports":{"grpc":9900,"http":8080},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"LICENSE_KEY","valueFrom":{"secretKeyRef":{"name":"gloo-mesh-enterprise-license","key":"key"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the enterpriseNetworking deployment.|
 |enterpriseNetworking.image|struct|{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |enterpriseNetworking.image.tag|string| |Tag for the container.|
 |enterpriseNetworking.image.repository|string|enterprise-networking|Image name (repository).|
@@ -73,3 +74,16 @@ weight: 2
 |enterpriseNetworking.ports.grpc|uint32|9900|Specify service ports as a map from port name to port number.|
 |enterpriseNetworking.ports.http|uint32|8080|Specify service ports as a map from port name to port number.|
 |enterpriseNetworking.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"LICENSE_KEY","valueFrom":{"secretKeyRef":{"name":"gloo-mesh-enterprise-license","key":"key"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|enterpriseNetworking.customPodLabels|map[string, string]| |Custom labels for the pod|
+|enterpriseNetworking.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
+|enterpriseNetworking.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
+|enterpriseNetworking.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
+|enterpriseNetworking.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
+|enterpriseNetworking.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
+|enterpriseNetworking.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
+|enterpriseNetworking.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
+|enterpriseNetworking.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
+|enterpriseNetworking.customServiceLabels|map[string, string]| |Custom labels for the service|
+|enterpriseNetworking.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
+|enterpriseNetworking.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
+|enterpriseNetworking.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|

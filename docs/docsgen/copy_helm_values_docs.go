@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 
 	"github.com/Masterminds/semver"
@@ -56,6 +57,7 @@ values for each subchart must be prefixed accordingly:
 
 {{%% children description="true" %%}}
 `
+	numberMatcher = regexp.MustCompile("[0-9]+")
 )
 
 func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error {
@@ -134,7 +136,17 @@ func copyHelmValuesDocsForComponent(
 		if err != nil {
 			return err
 		}
-		versions = append(versions, version)
+		var modifiedVersion semver.Version
+		if version.Prerelease() != "" {
+			match := numberMatcher.FindAllString(version.Prerelease(), -1)
+			modifiedVersion, err = version.SetPrerelease(match[0])
+			if err != nil {
+				return err
+			}
+			versions = append(versions, &modifiedVersion)
+		} else {
+			versions = append(versions, version)
+		}
 	}
 	sort.Sort(sort.Reverse(semver.Collection(versions)))
 	latestPerMinorVersions := getLatestPerMinorVersion(versions)
@@ -190,8 +202,14 @@ func getLatestPerMinorVersion(sortedVersions []*semver.Version) []*semver.Versio
 	latestVersionForMinor, _ := semver.NewVersion("1.999999999.0")
 	for _, version := range sortedVersions {
 		if version.Minor() < latestVersionForMinor.Minor() {
-			latestVersions = append(latestVersions, version)
-			latestVersionForMinor = version
+			if version.Prerelease() != "" {
+				origVersion, _ := version.SetPrerelease("beta" + version.Prerelease())
+				latestVersions = append(latestVersions, &origVersion)
+				latestVersionForMinor = &origVersion
+			} else {
+				latestVersions = append(latestVersions, version)
+				latestVersionForMinor = version
+			}
 		}
 	}
 
