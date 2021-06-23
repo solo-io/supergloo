@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix helm docs generation to correctly sort for the latest version.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1667
