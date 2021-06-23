@@ -40,7 +40,6 @@ jobs:
 
     - name: Generate versioned docs site
       env:
-        RELEASE: true
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         PREVIEW_DOCS: 1
       run: make -C docs build-site
