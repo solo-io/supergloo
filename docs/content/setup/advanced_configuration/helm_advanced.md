@@ -22,7 +22,7 @@ yaml specified in this field will be merged with the default deployment and serv
 
 ## Examples
 
-The following values.yaml file, passed into the Gloo Mesh community helm chart, will add a custom label to the dashboard pod:
+The following values.yaml file, passed into the Gloo Mesh community helm chart, will add a custom label to the discovery pod:
 ```yaml
 discovery:
   deploymentOverrides:
@@ -38,7 +38,7 @@ To see the new annotation being applied, run:
 helm template gloo-mesh https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-$GLOO_MESH_VERSION.tgz --namespace gloo-mesh --values values.yaml
 ```
 
-The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will replace a volume mount for the dashboard pod:
+The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will replace a volume mount for the discovery pod:
 
 ```yaml
 discovery:
@@ -66,5 +66,5 @@ enterprise-networking:
 
 To see the new service account being used, run:
 ```
-helm template gloo-mesh https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/gloo-mesh-enterprise-$GLOO_MESH_VERSION.tgz --namespace gloo-mesh --values vakyes.yaml --set licenseKey=$GLOO_MESH_LICENSE_KEY
+helm template gloo-mesh https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/gloo-mesh-enterprise-$GLOO_MESH_VERSION.tgz --namespace gloo-mesh --values values.yaml --set licenseKey=$GLOO_MESH_LICENSE_KEY
 ```
