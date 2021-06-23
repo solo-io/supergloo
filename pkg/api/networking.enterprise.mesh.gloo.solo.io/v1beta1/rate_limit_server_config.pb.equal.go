@@ -26,14 +26,14 @@ var (
 )
 
 // Equal function
-func (m *RateLimiterConfigSpec) Equal(that interface{}) bool {
+func (m *RateLimiterServerConfigSpec) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*RateLimiterConfigSpec)
+	target, ok := that.(*RateLimiterServerConfigSpec)
 	if !ok {
-		that2, ok := that.(RateLimiterConfigSpec)
+		that2, ok := that.(RateLimiterServerConfigSpec)
 		if ok {
 			target = &that2
 		} else {
@@ -77,14 +77,14 @@ func (m *RateLimiterConfigSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *RateLimiterConfigStatus) Equal(that interface{}) bool {
+func (m *RateLimiterServerConfigStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*RateLimiterConfigStatus)
+	target, ok := that.(*RateLimiterServerConfigStatus)
 	if !ok {
-		that2, ok := that.(RateLimiterConfigStatus)
+		that2, ok := that.(RateLimiterServerConfigStatus)
 		if ok {
 			target = &that2
 		} else {

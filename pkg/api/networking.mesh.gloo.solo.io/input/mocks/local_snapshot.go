@@ -129,6 +129,20 @@ func (mr *MockLocalSnapshotMockRecorder) Meshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockLocalSnapshot)(nil).Meshes))
 }
 
+// RateLimiterServerConfigs mocks base method.
+func (m *MockLocalSnapshot) RateLimiterServerConfigs() v1beta1sets.RateLimiterServerConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RateLimiterServerConfigs")
+	ret0, _ := ret[0].(v1beta1sets.RateLimiterServerConfigSet)
+	return ret0
+}
+
+// RateLimiterServerConfigs indicates an expected call of RateLimiterServerConfigs.
+func (mr *MockLocalSnapshotMockRecorder) RateLimiterServerConfigs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RateLimiterServerConfigs", reflect.TypeOf((*MockLocalSnapshot)(nil).RateLimiterServerConfigs))
+}
+
 // RouteTables mocks base method.
 func (m *MockLocalSnapshot) RouteTables() v1beta1sets.RouteTableSet {
 	m.ctrl.T.Helper()

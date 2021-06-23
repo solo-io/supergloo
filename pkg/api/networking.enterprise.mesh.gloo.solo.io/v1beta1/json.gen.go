@@ -46,6 +46,28 @@ func (this *WasmDeploymentStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for RateLimiterServerConfigSpec
+func (this *RateLimiterServerConfigSpec) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for RateLimiterServerConfigSpec
+func (this *RateLimiterServerConfigSpec) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for RateLimiterServerConfigStatus
+func (this *RateLimiterServerConfigStatus) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for RateLimiterServerConfigStatus
+func (this *RateLimiterServerConfigStatus) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for VirtualDestinationSpec
 func (this *VirtualDestinationSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)

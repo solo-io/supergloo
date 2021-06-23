@@ -838,6 +838,16 @@ func (m *VirtualGatewaySpec_ConnectionHandler_HttpRoutes_HttpOptions) Equal(that
 		}
 	}
 
+	if h, ok := interface{}(m.GetExtauth()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetExtauth()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetExtauth(), target.GetExtauth()) {
+			return false
+		}
+	}
+
 	return true
 }
 

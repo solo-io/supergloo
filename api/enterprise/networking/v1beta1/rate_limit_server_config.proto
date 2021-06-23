@@ -1,5 +1,5 @@
 syntax = "proto3";
-package networking.mesh.gloo.solo.io;
+package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
@@ -7,6 +7,8 @@ import "github.com/solo-io/solo-apis/api/rate-limiter/v1alpha1/ratelimit.proto";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
+
+import "encoding/protobuf/cue/cue.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -19,17 +21,17 @@ import "google/protobuf/struct.proto";
 // mesh proxies to rate-limit HTTP requests. One or more rate limiter servers may be deployed in order to
 // rate limit traffic across East-West and North-South routes. The RateLimiterConfig allows users to map
 // a single rate-limiter configuration to multiple rate-limiter server instances, deployed across managed clusters.
-message RateLimiterConfigSpec {
+message RateLimiterServerConfigSpec {
     // The per-server rate limit config objects will be generated from the given config for each provided ref.
     // Each rate limit server must be configured to read its server configuration from one of these refs.
     repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
 
     // the configuration which will be deployed to the selected rate limit servers.
-    .ratelimit.api.solo.io.RateLimitConfigSpec rate_limit_config = 2;
+    .ratelimit.api.solo.io.RateLimitConfigSpec rate_limit_config = 2 [(cue.opt).disable_openapi_validation = true];
 }
 
 // The current status of the `RateLimitConfig`.
-message RateLimiterConfigStatus {
+message RateLimiterServerConfigStatus {
 
     enum State {
         PENDING = 0;

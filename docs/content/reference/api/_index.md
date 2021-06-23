@@ -34,6 +34,10 @@ These docs describe Gloo Mesh CRDs.
 
 
 
+### extauth.networking.mesh.gloo.solo.io
+
+
+
 ### extensions.networking.mesh.gloo.solo.io
 
   - [extensions.networking.mesh.gloo.solo.io.NetworkingExtensions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1beta1.networking_extensions#extensions.networking.mesh.gloo.solo.io.NetworkingExtensions" >}})
@@ -41,6 +45,8 @@ These docs describe Gloo Mesh CRDs.
 
 
 ### networking.enterprise.mesh.gloo.solo.io
+
+  - [RateLimiterServerConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigSpec" >}})
 
   - [RouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec" >}})
 
@@ -63,8 +69,6 @@ These docs describe Gloo Mesh CRDs.
   - [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy#networking.mesh.gloo.solo.io.AccessPolicySpec" >}})
 
   - [DestinationPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.destination_policy#networking.mesh.gloo.solo.io.DestinationPolicySpec" >}})
-
-  - [RateLimiterConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.mesh.gloo.solo.io.RateLimiterConfigSpec" >}})
 
   - [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}})
 

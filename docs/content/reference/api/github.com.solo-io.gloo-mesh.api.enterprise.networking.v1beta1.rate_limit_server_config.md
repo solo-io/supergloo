@@ -5,7 +5,7 @@ title: "rate_limit_server_config.proto"
 
 ---
 
-## Package : `networking.mesh.gloo.solo.io`
+## Package : `networking.enterprise.mesh.gloo.solo.io`
 
 
 
@@ -18,19 +18,19 @@ title: "rate_limit_server_config.proto"
 
 
 ## Table of Contents
-  - [RateLimiterConfigSpec](#networking.mesh.gloo.solo.io.RateLimiterConfigSpec)
-  - [RateLimiterConfigStatus](#networking.mesh.gloo.solo.io.RateLimiterConfigStatus)
+  - [RateLimiterServerConfigSpec](#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigSpec)
+  - [RateLimiterServerConfigStatus](#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus)
 
-  - [RateLimiterConfigStatus.State](#networking.mesh.gloo.solo.io.RateLimiterConfigStatus.State)
-
-
+  - [RateLimiterServerConfigStatus.State](#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State)
 
 
 
 
-<a name="networking.mesh.gloo.solo.io.RateLimiterConfigSpec"></a>
 
-### RateLimiterConfigSpec
+
+<a name="networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigSpec"></a>
+
+### RateLimiterServerConfigSpec
 RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the external rate-limiting server used by mesh proxies to rate-limit HTTP requests. One or more rate limiter servers may be deployed in order to rate limit traffic across East-West and North-South routes. The RateLimiterConfig allows users to map a single rate-limiter configuration to multiple rate-limiter server instances, deployed across managed clusters.
 
 
@@ -44,15 +44,15 @@ RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the exte
 
 
 
-<a name="networking.mesh.gloo.solo.io.RateLimiterConfigStatus"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus"></a>
 
-### RateLimiterConfigStatus
+### RateLimiterServerConfigStatus
 The current status of the `RateLimitConfig`.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| state | [networking.mesh.gloo.solo.io.RateLimiterConfigStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.mesh.gloo.solo.io.RateLimiterConfigStatus.State" >}}) |  | The current state of the `RateLimitConfig`. |
+| state | [networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State" >}}) |  | The current state of the `RateLimitConfig`. |
   | message | string |  | A human-readable string explaining the status. |
   | configuredServers | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | a list of rate limit server workloads which have been configured with this RateLimiterConfig |
   | observedGeneration | int64 |  | The observed generation of the resource. When this matches the metadata.generation of the resource, it indicates the status is up-to-date. |
@@ -64,9 +64,9 @@ The current status of the `RateLimitConfig`.
  <!-- end messages -->
 
 
-<a name="networking.mesh.gloo.solo.io.RateLimiterConfigStatus.State"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State"></a>
 
-### RateLimiterConfigStatus.State
+### RateLimiterServerConfigStatus.State
 
 
 | Name | Number | Description |

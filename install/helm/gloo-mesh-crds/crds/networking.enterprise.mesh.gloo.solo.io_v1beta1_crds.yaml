@@ -232,6 +232,97 @@ metadata:
   labels:
     app: gloo-mesh
     app.kubernetes.io/name: gloo-mesh
+  name: ratelimiterserverconfigs.networking.enterprise.mesh.gloo.solo.io
+spec:
+  group: networking.enterprise.mesh.gloo.solo.io
+  names:
+    kind: RateLimiterServerConfig
+    listKind: RateLimiterServerConfigList
+    plural: ratelimiterserverconfigs
+    singular: ratelimiterserverconfig
+  preserveUnknownFields: false
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the external rate-limiting server used by
+            mesh proxies to rate-limit HTTP requests. One or more rate limiter servers may be deployed in order to
+            rate limit traffic across East-West and North-South routes. The RateLimiterConfig allows users to map
+            a single rate-limiter configuration to multiple rate-limiter server instances, deployed across managed clusters.
+          properties:
+            rateLimitConfig:
+              description: the configuration which will be deployed to the selected
+                rate limit servers.
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+            serverConfigRefs:
+              description: |-
+                The per-server rate limit config objects will be generated from the given config for each provided ref.
+                Each rate limit server must be configured to read its server configuration from one of these refs.
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
+          type: object
+        status:
+          description: The current status of the `RateLimitConfig`.
+          properties:
+            configuredServers:
+              description: a list of rate limit server workloads which have been configured
+                with this RateLimiterConfig
+              items:
+                properties:
+                  clusterName:
+                    description: name of the cluster in which the resource exists
+                    type: string
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
+            message:
+              description: A human-readable string explaining the status.
+              type: string
+            observedGeneration:
+              description: |-
+                The observed generation of the resource.
+                When this matches the metadata.generation of the resource, it indicates the status is up-to-date.
+              format: int64
+              type: integer
+            state:
+              description: The current state of the `RateLimitConfig`.
+              enum:
+              - PENDING
+              - ACCEPTED
+              - REJECTED
+              type: string
+          type: object
+      type: object
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    app: gloo-mesh
+    app.kubernetes.io/name: gloo-mesh
   name: virtualdestinations.networking.enterprise.mesh.gloo.solo.io
 spec:
   group: networking.enterprise.mesh.gloo.solo.io
@@ -1045,6 +1136,14 @@ spec:
 
                                   This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
                                 type: boolean
+                            type: object
+                          extauth:
+                            description: Configure the Global Extauth options for
+                              clients connected to this Gateway
+                            properties:
+                              todo:
+                                description: 'TODO: extauth'
+                                type: string
                             type: object
                           rateLimit:
                             description: |-
