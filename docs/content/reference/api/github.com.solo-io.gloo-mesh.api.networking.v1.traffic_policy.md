@@ -19,8 +19,6 @@ title: "traffic_policy.proto"
 
 ## Table of Contents
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
-  - [TrafficPolicySpec.GatewaySelector](#networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector)
-  - [TrafficPolicySpec.GatewaySelector.RouteLabelMatcherEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector.RouteLabelMatcherEntry)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
   - [TrafficPolicySpec.Policy.DLPPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.DLPPolicy)
@@ -34,6 +32,8 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection)
   - [TrafficPolicySpec.Policy.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy)
   - [TrafficPolicySpec.Policy.Transform](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Transform)
+  - [TrafficPolicySpec.RouteSelector](#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector)
+  - [TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry)
 
@@ -54,41 +54,14 @@ Applies L7 routing and post-routing configuration on selected network edges.
 | ----- | ---- | ----- | ----------- |
 | sourceSelector | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Specify the Workloads (sources for east-west traffic) this TrafficPolicy applies to. Omit to apply to all Workloads. |
   | destinationSelector | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Specify the Destinations (destinations) this TrafficPolicy applies to. Omit to apply to all Destinations. |
+<<<<<<< HEAD
   | gatewaySelector | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector" >}}) | repeated | Specify which ingress gateway traffic this trafficPolicy should apply to. Multiple policies from different sources defining different policies (eg retries, timeouts) will be merged. If a conflicting policy value is defined in both a TrafficPolicy resource (or multiple TrafficPolicy resources) and in-line on a VirtualHost, or Route - then the in-line values will take precedence. If multiple TrafficPolicies select the same VirtualHost or Route, then the older TrafficPolicy (by CreationTime) takes precedence over any newer Traffic policy. Omit to apply to all VirtualHosts and all of their routes. |
   | httpRequestMatchers | [][networking.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
+=======
+  | routeSelector | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector" >}}) | repeated | Specify which ingress gateway traffic this trafficPolicy should apply to. Multiple policies from different sources defining different policies (eg retries, timeouts) will be merged. If a conflicting policy value is defined in both a TrafficPolicy resource (or multiple TrafficPolicy resources) and in-line on a VirtualHost, or Route - then the in-line values will take precedence. If multiple TrafficPolicies select the same VirtualHost, RouteTable, or Route, then the older TrafficPolicy (by CreationTime) takes precedence over any newer Traffic policy. Omit to apply to all VirtualHosts and all of their routes. |
+  | httpRequestMatchers | [][common.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
+>>>>>>> 940ca5bae (TrafficPolicies can now select RouteTables, and labelled routes)
   | policy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Specify L7 routing and post-routing configuration. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector"></a>
-
-### TrafficPolicySpec.GatewaySelector
-Specify selected gateway traffic (via virtualHosts and routes). Traffic _from_ routes defined within these virtualHosts (or their delegated RouteTables) will have the policy applied.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| virtualHosts | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Specify the VirtualHosts the TrafficPolicy will apply to. If omitted, all VirtualHosts are selected by default. |
-  | routeLabelMatcher | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector.RouteLabelMatcherEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector.RouteLabelMatcherEntry" >}}) | repeated | Map of labels to match. All labels listed here must be present on a route for that route to be selected. If omitted, all routes on the selected VirtualHosts are selected. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector.RouteLabelMatcherEntry"></a>
-
-### TrafficPolicySpec.GatewaySelector.RouteLabelMatcherEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
   
 
 
@@ -307,6 +280,41 @@ Transform filter config.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | todo | string |  | TODO: implement |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector"></a>
+
+### TrafficPolicySpec.RouteSelector
+Specify selected gateway traffic by specifying which gateway resources (virtualHosts or routeTables) to select. You can optionally further filter by using route labels to only select a subset of routes within those resources. If no virtualHost or routeTable selectors (or references) are explicitly set, all virtualHosts and routeTables will be selected by default. If no route label matcher is specified, all routes on the selected resources are matched.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| virtualHostRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Select Virtual Hosts by Reference |
+  | virtualHostSelector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | Select Virtual Hosts by label/namespace |
+  | routeTableRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Select Route Tables by Reference |
+  | routeTableSelector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | Select Route Tables by label/namespace |
+  | routeLabelMatcher | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry" >}}) | repeated | Map of route labels to match. All labels listed here must be present on a route for that route to be considered matched. If omitted, all routes on the selected VirtualHosts are selected. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry"></a>
+
+### TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
   
 
 

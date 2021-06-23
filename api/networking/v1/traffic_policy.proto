@@ -36,10 +36,10 @@ message TrafficPolicySpec {
     // If a conflicting policy value is defined in both a TrafficPolicy
     // resource (or multiple TrafficPolicy resources) and in-line on a VirtualHost,
     // or Route - then the in-line values will take precedence. If multiple
-    // TrafficPolicies select the same VirtualHost or Route, then the older
+    // TrafficPolicies select the same VirtualHost, RouteTable, or Route, then the older
     // TrafficPolicy (by CreationTime) takes precedence over any newer Traffic policy.
     // Omit to apply to all VirtualHosts and all of their routes.
-    repeated GatewaySelector gateway_selector = 5;
+    repeated RouteSelector route_selector = 5;
 
     // Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
@@ -254,18 +254,30 @@ message TrafficPolicySpec {
 
     }
 
-    // Specify selected gateway traffic (via virtualHosts and routes).
-    // Traffic _from_ routes defined within these virtualHosts
-    // (or their delegated RouteTables) will have the policy applied.
-    message GatewaySelector {
-        // Specify the VirtualHosts the TrafficPolicy will apply to.
-        // If omitted, all VirtualHosts are selected by default.
-        repeated .core.skv2.solo.io.ObjectRef virtual_hosts = 1;
+    // Specify selected gateway traffic by specifying which gateway
+    // resources (virtualHosts or routeTables) to select. You can optionally further
+    // filter by using route labels to only select a subset of routes within those resources.
+    // If no virtualHost or routeTable selectors (or references) are explicitly
+    // set, all virtualHosts and routeTables will be selected by default.
+    // If no route label matcher is specified, all routes on the
+    // selected resources are matched.
+    message RouteSelector {
+        // Select Virtual Hosts by Reference
+        repeated .core.skv2.solo.io.ObjectRef virtual_host_refs = 1;
 
-        // Map of labels to match. All labels listed here must be
-        // present on a route for that route to be selected.
-        //If omitted, all routes on the selected VirtualHosts are selected.
-        map<string, string> route_label_matcher = 2;
+        // Select Virtual Hosts by label/namespace
+        .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 2;
+
+        // Select Route Tables by Reference
+        repeated .core.skv2.solo.io.ObjectRef route_table_refs = 3;
+
+        // Select Route Tables by label/namespace
+        .common.mesh.gloo.solo.io.ObjectSelector route_table_selector = 4;
+
+        // Map of route labels to match. All labels listed here must be
+        // present on a route for that route to be considered matched.
+        // If omitted, all routes on the selected VirtualHosts are selected.
+        map<string, string> route_label_matcher = 5;
     }
 }
 

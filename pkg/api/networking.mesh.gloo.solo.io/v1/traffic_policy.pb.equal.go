@@ -80,17 +80,17 @@ func (m *TrafficPolicySpec) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetGatewaySelector()) != len(target.GetGatewaySelector()) {
+	if len(m.GetRouteSelector()) != len(target.GetRouteSelector()) {
 		return false
 	}
-	for idx, v := range m.GetGatewaySelector() {
+	for idx, v := range m.GetRouteSelector() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetGatewaySelector()[idx]) {
+			if !h.Equal(target.GetRouteSelector()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetGatewaySelector()[idx]) {
+			if !proto.Equal(v, target.GetRouteSelector()[idx]) {
 				return false
 			}
 		}
@@ -333,14 +333,14 @@ func (m *TrafficPolicySpec_Policy) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficPolicySpec_GatewaySelector) Equal(that interface{}) bool {
+func (m *TrafficPolicySpec_RouteSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficPolicySpec_GatewaySelector)
+	target, ok := that.(*TrafficPolicySpec_RouteSelector)
 	if !ok {
-		that2, ok := that.(TrafficPolicySpec_GatewaySelector)
+		that2, ok := that.(TrafficPolicySpec_RouteSelector)
 		if ok {
 			target = &that2
 		} else {
@@ -353,21 +353,58 @@ func (m *TrafficPolicySpec_GatewaySelector) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetVirtualHosts()) != len(target.GetVirtualHosts()) {
+	if len(m.GetVirtualHostRefs()) != len(target.GetVirtualHostRefs()) {
 		return false
 	}
-	for idx, v := range m.GetVirtualHosts() {
+	for idx, v := range m.GetVirtualHostRefs() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetVirtualHosts()[idx]) {
+			if !h.Equal(target.GetVirtualHostRefs()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetVirtualHosts()[idx]) {
+			if !proto.Equal(v, target.GetVirtualHostRefs()[idx]) {
 				return false
 			}
 		}
 
+	}
+
+	if h, ok := interface{}(m.GetVirtualHostSelector()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetVirtualHostSelector()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetVirtualHostSelector(), target.GetVirtualHostSelector()) {
+			return false
+		}
+	}
+
+	if len(m.GetRouteTableRefs()) != len(target.GetRouteTableRefs()) {
+		return false
+	}
+	for idx, v := range m.GetRouteTableRefs() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetRouteTableRefs()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetRouteTableRefs()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if h, ok := interface{}(m.GetRouteTableSelector()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRouteTableSelector()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRouteTableSelector(), target.GetRouteTableSelector()) {
+			return false
+		}
 	}
 
 	if len(m.GetRouteLabelMatcher()) != len(target.GetRouteLabelMatcher()) {
