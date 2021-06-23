@@ -2,7 +2,12 @@ module github.com/solo-io/gloo-mesh
 
 go 1.16
 
+// TODO(ryantking): Remove
+replace github.com/solo-io/skv2 => ../../skv2
+
 replace (
+	// pinned to solo-io's fork of cue
+	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210623143425-308aee4ff092
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.

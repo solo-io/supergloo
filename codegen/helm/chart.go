@@ -114,14 +114,33 @@ func discoveryOperator() model.Operator {
 	return model.Operator{
 		Name: "discovery",
 		Deployment: model.Deployment{
-			Image:                glooMeshImage(),
-			CustomPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
-			Resources: &v1.ResourceRequirements{
-				Requests: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("125m"),
-					v1.ResourceMemory: resource.MustParse("256Mi"),
+			Container: model.Container{
+				Image: glooMeshImage(),
+				Args: []string{
+					"discovery",
+					"--metrics-port={{ $.Values.discovery.ports.metrics | default $.Values.defaultMetricsPort }}",
+					"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
+					"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
+					"--verbose={{ $.Values.verbose }}",
+				},
+				Resources: &v1.ResourceRequirements{
+					Requests: v1.ResourceList{
+						v1.ResourceCPU:    resource.MustParse("125m"),
+						v1.ResourceMemory: resource.MustParse("256Mi"),
+					},
+				},
+				Env: []v1.EnvVar{
+					{
+						Name: defaults.PodNamespaceEnv,
+						ValueFrom: &v1.EnvVarSource{
+							FieldRef: &v1.ObjectFieldSelector{
+								FieldPath: "metadata.namespace",
+							},
+						},
+					},
 				},
 			},
+			CustomPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
 		},
 		Service: model.Service{
 			Type: v1.ServiceTypeClusterIP,
@@ -133,23 +152,6 @@ func discoveryOperator() model.Operator {
 			},
 		},
 		Rbac: rbacPolicies,
-		Args: []string{
-			"discovery",
-			"--metrics-port={{ $.Values.discovery.ports.metrics | default $.Values.defaultMetricsPort }}",
-			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
-			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
-			"--verbose={{ $.Values.verbose }}",
-		},
-		Env: []v1.EnvVar{
-			{
-				Name: defaults.PodNamespaceEnv,
-				ValueFrom: &v1.EnvVarSource{
-					FieldRef: &v1.ObjectFieldSelector{
-						FieldPath: "metadata.namespace",
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -167,35 +169,37 @@ func NetworkingOperator(name string) model.Operator {
 	return model.Operator{
 		Name: name,
 		Deployment: model.Deployment{
-			Image:                glooMeshImage(),
-			CustomPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
-			Resources: &v1.ResourceRequirements{
-				Requests: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("125m"),
-					v1.ResourceMemory: resource.MustParse("256Mi"),
+			Container: model.Container{
+				Image: glooMeshImage(),
+				Args: []string{
+					"networking",
+					"--metrics-port={{ $.Values.defaultMetricsPort }}",
+					"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
+					"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
+					"--verbose={{ $.Values.verbose }}",
+					"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
+					"--watch-output-types={{ $.Values.watchOutputTypes }}",
 				},
-			},
-		},
-		Rbac: rbacPolicies,
-		Args: []string{
-			"networking",
-			"--metrics-port={{ $.Values.defaultMetricsPort }}",
-			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
-			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
-			"--verbose={{ $.Values.verbose }}",
-			"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
-			"--watch-output-types={{ $.Values.watchOutputTypes }}",
-		},
-		Env: []v1.EnvVar{
-			{
-				Name: defaults.PodNamespaceEnv,
-				ValueFrom: &v1.EnvVarSource{
-					FieldRef: &v1.ObjectFieldSelector{
-						FieldPath: "metadata.namespace",
+				Resources: &v1.ResourceRequirements{
+					Requests: v1.ResourceList{
+						v1.ResourceCPU:    resource.MustParse("125m"),
+						v1.ResourceMemory: resource.MustParse("256Mi"),
+					},
+				},
+				Env: []v1.EnvVar{
+					{
+						Name: defaults.PodNamespaceEnv,
+						ValueFrom: &v1.EnvVarSource{
+							FieldRef: &v1.ObjectFieldSelector{
+								FieldPath: "metadata.namespace",
+							},
+						},
 					},
 				},
 			},
+			CustomPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
 		},
+		Rbac: rbacPolicies,
 	}
 }
 
@@ -213,14 +217,30 @@ func certAgentOperator() model.Operator {
 	return model.Operator{
 		Name: "cert-agent",
 		Deployment: model.Deployment{
-			Image:                certAgentImage(),
-			CustomPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
-			Resources: &v1.ResourceRequirements{
-				Requests: v1.ResourceList{
-					v1.ResourceCPU:    resource.MustParse("50m"),
-					v1.ResourceMemory: resource.MustParse("128Mi"),
+			Container: model.Container{
+				Image: certAgentImage(),
+				Args: []string{
+					"--metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}",
+					"--verbose={{ $.Values.verbose }}",
+				},
+				Resources: &v1.ResourceRequirements{
+					Requests: v1.ResourceList{
+						v1.ResourceCPU:    resource.MustParse("50m"),
+						v1.ResourceMemory: resource.MustParse("128Mi"),
+					},
+				},
+				Env: []v1.EnvVar{
+					{
+						Name: defaults.PodNamespaceEnv,
+						ValueFrom: &v1.EnvVarSource{
+							FieldRef: &v1.ObjectFieldSelector{
+								FieldPath: "metadata.namespace",
+							},
+						},
+					},
 				},
 			},
+			CustomPodAnnotations: map[string]string{"sidecar.istio.io/inject": "\"false\""},
 		},
 		Service: model.Service{
 			Type: v1.ServiceTypeClusterIP,
@@ -232,20 +252,6 @@ func certAgentOperator() model.Operator {
 			},
 		},
 		Rbac: rbacPolicies,
-		Args: []string{
-			"--metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}",
-			"--verbose={{ $.Values.verbose }}",
-		},
-		Env: []v1.EnvVar{
-			{
-				Name: defaults.PodNamespaceEnv,
-				ValueFrom: &v1.EnvVarSource{
-					FieldRef: &v1.ObjectFieldSelector{
-						FieldPath: "metadata.namespace",
-					},
-				},
-			},
-		},
 	}
 }
 
