@@ -292,7 +292,7 @@ var _ = Describe("DestinationDetector", func() {
 			Spec: v1.MeshSpec{
 				Type: &v1.MeshSpec_Osm{
 					Osm: &v1.MeshSpec_OSM{
-						Installation: &v1.MeshSpec_MeshInstallation{
+						Installation: &v1.MeshInstallation{
 							Cluster: serviceCluster,
 						},
 					},
