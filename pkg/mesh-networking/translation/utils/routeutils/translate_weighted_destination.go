@@ -214,7 +214,7 @@ func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 }
 
 func makeDestinationRuleSubsets(
-	requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets,
+	requiredSubsets []*discoveryv1.RequiredSubsets,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
