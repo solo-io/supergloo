@@ -4,6 +4,8 @@ weight: 20
 description: Overriding arbitrary deployment and service spec fields
 ---
 
+{{% notice note %}} This feature will only be available for Gloo Mesh oss version >= v1.1.0-beta12 and for Gloo Mesh Enterprise version >= v1.1.0-beta13.{{% /notice %}}
+
 ## Motivation
 
 Gloo Mesh’s helm chart is very customizable, but does not contain every possible kubernetes value you may want to tweak. In this document we will demonstrate a method of tweaking the helm release by passing in a helm value file.
@@ -20,7 +22,8 @@ yaml specified in this field will be merged with the default deployment and serv
 
 ## Examples
 
-The following values.yaml file, passed into the Gloo Mesh community helm chart, will add a custom label to the dashboard pod:
+The following values.yaml file, passed into the Gloo Mesh community helm chart, will add a custom label to the discovery pod:
+
 ```yaml
 discovery:
   deploymentOverrides:
@@ -33,10 +36,10 @@ discovery:
 
 To see the new annotation being applied, run:
 ```
-helm template gloo-mesh https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-1.1.0-beta15.tgz --namespace gloo-mesh --values values.yaml
+helm template gloo-mesh https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-$GLOO_MESH_VERSION.tgz --namespace gloo-mesh --values values.yaml
 ```
 
-The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will replace a volume mount for the dashboard pod:
+The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will replace a volume mount for the discovery pod:
 
 ```yaml
 discovery:
@@ -52,11 +55,17 @@ discovery:
 
 
 The following values.yaml file, passed into the Gloo Mesh Enterprise helm chart, will replace
-the service account used by the discovery pod:
+the service account used by the enterprise networking pod:
 
 ```yaml
-discovery:
-  serviceOverrides:
-    spec:
-      serviceAccountName: other-discovery-service-account
+enterprise-networking:
+  enterpriseNetworking:
+    serviceOverrides:
+      spec:
+        serviceAccountName: other-service-account
+```
+
+To see the new service account being used, run:
+```
+helm template gloo-mesh https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/gloo-mesh-enterprise-$GLOO_MESH_VERSION.tgz --namespace gloo-mesh --values values.yaml --set licenseKey=$GLOO_MESH_LICENSE_KEY
 ```
