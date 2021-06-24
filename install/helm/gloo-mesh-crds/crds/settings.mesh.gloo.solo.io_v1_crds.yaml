@@ -48,6 +48,9 @@ spec:
                             type: object
                         type: object
                       description: |-
+                        DEPRECATED: all externally addressable destinations are captured in the Destination CRD, and
+                        the VirtualMesh and VirtualGateway enables selecting specific Destinations to act as ingress gateways.
+
                         Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or
                         `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
                         wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values.

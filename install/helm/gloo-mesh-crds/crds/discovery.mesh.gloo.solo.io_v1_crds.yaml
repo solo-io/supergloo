@@ -162,6 +162,30 @@ spec:
                         type: array
                     type: object
                   type: array
+                externalAddresses:
+                  description: Describes the address data for Kubernetes Services
+                    exposed to external traffic (i.e. for non ClusterIP type Services).
+                  items:
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - dnsName
+                        - required:
+                          - ip
+                    - required:
+                      - dnsName
+                    - required:
+                      - ip
+                    properties:
+                      dnsName:
+                        description: An externally accessible DNS name.
+                        type: string
+                      ip:
+                        description: An externally accessible IP address.
+                        type: string
+                    type: object
+                  type: array
                 labels:
                   additionalProperties:
                     type: string
@@ -189,6 +213,11 @@ spec:
                       name:
                         description: Name of the port
                         type: string
+                      nodePort:
+                        description: Populated for NodePort or LoadBalancer Services.
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
                       port:
                         description: External-facing port for this Kubernetes service
                           (*not* the service's target port on the targeted pods).
@@ -225,6 +254,14 @@ spec:
                 region:
                   description: The region the service resides in, typically representing
                     a large geographic area.
+                  type: string
+                serviceType:
+                  description: Describes the Kubernetes Service type.
+                  enum:
+                  - CLUSTER_IP
+                  - NODE_PORT
+                  - LOAD_BALANCER
+                  - EXTERNAL_NAME
                   type: string
                 subsets:
                   additionalProperties:
@@ -453,7 +490,7 @@ spec:
                 flatNetwork:
                   description: |-
                     Whether the Destination has been federated to the given meshes using a VirtualMesh where
-                    [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+                    [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
                 virtualMeshRef:
@@ -965,7 +1002,9 @@ spec:
               description: Describes an [Istio](https://istio.io/) service mesh.
               properties:
                 ingressGateways:
-                  description: Describes the ingress gateway.
+                  description: |-
+                    DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
+                    Describes the ingress gateway.
                   items:
                     oneOf:
                     - not:

@@ -4,6 +4,7 @@ hub: gcr.io/istio-enterprise
 tag: 1.9.2
 profile: minimal
 meshConfig:
+  accessLogFile: /dev/stdout
   enableAutoMtls: true
   defaultConfig:
     proxyMetadata:

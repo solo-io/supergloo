@@ -71,12 +71,17 @@ else
   kubectl --context kind-${remoteCluster} create namespace bookinfo
   kubectl --context kind-${remoteCluster} label ns bookinfo istio-injection=enabled --overwrite
 
-  # install bookinfo without reviews-v3 to management cluster
-  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version notin (v3)'
-  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account'
+  # install bookinfo with reviews-v1 and reviews-v2 to management cluster
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version in (v1, v2)'
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'service=reviews'
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=reviews'
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app=ratings'
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=ratings'
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app=productpage'
+  kubectl --context kind-${mgmtCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=productpage'
 
-  # install only reviews-v3 to remote cluster
-  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version in (v3)'
+  # install bookinfo with reviews-v1 and reviews-v3 to remote cluster
+  kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app notin (details),version in (v1, v3)'
   kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'service=reviews'
   kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'account=reviews'
   kubectl --context kind-${remoteCluster} -n bookinfo apply -f ./ci/bookinfo.yaml -l 'app=ratings'

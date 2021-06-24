@@ -38,9 +38,9 @@ type VirtualMeshSpec_GlobalAccessPolicy int32
 const (
 	// Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`.
 	VirtualMeshSpec_MESH_DEFAULT VirtualMeshSpec_GlobalAccessPolicy = 0
-	// Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+	// Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" >}}).
 	VirtualMeshSpec_ENABLED VirtualMeshSpec_GlobalAccessPolicy = 1
-	// Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+	// Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" >}}).
 	VirtualMeshSpec_DISABLED VirtualMeshSpec_GlobalAccessPolicy = 2
 )
 

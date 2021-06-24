@@ -19,7 +19,7 @@ option (extproto.equal_all) = true;
     Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).
 
     Each Destination backing the VirtualDestination must be configured with a
-    [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}).
+    [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy/" >}}).
     Currently this feature only supports Destinations backed by Istio.
 */
 message VirtualDestinationSpec {

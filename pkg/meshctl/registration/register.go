@@ -54,7 +54,11 @@ func (o Options) GetChartPath(ctx context.Context, override, template string) (s
 		return fmt.Sprintf(template, o.Version), nil
 	}
 	// Otherwise find the version of Gloo Mesh that's running
-	version, err := utils.GetGlooMeshVersion(ctx, o.KubeConfigPath, o.MgmtContext, o.MgmtNamespace)
+	kubeConfigPath := o.MgmtKubeConfigPath
+	if kubeConfigPath == "" {
+		kubeConfigPath = o.KubeConfigPath
+	}
+	version, err := utils.GetGlooMeshVersion(ctx, kubeConfigPath, o.MgmtContext, o.MgmtNamespace)
 	if err != nil {
 		return "", err
 	}

@@ -29,6 +29,7 @@ title: "destination.proto"
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint)
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry)
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality)
+  - [DestinationSpec.KubeService.ExternalAddress](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ExternalAddress)
   - [DestinationSpec.KubeService.KubeServicePort](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort)
   - [DestinationSpec.KubeService.LabelsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.LabelsEntry)
   - [DestinationSpec.KubeService.Subset](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.Subset)
@@ -38,8 +39,9 @@ title: "destination.proto"
   - [DestinationStatus.AppliedAccessPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy)
   - [DestinationStatus.AppliedFederation](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation)
   - [DestinationStatus.AppliedTrafficPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy)
-  - [RequiredSubsets](#discovery.mesh.gloo.solo.io.RequiredSubsets)
+  - [DestinationStatus.RequiredSubsets](#discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets)
 
+  - [DestinationSpec.KubeService.ServiceType](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType)
 
 
 
@@ -146,6 +148,8 @@ Describes a Kubernetes service.
   | subsets | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.SubsetsEntry" >}}) | repeated | Subsets for routing, based on labels. |
   | region | string |  | The region the service resides in, typically representing a large geographic area. |
   | endpointSubsets | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset" >}}) | repeated | Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs. This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core). |
+  | externalAddresses | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ExternalAddress]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ExternalAddress" >}}) | repeated | Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services). |
+  | serviceType | [discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType" >}}) |  | Describes the Kubernetes Service type. |
   
 
 
@@ -235,6 +239,22 @@ A subdivision of a region representing a set of physically colocated compute res
 
 
 
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ExternalAddress"></a>
+
+### DestinationSpec.KubeService.ExternalAddress
+Describes the address data for Kubernetes Services exposed to external traffic (i.e. for non ClusterIP type Services).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dnsName | string |  | An externally accessible DNS name. |
+  | ip | string |  | An externally accessible IP address. |
+  
+
+
+
+
+
 <a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort"></a>
 
 ### DestinationSpec.KubeService.KubeServicePort
@@ -249,6 +269,7 @@ Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/se
   | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
   | targetPortName | string |  | Name of the target port |
   | targetPortNumber | uint32 |  | Number of the target port |
+  | nodePort | uint32 |  | Populated for NodePort or LoadBalancer Services. |
   
 
 
@@ -327,11 +348,11 @@ Subsets for routing, based on labels.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | appliedTrafficPolicies | [][discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy" >}}) | repeated | The set of TrafficPolicies that have been applied to this Destination. {{/* Note: validation of this field disabled because it slows down cue tremendously*/}} |
+  | appliedTrafficPolicies | [][discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy" >}}) | repeated | The set of TrafficPolicies that have been applied to this Destination. |
   | appliedAccessPolicies | [][discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy" >}}) | repeated | The set of AccessPolicies that have been applied to this Destination. |
   | localFqdn | string |  | The fully qualified domain name for requests originating from a source *coloated* with this Destination. For Kubernetes services, "colocated" means within the same Kubernetes cluster. |
   | appliedFederation | [discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation" >}}) |  | Federation metadata. Only populated if this Destination is federated through a VirtualMesh. |
-  | requiredSubsets | [][discovery.mesh.gloo.solo.io.RequiredSubsets]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.RequiredSubsets" >}}) | repeated | The set of TrafficPolicy traffic shifts that reference subsets on this Destination. |
+  | requiredSubsets | [][discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets" >}}) | repeated | The set of TrafficPolicy traffic shifts that reference subsets on this Destination. |
   
 
 
@@ -341,7 +362,7 @@ Subsets for routing, based on labels.
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy"></a>
 
 ### DestinationStatus.AppliedAccessPolicy
-Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}}) that applies to this Destination. If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
+Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}}) that applies to this Destination. If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
 
 
 | Field | Type | Label | Description |
@@ -358,14 +379,14 @@ Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation"></a>
 
 ### DestinationStatus.AppliedFederation
-Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}). Federation allows access to the Destination from other meshes/clusters.
+Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}). Federation allows access to the Destination from other meshes/clusters.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | federatedHostname | string |  | For any Workload that this Destination has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`), that Workload will be able to reach this Destination using this DNS name. For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination. |
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this Destination's `federated_hostname`. |
-  | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
+  | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   | virtualMeshRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh object. |
   
 
@@ -376,7 +397,7 @@ Describes the federation configuration applied to this Destination through a [Vi
 <a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy"></a>
 
 ### DestinationStatus.AppliedTrafficPolicy
-Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 
 
 | Field | Type | Label | Description |
@@ -390,10 +411,10 @@ Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 
 
 
-<a name="discovery.mesh.gloo.solo.io.RequiredSubsets"></a>
+<a name="discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets"></a>
 
-### RequiredSubsets
-Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that references subsets on this Destination in a traffic shift. Note: this is an Istio-specific feature.
+### DestinationStatus.RequiredSubsets
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that references subsets on this Destination in a traffic shift. Note: this is an Istio-specific feature.
 
 
 | Field | Type | Label | Description |
@@ -407,6 +428,20 @@ Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 
 
  <!-- end messages -->
+
+
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.ServiceType"></a>
+
+### DestinationSpec.KubeService.ServiceType
+Describes the Kubernetes Service type.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| CLUSTER_IP | 0 | A ClusterIP Service. |
+| NODE_PORT | 1 | A NodePort Service. |
+| LOAD_BALANCER | 2 | A LoadBalancer Service. |
+| EXTERNAL_NAME | 3 | An ExternalName Service. |
+
 
  <!-- end enums -->
 

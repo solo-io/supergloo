@@ -48,12 +48,14 @@ message MeshSpec {
         // The istiod service account which determines identity for the Istio CA cert.
         string istiod_service_account = 3;
 
+        // DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
         // Describes the ingress gateway.
         repeated IngressGatewayInfo ingress_gateways = 4;
 
         // True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
         bool smart_dns_proxying_enabled = 5;
 
+        // DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
         // Describes the ingress gateway.
         message IngressGatewayInfo {
             // The name of the Ingress Gateway Service
@@ -183,7 +185,7 @@ message MeshStatus {
     // The VirtualDestinations, if any, which apply to this mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
-    // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
+    // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
     // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
 
