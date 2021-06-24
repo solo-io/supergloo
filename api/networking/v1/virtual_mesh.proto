@@ -180,22 +180,16 @@ message VirtualMeshStatus {
     // A VirtualMesh may be Accepted for some Destinations and rejected for others.
     map<string, ApprovalStatus> destinations = 5;
 
-    message AppliedCertificateState {
+    message AppliedCertificateStatus {
 
         SharedTrust shared_trust = 1;
 
         // Reserve for limited trust when it's implemented
         reserved 2;
 
-    }
-
-    AppliedCertificateState applied_certificate_state = 6;
-
-    message CertificateRotationState {
-
         // State of Certificate Rotation
         // Possible states in which a CertificateRotation can exist.
-        enum State {
+        enum CertificateRotationState {
             // The CertificateRotation has yet to be picked up by the management-plane.
             PENDING = 0;
 
@@ -223,13 +217,10 @@ message VirtualMeshStatus {
             FAILED = 6;
         }
 
-        State state = 1;
+        CertificateRotationState cert_rotation_state = 3;
 
     }
 
-    // Status of a certificate rotation which may be under way.
-    // If nil no rotation is occuring
-    CertificateRotationState certificate_rotation_state = 7;
-
+    map<string, AppliedCertificateStatus> applied_certifiacate_by_mesh = 6;
 
 }

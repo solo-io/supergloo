@@ -300,24 +300,21 @@ func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetAppliedCertificateState()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetAppliedCertificateState()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetAppliedCertificateState(), target.GetAppliedCertificateState()) {
-			return false
-		}
+	if len(m.GetAppliedCertifiacateByMesh()) != len(target.GetAppliedCertifiacateByMesh()) {
+		return false
 	}
+	for k, v := range m.GetAppliedCertifiacateByMesh() {
 
-	if h, ok := interface{}(m.GetCertificateRotationState()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetCertificateRotationState()) {
-			return false
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedCertifiacateByMesh()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedCertifiacateByMesh()[k]) {
+				return false
+			}
 		}
-	} else {
-		if !proto.Equal(m.GetCertificateRotationState(), target.GetCertificateRotationState()) {
-			return false
-		}
+
 	}
 
 	return true
@@ -546,14 +543,14 @@ func (m *VirtualMeshSpec_Federation_FederationSelector) Equal(that interface{}) 
 }
 
 // Equal function
-func (m *VirtualMeshStatus_AppliedCertificateState) Equal(that interface{}) bool {
+func (m *VirtualMeshStatus_AppliedCertificateStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*VirtualMeshStatus_AppliedCertificateState)
+	target, ok := that.(*VirtualMeshStatus_AppliedCertificateStatus)
 	if !ok {
-		that2, ok := that.(VirtualMeshStatus_AppliedCertificateState)
+		that2, ok := that.(VirtualMeshStatus_AppliedCertificateStatus)
 		if ok {
 			target = &that2
 		} else {
@@ -576,31 +573,7 @@ func (m *VirtualMeshStatus_AppliedCertificateState) Equal(that interface{}) bool
 		}
 	}
 
-	return true
-}
-
-// Equal function
-func (m *VirtualMeshStatus_CertificateRotationState) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshStatus_CertificateRotationState)
-	if !ok {
-		that2, ok := that.(VirtualMeshStatus_CertificateRotationState)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if m.GetState() != target.GetState() {
+	if m.GetCertRotationState() != target.GetCertRotationState() {
 		return false
 	}
 
