@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"net"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -147,12 +148,17 @@ func (t *translator) Translate(
 	}
 
 	// translate local resources
-	localServiceEntry, localDestinationRule := t.translateForLocalMesh(
+	localServiceEntry, localDestinationRule, err := t.translateForLocalMesh(
 		destination,
 		destinationMesh,
 		remoteServiceEntryTemplate,
 		remoteDestinationRule,
 	)
+	if err != nil {
+		reporter.ReportVirtualMeshToDestination(destination, destinationVirtualMesh, err)
+		return nil, nil, nil
+	}
+
 	// Append the VirtualMesh as a parent to the outputs
 	metautils.AppendParent(t.ctx, localServiceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, localDestinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
@@ -224,6 +230,11 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 
 	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
 
+	resolution, err := ResolutionForEndpointIpVersions(workloadEntries)
+	if err != nil {
+		return nil, err
+	}
+
 	// ObjectMeta's Namespace and ClusterName will be populated when translating federated outputs
 	return &networkingv1alpha3.ServiceEntry{
 		ObjectMeta: metav1.ObjectMeta{
@@ -234,7 +245,7 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 			Addresses:  []string{serviceEntryIP.String()},
 			Hosts:      []string{federatedHostname},
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+			Resolution: resolution,
 			Endpoints:  workloadEntries,
 			Ports:      ports,
 		},
@@ -248,7 +259,7 @@ func (t *translator) translateForLocalMesh(
 	destinationMesh *discoveryv1.Mesh,
 	remoteServiceEntryTemplate *networkingv1alpha3.ServiceEntry,
 	remoteDestinationRule *networkingv1alpha3.DestinationRule,
-) (*networkingv1alpha3.ServiceEntry, *networkingv1alpha3.DestinationRule) {
+) (*networkingv1alpha3.ServiceEntry, *networkingv1alpha3.DestinationRule, error) {
 	federatedHostname := destination.Status.AppliedFederation.GetFederatedHostname()
 	destinationIstioMesh := destinationMesh.Spec.GetIstio()
 
@@ -276,6 +287,11 @@ func (t *translator) translateForLocalMesh(
 		}
 	}
 
+	resolution, err := ResolutionForEndpointIpVersions(workloadEntries)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	se := &networkingv1alpha3.ServiceEntry{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        federatedHostname,
@@ -289,7 +305,7 @@ func (t *translator) translateForLocalMesh(
 			// only export to Gateway workload namespace
 			ExportTo:   []string{"."},
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+			Resolution: resolution,
 			Endpoints:  workloadEntries,
 			Ports:      remoteServiceEntryTemplate.Spec.Ports,
 		},
@@ -313,7 +329,7 @@ func (t *translator) translateForLocalMesh(
 		}
 	}
 
-	return se, dr
+	return se, dr, nil
 }
 
 // translate resources for remote meshes that allow routing to this Destination from clients in those remote Meshes
@@ -373,4 +389,31 @@ func ConvertKubePortProtocol(port *discoveryv1.DestinationSpec_KubeService_KubeS
 func getHostnameSuffix(hostname string) string {
 	split := strings.Split(hostname, ".")
 	return split[len(split)-1]
+}
+
+// Workaround for Istio issue where ipv6 addresses are supplied to Envoy incorrectly: https://github.com/envoyproxy/envoy/issues/10489#issuecomment-606290733.
+// If any endpoints have an ipv6 address, set the resolution to STATIC,
+// else, set the resolution to DNS.
+// exported for use in enterprise
+func ResolutionForEndpointIpVersions(
+	workloadEntries []*networkingv1alpha3spec.WorkloadEntry,
+) (networkingv1alpha3spec.ServiceEntry_Resolution, error) {
+	var foundHostname bool
+	var foundIpv6 bool
+	for _, workloadEntry := range workloadEntries {
+		// only ipv6 addresses will have 2 or more colons, reference: https://datatracker.ietf.org/doc/html/rfc5952
+		if strings.Count(workloadEntry.Address, ":") >= 2 {
+			foundIpv6 = true
+		}
+		if ip := net.ParseIP(workloadEntry.Address); ip == nil {
+			foundHostname = true
+		}
+	}
+
+	if foundHostname && foundIpv6 {
+		return networkingv1alpha3spec.ServiceEntry_NONE, eris.New("endpoints contain both ipv6 and hostname addresses")
+	} else if foundHostname && !foundIpv6 {
+		return networkingv1alpha3spec.ServiceEntry_DNS, nil
+	}
+	return networkingv1alpha3spec.ServiceEntry_STATIC, nil
 }
