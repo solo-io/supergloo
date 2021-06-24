@@ -4,7 +4,6 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
@@ -47,7 +46,7 @@ message VirtualGatewaySpec {
     repeated ConnectionHandler connection_handlers = 3;
 
     // Options applied to all clients who connect to this gateway
-    GatewayOptions options = 5;
+    GatewayOptions options = 4;
 
     // Options for deploying the VirtualGateway to an Istio Ingress Gateway
     message DeployToIngressGateway {
@@ -115,10 +114,10 @@ message VirtualGatewaySpec {
 
             // Restricts filter from being added to the corresponding Envoy Listener unless they are explicitly configured
             // in the connection handler options
-            bool strict_filter_management = 8;
+            bool strict_filter_management = 2;
 
             // enable PROXY protocol for this connection handler.
-            bool enable_proxy_protocol = 4;
+            bool enable_proxy_protocol = 3;
 
             message TlsTerminationOptions {
                 // If specified, the route will match against whether or not a certificate is presented.
@@ -141,7 +140,7 @@ message VirtualGatewaySpec {
             message RouteSpecifier {
                 oneof route_type{
                     // RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
-                    .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 1;
+                    .core.skv2.solo.io.ObjectSelector virtual_host_selector = 1;
 
                     // VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
                     // Note that Kubernetes admission validation of inline virtual hosts is disabled. For production, the use of `virtualHostSelector` is recommended.
@@ -202,7 +201,7 @@ message VirtualGatewaySpec {
                         // SSLFiles reference paths to certificates which are local to the proxy
                         SSLFiles ssl_files = 2;
                         // Use secret discovery service.
-                        SDSConfig sds = 4;
+                        SDSConfig sds = 3;
 
                         // SSLFiles reference paths to certificates which can be read by the proxy off of its local filesystem
                     }
@@ -210,8 +209,8 @@ message VirtualGatewaySpec {
 
 
                     // optional. the SNI domains that should be considered for TLS connections
-                    repeated string sni_domains = 3;
-
+                    repeated string sni_domains = 4;
+                    
                     // Verify that the Subject Alternative Name in the peer certificate is one of the specified values.
                     // note that a root_ca must be provided if this option is used.
                     repeated string verify_subject_alt_name = 5;
@@ -298,7 +297,7 @@ message VirtualGatewaySpec {
                     // If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP
                     // payloads over a shared HTTP tunnel. If this message is absent, the payload
                     // will be proxied upstream as per usual.
-                    TunnelingConfig tunneling_config = 12;
+                    TunnelingConfig tunneling_config = 3;
 
                     // Configuration for tunneling TCP over other transports or application layers.
                     message TunnelingConfig {
@@ -348,7 +347,7 @@ message VirtualGatewayStatus{
 
 
     // List of Istio Gateway CRs created by this VirtualGateway in each cluster
-    map<string, .common.mesh.gloo.solo.io.ObjectRefList> created_istio_gateways = 7;
+    map<string, .core.skv2.solo.io.ObjectRefList> created_istio_gateways = 7;
 
     // Relationships between objects
     // on Gw -> RTs selected
@@ -374,10 +373,9 @@ message SelectedGatewayWorkload {
     // the cluster where the gateway workload is running
     string cluster_name = 3;
     // the labels used to identify the gateway workload
-    map<string, string> labels = 5;
-
+    map<string, string> labels = 4;
     // the external URL by which the gateway can be accessed on the given workload, if it exists
-    string external_url = 4;
+    string external_url = 5;
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
@@ -388,12 +386,12 @@ message SDSConfig {
         // Call credentials.
         CallCredentials call_credentials = 2;
         // The name of the sds cluster in envoy
-        string cluster_name = 5;
+        string cluster_name = 3;
     }
     // The name of the secret containing the certificate
-    string certificates_secret_name = 3;
+    string certificates_secret_name = 4;
     // The name of secret containing the validation context (i.e. root ca)
-    string validation_context_name = 4;
+    string validation_context_name = 5;
 
     message CallCredentials {
         // Call credentials are coming from a file,

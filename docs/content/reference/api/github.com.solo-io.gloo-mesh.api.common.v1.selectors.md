@@ -25,14 +25,10 @@ title: "selectors.proto"
   - [IdentitySelector](#common.mesh.gloo.solo.io.IdentitySelector)
   - [IdentitySelector.KubeIdentityMatcher](#common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher)
   - [IdentitySelector.KubeServiceAccountRefs](#common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs)
-  - [ObjectSelector](#common.mesh.gloo.solo.io.ObjectSelector)
-  - [ObjectSelector.Expression](#common.mesh.gloo.solo.io.ObjectSelector.Expression)
-  - [ObjectSelector.LabelsEntry](#common.mesh.gloo.solo.io.ObjectSelector.LabelsEntry)
   - [WorkloadSelector](#common.mesh.gloo.solo.io.WorkloadSelector)
   - [WorkloadSelector.KubeWorkloadMatcher](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher)
   - [WorkloadSelector.KubeWorkloadMatcher.LabelsEntry](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry)
 
-  - [ObjectSelector.Expression.Operator](#common.mesh.gloo.solo.io.ObjectSelector.Expression.Operator)
 
 
 
@@ -150,56 +146,6 @@ Select Destination identities using one or more platform-specific selectors.
 
 
 
-<a name="common.mesh.gloo.solo.io.ObjectSelector"></a>
-
-### ObjectSelector
-Select K8s Objects by namespace, labels, or both.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| namespaces | []string | repeated | Select Objects in these namespaces. If omitted, Gloo Mesh will only select Objects in the same namespace as the parent resource (e.g. VirtualGateway) that owns this selector. The reserved value "*" can be used to select objects in all namespaces watched by Gloo Mesh. |
-  | labels | [][common.mesh.gloo.solo.io.ObjectSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector.LabelsEntry" >}}) | repeated | Select objects whose labels match the ones specified here. |
-  | expressions | [][common.mesh.gloo.solo.io.ObjectSelector.Expression]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector.Expression" >}}) | repeated | Expressions allow for more flexible object label matching, such as equality-based requirements, set-based requirements, or a combination of both. https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement |
-  
-
-
-
-
-
-<a name="common.mesh.gloo.solo.io.ObjectSelector.Expression"></a>
-
-### ObjectSelector.Expression
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  | Kubernetes label key, must conform to Kubernetes syntax requirements https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set |
-  | operator | [common.mesh.gloo.solo.io.ObjectSelector.Expression.Operator]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector.Expression.Operator" >}}) |  | The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan). |
-  | values | []string | repeated |  |
-  
-
-
-
-
-
-<a name="common.mesh.gloo.solo.io.ObjectSelector.LabelsEntry"></a>
-
-### ObjectSelector.LabelsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
-  
-
-
-
-
-
 <a name="common.mesh.gloo.solo.io.WorkloadSelector"></a>
 
 ### WorkloadSelector
@@ -248,25 +194,6 @@ Match Kubernetes workloads by their labels, namespaces, and/or clusters.
 
 
  <!-- end messages -->
-
-
-<a name="common.mesh.gloo.solo.io.ObjectSelector.Expression.Operator"></a>
-
-### ObjectSelector.Expression.Operator
-Object Selector expression operator, while the set-based syntax differs from Kubernetes (kubernetes: `key: !mylabel`, gloo: `key: mylabel, operator: "!"` | kubernetes: `key: mylabel`, gloo: `key: mylabel, operator: exists`), the functionality remains the same.
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| Equals | 0 | = |
-| DoubleEquals | 1 | == |
-| NotEquals | 2 | != |
-| In | 3 | in |
-| NotIn | 4 | notin |
-| Exists | 5 | exists |
-| DoesNotExist | 6 | ! |
-| GreaterThan | 7 | gt |
-| LessThan | 8 | lt |
-
 
  <!-- end enums -->
 

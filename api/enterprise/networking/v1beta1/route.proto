@@ -5,10 +5,9 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 
 import "google/protobuf/wrappers.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -26,49 +25,35 @@ option (extproto.equal_all) = true;
 */
 message Route {
     // The name provides a convenience for users to be able to refer to a route by name.
-    // It includes names of vs, route, and route table ancestors of the route.
+    // It includes names of VS, Route, and RouteTable ancestors of the Route.
     string name = 1;
     
     // Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.).
     // If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
     // For delegated routes, any parent matcher must have a `prefix` path matcher.
-    repeated .common.mesh.gloo.solo.io.HttpMatcher matchers = 2;
+    repeated .networking.mesh.gloo.solo.io.HttpMatcher matchers = 2;
 
-
-    // // TODO: Verify that we need these, and see if there's a cleaner now that we can make breaking changes.
-    // // Whether this route as a child should inherit headers, methods, and query parameter matchers from the parent.
-    // // Defaults to value of parent; for virtual services (no parent) defaults to false.
-    // google.protobuf.BoolValue inheritable_matchers = 3;
-
-    // // Whether this route as a child should inherit path matchers (i.e., path itself, case-sensitive setting) from
-    // // the parent. Defaults to value of parent; for virtual services (no parent) defaults to false.
-    // google.protobuf.BoolValue inheritable_path_matchers = 4;
-
-    // Top level /apiv2 -> some-virtualHost
-    // Top level /apiv1 -> some-virtualHost
-    // VirtualHost /foo -> foo-service
-
-    // The Route Action Defines what action the proxy should take when a request matches the route.
+    // The Route Action defines what action the proxy should take when a request matches the route.
     oneof action {
         // This action is the primary action to be selected for most routes. The RouteAction tells the proxy to
         // route requests to an upstream.
-        RouteAction route_action = 5;
+        RouteAction route_action = 3;
 
         // Redirect actions tell the proxy to return a redirect response to the downstream client.
-        RedirectAction redirect_action = 6;
+        RedirectAction redirect_action = 4;
 
         // Return an arbitrary HTTP response directly, without proxying.
-        DirectResponseAction direct_response_action = 7;
+        DirectResponseAction direct_response_action = 5;
 
         // Delegate routing actions for the given matcher to one or more RouteTables.
-        DelegateAction delegate_action = 8;
+        DelegateAction delegate_action = 6;
 
     }
 
     // Route Options extend the behavior of routes.
     // Route options include configuration such as retries, rate limiting, and request/response transformation.
     // RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
-    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 9;
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 7;
 
     // RouteActions are used to route matched requests to upstreams.
     message RouteAction {
@@ -138,18 +123,18 @@ message DirectResponseAction {
     // Specifies the content of the response body. If this setting is omitted,
     // no body is included in the generated response.
     //
-    //   Note: Headers can be specified using the Header Modification feature in the enclosing
-    //   Route, ConnectionHandler, or Gateway options.
+    // Note: Headers can be specified using the Header Modification feature in the enclosing
+    // Route, ConnectionHandler, or Gateway options.
     string body = 2;
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
-// DelegateActions are used to delegate routing decisions to other resources, for example Route Tables.
+// DelegateActions are used to delegate routing decisions to other resources, for example RouteTables.
 message DelegateAction {
     
-    // Delegate to the Route Table resources with matching `name` and `namespace`.
+    // Delegate to the RouteTable resources with matching `name` and `namespace`.
     repeated .core.skv2.solo.io.ObjectRef refs = 1;
 
-    // Delegate to the Route Tables that match the given selector.
-    .common.mesh.gloo.solo.io.ObjectSelector selector = 2;
+    // Delegate to the RouteTables that match the given selector.
+    .core.skv2.solo.io.ObjectSelector selector = 2;
 }

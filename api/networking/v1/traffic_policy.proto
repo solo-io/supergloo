@@ -7,10 +7,11 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/string_match.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf.proto";
@@ -34,7 +35,7 @@ message TrafficPolicySpec {
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
     // Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
     // Omit to apply to any HTTP request.
-    repeated .common.mesh.gloo.solo.io.HttpMatcher http_request_matchers = 3;
+    repeated .networking.mesh.gloo.solo.io.HttpMatcher http_request_matchers = 3;
 
     // Specify L7 routing and post-routing configuration.
     Policy policy = 4;
@@ -130,7 +131,7 @@ message TrafficPolicySpec {
         message CorsPolicy {
 
             // String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
-            repeated .networking.mesh.gloo.solo.io.StringMatch allow_origins = 7;
+            repeated .common.mesh.gloo.solo.io.StringMatch allow_origins = 7;
 
             // List of HTTP methods allowed to access the resource. The content will
             // be serialized to the `Access-Control-Allow-Methods` header.
@@ -264,4 +265,32 @@ message TrafficPolicyStatus {
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
+}
+
+// needed to extract for CUE
+
+// CSRF filter config.
+message CsrfPolicy {
+
+    // Specifies that CSRF policies will be evaluated, tracked and enforced.
+    bool filter_enabled = 1;
+
+    // Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+    //
+    // This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+    bool shadow_enabled = 2;
+
+    // Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+    // evaluated and tracked, but not enforced.
+    //
+    // If filter_enabled or shadow_enabled is true.
+    // Envoy will lookup the runtime key to get the percentage of requests to filter.
+    //
+    // .. note:: This field defaults to 100
+    double percentage = 3;
+
+    // Specifies additional source origins that will be allowed in addition to
+    // the destination origin.
+    repeated .common.mesh.gloo.solo.io.StringMatch additional_origins = 4;
+
 }

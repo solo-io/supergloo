@@ -170,7 +170,7 @@ DEPRECATED: external address data for an ingress gateway destination and workloa
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | The name of the Ingress Gateway Service |
+| name | string |  | TODO: remove name and namespace as ingress gw info now contains a ref The name of the Ingress Gateway Service |
   | namespace | string |  | The namespace in which the ingress gateway is running. |
   | workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload backing the gateway. [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`. |
   | externalAddress | string |  | DEPRECATED: in favor of dns_name or external_ip |
@@ -240,8 +240,8 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
-  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
-  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this mesh. |
+  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this Mesh. |
+  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this Mesh. |
   
 
 

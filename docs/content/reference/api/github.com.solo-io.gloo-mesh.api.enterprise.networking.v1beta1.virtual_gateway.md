@@ -147,7 +147,7 @@ VirtualGateway is the top-level object for configuring ingress into a Mesh or Vi
 | ----- | ---- | ----- | ----------- |
 | deployToIngressGateways | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.DeployToIngressGateway" >}}) |  | deploy this VirtualGateway to one or more Ingress Gateway workloads {{/* TODO: evaluate supporting multiple ingress gateway deployments per VG */}} |
   | deployToSidecars | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | deploy this VirtualGateway to one or more workload sidecars {{/* NOTE: unimplemented */}} |
-  | connectionHandlers | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler" >}}) | repeated | Each Gateway must implement one or more ConnectionHandlers. A ConnectionHandler instructs the gateway how to handle clients which have connected to the specified bind address. Typically `connectionHandlers` will consist of a single `http` handler which serves HTTP Routes defined in a set of VirtualHosts. Multiple `connectionHandlers` can be specified to provide different behavior on the same Gateway, e.g. one for TCP and one for HTTP traffic. |
+  | connectionHandlers | [][networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.ConnectionHandler" >}}) | repeated | Each Gateway must implement one or more ConnectionHandlers. A ConnectionHandler instructs the gateway how to handle clients  which have connected to the specified bind address. Typically `connectionHandlers` will consist of a single `http` handler which serves HTTP Routes defined in a set of VirtualHosts. Multiple `connectionHandlers` can be specified to provide different behavior on the same Gateway, e.g. one for TCP and one for HTTP traffic. |
   | options | [networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_gateway#networking.enterprise.mesh.gloo.solo.io.VirtualGatewaySpec.GatewayOptions" >}}) |  | Options applied to all clients who connect to this gateway |
   
 
@@ -246,9 +246,7 @@ TODO: Fill ConnectionOptions
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| csrf | [networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.csrf#networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure Global CSRF options for clients connected to this Gateway. |
-  | rateLimit | [ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit" >}}) |  | Configure Global Rate limit options for clients connected to this Gateway. Rate limits must be configured on specific routes in order to enable rate limiting for a Gateway. |
-  | extauth | [extauth.networking.mesh.gloo.solo.io.GatewayExtauth]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.GatewayExtauth" >}}) |  | Configure the Global Extauth options for clients connected to this Gateway |
+| csrf | [networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter for this Gateway. |
   
 
 
@@ -263,8 +261,8 @@ TODO: Fill ConnectionOptions
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| virtualHostSelector | [common.mesh.gloo.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.ObjectSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
-  | virtualHost | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec" >}}) |  | VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs. Note that Kubernetes admission validation of inline virtual hosts is disabled. For production, the use of `virtualHostSelector` is recommended. |
+| virtualHostSelector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | RouteSelector is used to specify which VirtualHosts should be attached to this gateway. |
+  | virtualHost | [networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_host#networking.enterprise.mesh.gloo.solo.io.VirtualHostSpec" >}}) |  | VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs. |
   
 
 
@@ -370,7 +368,7 @@ Name of the destinations the gateway can route to. Note: the destination spec an
 | ----- | ---- | ----- | ----------- |
 | static | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a gloo mesh Static Destination |
   | virtual | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a gloo mesh VirtualDestination |
-  | kube | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as each gateway workload which routes to this destination. |
+  | kube | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as  each gateway workload which routes to this destination. |
   | forwardSniClusterName | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Forwards the request to a cluster name matching the TLS SNI name https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/network/sni_cluster/empty/sni_cluster Note: This filter will only work properly with TLS connections in which the upstream SNI domain is specified |
   | weight | uint32 |  | Relative weight of this destination to others in the same route. If omitted, all destinations in the route will be load balanced between evenly. |
   
@@ -488,7 +486,7 @@ TODO: Fill in more options<br>gateway-level options (only apply to gateway/liste
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [common.mesh.gloo.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.refs#common.mesh.gloo.solo.io.ObjectRefList" >}}) |  |  |
+  | value | [core.skv2.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRefList" >}}) |  |  |
   
 
 

@@ -91,26 +91,7 @@ spec:
                 Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
                 Omit to apply to any HTTP request.
               items:
-                oneOf:
-                - not:
-                    anyOf:
-                    - required:
-                      - prefix
-                    - required:
-                      - exact
-                    - required:
-                      - regex
-                - required:
-                  - prefix
-                - required:
-                  - exact
-                - required:
-                  - regex
                 properties:
-                  exact:
-                    description: If specified, the targeted path must exactly match
-                      the value.
-                    type: string
                   headers:
                     description: Specify a set of headers which requests must match
                       in entirety (all headers must match).
@@ -149,10 +130,6 @@ spec:
                       concatenated with the parent route's name and will be logged in
                       the access logs for requests matching this route.
                     type: string
-                  prefix:
-                    description: If specified, the targeted path must begin with the
-                      prefix.
-                    type: string
                   queryParameters:
                     description: Specify a set of URL query parameters which requests
                       must match in entirety (all query params must match).
@@ -171,9 +148,46 @@ spec:
                           type: string
                       type: object
                     type: array
-                  regex:
-                    description: If specified, the targeted path must match the regex.
-                    type: string
+                  uri:
+                    description: Specify match criteria against the targeted path.
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - exact
+                        - required:
+                          - prefix
+                        - required:
+                          - regex
+                        - required:
+                          - suffix
+                    - required:
+                      - exact
+                    - required:
+                      - prefix
+                    - required:
+                      - regex
+                    - required:
+                      - suffix
+                    properties:
+                      exact:
+                        description: Exact string match.
+                        type: string
+                      ignoreCase:
+                        description: If true, indicates the exact/prefix/suffix matching
+                          should be case insensitive. This has no effect for the regex
+                          match.
+                        type: boolean
+                      prefix:
+                        description: Prefix-based match.
+                        type: string
+                      regex:
+                        description: ECMAscript style regex-based match.
+                        type: string
+                      suffix:
+                        description: Suffix-based match.
+                        type: string
+                    type: object
                 type: object
               type: array
             policy:
@@ -992,7 +1006,7 @@ spec:
                             - required:
                               - virtualDestination
                             - required:
-                              - static
+                              - staticDestination
                             - required:
                               - clusterHeader
                         - required:
@@ -1000,7 +1014,7 @@ spec:
                         - required:
                           - virtualDestination
                         - required:
-                          - static
+                          - staticDestination
                         - required:
                           - clusterHeader
                         properties:
@@ -1072,7 +1086,7 @@ spec:
                                     type: array
                                 type: object
                             type: object
-                          static:
+                          staticDestination:
                             description: Reference to a gloo mesh Static Destination
                             properties:
                               name:
@@ -1532,7 +1546,7 @@ spec:
                   type: object
                 selectors:
                   description: |-
-                    Selectively federate Destinations to specific external meshes.
+                    Selectively federate Destinations to specific external Meshes.
                     If omitted, no Destinations will be federated.
                   items:
                     properties:
@@ -2091,7 +2105,7 @@ spec:
                   properties:
                     intermediateCertOptions:
                       description: Configuration options for generated intermediate
-                        certs
+                        certs.
                       properties:
                         orgName:
                           description: Root cert organization name. Defaults to "gloo-mesh".

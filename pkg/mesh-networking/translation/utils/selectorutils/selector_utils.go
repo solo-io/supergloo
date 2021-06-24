@@ -25,16 +25,16 @@ var (
 	ObjectSelectorInvalidExpressionWarning = eris.New("the object selector expression is invalid")
 
 	// Map connecting Objects expression operator values and Kubernetes expression operator string values.
-	ObjectExpressionOperatorValues = map[commonv1.ObjectSelector_Expression_Operator]selection.Operator{
-		commonv1.ObjectSelector_Expression_Equals:       selection.Equals,
-		commonv1.ObjectSelector_Expression_DoubleEquals: selection.DoubleEquals,
-		commonv1.ObjectSelector_Expression_NotEquals:    selection.NotEquals,
-		commonv1.ObjectSelector_Expression_In:           selection.In,
-		commonv1.ObjectSelector_Expression_NotIn:        selection.NotIn,
-		commonv1.ObjectSelector_Expression_Exists:       selection.Exists,
-		commonv1.ObjectSelector_Expression_DoesNotExist: selection.DoesNotExist,
-		commonv1.ObjectSelector_Expression_GreaterThan:  selection.GreaterThan,
-		commonv1.ObjectSelector_Expression_LessThan:     selection.LessThan,
+	ObjectExpressionOperatorValues = map[v1.ObjectSelector_Expression_Operator]selection.Operator{
+		v1.ObjectSelector_Expression_Equals:       selection.Equals,
+		v1.ObjectSelector_Expression_DoubleEquals: selection.DoubleEquals,
+		v1.ObjectSelector_Expression_NotEquals:    selection.NotEquals,
+		v1.ObjectSelector_Expression_In:           selection.In,
+		v1.ObjectSelector_Expression_NotIn:        selection.NotIn,
+		v1.ObjectSelector_Expression_Exists:       selection.Exists,
+		v1.ObjectSelector_Expression_DoesNotExist: selection.DoesNotExist,
+		v1.ObjectSelector_Expression_GreaterThan:  selection.GreaterThan,
+		v1.ObjectSelector_Expression_LessThan:     selection.LessThan,
 	}
 )
 
@@ -207,7 +207,7 @@ func refsContain(refs []*v1.ClusterObjectRef, targetRef *v1.ClusterObjectRef) bo
 
 // used in enterprise
 func ValidateSelector(
-	selector *commonv1.ObjectSelector,
+	selector *v1.ObjectSelector,
 ) error {
 
 	if len(selector.Labels) > 0 {
@@ -234,7 +234,7 @@ func ValidateSelector(
 // TODO: validate the logic contained here
 func SelectorMatchesObject(
 	candidate ezkube.Object,
-	selector *commonv1.ObjectSelector,
+	selector *v1.ObjectSelector,
 	ownerNamespace string,
 ) bool {
 	type nsSelectorType int

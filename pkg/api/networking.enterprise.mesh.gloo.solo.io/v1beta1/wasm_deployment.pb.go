@@ -325,7 +325,7 @@ type WasmFilterSpec_LocalPathSource struct {
 type WasmFilterSpec_HttpUriSource struct {
 	// Select `http_uri_source` to deploy the filter from an HTTP/S URI accessible
 	// to the workload proxy. Note that Gloo Mesh cannot verify
-	// whether the target workload proxy containers have HTTP accesss the given URI.
+	// whether the target workload proxy containers have HTTP access the given URI.
 	// If filters do not load, please inspect the sidecar proxy logs.
 	// TODO(ilackarms): see if we can somehow verify the filter exists in the proxy container and surface that on the WasmDeployment status
 	// TODO(ilackarms): we may need to provide options for customizing the Cluster given to envoy along with the HTTP Fetch URI. currently Gloo Mesh will create a simple plaintext HTTP cluster from the Host/Port specified in the URI.
