@@ -45,8 +45,6 @@ type Clientset interface {
 	CertificateRequests() CertificateRequestClient
 	// clienset for the certificates.mesh.gloo.solo.io/v1/v1 APIs
 	PodBounceDirectives() PodBounceDirectiveClient
-	// clienset for the certificates.mesh.gloo.solo.io/v1/v1 APIs
-	CertificateRotations() CertificateRotationClient
 }
 
 type clientSet struct {
@@ -84,11 +82,6 @@ func (c *clientSet) CertificateRequests() CertificateRequestClient {
 // clienset for the certificates.mesh.gloo.solo.io/v1/v1 APIs
 func (c *clientSet) PodBounceDirectives() PodBounceDirectiveClient {
 	return NewPodBounceDirectiveClient(c.client)
-}
-
-// clienset for the certificates.mesh.gloo.solo.io/v1/v1 APIs
-func (c *clientSet) CertificateRotations() CertificateRotationClient {
-	return NewCertificateRotationClient(c.client)
 }
 
 // Reader knows how to read and list IssuedCertificates.
@@ -515,146 +508,4 @@ func (m *multiclusterPodBounceDirectiveClient) Cluster(cluster string) (PodBounc
 		return nil, err
 	}
 	return NewPodBounceDirectiveClient(client), nil
-}
-
-// Reader knows how to read and list CertificateRotations.
-type CertificateRotationReader interface {
-	// Get retrieves a CertificateRotation for the given object key
-	GetCertificateRotation(ctx context.Context, key client.ObjectKey) (*CertificateRotation, error)
-
-	// List retrieves list of CertificateRotations for a given namespace and list options.
-	ListCertificateRotation(ctx context.Context, opts ...client.ListOption) (*CertificateRotationList, error)
-}
-
-// CertificateRotationTransitionFunction instructs the CertificateRotationWriter how to transition between an existing
-// CertificateRotation object and a desired on an Upsert
-type CertificateRotationTransitionFunction func(existing, desired *CertificateRotation) error
-
-// Writer knows how to create, delete, and update CertificateRotations.
-type CertificateRotationWriter interface {
-	// Create saves the CertificateRotation object.
-	CreateCertificateRotation(ctx context.Context, obj *CertificateRotation, opts ...client.CreateOption) error
-
-	// Delete deletes the CertificateRotation object.
-	DeleteCertificateRotation(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
-
-	// Update updates the given CertificateRotation object.
-	UpdateCertificateRotation(ctx context.Context, obj *CertificateRotation, opts ...client.UpdateOption) error
-
-	// Patch patches the given CertificateRotation object.
-	PatchCertificateRotation(ctx context.Context, obj *CertificateRotation, patch client.Patch, opts ...client.PatchOption) error
-
-	// DeleteAllOf deletes all CertificateRotation objects matching the given options.
-	DeleteAllOfCertificateRotation(ctx context.Context, opts ...client.DeleteAllOfOption) error
-
-	// Create or Update the CertificateRotation object.
-	UpsertCertificateRotation(ctx context.Context, obj *CertificateRotation, transitionFuncs ...CertificateRotationTransitionFunction) error
-}
-
-// StatusWriter knows how to update status subresource of a CertificateRotation object.
-type CertificateRotationStatusWriter interface {
-	// Update updates the fields corresponding to the status subresource for the
-	// given CertificateRotation object.
-	UpdateCertificateRotationStatus(ctx context.Context, obj *CertificateRotation, opts ...client.UpdateOption) error
-
-	// Patch patches the given CertificateRotation object's subresource.
-	PatchCertificateRotationStatus(ctx context.Context, obj *CertificateRotation, patch client.Patch, opts ...client.PatchOption) error
-}
-
-// Client knows how to perform CRUD operations on CertificateRotations.
-type CertificateRotationClient interface {
-	CertificateRotationReader
-	CertificateRotationWriter
-	CertificateRotationStatusWriter
-}
-
-type certificateRotationClient struct {
-	client client.Client
-}
-
-func NewCertificateRotationClient(client client.Client) *certificateRotationClient {
-	return &certificateRotationClient{client: client}
-}
-
-func (c *certificateRotationClient) GetCertificateRotation(ctx context.Context, key client.ObjectKey) (*CertificateRotation, error) {
-	obj := &CertificateRotation{}
-	if err := c.client.Get(ctx, key, obj); err != nil {
-		return nil, err
-	}
-	return obj, nil
-}
-
-func (c *certificateRotationClient) ListCertificateRotation(ctx context.Context, opts ...client.ListOption) (*CertificateRotationList, error) {
-	list := &CertificateRotationList{}
-	if err := c.client.List(ctx, list, opts...); err != nil {
-		return nil, err
-	}
-	return list, nil
-}
-
-func (c *certificateRotationClient) CreateCertificateRotation(ctx context.Context, obj *CertificateRotation, opts ...client.CreateOption) error {
-	return c.client.Create(ctx, obj, opts...)
-}
-
-func (c *certificateRotationClient) DeleteCertificateRotation(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &CertificateRotation{}
-	obj.SetName(key.Name)
-	obj.SetNamespace(key.Namespace)
-	return c.client.Delete(ctx, obj, opts...)
-}
-
-func (c *certificateRotationClient) UpdateCertificateRotation(ctx context.Context, obj *CertificateRotation, opts ...client.UpdateOption) error {
-	return c.client.Update(ctx, obj, opts...)
-}
-
-func (c *certificateRotationClient) PatchCertificateRotation(ctx context.Context, obj *CertificateRotation, patch client.Patch, opts ...client.PatchOption) error {
-	return c.client.Patch(ctx, obj, patch, opts...)
-}
-
-func (c *certificateRotationClient) DeleteAllOfCertificateRotation(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &CertificateRotation{}
-	return c.client.DeleteAllOf(ctx, obj, opts...)
-}
-
-func (c *certificateRotationClient) UpsertCertificateRotation(ctx context.Context, obj *CertificateRotation, transitionFuncs ...CertificateRotationTransitionFunction) error {
-	genericTxFunc := func(existing, desired runtime.Object) error {
-		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*CertificateRotation), desired.(*CertificateRotation)); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
-	return err
-}
-
-func (c *certificateRotationClient) UpdateCertificateRotationStatus(ctx context.Context, obj *CertificateRotation, opts ...client.UpdateOption) error {
-	return c.client.Status().Update(ctx, obj, opts...)
-}
-
-func (c *certificateRotationClient) PatchCertificateRotationStatus(ctx context.Context, obj *CertificateRotation, patch client.Patch, opts ...client.PatchOption) error {
-	return c.client.Status().Patch(ctx, obj, patch, opts...)
-}
-
-// Provides CertificateRotationClients for multiple clusters.
-type MulticlusterCertificateRotationClient interface {
-	// Cluster returns a CertificateRotationClient for the given cluster
-	Cluster(cluster string) (CertificateRotationClient, error)
-}
-
-type multiclusterCertificateRotationClient struct {
-	client multicluster.Client
-}
-
-func NewMulticlusterCertificateRotationClient(client multicluster.Client) MulticlusterCertificateRotationClient {
-	return &multiclusterCertificateRotationClient{client: client}
-}
-
-func (m *multiclusterCertificateRotationClient) Cluster(cluster string) (CertificateRotationClient, error) {
-	client, err := m.client.Cluster(cluster)
-	if err != nil {
-		return nil, err
-	}
-	return NewCertificateRotationClient(client), nil
 }

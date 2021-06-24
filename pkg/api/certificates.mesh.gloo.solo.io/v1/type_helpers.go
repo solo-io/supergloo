@@ -11,6 +11,3 @@ type CertificateRequestSlice []*CertificateRequest
 
 // PodBounceDirectiveSlice represents a slice of *PodBounceDirective
 type PodBounceDirectiveSlice []*PodBounceDirective
-
-// CertificateRotationSlice represents a slice of *CertificateRotation
-type CertificateRotationSlice []*CertificateRotation

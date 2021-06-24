@@ -14,8 +14,6 @@ These docs describe Gloo Mesh CRDs.
 
   - [CertificateRequest]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.certificate_request#certificates.mesh.gloo.solo.io.CertificateRequestSpec" >}})
 
-  - [CertificateRotation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.certificate_rotation#certificates.mesh.gloo.solo.io.CertificateRotationSpec" >}})
-
   - [IssuedCertificate]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateSpec" >}})
 
   - [PodBounceDirective]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec" >}})

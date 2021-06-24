@@ -30,6 +30,7 @@ title: "virtual_mesh.proto"
   - [VirtualMeshStatus.MeshesEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry)
 
   - [VirtualMeshSpec.GlobalAccessPolicy](#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy)
+  - [VirtualMeshStatus.CertificateRotationState](#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationState)
 
 
 
@@ -211,6 +212,23 @@ Specify a global access policy for all Workloads and Destinations associated wit
 | MESH_DEFAULT | 0 | Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`. |
 | ENABLED | 1 | Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" >}}). |
 | DISABLED | 2 | Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" >}}). |
+
+
+
+<a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationState"></a>
+
+### VirtualMeshStatus.CertificateRotationState
+Certificate Rotation State Possible states in which a CertificateRotation can exist.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| PENDING | 0 | The CertificateRotation has yet to be picked up by the management-plane. |
+| ADDING_NEW_ROOT | 1 | The CertificateRotation is underway, both roots are set, and the new root is being propogated |
+| PROPOGATING_NEW_INTERMEDIATE | 2 | The CertificateRotation is underway again. The initial verification is over, the traffic continues to work with both roots present. Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters |
+| DELETING_OLD_ROOT | 3 | The CertificateRotation is underway again. Removing the old-root from all data-plane clusters |
+| VERIFYING | 4 | Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified. This can either be manual or in the future automated |
+| FINISHED | 5 | The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has been verified for a 2nd time. |
+| FAILED | 6 | Processing the certificate rotation workflow failed. |
 
 
  <!-- end enums -->

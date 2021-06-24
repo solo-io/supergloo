@@ -64,7 +64,6 @@ var CertAgentGroups = []model.Group{
 		{Kind: "IssuedCertificate"},
 		{Kind: "CertificateRequest"},
 		{Kind: "PodBounceDirective"},
-		{Kind: "CertificateRotation"},
 	}),
 }
 

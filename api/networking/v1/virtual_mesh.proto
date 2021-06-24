@@ -179,4 +179,42 @@ message VirtualMeshStatus {
     // The status of the VirtualMesh for each Destination to which it has been applied.
     // A VirtualMesh may be Accepted for some Destinations and rejected for others.
     map<string, ApprovalStatus> destinations = 5;
+
+    // Certificate Rotation State
+    // Possible states in which a CertificateRotation can exist.
+    enum CertificateRotationState {
+        // The CertificateRotation has yet to be picked up by the management-plane.
+        PENDING = 0;
+
+        // The CertificateRotation is underway, both roots are set, and the new root is being propogated 
+        ADDING_NEW_ROOT = 1;
+
+        // The CertificateRotation is underway again.
+        // The initial verification is over, the traffic continues to work with both roots present.
+        // Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters
+        PROPOGATING_NEW_INTERMEDIATE = 2;
+
+        // The CertificateRotation is underway again.
+        // Removing the old-root from all data-plane clusters
+        DELETING_OLD_ROOT = 3;
+
+        // Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified.
+        // This can either be manual or in the future automated
+        VERIFYING = 4;
+
+        // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
+        // been verified for a 2nd time.
+        FINISHED = 5;
+
+        // Processing the certificate rotation workflow failed.
+        FAILED = 6;
+    }
+
+    message AppliedCertificateState {
+
+    }
+
+    AppliedCertificateState applied_certificate_state = 6;
+
+
 }

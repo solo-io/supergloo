@@ -113,44 +113,8 @@ type PodBounceDirectiveList struct {
 	Items           []PodBounceDirective `json:"items"`
 }
 
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
-
-// GroupVersionKind for CertificateRotation
-var CertificateRotationGVK = schema.GroupVersionKind{
-	Group:   "certificates.mesh.gloo.solo.io",
-	Version: "v1",
-	Kind:    "CertificateRotation",
-}
-
-// CertificateRotation is the Schema for the certificateRotation API
-type CertificateRotation struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   CertificateRotationSpec   `json:"spec,omitempty"`
-	Status CertificateRotationStatus `json:"status,omitempty"`
-}
-
-// GVK returns the GroupVersionKind associated with the resource type.
-func (CertificateRotation) GVK() schema.GroupVersionKind {
-	return CertificateRotationGVK
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// CertificateRotationList contains a list of CertificateRotation
-type CertificateRotationList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []CertificateRotation `json:"items"`
-}
-
 func init() {
 	SchemeBuilder.Register(&IssuedCertificate{}, &IssuedCertificateList{})
 	SchemeBuilder.Register(&CertificateRequest{}, &CertificateRequestList{})
 	SchemeBuilder.Register(&PodBounceDirective{}, &PodBounceDirectiveList{})
-	SchemeBuilder.Register(&CertificateRotation{}, &CertificateRotationList{})
 }

@@ -89,25 +89,3 @@ func (this *PodBounceDirectiveStatus) MarshalJSON() ([]byte, error) {
 func (this *PodBounceDirectiveStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
-// MarshalJSON is a custom marshaler for CertificateRotationSpec
-func (this *CertificateRotationSpec) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for CertificateRotationSpec
-func (this *CertificateRotationSpec) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for CertificateRotationStatus
-func (this *CertificateRotationStatus) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for CertificateRotationStatus
-func (this *CertificateRotationStatus) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}
