@@ -69,6 +69,8 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
+        repeated IngressGatewayServiceSelector ingress_gateway_service_selectors = 1;
+
         // Selectively federate Destinations to specific external meshes.
         // If omitted, no Destinations will be federated.
         repeated FederationSelector selectors = 4;
@@ -79,7 +81,7 @@ message VirtualMeshSpec {
 
             // DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics.
             // Expose all Destinations to all Workloads in this VirtualMesh.
-            .google.protobuf.Empty permissive = 1;
+            .google.protobuf.Empty permissive = 5;
         };
 
         // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
@@ -103,6 +105,22 @@ message VirtualMeshSpec {
             // The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
             // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
             repeated .core.skv2.solo.io.ObjectRef meshes = 2;
+        }
+
+        // Selects a set of Destinations to use as ingress gateway services to the referenced Meshes.
+        message IngressGatewayServiceSelector {
+
+            // The set of Destinations that will be used as ingress gateway services for the external Meshes.
+            // If omitted, the default ingressgateway destination will be used.
+            repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 1;
+
+            // The name of the TLS port on the service used as an ingress gateway. Kubernetes services must have a port with this name
+            // in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
+            string gateway_tls_port_name = 2;
+
+            // The Meshes for which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
+            // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
+            repeated .core.skv2.solo.io.ObjectRef meshes = 3;
         }
     }
 
