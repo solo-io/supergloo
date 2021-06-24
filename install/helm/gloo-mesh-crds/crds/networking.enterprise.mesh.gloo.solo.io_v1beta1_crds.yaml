@@ -294,22 +294,25 @@ spec:
                     type: string
                 type: object
               type: array
-            message:
-              description: A human-readable string explaining the status.
-              type: string
+            errors:
+              description: Any errors found while processing this generation of the
+                resource.
+              items:
+                type: string
+              type: array
             observedGeneration:
               description: |-
-                The observed generation of the resource.
-                When this matches the metadata.generation of the resource, it indicates the status is up-to-date.
+                The most recent generation observed in the the RateLimiterServerConfig metadata.
+                If the `observedGeneration` does not match `metadata.generation`,
+                Gloo Mesh has not processed the most recent version of this resource.
               format: int64
               type: integer
-            state:
-              description: The current state of the `RateLimitConfig`.
-              enum:
-              - PENDING
-              - ACCEPTED
-              - REJECTED
-              type: string
+            warnings:
+              description: Any warnings found while processing this generation of
+                the resource.
+              items:
+                type: string
+              type: array
           type: object
       type: object
   versions:

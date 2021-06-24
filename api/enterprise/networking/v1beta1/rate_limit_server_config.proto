@@ -34,22 +34,18 @@ message RateLimiterServerConfigSpec {
 // The current status of the `RateLimitConfig`.
 message RateLimiterServerConfigStatus {
 
-    enum State {
-        PENDING = 0;
-        ACCEPTED = 1;
-        REJECTED = 2;
-    }
+    // The most recent generation observed in the the RateLimiterServerConfig metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
 
-    // The current state of the `RateLimitConfig`.
-    State state = 1;
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
 
-    // A human-readable string explaining the status.
-    string message = 2;
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
 
     // a list of rate limit server workloads which have been configured with this RateLimiterConfig
     repeated .core.skv2.solo.io.ClusterObjectRef configured_servers = 4;
 
-    // The observed generation of the resource.
-    // When this matches the metadata.generation of the resource, it indicates the status is up-to-date.
-    int64 observed_generation = 3;
 }
