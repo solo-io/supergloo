@@ -37,7 +37,7 @@ RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the exte
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | serverConfigRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The per-server rate limit config objects will be generated from the given config for each provided ref. Each rate limit server must be configured to read its server configuration from one of these refs. |
-  | rateLimitConfig | [ratelimit.api.solo.io.RateLimitConfigSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.RateLimitConfigSpec" >}}) |  | the configuration which will be deployed to the selected rate limit servers. |
+  | rateLimitConfig | [ratelimit.api.solo.io.RateLimitConfigSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.RateLimitConfigSpec" >}}) |  | the configuration which will be deployed to the selected rate limit servers. TODO: move disable validation annotation into solo-apis |
   
 
 

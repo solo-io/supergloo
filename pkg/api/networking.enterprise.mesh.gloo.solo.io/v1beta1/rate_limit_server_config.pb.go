@@ -95,6 +95,7 @@ type RateLimiterServerConfigSpec struct {
 	// Each rate limit server must be configured to read its server configuration from one of these refs.
 	ServerConfigRefs []*v1.ObjectRef `protobuf:"bytes,1,rep,name=server_config_refs,json=serverConfigRefs,proto3" json:"server_config_refs,omitempty"`
 	// the configuration which will be deployed to the selected rate limit servers.
+	// TODO: move disable validation annotation into solo-apis
 	RateLimitConfig *v1alpha1.RateLimitConfigSpec `protobuf:"bytes,2,opt,name=rate_limit_config,json=rateLimitConfig,proto3" json:"rate_limit_config,omitempty"`
 }
 

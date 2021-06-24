@@ -27,6 +27,7 @@ message RateLimiterServerConfigSpec {
     repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
 
     // the configuration which will be deployed to the selected rate limit servers.
+    // TODO: move disable validation annotation into solo-apis
     .ratelimit.api.solo.io.RateLimitConfigSpec rate_limit_config = 2 [(cue.opt).disable_openapi_validation = true];
 }
 
