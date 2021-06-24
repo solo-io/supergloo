@@ -23,8 +23,8 @@ You're going to need some software to make all this magic happen:
 
 For each software component you should install the most recent version. This document was written and tested with the following versions on Ubuntu 18.04:
 
-* Hugo - 0.59.1
-* Go - 1.14.1
+* Hugo - 0.62.2
+* Go - 1.16.4
 * Git - 2.17.1
 * Make - 4.1
 
