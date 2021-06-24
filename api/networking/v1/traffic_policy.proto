@@ -11,7 +11,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/string_match.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/string_match.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 
 import "extproto/ext.proto";
@@ -125,7 +125,7 @@ message TrafficPolicySpec {
         message CorsPolicy {
 
             // String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
-            repeated .networking.mesh.gloo.solo.io.StringMatch allow_origins = 7;
+            repeated .common.mesh.gloo.solo.io.StringMatch allow_origins = 7;
 
             // List of HTTP methods allowed to access the resource. The content will
             // be serialized to the `Access-Control-Allow-Methods` header.
@@ -291,6 +291,6 @@ message CsrfPolicy {
 
     // Specifies additional source origins that will be allowed in addition to
     // the destination origin.
-    repeated .networking.mesh.gloo.solo.io.StringMatch additional_origins = 4;
+    repeated .common.mesh.gloo.solo.io.StringMatch additional_origins = 4;
 
 }
