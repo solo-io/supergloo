@@ -78,21 +78,21 @@ At a high level, the following additional components are available in Gloo Mesh 
 
 The Prometheus server and Grafana dashboard are optional components. If you have an existing instance of either, they can be used instead.
 
+Redis is also an optional component, it can be installed via the helm chart to allow for sticky sessions 
+
 ### Pods and ports
 
 The Gloo Mesh Enterprise components are instantiated using pods and services. The following table lists the deployed pods and ports in use by each pod.
 
 | Pod | Port | Usage |
 |-----|------|-------|
-| gloo-fed-console | 8090 | UI server |
-| gloo-fed-console | 10101 | API Server |
-| gloo-fed-console | 8081 | healthcheck |
-| extauth | 8083 | External authentication |
+| dashboard | 8090 | UI server |
+| dashboard | 10101 | API Server |
+| dashboard | 8081 | healthcheck |
 | grafana | 80 | Grafana (unused) |
 | grafana | 3000 | Grafana UI |
 | prometheus-kube-state-metrics | 8080 | Kubernetes metric collection |
 | prometheus-server | 9090 | Prometheus server |
-| rate-limit | 18081 | Rate-limiting |
 | redis | 6379 | Rate-limiting |
 
 There is an `observability` pod that automatically configures dashboards on the Grafana instance. It does not accept inbound traffic, so it is not included in the table above.
