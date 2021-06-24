@@ -300,6 +300,26 @@ func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetAppliedCertificateState()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetAppliedCertificateState()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetAppliedCertificateState(), target.GetAppliedCertificateState()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetCertificateRotationState()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCertificateRotationState()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetCertificateRotationState(), target.GetCertificateRotationState()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -520,6 +540,68 @@ func (m *VirtualMeshSpec_Federation_FederationSelector) Equal(that interface{}) 
 			}
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualMeshStatus_AppliedCertificateState) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualMeshStatus_AppliedCertificateState)
+	if !ok {
+		that2, ok := that.(VirtualMeshStatus_AppliedCertificateState)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetSharedTrust()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSharedTrust()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetSharedTrust(), target.GetSharedTrust()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *VirtualMeshStatus_CertificateRotationState) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*VirtualMeshStatus_CertificateRotationState)
+	if !ok {
+		that2, ok := that.(VirtualMeshStatus_CertificateRotationState)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetState() != target.GetState() {
+		return false
 	}
 
 	return true
