@@ -8,6 +8,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1/access_policy.proto";
 import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
+import "google/protobuf/duration.proto";
 option (extproto.equal_all) = true;
 // Generate hash functions for sublocality for easier grouping.
 option (extproto.hash_all) = true;
@@ -296,6 +297,24 @@ message DestinationStatus {
 
         // Reference to the VirtualMesh object.
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
+
+        // Specify a keepalive rule for all destinations associated with this VirtualMesh
+        TCPKeepalive tcp_keepalive = 5;
+
+        // Specify a keepalive rule for all destinations associated with this VirtualMesh
+        message TCPKeepalive {
+            // (unless overridden, Linux defaults to 9.)
+            uint32 probes = 1;
+            // The time duration a connection needs to be idle before keep-alive
+            // probes start being sent. Default is to use the OS level configuration
+            // (unless overridden, Linux defaults to 7200s (ie 2 hours.)
+            google.protobuf.Duration time = 2;
+            // The time duration between keep-alive probes.
+            // Default is to use the OS level configuration
+            // (unless overridden, Linux defaults to 75s.)
+            google.protobuf.Duration  interval   = 3;
+        }
+
     }
 
     // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}})

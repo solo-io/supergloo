@@ -151,16 +151,11 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	// retrieve the virtual mesh to use its keepalive value, if it exists.
-	destinationVirtualMesh, err := in.VirtualMeshes().Find(destination.Status.AppliedFederation.GetVirtualMeshRef())
-	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorf("Could not find parent VirtualMesh %v for Destination %v, keepalive will not be set.", destination.Status.AppliedFederation.GetVirtualMeshRef(), ezkube.MakeObjectRef(destination))
-		return destinationRule
-	}
+	// if Destination is in a different mesh than the sourceMeshInstallation, than it's a federated Destination
+	if kubeService.Ref.ClusterName != sourceMeshInstallation.Cluster {
+		keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
 
-	keepalive := destinationVirtualMesh.Spec.GetTcpKeepalive()
-	if keepalive != nil {
-		// ensure the entire chain of values is instantiated.
+		// ensure the entire chain of values in the resulting dest rule is instantiated.
 		trafficPolicy := destinationRule.Spec.GetTrafficPolicy()
 		if trafficPolicy == nil {
 			destinationRule.Spec.TrafficPolicy = &networkingv1alpha3spec.TrafficPolicy{}
@@ -178,7 +173,7 @@ func (t *translator) Translate(
 		gogoTime := gogoutils.DurationProtoToGogo(keepalive.GetTime())
 		gogoInterval := gogoutils.DurationProtoToGogo(keepalive.GetInterval())
 		destinationRule.Spec.GetTrafficPolicy().GetConnectionPool().GetTcp().TcpKeepalive = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings_TcpKeepalive{
-			Probes:   destinationVirtualMesh.Spec.GetTcpKeepalive().GetProbes(),
+			Probes:   keepalive.GetProbes(),
 			Time:     gogoTime,
 			Interval: gogoInterval,
 		}

@@ -970,6 +970,16 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetTcpKeepalive()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTcpKeepalive()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTcpKeepalive(), target.GetTcpKeepalive()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -1014,6 +1024,54 @@ func (m *DestinationStatus_RequiredSubsets) Equal(that interface{}) bool {
 		}
 	} else {
 		if !proto.Equal(m.GetTrafficShift(), target.GetTrafficShift()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DestinationStatus_AppliedFederation_TCPKeepalive) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DestinationStatus_AppliedFederation_TCPKeepalive)
+	if !ok {
+		that2, ok := that.(DestinationStatus_AppliedFederation_TCPKeepalive)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetProbes() != target.GetProbes() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTime()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTime()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTime(), target.GetTime()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetInterval()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetInterval()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetInterval(), target.GetInterval()) {
 			return false
 		}
 	}
