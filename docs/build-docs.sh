@@ -7,7 +7,7 @@
 
 set -ex
 
-# Update this array with all versions of GlooMesh to include in the versioned docs website.
+# Update this array with all versions of Gloo Mesh to include in the versioned docs website.
 declare -a versions=($(cat version.json | jq -rc '."versions" | join(" ")'))
 latestVersion=$(cat version.json | jq -r ."latest")
 
@@ -135,4 +135,3 @@ else
     rm -fr vendor_any
   done
 fi
-
