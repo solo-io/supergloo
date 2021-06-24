@@ -114,6 +114,8 @@ func defaultListSetting(s []string) bool {
 // BugReportConfig controls what is captured and Include in the kube-capture tool
 // archive.
 type BugReportConfig struct {
+	// ConfigFilePath is the path to the meshctl config file
+	ConfigFilePath string `json:"meshctlConfigPath,omitempty"`
 
 	// KubeConfigPath is the path to kube config file
 	KubeConfigPath string `json:"kubeConfigPath,omitempty"`

@@ -22,9 +22,9 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/ghodss/yaml"
-	"github.com/spf13/cobra"
-
 	config2 "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/report/internal/config"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
+	"github.com/spf13/cobra"
 	"istio.io/pkg/log"
 )
 
@@ -36,6 +36,8 @@ var (
 )
 
 func addFlags(cmd *cobra.Command, args *config2.BugReportConfig) {
+	cmd.PersistentFlags().StringVar(&args.ConfigFilePath, "config", utils.DefaultConfigPath, "set the path to the meshctl config file")
+
 	// k8s client context
 	cmd.PersistentFlags().StringVarP(&args.KubeConfigPath, "kubeconfig", "c", "",
 		"Path to kube context. For multiple files use a comma (Ex. ~/.kube/cluster1,~/.kube/cluster2)")
