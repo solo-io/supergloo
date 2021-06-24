@@ -50,19 +50,20 @@ import (
 // * Sidecars
 // * AuthorizationPolicies
 // from a remote cluster.
-// * Settings
-// * Destinations
-// * Workloads
-// * Meshes
-// * TrafficPolicies
-// * AccessPolicies
-// * VirtualMeshes
 // * WasmDeployments
+// * RateLimiterServerConfigs
 // * VirtualDestinations
 // * VirtualGateways
 // * VirtualHosts
 // * RouteTables
 // * ServiceDependencies
+// * TrafficPolicies
+// * AccessPolicies
+// * VirtualMeshes
+// * Settings
+// * Destinations
+// * Workloads
+// * Meshes
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -88,7 +89,7 @@ func RegisterInputReconciler(
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
 	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
-	// [settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 networking.mesh.gloo.solo.io/v1 networking.enterprise.mesh.gloo.solo.io/v1beta1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
+	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
 
 	base := input.NewInputReconciler(
 		ctx,
@@ -123,39 +124,12 @@ func RegisterInputReconciler(
 	// initialize AuthorizationPolicies reconcile loop for remote clusters
 	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize Settings reconcile loop for local cluster
-	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
-	// initialize Destinations reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewDestinationReconcileLoop("Destination", mgr, options.Local.Destinations).RunDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize Workloads reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewWorkloadReconcileLoop("Workload", mgr, options.Local.Workloads).RunWorkloadReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize Meshes reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewMeshReconcileLoop("Mesh", mgr, options.Local.Meshes).RunMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
-	// initialize TrafficPolicies reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, options.Local.TrafficPolicies).RunTrafficPolicyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize AccessPolicies reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, options.Local.AccessPolicies).RunAccessPolicyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize VirtualMeshes reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
 	// initialize WasmDeployments reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize RateLimiterServerConfigs reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewRateLimiterServerConfigReconcileLoop("RateLimiterServerConfig", mgr, options.Local.RateLimiterServerConfigs).RunRateLimiterServerConfigReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize VirtualDestinations reconcile loop for local cluster
@@ -176,6 +150,37 @@ func RegisterInputReconciler(
 	}
 	// initialize ServiceDependencies reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewServiceDependencyReconcileLoop("ServiceDependency", mgr, options.Local.ServiceDependencies).RunServiceDependencyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize TrafficPolicies reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, options.Local.TrafficPolicies).RunTrafficPolicyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize AccessPolicies reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, options.Local.AccessPolicies).RunAccessPolicyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize VirtualMeshes reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize Settings reconcile loop for local cluster
+	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize Destinations reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewDestinationReconcileLoop("Destination", mgr, options.Local.Destinations).RunDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize Workloads reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewWorkloadReconcileLoop("Workload", mgr, options.Local.Workloads).RunWorkloadReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize Meshes reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewMeshReconcileLoop("Mesh", mgr, options.Local.Meshes).RunMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -385,25 +390,10 @@ func (r *remoteInputReconciler) ReconcileAuthorizationPolicyDeletion(clusterName
 // Options for reconciling a snapshot in remote clusters
 type LocalReconcileOptions struct {
 
-	// Options for reconciling Settings
-	Settings reconcile.Options
-
-	// Options for reconciling Destinations
-	Destinations reconcile.Options
-	// Options for reconciling Workloads
-	Workloads reconcile.Options
-	// Options for reconciling Meshes
-	Meshes reconcile.Options
-
-	// Options for reconciling TrafficPolicies
-	TrafficPolicies reconcile.Options
-	// Options for reconciling AccessPolicies
-	AccessPolicies reconcile.Options
-	// Options for reconciling VirtualMeshes
-	VirtualMeshes reconcile.Options
-
 	// Options for reconciling WasmDeployments
 	WasmDeployments reconcile.Options
+	// Options for reconciling RateLimiterServerConfigs
+	RateLimiterServerConfigs reconcile.Options
 	// Options for reconciling VirtualDestinations
 	VirtualDestinations reconcile.Options
 	// Options for reconciling VirtualGateways
@@ -414,6 +404,23 @@ type LocalReconcileOptions struct {
 	RouteTables reconcile.Options
 	// Options for reconciling ServiceDependencies
 	ServiceDependencies reconcile.Options
+
+	// Options for reconciling TrafficPolicies
+	TrafficPolicies reconcile.Options
+	// Options for reconciling AccessPolicies
+	AccessPolicies reconcile.Options
+	// Options for reconciling VirtualMeshes
+	VirtualMeshes reconcile.Options
+
+	// Options for reconciling Settings
+	Settings reconcile.Options
+
+	// Options for reconciling Destinations
+	Destinations reconcile.Options
+	// Options for reconciling Workloads
+	Workloads reconcile.Options
+	// Options for reconciling Meshes
+	Meshes reconcile.Options
 
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
@@ -432,102 +439,24 @@ type localInputReconciler struct {
 	base input.InputReconciler
 }
 
-func (r *localInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileDestinationDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileWorkloadDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileMeshDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileTrafficPolicy(obj *networking_mesh_gloo_solo_io_v1.TrafficPolicy) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileAccessPolicy(obj *networking_mesh_gloo_solo_io_v1.AccessPolicy) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1.VirtualMesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
 func (r *localInputReconciler) ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *localInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileRateLimiterServerConfigDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -593,6 +522,97 @@ func (r *localInputReconciler) ReconcileServiceDependency(obj *networking_enterp
 }
 
 func (r *localInputReconciler) ReconcileServiceDependencyDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileTrafficPolicy(obj *networking_mesh_gloo_solo_io_v1.TrafficPolicy) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileAccessPolicy(obj *networking_mesh_gloo_solo_io_v1.AccessPolicy) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1.VirtualMesh) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileDestinationDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileWorkloadDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileMeshDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

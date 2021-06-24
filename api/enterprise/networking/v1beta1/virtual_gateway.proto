@@ -4,14 +4,17 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf/csrf.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/extauth/extauth.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
+
+import "encoding/protobuf/cue/cue.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -34,7 +37,7 @@ message VirtualGatewaySpec {
     repeated .common.mesh.gloo.solo.io.WorkloadSelector deploy_to_sidecars = 2;
 
     // Each Gateway must implement one or more ConnectionHandlers.
-    // A ConnectionHandler instructs the gateway how to handle clients 
+    // A ConnectionHandler instructs the gateway how to handle clients
     // which have connected to the specified bind address.
     // Typically `connectionHandlers` will consist of a single `http` handler
     // which serves HTTP Routes defined in a set of VirtualHosts.
@@ -43,7 +46,7 @@ message VirtualGatewaySpec {
     repeated ConnectionHandler connection_handlers = 3;
 
     // Options applied to all clients who connect to this gateway
-    GatewayOptions options = 5;
+    GatewayOptions options = 4;
 
     // Options for deploying the VirtualGateway to an Istio Ingress Gateway
     message DeployToIngressGateway {
@@ -69,7 +72,7 @@ message VirtualGatewaySpec {
     message ConnectionHandler {
         // Additional options for matching a connection to a specific gateway.
         // This is required when more than one `connectionHandler` is specified for a single gateway.
-        // Typically this is used to serve different 
+        // Typically this is used to serve different
         ConnectionMatch connection_match = 1;
 
         // The type of routes this handler will serve.
@@ -86,7 +89,7 @@ message VirtualGatewaySpec {
         message ConnectionMatch {
             // Look at what Envoy exposes, put them all(maybe?) here
             // Should expose everything we can do with Envoy, ideally.
-            
+
             // Protocol
             string transport_protocol = 1;
 
@@ -111,10 +114,10 @@ message VirtualGatewaySpec {
 
             // Restricts filter from being added to the corresponding Envoy Listener unless they are explicitly configured
             // in the connection handler options
-            bool strict_filter_management = 8;
+            bool strict_filter_management = 2;
 
             // enable PROXY protocol for this connection handler.
-            bool enable_proxy_protocol = 4;
+            bool enable_proxy_protocol = 3;
 
             message TlsTerminationOptions {
                 // If specified, the route will match against whether or not a certificate is presented.
@@ -130,17 +133,18 @@ message VirtualGatewaySpec {
         message HttpRoutes {
 
             repeated RouteSpecifier route_config = 1;
-            
+
             // HTTP Listener Options // Root level RouteTable + VirtualHost + routes level
             HttpOptions route_options = 8;
-            
+
             message RouteSpecifier {
                 oneof route_type{
                     // RouteSelector is used to specify which VirtualHosts should be attached to this gateway.
-                    .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 1;
+                    .core.skv2.solo.io.ObjectSelector virtual_host_selector = 1;
 
                     // VirtualHost allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
-                    VirtualHostSpec virtual_host = 2;
+                    // Note that Kubernetes admission validation of inline virtual hosts is disabled. For production, the use of `virtualHostSelector` is recommended.
+                    VirtualHostSpec virtual_host = 2 [(cue.opt).disable_openapi_validation = true];
                 }
 
             }
@@ -159,8 +163,15 @@ message VirtualGatewaySpec {
                 // enable [Envoy health checks](https://www.envoyproxy.io/docs/envoy/v1.7.0/api-v2/config/filter/http/health_check/v2/health_check.proto) on this listener
                 // healthcheck.options.gloo.solo.io.HealthCheck health_check = 4;
 
-                // Configure the Envoy based CSRF filter for this Gateway.
-                .networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
+                // Configure Global CSRF options for clients connected to this Gateway.
+                .csrf.networking.mesh.gloo.solo.io.CsrfPolicy csrf = 2;
+
+                // Configure Global Rate limit options for clients connected to this Gateway.
+                // Rate limits must be configured on specific routes in order to enable rate limiting for a Gateway.
+                .ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit rate_limit = 3;
+
+                // Configure the Global Extauth options for clients connected to this Gateway
+                .extauth.networking.mesh.gloo.solo.io.GatewayExtauth extauth = 4;
 
             }
         }
@@ -190,15 +201,15 @@ message VirtualGatewaySpec {
                         // SSLFiles reference paths to certificates which are local to the proxy
                         SSLFiles ssl_files = 2;
                         // Use secret discovery service.
-                        SDSConfig sds = 4;
+                        SDSConfig sds = 3;
 
                         // SSLFiles reference paths to certificates which can be read by the proxy off of its local filesystem
                     }
 
-                    
+
 
                     // optional. the SNI domains that should be considered for TLS connections
-                    repeated string sni_domains = 3;
+                    repeated string sni_domains = 4;
                     
                     // Verify that the Subject Alternative Name in the peer certificate is one of the specified values.
                     // note that a root_ca must be provided if this option is used.
@@ -223,21 +234,21 @@ message VirtualGatewaySpec {
                         enum ProtocolVersion {
                             // Envoy will choose the optimal TLS version.
                             TLS_AUTO = 0;
-                        
+
                             // TLS 1.0
                             TLSv1_0 = 1;
-                        
+
                             // TLS 1.1
                             TLSv1_1 = 2;
-                        
+
                             // TLS 1.2
                             TLSv1_2 = 3;
-                        
+
                             // TLS 1.3
                             TLSv1_3 = 4;
                         }
 
-                        
+
                         ProtocolVersion minimum_protocol_version = 1;
                         ProtocolVersion maximum_protocol_version = 2;
                         repeated string cipher_suites = 3;
@@ -257,7 +268,7 @@ message VirtualGatewaySpec {
                         // Reference to a gloo mesh VirtualDestination
                         .core.skv2.solo.io.ObjectRef virtual  = 2;
 
-                        // Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as 
+                        // Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
                         // each gateway workload which routes to this destination.
                         .core.skv2.solo.io.ClusterObjectRef kube  = 3;
 
@@ -271,7 +282,7 @@ message VirtualGatewaySpec {
                     // If omitted, all destinations in the route will be load balanced between evenly.
                     uint32 weight = 5;
                 }
-            
+
             }
 
              message TcpOptions {
@@ -282,11 +293,11 @@ message VirtualGatewaySpec {
                     // See here for more information: https://www.envoyproxy.io/docs/envoy/v1.10.0/api-v2/config/filter/network/tcp_proxy/v2/tcp_proxy.proto#envoy-api-msg-config-filter-network-tcp-proxy-v2-tcpproxy
                     google.protobuf.UInt32Value max_connect_attempts = 1;
                     google.protobuf.Duration idle_timeout = 2;
-                    
+
                     // If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP
                     // payloads over a shared HTTP tunnel. If this message is absent, the payload
                     // will be proxied upstream as per usual.
-                    TunnelingConfig tunneling_config = 12;
+                    TunnelingConfig tunneling_config = 3;
 
                     // Configuration for tunneling TCP over other transports or application layers.
                     message TunnelingConfig {
@@ -300,10 +311,10 @@ message VirtualGatewaySpec {
         }
     }
 
-    // TODO: Fill in more options 
+    // TODO: Fill in more options
     message GatewayOptions {
         // gateway-level options (only apply to gateway/listener)
-        
+
         // configure access logging service for all traffic on this gateway
         // als.options.gloo.solo.io.AccessLoggingService access_logging_service = 2;
 
@@ -336,13 +347,13 @@ message VirtualGatewayStatus{
 
 
     // List of Istio Gateway CRs created by this VirtualGateway in each cluster
-    map<string, .common.mesh.gloo.solo.io.ObjectRefList> created_istio_gateways = 7;
+    map<string, .core.skv2.solo.io.ObjectRefList> created_istio_gateways = 7;
 
     // Relationships between objects
     // on Gw -> RTs selected
     // on Rts -> GWs selecting us + DRTs we sekect
     // on DRT -> which RTs select us
-    
+
     // Optionally (via flag?) show DRTs on GW.
 
     // Optionally, show additive paths on Rts/DRTs. (might be too much, status too big. Further research needed)
@@ -362,10 +373,9 @@ message SelectedGatewayWorkload {
     // the cluster where the gateway workload is running
     string cluster_name = 3;
     // the labels used to identify the gateway workload
-    map<string, string> labels = 5;
-
+    map<string, string> labels = 4;
     // the external URL by which the gateway can be accessed on the given workload, if it exists
-    string external_url = 4;
+    string external_url = 5;
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.
@@ -376,12 +386,12 @@ message SDSConfig {
         // Call credentials.
         CallCredentials call_credentials = 2;
         // The name of the sds cluster in envoy
-        string cluster_name = 5;
+        string cluster_name = 3;
     }
     // The name of the secret containing the certificate
-    string certificates_secret_name = 3;
+    string certificates_secret_name = 4;
     // The name of secret containing the validation context (i.e. root ca)
-    string validation_context_name = 4;
+    string validation_context_name = 5;
 
     message CallCredentials {
         // Call credentials are coming from a file,

@@ -3,6 +3,9 @@ module github.com/solo-io/gloo-mesh
 go 1.16
 
 replace (
+	// pinned to solo-io's fork of cue version 95a50cebaffb4bdba8c544601d8fb867990ad1ad
+	cuelang.org/go => github.com/solo-io/cue v0.4.1-0.20210622213027-95a50cebaffb
+
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.
@@ -27,6 +30,7 @@ replace (
 require (
 	cloud.google.com/go v0.80.0 // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.3.0 // indirect
+	cuelang.org/go v0.4.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
@@ -81,7 +85,8 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.20
+	github.com/solo-io/skv2 v0.17.23
+	github.com/solo-io/solo-apis v1.6.30
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.3
@@ -103,7 +108,7 @@ require (
 	k8s.io/api v0.21.0
 	k8s.io/apiextensions-apiserver v0.21.0
 	k8s.io/apimachinery v0.21.0
-	k8s.io/client-go v0.21.0
+	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/kubernetes v1.13.0
 	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 	sigs.k8s.io/controller-runtime v0.9.0-alpha.1.0.20210412152200-442d3cad1e99

@@ -1,5 +1,6 @@
 Name|Version|License
 ---|---|---
+[cuelang.org/go](https://cuelang.org/go)|v0.4.1-0.20210622213027-95a50cebaffb|Apache License 2.0
 [Masterminds/semver](https://github.com/Masterminds/semver)|v1.5.0|MIT License
 [aws/aws-app-mesh-controller-for-k8s](https://github.com/aws/aws-app-mesh-controller-for-k8s)|v1.1.1|Apache License 2.0
 [aws/aws-sdk-go](https://github.com/aws/aws-sdk-go)|v1.38.3|Apache License 2.0

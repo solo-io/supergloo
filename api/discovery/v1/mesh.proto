@@ -58,6 +58,7 @@ message MeshSpec {
         // DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
         // Describes the ingress gateway.
         message IngressGatewayInfo {
+            // TODO: remove name and namespace as ingress gw info now contains a ref
             // The name of the Ingress Gateway Service
             string name = 8;
 
@@ -137,31 +138,6 @@ message MeshSpec {
         MeshInstallation installation = 1;
     }
 
-    /*
-        Describes the Kubernetes cluster on which the control plane for this mesh is deployed.
-        Only self-hosted control planes such as Istio, Linkerd, OSM, and ConsulConnect will have installation metadata.
-    */
-    message MeshInstallation {
-
-        // Namespace in which the control plane has been installed.
-        string namespace = 1;
-
-        // The Gloo Mesh cluster in which the control plane has been installed.
-        string cluster = 2;
-
-        // The labels on the control plane pods (read from the deployment).
-        map<string, string> pod_labels = 3;
-
-        // The version of the Mesh that has been installed, which is determined using the image tag on the
-        // mesh's primary control plane image (e.g. the istio-pilot image tag).
-        string version = 4;
-
-        // The region of the cluster in which the control plane has been installed, which is
-        // determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
-        // on any Kubernetes node associated with the cluster of this mesh.
-        string region = 5;
-    }
-
     // Describes the Gloo Mesh agent which may be installed
     // to the managed cluster containing the mesh control plane.
     message AgentInfo {
@@ -172,6 +148,31 @@ message MeshSpec {
 
 }
 
+/*
+    Describes the Kubernetes cluster on which the control plane for this mesh is deployed.
+    Only self-hosted control planes such as Istio, Linkerd, OSM, and ConsulConnect will have installation metadata.
+*/
+message MeshInstallation {
+
+    // Namespace in which the control plane has been installed.
+    string namespace = 1;
+
+    // The Gloo Mesh cluster in which the control plane has been installed.
+    string cluster = 2;
+
+    // The labels on the control plane pods (read from the deployment).
+    map<string, string> pod_labels = 3;
+
+    // The version of the Mesh that has been installed, which is determined using the image tag on the
+    // mesh's primary control plane image (e.g. the istio-pilot image tag).
+    string version = 4;
+
+    // The region of the cluster in which the control plane has been installed, which is
+    // determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+    // on any Kubernetes node associated with the cluster of this mesh.
+    string region = 5;
+}
+
 message MeshStatus {
 
     // The observed generation of the Mesh.
@@ -179,10 +180,10 @@ message MeshStatus {
     // has processed the latest version of the Mesh.
     int64 observed_generation = 1;
 
-    // The VirtualMesh, if any, which contains this mesh.
+    // The VirtualMesh, if any, which contains this Mesh.
     AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // The VirtualDestinations, if any, which apply to this mesh.
+    // The VirtualDestinations, if any, which apply to this Mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.

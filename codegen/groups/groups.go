@@ -37,6 +37,7 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate
 
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
+	{Kind: "RateLimiterServerConfig"},
 	{Kind: "VirtualDestination"},
 	{Kind: "VirtualGateway"},
 	{Kind: "VirtualHost"},
@@ -54,10 +55,10 @@ var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceT
 })
 
 var GlooMeshGroups = []model.Group{
+	GlooMeshEnterpriseNetworkingGroup,
+	GlooMeshNetworkingGroup,
 	GlooMeshSettingsGroup,
 	GlooMeshDiscoveryGroup,
-	GlooMeshNetworkingGroup,
-	GlooMeshEnterpriseNetworkingGroup,
 	GlooMeshEnterpriseObservabilityGroup,
 	GlooMeshEnterpriseRbacGroup,
 }

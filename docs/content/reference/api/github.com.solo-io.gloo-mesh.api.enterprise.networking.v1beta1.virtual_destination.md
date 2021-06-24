@@ -64,7 +64,7 @@ A VirtualDestination creates a new hostname to which client workloads can send r
   | virtualMesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The VirtualMesh that this VirtualDestination will be visible to. |
   | meshList | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.MeshList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.MeshList" >}}) |  | The Meshes that this VirtualDestination will be visible to. If multiple meshes are specified, they must all belong to the same VirtualMesh. |
   | static | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingDestinationList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingDestinationList" >}}) |  | Failover priority is determined by an explicitly provided static ordering of Destinations. |
-  | localized | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig" >}}) |  | Failover priority is determined by the localities of the traffic source and destination. |
+  | localized | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig" >}}) |  | Failover priority is determined by the localities of the traffic source and Destination. |
   
 
 
@@ -96,7 +96,7 @@ Enables failover based on locality. When a client workload makes a request to th
 | ----- | ---- | ----- | ----------- |
 | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Selectors for the Destinations backing the VirtualDestination. All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid. Required, cannot be omitted. |
   | failoverDirectives | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective" >}}) | repeated | Directives describing the locality failover behavior. |
-  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected services. If not set will default to the folling: consecutiveGatewayErrors: 10 consecutive5XXErrors: 10 interval: 5s baseEjectionTime: 120s |
+  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected services. If not set will default to the following: consecutiveGatewayErrors: 10 consecutive5XXErrors: 10 interval: 5s baseEjectionTime: 120s |
   
 
 
@@ -154,12 +154,12 @@ A list of Mesh references.
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.Port"></a>
 
 ### VirtualDestinationSpec.Port
-VirtualDestination port infomation. Contains information about which port to listen on, as well as which backend port to target.
+VirtualDestination port information. Contains information about which port to listen on, as well as which backend port to target.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| number | uint32 |  | REQUIRED: Port number which the VirutalDestination will listen on. |
+| number | uint32 |  | REQUIRED: Port number which the VirtualDestination will listen on. |
   | protocol | string |  | OPTIONAL: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`. Default: HTTP |
   | targetName | string |  | If the target_name is specified, the VirtualDestination will attempt to find a port by this name on all backing services |
   | targetNumber | uint32 |  | If the target_number is specified, the VirtualDestination will attempt to find a port by this number on all backing services |
@@ -182,7 +182,7 @@ VirtualDestination port infomation. Contains information about which port to lis
   | meshes | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.MeshesEntry" >}}) | repeated | The status of the VirtualDestination for each Mesh to which it has been exported to. |
   | selectedDestinations | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedDestinations]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedDestinations" >}}) | repeated | The Destinations that comprise this VirtualDestination. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
-  | requiredSubsets | [][discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets" >}}) | repeated | The set of TrafficPolicies that reference subsets on this VirtualDestination as a traffic shift. |
+  | requiredSubsets | [][discovery.mesh.gloo.solo.io.RequiredSubsets]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.RequiredSubsets" >}}) | repeated | The set of TrafficPolicies that reference subsets on this VirtualDestination as a traffic shift. |
   
 
 

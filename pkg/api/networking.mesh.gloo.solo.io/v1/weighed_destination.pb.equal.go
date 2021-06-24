@@ -92,17 +92,17 @@ func (m *WeightedDestination) Equal(that interface{}) bool {
 			}
 		}
 
-	case *WeightedDestination_Static:
-		if _, ok := target.DestinationType.(*WeightedDestination_Static); !ok {
+	case *WeightedDestination_StaticDestination:
+		if _, ok := target.DestinationType.(*WeightedDestination_StaticDestination); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetStatic()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetStatic()) {
+		if h, ok := interface{}(m.GetStaticDestination()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetStaticDestination()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetStatic(), target.GetStatic()) {
+			if !proto.Equal(m.GetStaticDestination(), target.GetStaticDestination()) {
 				return false
 			}
 		}

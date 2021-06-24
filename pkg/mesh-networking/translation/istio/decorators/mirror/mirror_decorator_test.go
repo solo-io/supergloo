@@ -159,7 +159,7 @@ var _ = Describe("MirrorDecorator", func() {
 			},
 		}
 
-		sourceMeshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
+		sourceMeshInstallation := &discoveryv1.MeshInstallation{
 			Cluster: "federated-cluster-name",
 		}
 		globalHostname := "name.namespace.svc.local-cluster.global"

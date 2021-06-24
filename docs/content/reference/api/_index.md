@@ -24,6 +24,10 @@ These docs describe Gloo Mesh CRDs.
 
 
 
+### csrf.networking.mesh.gloo.solo.io
+
+
+
 ### discovery.mesh.gloo.solo.io
 
   - [Destination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec" >}})
@@ -34,6 +38,10 @@ These docs describe Gloo Mesh CRDs.
 
 
 
+### extauth.networking.mesh.gloo.solo.io
+
+
+
 ### extensions.networking.mesh.gloo.solo.io
 
   - [extensions.networking.mesh.gloo.solo.io.NetworkingExtensions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1beta1.networking_extensions#extensions.networking.mesh.gloo.solo.io.NetworkingExtensions" >}})
@@ -41,6 +49,8 @@ These docs describe Gloo Mesh CRDs.
 
 
 ### networking.enterprise.mesh.gloo.solo.io
+
+  - [RateLimiterServerConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigSpec" >}})
 
   - [RouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec" >}})
 
@@ -62,8 +72,6 @@ These docs describe Gloo Mesh CRDs.
 
   - [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy#networking.mesh.gloo.solo.io.AccessPolicySpec" >}})
 
-  - [DestinationPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.destination_policy#networking.mesh.gloo.solo.io.DestinationPolicySpec" >}})
-
   - [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}})
 
   - [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}})
@@ -73,6 +81,10 @@ These docs describe Gloo Mesh CRDs.
 ### observability.enterprise.mesh.gloo.solo.io
 
   - [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1.access_logging#observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec" >}})
+
+
+
+### ratelimit.networking.mesh.gloo.solo.io
 
 
 

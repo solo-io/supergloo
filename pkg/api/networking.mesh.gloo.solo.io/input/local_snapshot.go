@@ -3,19 +3,20 @@
 //go:generate mockgen -source ./local_snapshot.go -destination mocks/local_snapshot.go
 
 // The Input LocalSnapshot contains the set of all:
-// * Settings
-// * Destinations
-// * Workloads
-// * Meshes
-// * TrafficPolicies
-// * AccessPolicies
-// * VirtualMeshes
 // * WasmDeployments
+// * RateLimiterServerConfigs
 // * VirtualDestinations
 // * VirtualGateways
 // * VirtualHosts
 // * RouteTables
 // * ServiceDependencies
+// * TrafficPolicies
+// * AccessPolicies
+// * VirtualMeshes
+// * Settings
+// * Destinations
+// * Workloads
+// * Meshes
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -46,6 +47,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	networking_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
+	networking_enterprise_mesh_gloo_solo_io_v1beta1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
+	networking_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
+
+	networking_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networking_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networking_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
+
 	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	settings_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	settings_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
@@ -53,14 +62,6 @@ import (
 	discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discovery_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discovery_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
-
-	networking_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
-	networking_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
-	networking_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
-
-	networking_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
-	networking_enterprise_mesh_gloo_solo_io_v1beta1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
-	networking_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 
 	observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
@@ -79,47 +80,14 @@ import (
 var LocalSnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
-		Group:   "settings.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Settings",
-	},
-
-	schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Destination",
-	},
-	schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Workload",
-	},
-	schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Mesh",
-	},
-
-	schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "TrafficPolicy",
-	},
-	schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "AccessPolicy",
-	},
-	schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "VirtualMesh",
-	},
-
-	schema.GroupVersionKind{
 		Group:   "networking.enterprise.mesh.gloo.solo.io",
 		Version: "v1beta1",
 		Kind:    "WasmDeployment",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "RateLimiterServerConfig",
 	},
 	schema.GroupVersionKind{
 		Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -148,6 +116,44 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	},
 
 	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "TrafficPolicy",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "AccessPolicy",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "VirtualMesh",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "settings.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "Settings",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "Destination",
+	},
+	schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "Workload",
+	},
+	schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1",
+		Kind:    "Mesh",
+	},
+
+	schema.GroupVersionKind{
 		Group:   "observability.enterprise.mesh.gloo.solo.io",
 		Version: "v1",
 		Kind:    "AccessLogRecord",
@@ -169,25 +175,10 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 // the snapshot of input resources consumed by translation
 type LocalSnapshot interface {
 
-	// return the set of input Settings
-	Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet
-
-	// return the set of input Destinations
-	Destinations() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
-	// return the set of input Workloads
-	Workloads() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
-	// return the set of input Meshes
-	Meshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet
-
-	// return the set of input TrafficPolicies
-	TrafficPolicies() networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
-	// return the set of input AccessPolicies
-	AccessPolicies() networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
-	// return the set of input VirtualMeshes
-	VirtualMeshes() networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
-
 	// return the set of input WasmDeployments
 	WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
+	// return the set of input RateLimiterServerConfigs
+	RateLimiterServerConfigs() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet
 	// return the set of input VirtualDestinations
 	VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
 	// return the set of input VirtualGateways
@@ -198,6 +189,23 @@ type LocalSnapshot interface {
 	RouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
 	// return the set of input ServiceDependencies
 	ServiceDependencies() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
+
+	// return the set of input TrafficPolicies
+	TrafficPolicies() networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
+	// return the set of input AccessPolicies
+	AccessPolicies() networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
+	// return the set of input VirtualMeshes
+	VirtualMeshes() networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
+
+	// return the set of input Settings
+	Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet
+
+	// return the set of input Destinations
+	Destinations() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
+	// return the set of input Workloads
+	Workloads() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
+	// return the set of input Meshes
+	Meshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 
 	// return the set of input AccessLogRecords
 	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
@@ -220,25 +228,10 @@ type LocalSnapshot interface {
 // options for syncing input object statuses
 type LocalSyncStatusOptions struct {
 
-	// sync status of Settings objects
-	Settings bool
-
-	// sync status of Destination objects
-	Destination bool
-	// sync status of Workload objects
-	Workload bool
-	// sync status of Mesh objects
-	Mesh bool
-
-	// sync status of TrafficPolicy objects
-	TrafficPolicy bool
-	// sync status of AccessPolicy objects
-	AccessPolicy bool
-	// sync status of VirtualMesh objects
-	VirtualMesh bool
-
 	// sync status of WasmDeployment objects
 	WasmDeployment bool
+	// sync status of RateLimiterServerConfig objects
+	RateLimiterServerConfig bool
 	// sync status of VirtualDestination objects
 	VirtualDestination bool
 	// sync status of VirtualGateway objects
@@ -249,6 +242,23 @@ type LocalSyncStatusOptions struct {
 	RouteTable bool
 	// sync status of ServiceDependency objects
 	ServiceDependency bool
+
+	// sync status of TrafficPolicy objects
+	TrafficPolicy bool
+	// sync status of AccessPolicy objects
+	AccessPolicy bool
+	// sync status of VirtualMesh objects
+	VirtualMesh bool
+
+	// sync status of Settings objects
+	Settings bool
+
+	// sync status of Destination objects
+	Destination bool
+	// sync status of Workload objects
+	Workload bool
+	// sync status of Mesh objects
+	Mesh bool
 
 	// sync status of AccessLogRecord objects
 	AccessLogRecord bool
@@ -263,22 +273,23 @@ type LocalSyncStatusOptions struct {
 type snapshotLocal struct {
 	name string
 
-	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
-
-	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
-	workloads    discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
-	meshes       discovery_mesh_gloo_solo_io_v1_sets.MeshSet
+	wasmDeployments          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
+	rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet
+	virtualDestinations      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	virtualGateways          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
+	virtualHosts             networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
+	routeTables              networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	serviceDependencies      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
 	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
 	virtualMeshes   networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
 
-	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
-	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
-	virtualGateways     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
-	virtualHosts        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
-	routeTables         networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
-	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
+	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
+
+	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
+	workloads    discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
+	meshes       discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -290,22 +301,23 @@ type snapshotLocal struct {
 func NewLocalSnapshot(
 	name string,
 
-	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
-
-	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
-	workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
-	meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
-
-	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet,
-	accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet,
-	virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet,
-
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet,
+	rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet,
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet,
 	virtualGateways networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet,
 	virtualHosts networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet,
 	routeTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet,
 	serviceDependencies networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet,
+
+	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet,
+	accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet,
+	virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet,
+
+	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
+
+	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
+	workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
+	meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
 
@@ -317,22 +329,23 @@ func NewLocalSnapshot(
 	return &snapshotLocal{
 		name: name,
 
-		settings:            settings,
-		destinations:        destinations,
-		workloads:           workloads,
-		meshes:              meshes,
-		trafficPolicies:     trafficPolicies,
-		accessPolicies:      accessPolicies,
-		virtualMeshes:       virtualMeshes,
-		wasmDeployments:     wasmDeployments,
-		virtualDestinations: virtualDestinations,
-		virtualGateways:     virtualGateways,
-		virtualHosts:        virtualHosts,
-		routeTables:         routeTables,
-		serviceDependencies: serviceDependencies,
-		accessLogRecords:    accessLogRecords,
-		secrets:             secrets,
-		kubernetesClusters:  kubernetesClusters,
+		wasmDeployments:          wasmDeployments,
+		rateLimiterServerConfigs: rateLimiterServerConfigs,
+		virtualDestinations:      virtualDestinations,
+		virtualGateways:          virtualGateways,
+		virtualHosts:             virtualHosts,
+		routeTables:              routeTables,
+		serviceDependencies:      serviceDependencies,
+		trafficPolicies:          trafficPolicies,
+		accessPolicies:           accessPolicies,
+		virtualMeshes:            virtualMeshes,
+		settings:                 settings,
+		destinations:             destinations,
+		workloads:                workloads,
+		meshes:                   meshes,
+		accessLogRecords:         accessLogRecords,
+		secrets:                  secrets,
+		kubernetesClusters:       kubernetesClusters,
 	}
 }
 
@@ -341,22 +354,23 @@ func NewLocalSnapshotFromGeneric(
 	genericSnapshot resource.ClusterSnapshot,
 ) LocalSnapshot {
 
-	settingsSet := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
-
-	destinationSet := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
-	workloadSet := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
-	meshSet := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
-
-	trafficPolicySet := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
-	accessPolicySet := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
-	virtualMeshSet := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
-
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
+	rateLimiterServerConfigSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
 	virtualDestinationSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGatewaySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHostSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTableSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
 	serviceDependencySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
+
+	trafficPolicySet := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
+	accessPolicySet := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
+	virtualMeshSet := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
+
+	settingsSet := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
+
+	destinationSet := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
+	workloadSet := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
+	meshSet := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -366,72 +380,6 @@ func NewLocalSnapshotFromGeneric(
 
 	for _, snapshot := range genericSnapshot {
 
-		settings := snapshot[schema.GroupVersionKind{
-			Group:   "settings.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Settings",
-		}]
-
-		for _, settings := range settings {
-			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1_types.Settings))
-		}
-
-		destinations := snapshot[schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Destination",
-		}]
-
-		for _, destination := range destinations {
-			destinationSet.Insert(destination.(*discovery_mesh_gloo_solo_io_v1_types.Destination))
-		}
-		workloads := snapshot[schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Workload",
-		}]
-
-		for _, workload := range workloads {
-			workloadSet.Insert(workload.(*discovery_mesh_gloo_solo_io_v1_types.Workload))
-		}
-		meshes := snapshot[schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Mesh",
-		}]
-
-		for _, mesh := range meshes {
-			meshSet.Insert(mesh.(*discovery_mesh_gloo_solo_io_v1_types.Mesh))
-		}
-
-		trafficPolicies := snapshot[schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "TrafficPolicy",
-		}]
-
-		for _, trafficPolicy := range trafficPolicies {
-			trafficPolicySet.Insert(trafficPolicy.(*networking_mesh_gloo_solo_io_v1_types.TrafficPolicy))
-		}
-		accessPolicies := snapshot[schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "AccessPolicy",
-		}]
-
-		for _, accessPolicy := range accessPolicies {
-			accessPolicySet.Insert(accessPolicy.(*networking_mesh_gloo_solo_io_v1_types.AccessPolicy))
-		}
-		virtualMeshes := snapshot[schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "VirtualMesh",
-		}]
-
-		for _, virtualMesh := range virtualMeshes {
-			virtualMeshSet.Insert(virtualMesh.(*networking_mesh_gloo_solo_io_v1_types.VirtualMesh))
-		}
-
 		wasmDeployments := snapshot[schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
 			Version: "v1beta1",
@@ -440,6 +388,15 @@ func NewLocalSnapshotFromGeneric(
 
 		for _, wasmDeployment := range wasmDeployments {
 			wasmDeploymentSet.Insert(wasmDeployment.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.WasmDeployment))
+		}
+		rateLimiterServerConfigs := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "RateLimiterServerConfig",
+		}]
+
+		for _, rateLimiterServerConfig := range rateLimiterServerConfigs {
+			rateLimiterServerConfigSet.Insert(rateLimiterServerConfig.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimiterServerConfig))
 		}
 		virtualDestinations := snapshot[schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -487,6 +444,72 @@ func NewLocalSnapshotFromGeneric(
 			serviceDependencySet.Insert(serviceDependency.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency))
 		}
 
+		trafficPolicies := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "TrafficPolicy",
+		}]
+
+		for _, trafficPolicy := range trafficPolicies {
+			trafficPolicySet.Insert(trafficPolicy.(*networking_mesh_gloo_solo_io_v1_types.TrafficPolicy))
+		}
+		accessPolicies := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "AccessPolicy",
+		}]
+
+		for _, accessPolicy := range accessPolicies {
+			accessPolicySet.Insert(accessPolicy.(*networking_mesh_gloo_solo_io_v1_types.AccessPolicy))
+		}
+		virtualMeshes := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "VirtualMesh",
+		}]
+
+		for _, virtualMesh := range virtualMeshes {
+			virtualMeshSet.Insert(virtualMesh.(*networking_mesh_gloo_solo_io_v1_types.VirtualMesh))
+		}
+
+		settings := snapshot[schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Settings",
+		}]
+
+		for _, settings := range settings {
+			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1_types.Settings))
+		}
+
+		destinations := snapshot[schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Destination",
+		}]
+
+		for _, destination := range destinations {
+			destinationSet.Insert(destination.(*discovery_mesh_gloo_solo_io_v1_types.Destination))
+		}
+		workloads := snapshot[schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Workload",
+		}]
+
+		for _, workload := range workloads {
+			workloadSet.Insert(workload.(*discovery_mesh_gloo_solo_io_v1_types.Workload))
+		}
+		meshes := snapshot[schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Mesh",
+		}]
+
+		for _, mesh := range meshes {
+			meshSet.Insert(mesh.(*discovery_mesh_gloo_solo_io_v1_types.Mesh))
+		}
+
 		accessLogRecords := snapshot[schema.GroupVersionKind{
 			Group:   "observability.enterprise.mesh.gloo.solo.io",
 			Version: "v1",
@@ -520,55 +543,32 @@ func NewLocalSnapshotFromGeneric(
 	}
 	return NewLocalSnapshot(
 		name,
-		settingsSet,
-		destinationSet,
-		workloadSet,
-		meshSet,
-		trafficPolicySet,
-		accessPolicySet,
-		virtualMeshSet,
 		wasmDeploymentSet,
+		rateLimiterServerConfigSet,
 		virtualDestinationSet,
 		virtualGatewaySet,
 		virtualHostSet,
 		routeTableSet,
 		serviceDependencySet,
+		trafficPolicySet,
+		accessPolicySet,
+		virtualMeshSet,
+		settingsSet,
+		destinationSet,
+		workloadSet,
+		meshSet,
 		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
 	)
 }
 
-func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet {
-	return s.settings
-}
-
-func (s snapshotLocal) Destinations() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet {
-	return s.destinations
-}
-
-func (s snapshotLocal) Workloads() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet {
-	return s.workloads
-}
-
-func (s snapshotLocal) Meshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet {
-	return s.meshes
-}
-
-func (s snapshotLocal) TrafficPolicies() networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet {
-	return s.trafficPolicies
-}
-
-func (s snapshotLocal) AccessPolicies() networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet {
-	return s.accessPolicies
-}
-
-func (s snapshotLocal) VirtualMeshes() networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet {
-	return s.virtualMeshes
-}
-
 func (s snapshotLocal) WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet {
 	return s.wasmDeployments
+}
+
+func (s snapshotLocal) RateLimiterServerConfigs() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet {
+	return s.rateLimiterServerConfigs
 }
 
 func (s snapshotLocal) VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet {
@@ -591,6 +591,34 @@ func (s snapshotLocal) ServiceDependencies() networking_enterprise_mesh_gloo_sol
 	return s.serviceDependencies
 }
 
+func (s snapshotLocal) TrafficPolicies() networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet {
+	return s.trafficPolicies
+}
+
+func (s snapshotLocal) AccessPolicies() networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet {
+	return s.accessPolicies
+}
+
+func (s snapshotLocal) VirtualMeshes() networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet {
+	return s.virtualMeshes
+}
+
+func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet {
+	return s.settings
+}
+
+func (s snapshotLocal) Destinations() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet {
+	return s.destinations
+}
+
+func (s snapshotLocal) Workloads() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet {
+	return s.workloads
+}
+
+func (s snapshotLocal) Meshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet {
+	return s.meshes
+}
+
 func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet {
 	return s.accessLogRecords
 }
@@ -606,95 +634,20 @@ func (s snapshotLocal) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.K
 func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error {
 	var errs error
 
-	if opts.Settings {
-		for _, obj := range s.Settings().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
-	if opts.Destination {
-		for _, obj := range s.Destinations().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.Workload {
-		for _, obj := range s.Workloads().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.Mesh {
-		for _, obj := range s.Meshes().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
-	if opts.TrafficPolicy {
-		for _, obj := range s.TrafficPolicies().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.AccessPolicy {
-		for _, obj := range s.AccessPolicies().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.VirtualMesh {
-		for _, obj := range s.VirtualMeshes().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if opts.WasmDeployment {
 		for _, obj := range s.WasmDeployments().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.RateLimiterServerConfig {
+		for _, obj := range s.RateLimiterServerConfigs().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -755,6 +708,93 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 	}
 	if opts.ServiceDependency {
 		for _, obj := range s.ServiceDependencies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.TrafficPolicy {
+		for _, obj := range s.TrafficPolicies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.AccessPolicy {
+		for _, obj := range s.AccessPolicies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.VirtualMesh {
+		for _, obj := range s.VirtualMeshes().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.Settings {
+		for _, obj := range s.Settings().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.Destination {
+		for _, obj := range s.Destinations().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.Workload {
+		for _, obj := range s.Workloads().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.Mesh {
+		for _, obj := range s.Meshes().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -797,60 +837,15 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
 	var errs error
 
-	if opts.Settings {
-		for _, obj := range s.Settings().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
-	if opts.Destination {
-		for _, obj := range s.Destinations().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.Workload {
-		for _, obj := range s.Workloads().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.Mesh {
-		for _, obj := range s.Meshes().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
-	if opts.TrafficPolicy {
-		for _, obj := range s.TrafficPolicies().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.AccessPolicy {
-		for _, obj := range s.AccessPolicies().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.VirtualMesh {
-		for _, obj := range s.VirtualMeshes().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if opts.WasmDeployment {
 		for _, obj := range s.WasmDeployments().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.RateLimiterServerConfig {
+		for _, obj := range s.RateLimiterServerConfigs().List() {
 			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -892,6 +887,58 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
+	if opts.TrafficPolicy {
+		for _, obj := range s.TrafficPolicies().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.AccessPolicy {
+		for _, obj := range s.AccessPolicies().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.VirtualMesh {
+		for _, obj := range s.VirtualMeshes().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.Settings {
+		for _, obj := range s.Settings().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.Destination {
+		for _, obj := range s.Destinations().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.Workload {
+		for _, obj := range s.Workloads().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.Mesh {
+		for _, obj := range s.Meshes().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
 			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
@@ -913,19 +960,20 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["settings"] = s.settings.List()
-	snapshotMap["destinations"] = s.destinations.List()
-	snapshotMap["workloads"] = s.workloads.List()
-	snapshotMap["meshes"] = s.meshes.List()
-	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
-	snapshotMap["accessPolicies"] = s.accessPolicies.List()
-	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["wasmDeployments"] = s.wasmDeployments.List()
+	snapshotMap["rateLimiterServerConfigs"] = s.rateLimiterServerConfigs.List()
 	snapshotMap["virtualDestinations"] = s.virtualDestinations.List()
 	snapshotMap["virtualGateways"] = s.virtualGateways.List()
 	snapshotMap["virtualHosts"] = s.virtualHosts.List()
 	snapshotMap["routeTables"] = s.routeTables.List()
 	snapshotMap["serviceDependencies"] = s.serviceDependencies.List()
+	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
+	snapshotMap["accessPolicies"] = s.accessPolicies.List()
+	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
+	snapshotMap["settings"] = s.settings.List()
+	snapshotMap["destinations"] = s.destinations.List()
+	snapshotMap["workloads"] = s.workloads.List()
+	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
@@ -940,25 +988,10 @@ type LocalBuilder interface {
 // Options for building a snapshot
 type LocalBuildOptions struct {
 
-	// List options for composing a snapshot from Settings
-	Settings ResourceLocalBuildOptions
-
-	// List options for composing a snapshot from Destinations
-	Destinations ResourceLocalBuildOptions
-	// List options for composing a snapshot from Workloads
-	Workloads ResourceLocalBuildOptions
-	// List options for composing a snapshot from Meshes
-	Meshes ResourceLocalBuildOptions
-
-	// List options for composing a snapshot from TrafficPolicies
-	TrafficPolicies ResourceLocalBuildOptions
-	// List options for composing a snapshot from AccessPolicies
-	AccessPolicies ResourceLocalBuildOptions
-	// List options for composing a snapshot from VirtualMeshes
-	VirtualMeshes ResourceLocalBuildOptions
-
 	// List options for composing a snapshot from WasmDeployments
 	WasmDeployments ResourceLocalBuildOptions
+	// List options for composing a snapshot from RateLimiterServerConfigs
+	RateLimiterServerConfigs ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualDestinations
 	VirtualDestinations ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualGateways
@@ -969,6 +1002,23 @@ type LocalBuildOptions struct {
 	RouteTables ResourceLocalBuildOptions
 	// List options for composing a snapshot from ServiceDependencies
 	ServiceDependencies ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from TrafficPolicies
+	TrafficPolicies ResourceLocalBuildOptions
+	// List options for composing a snapshot from AccessPolicies
+	AccessPolicies ResourceLocalBuildOptions
+	// List options for composing a snapshot from VirtualMeshes
+	VirtualMeshes ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from Settings
+	Settings ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from Destinations
+	Destinations ResourceLocalBuildOptions
+	// List options for composing a snapshot from Workloads
+	Workloads ResourceLocalBuildOptions
+	// List options for composing a snapshot from Meshes
+	Meshes ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from AccessLogRecords
 	AccessLogRecords ResourceLocalBuildOptions
@@ -1009,22 +1059,23 @@ func NewMultiClusterLocalBuilder(
 
 func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
 
-	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
-
-	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
-	workloads := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
-	meshes := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
-
-	trafficPolicies := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
-	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
-	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
-
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
+	rateLimiterServerConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
 	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
+
+	trafficPolicies := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
+	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
+	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
+
+	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
+
+	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
+	workloads := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
+	meshes := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1036,28 +1087,10 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if err := b.insertDestinationsFromCluster(ctx, cluster, destinations, opts.Destinations); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
-			errs = multierror.Append(errs, err)
-		}
 		if err := b.insertWasmDeploymentsFromCluster(ctx, cluster, wasmDeployments, opts.WasmDeployments); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertRateLimiterServerConfigsFromCluster(ctx, cluster, rateLimiterServerConfigs, opts.RateLimiterServerConfigs); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertVirtualDestinationsFromCluster(ctx, cluster, virtualDestinations, opts.VirtualDestinations); err != nil {
@@ -1075,6 +1108,27 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertServiceDependenciesFromCluster(ctx, cluster, serviceDependencies, opts.ServiceDependencies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertDestinationsFromCluster(ctx, cluster, destinations, opts.Destinations); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -1090,322 +1144,26 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	outputSnap := NewLocalSnapshot(
 		name,
 
-		settings,
-		destinations,
-		workloads,
-		meshes,
-		trafficPolicies,
-		accessPolicies,
-		virtualMeshes,
 		wasmDeployments,
+		rateLimiterServerConfigs,
 		virtualDestinations,
 		virtualGateways,
 		virtualHosts,
 		routeTables,
 		serviceDependencies,
+		trafficPolicies,
+		accessPolicies,
+		virtualMeshes,
+		settings,
+		destinations,
+		workloads,
+		meshes,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
 	)
 
 	return outputSnap, errs
-}
-
-func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
-	settingsClient, err := settings_mesh_gloo_solo_io_v1.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "settings.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Settings",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range settingsList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		settings.Insert(item)
-	}
-
-	return nil
-}
-
-func (b *multiClusterLocalBuilder) insertDestinationsFromCluster(ctx context.Context, cluster string, destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet, opts ResourceLocalBuildOptions) error {
-	destinationClient, err := discovery_mesh_gloo_solo_io_v1.NewMulticlusterDestinationClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Destination",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	destinationList, err := destinationClient.ListDestination(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range destinationList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		destinations.Insert(item)
-	}
-
-	return nil
-}
-func (b *multiClusterLocalBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
-	workloadClient, err := discovery_mesh_gloo_solo_io_v1.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Workload",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	workloadList, err := workloadClient.ListWorkload(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range workloadList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		workloads.Insert(item)
-	}
-
-	return nil
-}
-func (b *multiClusterLocalBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet, opts ResourceLocalBuildOptions) error {
-	meshClient, err := discovery_mesh_gloo_solo_io_v1.NewMulticlusterMeshClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Mesh",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range meshList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		meshes.Insert(item)
-	}
-
-	return nil
-}
-
-func (b *multiClusterLocalBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
-	trafficPolicyClient, err := networking_mesh_gloo_solo_io_v1.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "TrafficPolicy",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range trafficPolicyList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		trafficPolicies.Insert(item)
-	}
-
-	return nil
-}
-func (b *multiClusterLocalBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
-	accessPolicyClient, err := networking_mesh_gloo_solo_io_v1.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "AccessPolicy",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range accessPolicyList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		accessPolicies.Insert(item)
-	}
-
-	return nil
-}
-func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
-	virtualMeshClient, err := networking_mesh_gloo_solo_io_v1.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "VirtualMesh",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range virtualMeshList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		virtualMeshes.Insert(item)
-	}
-
-	return nil
 }
 
 func (b *multiClusterLocalBuilder) insertWasmDeploymentsFromCluster(ctx context.Context, cluster string, wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
@@ -1446,6 +1204,48 @@ func (b *multiClusterLocalBuilder) insertWasmDeploymentsFromCluster(ctx context.
 		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
 		wasmDeployments.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertRateLimiterServerConfigsFromCluster(ctx context.Context, cluster string, rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet, opts ResourceLocalBuildOptions) error {
+	rateLimiterServerConfigClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterRateLimiterServerConfigClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "RateLimiterServerConfig",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	rateLimiterServerConfigList, err := rateLimiterServerConfigClient.ListRateLimiterServerConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range rateLimiterServerConfigList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		rateLimiterServerConfigs.Insert(item)
 	}
 
 	return nil
@@ -1661,6 +1461,303 @@ func (b *multiClusterLocalBuilder) insertServiceDependenciesFromCluster(ctx cont
 	return nil
 }
 
+func (b *multiClusterLocalBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
+	trafficPolicyClient, err := networking_mesh_gloo_solo_io_v1.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "TrafficPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range trafficPolicyList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		trafficPolicies.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
+	accessPolicyClient, err := networking_mesh_gloo_solo_io_v1.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "AccessPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range accessPolicyList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		accessPolicies.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+	virtualMeshClient, err := networking_mesh_gloo_solo_io_v1.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualMeshList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualMeshes.Insert(item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+	settingsClient, err := settings_mesh_gloo_solo_io_v1.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		settings.Insert(item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterLocalBuilder) insertDestinationsFromCluster(ctx context.Context, cluster string, destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet, opts ResourceLocalBuildOptions) error {
+	destinationClient, err := discovery_mesh_gloo_solo_io_v1.NewMulticlusterDestinationClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Destination",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	destinationList, err := destinationClient.ListDestination(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range destinationList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		destinations.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
+	workloadClient, err := discovery_mesh_gloo_solo_io_v1.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Workload",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	workloadList, err := workloadClient.ListWorkload(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range workloadList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		workloads.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet, opts ResourceLocalBuildOptions) error {
+	meshClient, err := discovery_mesh_gloo_solo_io_v1.NewMulticlusterMeshClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		meshes.Insert(item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context.Context, cluster string, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 	accessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -1817,22 +1914,23 @@ func NewSingleClusterLocalBuilderWithClusterName(
 
 func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
 
-	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
-
-	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
-	workloads := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
-	meshes := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
-
-	trafficPolicies := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
-	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
-	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
-
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
+	rateLimiterServerConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
 	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
+
+	trafficPolicies := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
+	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
+	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
+
+	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
+
+	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
+	workloads := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
+	meshes := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1842,28 +1940,10 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	var errs error
 
-	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertDestinations(ctx, destinations, opts.Destinations); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertWorkloads(ctx, workloads, opts.Workloads); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
-		errs = multierror.Append(errs, err)
-	}
 	if err := b.insertWasmDeployments(ctx, wasmDeployments, opts.WasmDeployments); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertRateLimiterServerConfigs(ctx, rateLimiterServerConfigs, opts.RateLimiterServerConfigs); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertVirtualDestinations(ctx, virtualDestinations, opts.VirtualDestinations); err != nil {
@@ -1881,6 +1961,27 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertServiceDependencies(ctx, serviceDependencies, opts.ServiceDependencies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertDestinations(ctx, destinations, opts.Destinations); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertWorkloads(ctx, workloads, opts.Workloads); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1894,259 +1995,26 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	outputSnap := NewLocalSnapshot(
 		name,
 
-		settings,
-		destinations,
-		workloads,
-		meshes,
-		trafficPolicies,
-		accessPolicies,
-		virtualMeshes,
 		wasmDeployments,
+		rateLimiterServerConfigs,
 		virtualDestinations,
 		virtualGateways,
 		virtualHosts,
 		routeTables,
 		serviceDependencies,
+		trafficPolicies,
+		accessPolicies,
+		virtualMeshes,
+		settings,
+		destinations,
+		workloads,
+		meshes,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
 	)
 
 	return outputSnap, errs
-}
-
-func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "settings.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Settings",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	settingsList, err := settings_mesh_gloo_solo_io_v1.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range settingsList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		settings.Insert(item)
-	}
-
-	return nil
-}
-
-func (b *singleClusterLocalBuilder) insertDestinations(ctx context.Context, destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Destination",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	destinationList, err := discovery_mesh_gloo_solo_io_v1.NewDestinationClient(b.mgr.GetClient()).ListDestination(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range destinationList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		destinations.Insert(item)
-	}
-
-	return nil
-}
-func (b *singleClusterLocalBuilder) insertWorkloads(ctx context.Context, workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Workload",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	workloadList, err := discovery_mesh_gloo_solo_io_v1.NewWorkloadClient(b.mgr.GetClient()).ListWorkload(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range workloadList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		workloads.Insert(item)
-	}
-
-	return nil
-}
-func (b *singleClusterLocalBuilder) insertMeshes(ctx context.Context, meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "Mesh",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	meshList, err := discovery_mesh_gloo_solo_io_v1.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range meshList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		meshes.Insert(item)
-	}
-
-	return nil
-}
-
-func (b *singleClusterLocalBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "TrafficPolicy",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	trafficPolicyList, err := networking_mesh_gloo_solo_io_v1.NewTrafficPolicyClient(b.mgr.GetClient()).ListTrafficPolicy(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range trafficPolicyList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		trafficPolicies.Insert(item)
-	}
-
-	return nil
-}
-func (b *singleClusterLocalBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "AccessPolicy",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	accessPolicyList, err := networking_mesh_gloo_solo_io_v1.NewAccessPolicyClient(b.mgr.GetClient()).ListAccessPolicy(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range accessPolicyList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		accessPolicies.Insert(item)
-	}
-
-	return nil
-}
-func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "VirtualMesh",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	virtualMeshList, err := networking_mesh_gloo_solo_io_v1.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range virtualMeshList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		virtualMeshes.Insert(item)
-	}
-
-	return nil
 }
 
 func (b *singleClusterLocalBuilder) insertWasmDeployments(ctx context.Context, wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
@@ -2178,6 +2046,39 @@ func (b *singleClusterLocalBuilder) insertWasmDeployments(ctx context.Context, w
 		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
 		wasmDeployments.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertRateLimiterServerConfigs(ctx context.Context, rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "RateLimiterServerConfig",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	rateLimiterServerConfigList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRateLimiterServerConfigClient(b.mgr.GetClient()).ListRateLimiterServerConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range rateLimiterServerConfigList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		rateLimiterServerConfigs.Insert(item)
 	}
 
 	return nil
@@ -2348,6 +2249,240 @@ func (b *singleClusterLocalBuilder) insertServiceDependencies(ctx context.Contex
 	return nil
 }
 
+func (b *singleClusterLocalBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "TrafficPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficPolicyList, err := networking_mesh_gloo_solo_io_v1.NewTrafficPolicyClient(b.mgr.GetClient()).ListTrafficPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range trafficPolicyList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		trafficPolicies.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "AccessPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessPolicyList, err := networking_mesh_gloo_solo_io_v1.NewAccessPolicyClient(b.mgr.GetClient()).ListAccessPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range accessPolicyList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		accessPolicies.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualMeshList, err := networking_mesh_gloo_solo_io_v1.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualMeshList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		virtualMeshes.Insert(item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settings_mesh_gloo_solo_io_v1.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		settings.Insert(item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterLocalBuilder) insertDestinations(ctx context.Context, destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Destination",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	destinationList, err := discovery_mesh_gloo_solo_io_v1.NewDestinationClient(b.mgr.GetClient()).ListDestination(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range destinationList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		destinations.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertWorkloads(ctx context.Context, workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Workload",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	workloadList, err := discovery_mesh_gloo_solo_io_v1.NewWorkloadClient(b.mgr.GetClient()).ListWorkload(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range workloadList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		workloads.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertMeshes(ctx context.Context, meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := discovery_mesh_gloo_solo_io_v1.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		meshes.Insert(item)
+	}
+
+	return nil
+}
+
 func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -2470,22 +2605,23 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		return nil, err
 	}
 
-	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
-
-	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
-	workloads := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
-	meshes := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
-
-	trafficPolicies := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
-	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
-	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
-
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
+	rateLimiterServerConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
 	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
 	serviceDependencies := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet()
+
+	trafficPolicies := networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet()
+	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
+	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
+
+	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
+
+	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
+	workloads := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
+	meshes := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -2495,30 +2631,12 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
-		// insert Settings
-		case *settings_mesh_gloo_solo_io_v1_types.Settings:
-			i.insertSettings(ctx, obj, settings, opts)
-		// insert Destinations
-		case *discovery_mesh_gloo_solo_io_v1_types.Destination:
-			i.insertDestination(ctx, obj, destinations, opts)
-		// insert Workloads
-		case *discovery_mesh_gloo_solo_io_v1_types.Workload:
-			i.insertWorkload(ctx, obj, workloads, opts)
-		// insert Meshes
-		case *discovery_mesh_gloo_solo_io_v1_types.Mesh:
-			i.insertMesh(ctx, obj, meshes, opts)
-		// insert TrafficPolicies
-		case *networking_mesh_gloo_solo_io_v1_types.TrafficPolicy:
-			i.insertTrafficPolicy(ctx, obj, trafficPolicies, opts)
-		// insert AccessPolicies
-		case *networking_mesh_gloo_solo_io_v1_types.AccessPolicy:
-			i.insertAccessPolicy(ctx, obj, accessPolicies, opts)
-		// insert VirtualMeshes
-		case *networking_mesh_gloo_solo_io_v1_types.VirtualMesh:
-			i.insertVirtualMesh(ctx, obj, virtualMeshes, opts)
 		// insert WasmDeployments
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.WasmDeployment:
 			i.insertWasmDeployment(ctx, obj, wasmDeployments, opts)
+		// insert RateLimiterServerConfigs
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimiterServerConfig:
+			i.insertRateLimiterServerConfig(ctx, obj, rateLimiterServerConfigs, opts)
 		// insert VirtualDestinations
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination:
 			i.insertVirtualDestination(ctx, obj, virtualDestinations, opts)
@@ -2534,6 +2652,27 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert ServiceDependencies
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.ServiceDependency:
 			i.insertServiceDependency(ctx, obj, serviceDependencies, opts)
+		// insert TrafficPolicies
+		case *networking_mesh_gloo_solo_io_v1_types.TrafficPolicy:
+			i.insertTrafficPolicy(ctx, obj, trafficPolicies, opts)
+		// insert AccessPolicies
+		case *networking_mesh_gloo_solo_io_v1_types.AccessPolicy:
+			i.insertAccessPolicy(ctx, obj, accessPolicies, opts)
+		// insert VirtualMeshes
+		case *networking_mesh_gloo_solo_io_v1_types.VirtualMesh:
+			i.insertVirtualMesh(ctx, obj, virtualMeshes, opts)
+		// insert Settings
+		case *settings_mesh_gloo_solo_io_v1_types.Settings:
+			i.insertSettings(ctx, obj, settings, opts)
+		// insert Destinations
+		case *discovery_mesh_gloo_solo_io_v1_types.Destination:
+			i.insertDestination(ctx, obj, destinations, opts)
+		// insert Workloads
+		case *discovery_mesh_gloo_solo_io_v1_types.Workload:
+			i.insertWorkload(ctx, obj, workloads, opts)
+		// insert Meshes
+		case *discovery_mesh_gloo_solo_io_v1_types.Mesh:
+			i.insertMesh(ctx, obj, meshes, opts)
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
 			i.insertAccessLogRecord(ctx, obj, accessLogRecords, opts)
@@ -2549,229 +2688,24 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return NewLocalSnapshot(
 		name,
 
-		settings,
-		destinations,
-		workloads,
-		meshes,
-		trafficPolicies,
-		accessPolicies,
-		virtualMeshes,
 		wasmDeployments,
+		rateLimiterServerConfigs,
 		virtualDestinations,
 		virtualGateways,
 		virtualHosts,
 		routeTables,
 		serviceDependencies,
+		trafficPolicies,
+		accessPolicies,
+		virtualMeshes,
+		settings,
+		destinations,
+		workloads,
+		meshes,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
 	), nil
-}
-
-func (i *inMemoryLocalBuilder) insertSettings(
-	ctx context.Context,
-	settings *settings_mesh_gloo_solo_io_v1_types.Settings,
-	settingsSet settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.Settings.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = settings.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(settings.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		settingsSet.Insert(settings)
-	}
-}
-
-func (i *inMemoryLocalBuilder) insertDestination(
-	ctx context.Context,
-	destination *discovery_mesh_gloo_solo_io_v1_types.Destination,
-	destinationSet discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.Destinations.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = destination.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(destination.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		destinationSet.Insert(destination)
-	}
-}
-func (i *inMemoryLocalBuilder) insertWorkload(
-	ctx context.Context,
-	workload *discovery_mesh_gloo_solo_io_v1_types.Workload,
-	workloadSet discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.Workloads.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = workload.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(workload.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		workloadSet.Insert(workload)
-	}
-}
-func (i *inMemoryLocalBuilder) insertMesh(
-	ctx context.Context,
-	mesh *discovery_mesh_gloo_solo_io_v1_types.Mesh,
-	meshSet discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.Meshes.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = mesh.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(mesh.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		meshSet.Insert(mesh)
-	}
-}
-
-func (i *inMemoryLocalBuilder) insertTrafficPolicy(
-	ctx context.Context,
-	trafficPolicy *networking_mesh_gloo_solo_io_v1_types.TrafficPolicy,
-	trafficPolicySet networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.TrafficPolicies.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = trafficPolicy.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(trafficPolicy.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		trafficPolicySet.Insert(trafficPolicy)
-	}
-}
-func (i *inMemoryLocalBuilder) insertAccessPolicy(
-	ctx context.Context,
-	accessPolicy *networking_mesh_gloo_solo_io_v1_types.AccessPolicy,
-	accessPolicySet networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.AccessPolicies.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = accessPolicy.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(accessPolicy.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		accessPolicySet.Insert(accessPolicy)
-	}
-}
-func (i *inMemoryLocalBuilder) insertVirtualMesh(
-	ctx context.Context,
-	virtualMesh *networking_mesh_gloo_solo_io_v1_types.VirtualMesh,
-	virtualMeshSet networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.VirtualMeshes.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = virtualMesh.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(virtualMesh.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		virtualMeshSet.Insert(virtualMesh)
-	}
 }
 
 func (i *inMemoryLocalBuilder) insertWasmDeployment(
@@ -2801,6 +2735,35 @@ func (i *inMemoryLocalBuilder) insertWasmDeployment(
 
 	if !filteredOut {
 		wasmDeploymentSet.Insert(wasmDeployment)
+	}
+}
+func (i *inMemoryLocalBuilder) insertRateLimiterServerConfig(
+	ctx context.Context,
+	rateLimiterServerConfig *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimiterServerConfig,
+	rateLimiterServerConfigSet networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.RateLimiterServerConfigs.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = rateLimiterServerConfig.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(rateLimiterServerConfig.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		rateLimiterServerConfigSet.Insert(rateLimiterServerConfig)
 	}
 }
 func (i *inMemoryLocalBuilder) insertVirtualDestination(
@@ -2946,6 +2909,212 @@ func (i *inMemoryLocalBuilder) insertServiceDependency(
 
 	if !filteredOut {
 		serviceDependencySet.Insert(serviceDependency)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertTrafficPolicy(
+	ctx context.Context,
+	trafficPolicy *networking_mesh_gloo_solo_io_v1_types.TrafficPolicy,
+	trafficPolicySet networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.TrafficPolicies.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = trafficPolicy.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(trafficPolicy.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		trafficPolicySet.Insert(trafficPolicy)
+	}
+}
+func (i *inMemoryLocalBuilder) insertAccessPolicy(
+	ctx context.Context,
+	accessPolicy *networking_mesh_gloo_solo_io_v1_types.AccessPolicy,
+	accessPolicySet networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.AccessPolicies.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = accessPolicy.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(accessPolicy.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		accessPolicySet.Insert(accessPolicy)
+	}
+}
+func (i *inMemoryLocalBuilder) insertVirtualMesh(
+	ctx context.Context,
+	virtualMesh *networking_mesh_gloo_solo_io_v1_types.VirtualMesh,
+	virtualMeshSet networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.VirtualMeshes.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = virtualMesh.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(virtualMesh.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		virtualMeshSet.Insert(virtualMesh)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertSettings(
+	ctx context.Context,
+	settings *settings_mesh_gloo_solo_io_v1_types.Settings,
+	settingsSet settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Settings.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = settings.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(settings.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		settingsSet.Insert(settings)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertDestination(
+	ctx context.Context,
+	destination *discovery_mesh_gloo_solo_io_v1_types.Destination,
+	destinationSet discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Destinations.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = destination.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(destination.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		destinationSet.Insert(destination)
+	}
+}
+func (i *inMemoryLocalBuilder) insertWorkload(
+	ctx context.Context,
+	workload *discovery_mesh_gloo_solo_io_v1_types.Workload,
+	workloadSet discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Workloads.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = workload.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(workload.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		workloadSet.Insert(workload)
+	}
+}
+func (i *inMemoryLocalBuilder) insertMesh(
+	ctx context.Context,
+	mesh *discovery_mesh_gloo_solo_io_v1_types.Mesh,
+	meshSet discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.Meshes.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = mesh.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(mesh.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		meshSet.Insert(mesh)
 	}
 }
 

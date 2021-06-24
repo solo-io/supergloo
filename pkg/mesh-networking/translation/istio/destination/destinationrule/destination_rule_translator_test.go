@@ -108,7 +108,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{},
 					},
 				},
-				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
+				RequiredSubsets: []*discoveryv1.RequiredSubsets{
 					{
 						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "another-tp",
@@ -234,7 +234,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			destinations,
 		)
 
-		sourceMeshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
+		sourceMeshInstallation := &discoveryv1.MeshInstallation{
 			Cluster: "source-cluster",
 		}
 
@@ -280,7 +280,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						},
 					},
 				},
-				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
+				RequiredSubsets: []*discoveryv1.RequiredSubsets{
 					{
 						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "tp-1",

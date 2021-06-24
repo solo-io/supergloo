@@ -51,7 +51,7 @@ type Translator interface {
 		ctx context.Context,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
-		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+		sourceMeshInstallation *discoveryv1.MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.VirtualService
 }
@@ -80,7 +80,7 @@ func (t *translator) Translate(
 	_ context.Context,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
-	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1.MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
 	kubeService := destination.Spec.GetKubeService()
@@ -216,7 +216,7 @@ func requestMatchersEqual(tp1, tp2 *v1.TrafficPolicySpec) bool {
 		httpRequestMatchersEqual(tp1.GetHttpRequestMatchers(), tp2.GetHttpRequestMatchers())
 }
 
-func httpRequestMatchersEqual(matchers1, matchers2 []*commonv1.HttpMatcher) bool {
+func httpRequestMatchersEqual(matchers1, matchers2 []*v1.HttpMatcher) bool {
 	if len(matchers1) != len(matchers2) {
 		return false
 	}
@@ -286,7 +286,7 @@ func registerFieldFunc(
 
 func (t *translator) initializeVirtualService(
 	destination *discoveryv1.Destination,
-	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1.MeshInstallation,
 	destinationFQDN string,
 ) *networkingv1alpha3.VirtualService {
 	var meta metav1.ObjectMeta

@@ -227,6 +227,67 @@ func (m *DestinationStatus) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
+func (m *RequiredSubsets) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.RequiredSubsets")); err != nil {
+		return 0, err
+	}
+
+	if h, ok := interface{}(m.GetTrafficPolicyRef()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("TrafficPolicyRef")); err != nil {
+			return 0, err
+		}
+		if _, err = h.Hash(hasher); err != nil {
+			return 0, err
+		}
+	} else {
+		if fieldValue, err := hashstructure.Hash(m.GetTrafficPolicyRef(), nil); err != nil {
+			return 0, err
+		} else {
+			if _, err = hasher.Write([]byte("TrafficPolicyRef")); err != nil {
+				return 0, err
+			}
+			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				return 0, err
+			}
+		}
+	}
+
+	err = binary.Write(hasher, binary.LittleEndian, m.GetObservedGeneration())
+	if err != nil {
+		return 0, err
+	}
+
+	if h, ok := interface{}(m.GetTrafficShift()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("TrafficShift")); err != nil {
+			return 0, err
+		}
+		if _, err = h.Hash(hasher); err != nil {
+			return 0, err
+		}
+	} else {
+		if fieldValue, err := hashstructure.Hash(m.GetTrafficShift(), nil); err != nil {
+			return 0, err
+		} else {
+			if _, err = hasher.Write([]byte("TrafficShift")); err != nil {
+				return 0, err
+			}
+			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				return 0, err
+			}
+		}
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
 func (m *DestinationSpec_KubeService) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
@@ -1060,67 +1121,6 @@ func (m *DestinationStatus_AppliedFederation) Hash(hasher hash.Hash64) (uint64, 
 			return 0, err
 		} else {
 			if _, err = hasher.Write([]byte("VirtualMeshRef")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-				return 0, err
-			}
-		}
-	}
-
-	return hasher.Sum64(), nil
-}
-
-// Hash function
-func (m *DestinationStatus_RequiredSubsets) Hash(hasher hash.Hash64) (uint64, error) {
-	if m == nil {
-		return 0, nil
-	}
-	if hasher == nil {
-		hasher = fnv.New64()
-	}
-	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationStatus_RequiredSubsets")); err != nil {
-		return 0, err
-	}
-
-	if h, ok := interface{}(m.GetTrafficPolicyRef()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("TrafficPolicyRef")); err != nil {
-			return 0, err
-		}
-		if _, err = h.Hash(hasher); err != nil {
-			return 0, err
-		}
-	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetTrafficPolicyRef(), nil); err != nil {
-			return 0, err
-		} else {
-			if _, err = hasher.Write([]byte("TrafficPolicyRef")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-				return 0, err
-			}
-		}
-	}
-
-	err = binary.Write(hasher, binary.LittleEndian, m.GetObservedGeneration())
-	if err != nil {
-		return 0, err
-	}
-
-	if h, ok := interface{}(m.GetTrafficShift()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("TrafficShift")); err != nil {
-			return 0, err
-		}
-		if _, err = h.Hash(hasher); err != nil {
-			return 0, err
-		}
-	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetTrafficShift(), nil); err != nil {
-			return 0, err
-		} else {
-			if _, err = hasher.Write([]byte("TrafficShift")); err != nil {
 				return 0, err
 			}
 			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {

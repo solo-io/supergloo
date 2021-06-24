@@ -754,7 +754,7 @@ var _ = Describe("Applier", func() {
 
 			applier.Apply(context.TODO(), snap, nil)
 
-			expectedRequiredSubsets := []*discoveryv1.DestinationStatus_RequiredSubsets{
+			expectedRequiredSubsets := []*discoveryv1.RequiredSubsets{
 				{
 					TrafficPolicyRef:   ezkube.MakeObjectRef(trafficPolicy1),
 					ObservedGeneration: trafficPolicy1.Generation,
