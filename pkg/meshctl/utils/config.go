@@ -2,6 +2,7 @@ package utils
 
 import (
 	"os"
+	"path"
 
 	"io/ioutil"
 	"path/filepath"
@@ -10,9 +11,21 @@ import (
 	"github.com/rotisserie/eris"
 )
 
-const managementPlane = "managementPlane"
+const (
+	ConfigFileName = "meshctl-config.yaml"
+	ConfigDirName  = ".gloo-mesh"
+
+	// this is a workaround - we can't set cobra's default arg to "$HOME/..." and have it just work, because
+	// it doesn't expand $HOME. We also can't set the default value to the expanded value of $HOME, ie something like
+	// os.UserHomeDir(), because that will change the content of our generated docs/ directory based on whatever system
+	// built glooctl last. So we settle for this placeholder.
+	homeDir = "<home_directory>"
+
+	managementPlane = "managementPlane"
+)
 
 var (
+	DefaultConfigPath           = path.Join(homeDir, ConfigDirName, ConfigFileName)
 	invalidMeshctlConfigFileErr = eris.New("please either configure or pass in a valid meshctl config file (see the 'meshctl cluster config' command)")
 )
 
@@ -145,6 +158,13 @@ func UpdateMeshctlConfigWithInstallInfo(mgmtKubeConfig, mgmtKubecontext string) 
 // If the file doesn't exist or is invalid, return an error
 func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 	config := NewMeshctlConfig()
+	if meshctlConfigPath == DefaultConfigPath {
+		var err error
+		meshctlConfigPath, err = DefaultMeshctlConfigFilePath()
+		if err != nil {
+			return config, err
+		}
+	}
 	if _, err := os.Stat(meshctlConfigPath); err != nil {
 		return config, invalidMeshctlConfigFileErr
 	}
@@ -156,13 +176,6 @@ func ParseMeshctlConfig(meshctlConfigPath string) (MeshctlConfig, error) {
 		return config, invalidMeshctlConfigFileErr
 	}
 	config.filepath = meshctlConfigPath
-	if config.ApiVersion == "" {
-		config.ApiVersion = "v1"
-	}
-	if config.Clusters == nil {
-		config.Clusters = map[string]MeshctlCluster{}
-	}
-
 	if config.ApiVersion != "v1" {
 		return config, eris.Errorf("meshctl config file has an unrecognized api version: %v", config.ApiVersion)
 	}
@@ -179,7 +192,7 @@ func NewMeshctlConfig() MeshctlConfig {
 }
 
 func WriteConfigToFile(config MeshctlConfig, meshctlConfigPath string) error {
-	if meshctlConfigPath == "" {
+	if meshctlConfigPath == DefaultConfigPath {
 		var err error
 		meshctlConfigPath, err = DefaultMeshctlConfigFilePath()
 		if err != nil {
