@@ -4,6 +4,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/rotisserie/eris"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
@@ -96,11 +97,11 @@ func TranslateCorsPolicy(
 	for i, allowOrigin := range corsPolicy.GetAllowOrigins() {
 		var stringMatch *networkingv1alpha3spec.StringMatch
 		switch matchType := allowOrigin.GetMatchType().(type) {
-		case *v1.StringMatch_Exact:
+		case *commonv1.StringMatch_Exact:
 			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: allowOrigin.GetExact()}}
-		case *v1.StringMatch_Prefix:
+		case *commonv1.StringMatch_Prefix:
 			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: allowOrigin.GetPrefix()}}
-		case *v1.StringMatch_Regex:
+		case *commonv1.StringMatch_Regex:
 			stringMatch = &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: allowOrigin.GetRegex()}}
 		default:
 			return nil, eris.Errorf("AllowOrigins[%d].MatchType has unexpected type %T", i, matchType)

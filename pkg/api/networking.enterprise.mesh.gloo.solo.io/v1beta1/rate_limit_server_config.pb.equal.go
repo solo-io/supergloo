@@ -97,12 +97,30 @@ func (m *RateLimiterServerConfigStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if m.GetState() != target.GetState() {
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
 		return false
 	}
 
-	if strings.Compare(m.GetMessage(), target.GetMessage()) != 0 {
+	if len(m.GetErrors()) != len(target.GetErrors()) {
 		return false
+	}
+	for idx, v := range m.GetErrors() {
+
+		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetWarnings()) != len(target.GetWarnings()) {
+		return false
+	}
+	for idx, v := range m.GetWarnings() {
+
+		if strings.Compare(v, target.GetWarnings()[idx]) != 0 {
+			return false
+		}
+
 	}
 
 	if len(m.GetConfiguredServers()) != len(target.GetConfiguredServers()) {
@@ -120,10 +138,6 @@ func (m *RateLimiterServerConfigStatus) Equal(that interface{}) bool {
 			}
 		}
 
-	}
-
-	if m.GetObservedGeneration() != target.GetObservedGeneration() {
-		return false
 	}
 
 	return true

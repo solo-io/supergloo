@@ -2,7 +2,6 @@ package routeutils
 
 import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
-	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -126,11 +125,11 @@ func translateRequestMatcherQueryParams(matchers []*v1.HttpMatcher_QueryParamete
 func translateRequestMatcherPathSpecifier(matcher *v1.HttpMatcher) *networkingv1alpha3spec.StringMatch {
 	if matcher != nil && matcher.GetUri() != nil {
 		switch pathSpecifierType := matcher.GetUri().GetMatchType().(type) {
-		case *networkingv1.StringMatch_Exact:
+		case *commonv1.StringMatch_Exact:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
-		case *networkingv1.StringMatch_Prefix:
+		case *commonv1.StringMatch_Prefix:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
-		case *networkingv1.StringMatch_Regex:
+		case *commonv1.StringMatch_Regex:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
 		}
 	}

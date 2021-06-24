@@ -24,6 +24,10 @@ These docs describe Gloo Mesh CRDs.
 
 
 
+### csrf.networking.mesh.gloo.solo.io
+
+
+
 ### discovery.mesh.gloo.solo.io
 
   - [Destination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec" >}})

@@ -1,24 +1,24 @@
 
 ---
 
-title: "base.proto"
+title: "string_match.proto"
 
 ---
 
-## Package : `networking.mesh.gloo.solo.io`
+## Package : `common.mesh.gloo.solo.io`
 
 
 
 <a name="top"></a>
 
-<a name="API Reference for base.proto"></a>
+<a name="API Reference for string_match.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## base.proto
+## string_match.proto
 
 
 ## Table of Contents
-  - [StringMatch](#networking.mesh.gloo.solo.io.StringMatch)
+  - [StringMatch](#common.mesh.gloo.solo.io.StringMatch)
 
 
 
@@ -26,7 +26,7 @@ title: "base.proto"
 
 
 
-<a name="networking.mesh.gloo.solo.io.StringMatch"></a>
+<a name="common.mesh.gloo.solo.io.StringMatch"></a>
 
 ### StringMatch
 Describes how to match a given string in HTTP headers. Match is case-sensitive.

@@ -2,7 +2,6 @@ syntax = "proto3";
 package ratelimit.networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/ratelimit";
 
-import "github.com/solo-io/gloo-mesh/api/common/v1/refs.proto";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
@@ -47,7 +46,7 @@ message RouteRateLimit {
 
         // References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
         // Only one of `ratelimit` or `rate_limit_configs` can be set.
-        .common.mesh.gloo.solo.io.ObjectRefList config_refs = 3;
+        .core.skv2.solo.io.ObjectRefList config_refs = 3;
     }
 
     // Basic rate-limiting API

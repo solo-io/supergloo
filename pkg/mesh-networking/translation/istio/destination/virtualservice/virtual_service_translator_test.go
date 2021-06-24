@@ -105,8 +105,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							},
 							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									Uri: &networkingv1.StringMatch{
-										MatchType: &networkingv1.StringMatch_Exact{
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
 											Exact: "path",
 										},
 									},
@@ -147,8 +147,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							},
 							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									Uri: &networkingv1.StringMatch{
-										MatchType: &networkingv1.StringMatch_Exact{
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
 											Exact: "path",
 										},
 									},
@@ -533,8 +533,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							},
 							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									Uri: &networkingv1.StringMatch{
-										MatchType: &networkingv1.StringMatch_Exact{
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
 											Exact: "path",
 										},
 									},

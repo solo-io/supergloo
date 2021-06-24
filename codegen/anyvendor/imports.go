@@ -23,7 +23,7 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 		"common-protos/google/api/field_behavior.proto",
 	}
 
-	// used for a proto option which disables openapi validation on fields
+	// used for rate limit server config
 	anyVendorImports.External["github.com/solo-io/solo-apis"] = []string{
 		"api/rate-limiter/v1alpha1/ratelimit.proto",
 	}

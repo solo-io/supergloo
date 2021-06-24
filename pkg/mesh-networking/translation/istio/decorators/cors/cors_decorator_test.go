@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
@@ -34,10 +35,10 @@ var _ = Describe("CorsDecorator", func() {
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					CorsPolicy: &v1.TrafficPolicySpec_Policy_CorsPolicy{
-						AllowOrigins: []*v1.StringMatch{
-							{MatchType: &v1.StringMatch_Exact{Exact: "exact"}},
-							{MatchType: &v1.StringMatch_Prefix{Prefix: "prefix"}},
-							{MatchType: &v1.StringMatch_Regex{Regex: "regex"}},
+						AllowOrigins: []*commonv1.StringMatch{
+							{MatchType: &commonv1.StringMatch_Exact{Exact: "exact"}},
+							{MatchType: &commonv1.StringMatch_Prefix{Prefix: "prefix"}},
+							{MatchType: &commonv1.StringMatch_Regex{Regex: "regex"}},
 						},
 						AllowMethods:     []string{"GET", "POST"},
 						AllowHeaders:     []string{"Header1", "Header2"},

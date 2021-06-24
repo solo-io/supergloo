@@ -21,7 +21,6 @@ title: "rate_limit_server_config.proto"
   - [RateLimiterServerConfigSpec](#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigSpec)
   - [RateLimiterServerConfigStatus](#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus)
 
-  - [RateLimiterServerConfigStatus.State](#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State)
 
 
 
@@ -52,29 +51,16 @@ The current status of the `RateLimitConfig`.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| state | [networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State" >}}) |  | The current state of the `RateLimitConfig`. |
-  | message | string |  | A human-readable string explaining the status. |
+| observedGeneration | int64 |  | The most recent generation observed in the the RateLimiterServerConfig metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+  | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
   | configuredServers | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | a list of rate limit server workloads which have been configured with this RateLimiterConfig |
-  | observedGeneration | int64 |  | The observed generation of the resource. When this matches the metadata.generation of the resource, it indicates the status is up-to-date. |
   
 
 
 
 
  <!-- end messages -->
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigStatus.State"></a>
-
-### RateLimiterServerConfigStatus.State
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| PENDING | 0 |  |
-| ACCEPTED | 1 |  |
-| REJECTED | 2 |  |
-
 
  <!-- end enums -->
 

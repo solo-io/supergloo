@@ -57,7 +57,7 @@ Specify HTTP request level match criteria. All specified conditions must be sati
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The name assigned to a match. The match's name will be concatenated with the parent route's name and will be logged in the access logs for requests matching this route. |
-  | uri | [networking.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.string_match#networking.mesh.gloo.solo.io.StringMatch" >}}) |  | Specify match criteria against the targeted path. |
+  | uri | [common.mesh.gloo.solo.io.StringMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.string_match#common.mesh.gloo.solo.io.StringMatch" >}}) |  | Specify match criteria against the targeted path. |
   | headers | [][networking.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.HeaderMatcher" >}}) | repeated | Specify a set of headers which requests must match in entirety (all headers must match). |
   | queryParameters | [][networking.mesh.gloo.solo.io.HttpMatcher.QueryParameterMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.HttpMatcher.QueryParameterMatcher" >}}) | repeated | Specify a set of URL query parameters which requests must match in entirety (all query params must match). |
   | method | string |  | Specify an HTTP method to match against. |

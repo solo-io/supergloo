@@ -1,17 +1,15 @@
 syntax = "proto3";
-package networking.mesh.gloo.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
+package csrf.networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/csrf";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1/base.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/string_match.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -40,6 +38,6 @@ message CsrfPolicy {
 
   // Specifies additional source origins that will be allowed in addition to
   // the destination origin.
-  repeated .networking.mesh.gloo.solo.io.StringMatch additional_origins = 4;
+  repeated .common.mesh.gloo.solo.io.StringMatch additional_origins = 4;
 
 }
