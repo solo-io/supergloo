@@ -70,6 +70,7 @@ message IssuedCertificateSpec {
         IntermediateCertificateAuthority agent_ca = 8;
     }
 
+    // A message recording the current cert rotation target.
     message Rotation {
 
         oneof desired_certificate_authority {
@@ -79,10 +80,13 @@ message IssuedCertificateSpec {
             IntermediateCertificateAuthority desired_agent_ca = 2;
         }
 
+        // The current state of rotation, this value signals to the cert issuer how to 
+        // construct the intermediary certs which the data-plane clusters receive
         CertificateRotationState state = 3;
         
-    }   
+    }
 
+    // Rotation state. If nil no rotation is currently happening.
     Rotation rotation = 9;
 
 }

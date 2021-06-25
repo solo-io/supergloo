@@ -1621,8 +1621,10 @@ spec:
         status:
           properties:
             appliedCertificate:
+              description: Currently applied CA config
               properties:
                 sharedTrust:
+                  description: Shared trust CA config
                   oneOf:
                   - not:
                       anyOf:
@@ -2000,6 +2002,9 @@ spec:
                   type: object
               type: object
             certRotationConditions:
+              description: |-
+                A list of CertificateRotationCondition in the order in which the system
+                recorded them.
               items:
                 properties:
                   errors:

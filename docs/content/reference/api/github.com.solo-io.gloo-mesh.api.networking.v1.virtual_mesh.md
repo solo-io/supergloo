@@ -163,8 +163,8 @@ Limited trust is a trust model which does not require trusting Meshes to share t
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
   | destinations | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry" >}}) | repeated | The status of the VirtualMesh for each Destination to which it has been applied. A VirtualMesh may be Accepted for some Destinations and rejected for others. |
-  | appliedCertificate | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus" >}}) |  |  |
-  | certRotationConditions | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition" >}}) | repeated |  |
+  | appliedCertificate | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus" >}}) |  | Currently applied CA config |
+  | certRotationConditions | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition" >}}) | repeated | A list of CertificateRotationCondition in the order in which the system recorded them. |
   
 
 
@@ -174,12 +174,12 @@ Limited trust is a trust model which does not require trusting Meshes to share t
 <a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus"></a>
 
 ### VirtualMeshStatus.AppliedCertificateStatus
-
+Message representing the current applied CA config
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sharedTrust | [networking.mesh.gloo.solo.io.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.SharedTrust" >}}) |  |  |
+| sharedTrust | [networking.mesh.gloo.solo.io.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.SharedTrust" >}}) |  | Shared trust CA config |
   
 
 
@@ -189,7 +189,7 @@ Limited trust is a trust model which does not require trusting Meshes to share t
 <a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition"></a>
 
 ### VirtualMeshStatus.CertificateRotationCondition
-
+CertificateRotationCondition represents a timesptamped snapshot of the certificate rotation workflow. This is used to keep track of the steps which have been completed thus far.
 
 
 | Field | Type | Label | Description |

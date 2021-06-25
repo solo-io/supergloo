@@ -357,8 +357,11 @@ type VirtualMeshStatus struct {
 	Meshes map[string]*ApprovalStatus `protobuf:"bytes,4,rep,name=meshes,proto3" json:"meshes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// The status of the VirtualMesh for each Destination to which it has been applied.
 	// A VirtualMesh may be Accepted for some Destinations and rejected for others.
-	Destinations           map[string]*ApprovalStatus                        `protobuf:"bytes,5,rep,name=destinations,proto3" json:"destinations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	AppliedCertificate     *VirtualMeshStatus_AppliedCertificateStatus       `protobuf:"bytes,6,opt,name=applied_certificate,json=appliedCertificate,proto3" json:"applied_certificate,omitempty"`
+	Destinations map[string]*ApprovalStatus `protobuf:"bytes,5,rep,name=destinations,proto3" json:"destinations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Currently applied CA config
+	AppliedCertificate *VirtualMeshStatus_AppliedCertificateStatus `protobuf:"bytes,6,opt,name=applied_certificate,json=appliedCertificate,proto3" json:"applied_certificate,omitempty"`
+	// A list of CertificateRotationCondition in the order in which the system
+	// recorded them.
 	CertRotationConditions []*VirtualMeshStatus_CertificateRotationCondition `protobuf:"bytes,7,rep,name=cert_rotation_conditions,json=certRotationConditions,proto3" json:"cert_rotation_conditions,omitempty"`
 }
 
@@ -756,11 +759,13 @@ func (x *VirtualMeshSpec_Federation_FederationSelector) GetMeshes() []*v1.Object
 	return nil
 }
 
+// Message representing the current applied CA config
 type VirtualMeshStatus_AppliedCertificateStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Shared trust CA config
 	SharedTrust *SharedTrust `protobuf:"bytes,1,opt,name=shared_trust,json=sharedTrust,proto3" json:"shared_trust,omitempty"`
 }
 
@@ -803,6 +808,9 @@ func (x *VirtualMeshStatus_AppliedCertificateStatus) GetSharedTrust() *SharedTru
 	return nil
 }
 
+// CertificateRotationCondition represents a timesptamped snapshot of the certificate
+// rotation workflow. This is used to keep track of the steps which have been completed
+// thus far.
 type VirtualMeshStatus_CertificateRotationCondition struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

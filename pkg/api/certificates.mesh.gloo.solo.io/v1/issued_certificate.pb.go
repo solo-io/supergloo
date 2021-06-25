@@ -145,7 +145,8 @@ type IssuedCertificateSpec struct {
 	//	*IssuedCertificateSpec_GlooMeshCa
 	//	*IssuedCertificateSpec_AgentCa
 	CertificateAuthority isIssuedCertificateSpec_CertificateAuthority `protobuf_oneof:"certificate_authority"`
-	Rotation             *IssuedCertificateSpec_Rotation              `protobuf:"bytes,9,opt,name=rotation,proto3" json:"rotation,omitempty"`
+	// Rotation state. If nil no rotation is currently happening.
+	Rotation *IssuedCertificateSpec_Rotation `protobuf:"bytes,9,opt,name=rotation,proto3" json:"rotation,omitempty"`
 }
 
 func (x *IssuedCertificateSpec) Reset() {
@@ -409,6 +410,7 @@ func (x *IssuedCertificateStatus) GetState() IssuedCertificateStatus_State {
 	return IssuedCertificateStatus_PENDING
 }
 
+// A message recording the current cert rotation target.
 type IssuedCertificateSpec_Rotation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -418,7 +420,9 @@ type IssuedCertificateSpec_Rotation struct {
 	//	*IssuedCertificateSpec_Rotation_DesiredGlooMeshCa
 	//	*IssuedCertificateSpec_Rotation_DesiredAgentCa
 	DesiredCertificateAuthority isIssuedCertificateSpec_Rotation_DesiredCertificateAuthority `protobuf_oneof:"desired_certificate_authority"`
-	State                       CertificateRotationState                                     `protobuf:"varint,3,opt,name=state,proto3,enum=certificates.mesh.gloo.solo.io.CertificateRotationState" json:"state,omitempty"`
+	// The current state of rotation, this value signals to the cert issuer how to
+	// construct the intermediary certs which the data-plane clusters receive
+	State CertificateRotationState `protobuf:"varint,3,opt,name=state,proto3,enum=certificates.mesh.gloo.solo.io.CertificateRotationState" json:"state,omitempty"`
 }
 
 func (x *IssuedCertificateSpec_Rotation) Reset() {

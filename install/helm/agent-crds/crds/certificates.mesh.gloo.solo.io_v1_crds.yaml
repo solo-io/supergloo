@@ -413,6 +413,7 @@ spec:
                   type: string
               type: object
             rotation:
+              description: Rotation state. If nil no rotation is currently happening.
               oneOf:
               - not:
                   anyOf:
@@ -718,6 +719,9 @@ spec:
                       type: object
                   type: object
                 state:
+                  description: |-
+                    The current state of rotation, this value signals to the cert issuer how to
+                    construct the intermediary certs which the data-plane clusters receive
                   enum:
                   - NOT_APPLICABLE
                   - PENDING
