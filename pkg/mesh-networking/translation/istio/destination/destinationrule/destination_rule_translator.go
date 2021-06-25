@@ -2,13 +2,12 @@ package destinationrule
 
 import (
 	"context"
-	"reflect"
-
-	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
+	"reflect"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
@@ -134,25 +133,11 @@ func (t *translator) Translate(
 		}
 	}
 
-	if t.userDestinationRules == nil {
-		return destinationRule
-	}
-
-	// detect and report error on intersecting config if enabled in settings
-	if errs := conflictsWithUserDestinationRule(
-		t.userDestinationRules,
-		destinationRule,
-	); len(errs) > 0 {
-		for _, err := range errs {
-			for _, policy := range destination.Status.AppliedTrafficPolicies {
-				reporter.ReportTrafficPolicyToDestination(destination, policy.Ref, err)
-			}
-		}
-		return nil
-	}
-
+	contextutils.LoggerFrom(ctx).Infof("miles hi a")
 	// if Destination is in a different mesh than the sourceMeshInstallation, than it's a federated Destination
-	if kubeService.Ref.ClusterName != sourceMeshInstallation.Cluster {
+	if sourceMeshInstallation != nil && kubeService.GetRef().GetClusterName() != sourceMeshInstallation.GetCluster() {
+
+		contextutils.LoggerFrom(ctx).Infof("miles hi c")
 		keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
 
 		// ensure the entire chain of values in the resulting dest rule is instantiated.
@@ -177,6 +162,24 @@ func (t *translator) Translate(
 			Time:     gogoTime,
 			Interval: gogoInterval,
 		}
+	}
+
+	if t.userDestinationRules == nil {
+		contextutils.LoggerFrom(ctx).Infof("miles hi early end")
+		return destinationRule
+	}
+
+	// detect and report error on intersecting config if enabled in settings
+	if errs := conflictsWithUserDestinationRule(
+		t.userDestinationRules,
+		destinationRule,
+	); len(errs) > 0 {
+		for _, err := range errs {
+			for _, policy := range destination.Status.AppliedTrafficPolicies {
+				reporter.ReportTrafficPolicyToDestination(destination, policy.Ref, err)
+			}
+		}
+		return nil
 	}
 
 	return destinationRule
