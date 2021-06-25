@@ -329,4 +329,63 @@ var _ = Describe("ConfigTargetValidator", func() {
 		Expect(vm3.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
 		Expect(vm5.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
 	})
+
+	It("should invalidate any policies that don't specify all fields in a reference-based selector", func() {
+		validator = configtarget.NewConfigTargetValidator(nil, nil)
+
+		trafficPolicies := v1.TrafficPolicySlice{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "valid",
+					Namespace: namespace,
+				},
+				Spec: v1.TrafficPolicySpec{
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
+										// missing name
+										// missing namespace
+										// missing clustername
+									},
+								},
+							},
+						},
+					},
+				},
+				Status: v1.TrafficPolicyStatus{
+					State: commonv1.ApprovalState_ACCEPTED,
+				},
+			},
+		}
+
+		virtualMeshes := v1.VirtualMeshSlice{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "valid",
+					Namespace: namespace,
+				},
+				Spec: v1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						{
+							// missing name
+							// missing namespace
+						},
+					},
+				},
+				Status: v1.VirtualMeshStatus{
+					State: commonv1.ApprovalState_ACCEPTED,
+				},
+			},
+		}
+
+		validator.ValidateTrafficPolicies(trafficPolicies)
+		validator.ValidateVirtualMeshes(virtualMeshes)
+
+		Expect(trafficPolicies[0].Status.State).To(Equal(commonv1.ApprovalState_INVALID))
+		Expect(trafficPolicies[0].Status.Errors).To(Equal([]string{"malformed kubeServiceRef: 3 errors occurred:\n\t* 'name' must be specified'\n\t* 'namespace' must be specified'\n\t* 'clusterName' must be specified'\n\n"}))
+		Expect(virtualMeshes[0].Status.State).To(Equal(commonv1.ApprovalState_INVALID))
+		Expect(virtualMeshes[0].Status.Errors).To(Equal([]string{"malformed meshRef: 2 errors occurred:\n\t* 'name' must be specified'\n\t* 'namespace' must be specified'\n\n"}))
+	})
 })
