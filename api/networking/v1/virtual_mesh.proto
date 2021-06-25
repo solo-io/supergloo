@@ -69,7 +69,7 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
-        repeated IngressGatewayServiceSelector ingress_gateway_service_selectors = 1;
+        repeated IngressGatewayServiceSelector ingress_gateway_service_selectors = 5;
 
         // Selectively federate Destinations to specific external meshes.
         // If omitted, no Destinations will be federated.
@@ -81,7 +81,7 @@ message VirtualMeshSpec {
 
             // DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics.
             // Expose all Destinations to all Workloads in this VirtualMesh.
-            .google.protobuf.Empty permissive = 5;
+            .google.protobuf.Empty permissive = 1;
         };
 
         // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
