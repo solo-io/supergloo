@@ -135,10 +135,8 @@ func (t *translator) Translate(
 	}
 
 	// if Destination is in a different mesh than the sourceMeshInstallation, than it's a federated Destination
-	if sourceMeshInstallation != nil && kubeService.GetRef().GetClusterName() != sourceMeshInstallation.GetCluster() {
-
-		keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
-
+	keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
+	if sourceMeshInstallation != nil && kubeService.GetRef().GetClusterName() != sourceMeshInstallation.GetCluster() && keepalive != nil {
 		// ensure the entire chain of values in the resulting dest rule is instantiated.
 		trafficPolicy := destinationRule.Spec.GetTrafficPolicy()
 		if trafficPolicy == nil {
