@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
@@ -89,7 +90,9 @@ func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1.AccessP
 func (c *configTargetValidator) validateMeshReferences(meshRefs []*skv2corev1.ObjectRef) []error {
 	var errs []error
 	for _, meshRef := range meshRefs {
-		if _, err := c.meshes.Find(meshRef); err != nil {
+		if err := validateObjectRef(meshRef); err != nil {
+			errs = append(errs, eris.Wrap(err, "malformed meshRef"))
+		} else if _, err := c.meshes.Find(meshRef); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -105,7 +108,9 @@ func (c *configTargetValidator) validateDestinationReferences(serviceSelectors [
 			continue
 		}
 		for _, ref := range kubeServiceRefs.Services {
-			if !c.kubeServiceExists(ref) {
+			if err := validateClusterObjectRef(ref); err != nil {
+				errs = append(errs, eris.Wrap(err, "malformed kubeServiceRef"))
+			} else if !c.kubeServiceExists(ref) {
 				errs = append(errs, eris.Errorf("Destination %s not found", sets.Key(ref)))
 			}
 		}
@@ -223,4 +228,28 @@ func sortVirtualMeshesByAcceptedDate(virtualMeshes v1.VirtualMeshSlice) {
 			return sets.Key(vMesh1) < sets.Key(vMesh2)
 		}
 	})
+}
+
+// return error if any field in ClusterObjectRef is empty
+func validateClusterObjectRef(ref *skv2corev1.ClusterObjectRef) error {
+	err := validateObjectRef(&skv2corev1.ObjectRef{
+		Name:      ref.Name,
+		Namespace: ref.Namespace,
+	})
+	if ref.ClusterName == "" {
+		err = multierror.Append(err, eris.New("'clusterName' must be specified'"))
+	}
+	return err
+}
+
+// return error if any field in ClusterObjectRef is empty
+func validateObjectRef(ref *skv2corev1.ObjectRef) error {
+	var err error
+	if ref.Name == "" {
+		err = multierror.Append(err, eris.New("'name' must be specified'"))
+	}
+	if ref.Namespace == "" {
+		err = multierror.Append(err, eris.New("'namespace' must be specified'"))
+	}
+	return err
 }
