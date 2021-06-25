@@ -86,7 +86,7 @@ Note: This message needs to be at this level (rather than nested) due to cue res
 <a name="networking.enterprise.mesh.gloo.solo.io.Route"></a>
 
 ### Route
-A route specifies how to match a request and what action to take when the request is matched.<br>When a request matches on a route, the route can perform one of the following actions: - *Route* the request to a destination - Reply with a *Direct Response* - Send a *Redirect* response to the client - *Delegate* the action for the request to one or more top-level [`VirtualHost`]({{< ref "/reference/api/github.com/solo-io/gloo/projects/gateway/api/v1/route_table.proto.sk.md" >}}) resources DelegateActions can be used to delegate the behavior for a set out routes with a given *prefix* to top-level `VirtualHost` resources.
+A route specifies how to match a request and what action to take when the request is matched.<br>When a request matches on a route, the route can perform one of the following actions: - *Route* the request to a destination - Reply with a *Direct Response* - Send a *Redirect* response to the client - *Delegate* the action for the request to one or more [`RouteTable`]({{< ref "/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table.md" >}}) resources DelegateActions can be used to delegate the behavior for a set out routes to `RouteTable` resources.
 
 
 | Field | Type | Label | Description |

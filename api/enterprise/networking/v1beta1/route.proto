@@ -19,9 +19,9 @@ option (extproto.equal_all) = true;
 * - *Route* the request to a destination
 * - Reply with a *Direct Response*
 * - Send a *Redirect* response to the client
-* - *Delegate* the action for the request to one or more top-level [`VirtualHost`]({{< ref "/reference/api/github.com/solo-io/gloo/projects/gateway/api/v1/route_table.proto.sk.md" >}}) resources
-* DelegateActions can be used to delegate the behavior for a set out routes with a given *prefix* to
-* top-level `VirtualHost` resources.
+* - *Delegate* the action for the request to one or more [`RouteTable`]({{< ref "/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table.md" >}}) resources
+* DelegateActions can be used to delegate the behavior for a set out routes to
+* `RouteTable` resources.
 */
 message Route {
     // The name provides a convenience for users to be able to refer to a route by name.
