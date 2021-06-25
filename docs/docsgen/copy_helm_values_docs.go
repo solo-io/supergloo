@@ -138,7 +138,7 @@ func copyHelmValuesDocsForComponent(
 		}
 		var modifiedVersion semver.Version
 		if version.Prerelease() != "" {
-			// alphanumeric sort will not put 'beta9' ahead of 'beta10', so we modify the
+			// semver's comparison function will not put 'beta9' ahead of 'beta10', so we modify the
 			// prerelease text to just the number in the prerelease tag.
 			match := numberMatcher.FindAllString(version.Prerelease(), -1)
 			modifiedVersion, err = version.SetPrerelease(match[0])
@@ -205,7 +205,7 @@ func getLatestPerMinorVersion(sortedVersions []*semver.Version) []*semver.Versio
 	for _, version := range sortedVersions {
 		if version.Minor() < latestVersionForMinor.Minor() {
 			if version.Prerelease() != "" {
-				// alphanumeric sort will not put 'beta9' ahead of 'beta10', so we revert the modified
+				// semver's comparison function will not put 'beta9' ahead of 'beta10', so we revert the modified
 				// prerelease text to the original beta-number pattern.
 				origVersion, _ := version.SetPrerelease("beta" + version.Prerelease())
 				latestVersions = append(latestVersions, &origVersion)
