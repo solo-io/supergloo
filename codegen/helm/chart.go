@@ -38,7 +38,7 @@ var Chart = &model.Chart{
 	},
 	FilterTemplate: filterTemplates,
 	Data: model.Data{
-		ApiVersion:  "v1",
+		ApiVersion:  "v2",
 		Name:        "gloo-mesh",
 		Description: "Helm chart for Gloo Mesh.",
 		Version:     version.Version,
@@ -67,7 +67,7 @@ var CrdsChart = &model.Chart{
 		return strings.Contains(outPath, "templates") || outPath == "values.yaml"
 	},
 	Data: model.Data{
-		ApiVersion:  "v1",
+		ApiVersion:  "v2",
 		Name:        "gloo-mesh-crds",
 		Description: "CRDs required by Gloo Mesh management controllers (i.e. discovery and networking).",
 		Version:     version.Version,
@@ -79,7 +79,7 @@ var AgentCrdsChart = &model.Chart{
 		return strings.Contains(outPath, "templates") || outPath == "values.yaml"
 	},
 	Data: model.Data{
-		ApiVersion:  "v1",
+		ApiVersion:  "v2",
 		Name:        "agent-crds",
 		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and enterprise-agent).",
 		Version:     version.Version,
@@ -92,7 +92,7 @@ var CertAgentChart = &model.Chart{
 	},
 	FilterTemplate: filterTemplates,
 	Data: model.Data{
-		ApiVersion:  "v1",
+		ApiVersion:  "v2",
 		Name:        "cert-agent",
 		Description: "Helm chart for the Gloo Mesh Certificate Agent.",
 		Version:     version.Version,

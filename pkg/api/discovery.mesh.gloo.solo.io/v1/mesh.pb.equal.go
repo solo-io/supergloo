@@ -144,6 +144,57 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *MeshInstallation) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*MeshInstallation)
+	if !ok {
+		that2, ok := that.(MeshInstallation)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
+		return false
+	}
+
+	if len(m.GetPodLabels()) != len(target.GetPodLabels()) {
+		return false
+	}
+	for k, v := range m.GetPodLabels() {
+
+		if strings.Compare(v, target.GetPodLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if strings.Compare(m.GetVersion(), target.GetVersion()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
 func (m *MeshStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -413,57 +464,6 @@ func (m *MeshSpec_OSM) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetInstallation(), target.GetInstallation()) {
 			return false
 		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *MeshSpec_MeshInstallation) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*MeshSpec_MeshInstallation)
-	if !ok {
-		that2, ok := that.(MeshSpec_MeshInstallation)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
-		return false
-	}
-
-	if len(m.GetPodLabels()) != len(target.GetPodLabels()) {
-		return false
-	}
-	for k, v := range m.GetPodLabels() {
-
-		if strings.Compare(v, target.GetPodLabels()[k]) != 0 {
-			return false
-		}
-
-	}
-
-	if strings.Compare(m.GetVersion(), target.GetVersion()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
-		return false
 	}
 
 	return true
