@@ -181,7 +181,7 @@ message MeshStatus {
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
     // The list of ingress gateway addresses used to access services in this mesh in non-flat-networking mode.
-    repeated ingress_addresses = 4;
+    repeated string ingress_addresses = 4;
 
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
     // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
