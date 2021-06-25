@@ -1,0 +1,1 @@
+go run github.com/golang/mock/mockgen "$@"

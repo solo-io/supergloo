@@ -15,8 +15,6 @@ if [ ! -f .gitignore ]; then
   echo "_output" > .gitignore
 fi
 
-make install-go-tools
-
 go mod tidy
 
 if [[ $(check_diffs | wc -l) -ne 0 ]]; then
@@ -36,7 +34,7 @@ fi
 
 if [[ $(check_diffs | wc -l) -ne 0 ]]; then
   echo "Generating code produced a non-empty diff"
-  echo "Try running 'make install-go-tools generated-code -B' then re-pushing."
+  echo "Try running 'make clean generated-code -B' then re-pushing."
   check_diffs
   git diff | cat
   exit 1;

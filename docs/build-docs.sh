@@ -47,7 +47,6 @@ echo "$firebaseJson" > "$docsSiteDir/firebase.json"
 
 export PATH=$workingDir/_output/.bin:$PATH
 
-
 # Generates a data/Solo.yaml file with $1 being the specified version.
 function generateHugoVersionsYaml() {
   local yamlFile=$repoDir/docs/data/Solo.yaml

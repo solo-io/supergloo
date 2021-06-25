@@ -1,0 +1,1 @@
+go run golang.org/x/tools/cmd/goimports "$@"

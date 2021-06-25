@@ -45,7 +45,7 @@ export GOBIN:=$(DEPSGOBIN)
 
 .PHONY: fmt
 fmt:
-	goimports -w $(shell ls -d */ | grep -v vendor)
+	go run golang.org/x/tools/cmd/goimports -w $(shell ls -d */ | grep -v vendor)
 
 .PHONY: mod-download
 mod-download:
@@ -56,17 +56,24 @@ clear-vendor-any:
 	rm -rf vendor_any
 
 # Dependencies for code generation
-.PHONY: install-go-tools
-install-go-tools: mod-download
-	mkdir -p $(DEPSGOBIN)
-	go install istio.io/tools/cmd/protoc-gen-jsonshim
-	go install github.com/golang/protobuf/protoc-gen-go@v1.4.0
-	go install github.com/solo-io/protoc-gen-ext@v0.0.15
-	go install github.com/golang/mock/mockgen@v1.5.0
-	go install golang.org/x/tools/cmd/goimports@v0.1.2
-	go install github.com/onsi/ginkgo/ginkgo
-	go install github.com/gobuffalo/packr/packr
-	go mod tidy
+mockgen: $(DEPSGOBIN)/mockgen
+$(DEPSGOBIN)/mockgen:
+	go build -o $@ github.com/golang/mock/mockgen
+
+protoc-gen-go: $(DEPSGOBIN)/protoc-gen-go
+$(DEPSGOBIN)/protoc-gen-go:
+	go build -o $@ github.com/golang/protobuf/protoc-gen-go
+
+protoc-gen-jsonshim: $(DEPSGOBIN)/protoc-gen-jsonshim
+$(DEPSGOBIN)/protoc-gen-jsonshim:
+	go build -o $@ istio.io/tools/cmd/protoc-gen-jsonshim
+
+protoc-gen-ext: $(DEPSGOBIN)/protoc-gen-ext
+$(DEPSGOBIN)/protoc-gen-ext:
+	go build -o $@ github.com/solo-io/protoc-gen-ext
+
+protoc-plugins: protoc-gen-go protoc-gen-ext protoc-gen-jsonshim
+
 
 # Call all generated code targets
 .PHONY: generated-code
@@ -82,7 +89,7 @@ generated-code: operator-gen \
 #----------------------------------------------------------------------------------
 
 # Run go-generate on all sub-packages
-go-generate:
+go-generate: mockgen
 	go generate -v ./...
 
 #----------------------------------------------------------------------------------
@@ -91,7 +98,7 @@ go-generate:
 
 # Generate Operator Code
 .PHONY: operator-gen
-operator-gen: clear-vendor-any
+operator-gen: clear-vendor-any protoc-plugins
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go
 
 #----------------------------------------------------------------------------------
@@ -185,27 +192,29 @@ cert-agent-image-load: cert-agent-image
 # Build gloo-mesh cli (meshctl)
 #----------------------------------------------------------------------------------
 
+PACKR := go run github.com/gobuffalo/packr/packr
+
 .PHONY: meshctl-linux-amd64
 meshctl-linux-amd64: $(OUTDIR)/meshctl-linux-amd64
 $(OUTDIR)/meshctl-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(PACKR) build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: meshctl-darwin-amd64
 meshctl-darwin-amd64: $(OUTDIR)/meshctl-darwin-amd64
 $(OUTDIR)/meshctl-darwin-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin $(PACKR) build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: meshctl-windows-amd64
 meshctl-windows-amd64: $(OUTDIR)/meshctl-windows-amd64.exe
 $(OUTDIR)/meshctl-windows-amd64.exe: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows $(PACKR) build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/meshctl/main.go
 
 .PHONY: build-cli
-build-cli: install-go-tools meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
+build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 
 .PHONY: install-cli
 install-cli:
-	packr build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
+	$(PACKR) build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o ${GOPATH}/bin/meshctl cmd/meshctl/main.go
 
 #----------------------------------------------------------------------------------
 # Push images
@@ -223,12 +232,12 @@ include $(HELM_ROOTDIR)/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
-chart-gen: clear-vendor-any install-go-tools
+chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
 manifest-gen: install/gloo-mesh-default.yaml
-	goimports -w $(shell ls -d */ | grep -v vendor)
+	go run golang.org/x/tools/cmd/goimports -w $(shell ls -d */ | grep -v vendor)
 	go mod tidy
 install/gloo-mesh-default.yaml: chart-gen
 	helm dependency update $(HELM_ROOTDIR)/gloo-mesh
@@ -242,7 +251,7 @@ install/gloo-mesh-default.yaml: chart-gen
 # set TEST_PKG to run a specific test package
 .PHONY: run-tests
 run-tests:
-	ginkgo -r -failFast -trace $(GINKGOFLAGS) \
+	go run github.com/onsi/ginkgo/ginkgo -r -failFast -trace $(GINKGOFLAGS) \
 		-ldflags=$(LDFLAGS) \
 		-gcflags=$(GCFLAGS) \
 		-progress \

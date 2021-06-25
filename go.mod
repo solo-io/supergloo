@@ -93,8 +93,11 @@ require (
 	github.com/stoewer/go-strcase v1.2.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.16.0
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
+	golang.org/x/tools v0.1.4
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/yaml.v2 v2.4.0

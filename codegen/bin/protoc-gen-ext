@@ -1,0 +1,1 @@
+go run github.com/solo-io/protoc-gen-ext "$@"
