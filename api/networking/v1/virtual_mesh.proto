@@ -4,12 +4,12 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.s
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/keepalive.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/certificates/v1/ca_options.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/duration.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -95,7 +95,7 @@ message VirtualMeshSpec {
         string hostname_suffix = 3;
 
         // Specify a keepalive rule for all destinations associated with this VirtualMesh
-        TCPKeepalive tcp_keepalive = 5;
+        .common.mesh.gloo.solo.io.TCPKeepalive tcp_keepalive = 5;
 
         // Selects a set of Destinations to federate to the referenced Meshes.
         message FederationSelector {
@@ -107,17 +107,6 @@ message VirtualMeshSpec {
             // The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
             // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
             repeated .core.skv2.solo.io.ObjectRef meshes = 2;
-        }
-
-        // Specify a keepalive rule for all destinations associated with this VirtualMesh
-        message TCPKeepalive {
-            uint32 probes = 1;
-            // The time duration a connection needs to be idle before keep-alive
-            // probes start being sent. Default is to use the OS level configuration.
-            google.protobuf.Duration time = 2;
-            // The time duration between keep-alive probes.
-            // Default is to use the OS level configuration.
-            google.protobuf.Duration  interval   = 3;
         }
     }
 

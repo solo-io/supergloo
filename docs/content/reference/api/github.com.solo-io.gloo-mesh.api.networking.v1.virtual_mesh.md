@@ -23,7 +23,6 @@ title: "virtual_mesh.proto"
   - [VirtualMeshSpec](#networking.mesh.gloo.solo.io.VirtualMeshSpec)
   - [VirtualMeshSpec.Federation](#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation)
   - [VirtualMeshSpec.Federation.FederationSelector](#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector)
-  - [VirtualMeshSpec.Federation.TCPKeepalive](#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.TCPKeepalive)
   - [VirtualMeshSpec.MTLSConfig](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig)
   - [VirtualMeshSpec.MTLSConfig.LimitedTrust](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust)
   - [VirtualMeshStatus](#networking.mesh.gloo.solo.io.VirtualMeshStatus)
@@ -100,7 +99,7 @@ Represents a logical grouping of Meshes for shared configuration and cross-mesh 
   | permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics. Expose all Destinations to all Workloads in this VirtualMesh. |
   | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations, rather than through an ingress gateway. This mode requires a flat network environment. This feature is exclusive to Gloo Mesh Enterprise. |
   | hostnameSuffix | string |  | Configure the suffix for hostnames of Destinations federated within this VirtualMesh. Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/), otherwise setting this field results in an error. If omitted, the hostname suffix defaults to "global". |
-  | tcpKeepalive | [networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.TCPKeepalive]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.TCPKeepalive" >}}) |  | Specify a keepalive rule for all destinations associated with this VirtualMesh |
+  | tcpKeepalive | [common.mesh.gloo.solo.io.TCPKeepalive]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.keepalive#common.mesh.gloo.solo.io.TCPKeepalive" >}}) |  | Specify a keepalive rule for all destinations associated with this VirtualMesh |
   
 
 
@@ -117,23 +116,6 @@ Selects a set of Destinations to federate to the referenced Meshes.
 | ----- | ---- | ----- | ----------- |
 | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be federated to external Meshes. If omitted, all Destinations will be selected. |
   | meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh. If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.TCPKeepalive"></a>
-
-### VirtualMeshSpec.Federation.TCPKeepalive
-Specify a keepalive rule for all destinations associated with this VirtualMesh
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| probes | uint32 |  |  |
-  | time | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration a connection needs to be idle before keep-alive probes start being sent. Default is to use the OS level configuration. |
-  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration between keep-alive probes. Default is to use the OS level configuration. |
   
 
 

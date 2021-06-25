@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
-    description: Add TCPKeepalive value to virtual mesh config. This sets the corresponding value in all istio destinations associated with this virtualmesh.
+    description: Extend VirtualMesh API with TCP keepalive config for ingress gateways on all meshes in the VirtualMesh.
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1678

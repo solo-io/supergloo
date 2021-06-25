@@ -38,7 +38,6 @@ title: "destination.proto"
   - [DestinationStatus](#discovery.mesh.gloo.solo.io.DestinationStatus)
   - [DestinationStatus.AppliedAccessPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy)
   - [DestinationStatus.AppliedFederation](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation)
-  - [DestinationStatus.AppliedFederation.TCPKeepalive](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.TCPKeepalive)
   - [DestinationStatus.AppliedTrafficPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy)
   - [DestinationStatus.RequiredSubsets](#discovery.mesh.gloo.solo.io.DestinationStatus.RequiredSubsets)
 
@@ -389,24 +388,7 @@ Describes the federation configuration applied to this Destination through a [Vi
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this Destination's `federated_hostname`. |
   | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   | virtualMeshRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh object. |
-  | tcpKeepalive | [discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.TCPKeepalive]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.TCPKeepalive" >}}) |  | Specify a keepalive rule for all destinations associated with this VirtualMesh |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation.TCPKeepalive"></a>
-
-### DestinationStatus.AppliedFederation.TCPKeepalive
-Specify a keepalive rule for all destinations associated with this VirtualMesh
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| probes | uint32 |  | (unless overridden, Linux defaults to 9.) |
-  | time | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration a connection needs to be idle before keep-alive probes start being sent. Default is to use the OS level configuration (unless overridden, Linux defaults to 7200s (ie 2 hours.) |
-  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration between keep-alive probes. Default is to use the OS level configuration (unless overridden, Linux defaults to 75s.) |
+  | tcpKeepalive | [common.mesh.gloo.solo.io.TCPKeepalive]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.keepalive#common.mesh.gloo.solo.io.TCPKeepalive" >}}) |  | Specify a keepalive rule for all destinations associated with this VirtualMesh |
   
 
 

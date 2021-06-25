@@ -2,8 +2,9 @@ package destinationrule
 
 import (
 	"context"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 	"reflect"
+
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
