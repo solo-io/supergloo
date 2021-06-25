@@ -134,11 +134,9 @@ func (t *translator) Translate(
 		}
 	}
 
-	contextutils.LoggerFrom(ctx).Infof("miles hi a")
 	// if Destination is in a different mesh than the sourceMeshInstallation, than it's a federated Destination
 	if sourceMeshInstallation != nil && kubeService.GetRef().GetClusterName() != sourceMeshInstallation.GetCluster() {
 
-		contextutils.LoggerFrom(ctx).Infof("miles hi c")
 		keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
 
 		// ensure the entire chain of values in the resulting dest rule is instantiated.
@@ -166,7 +164,6 @@ func (t *translator) Translate(
 	}
 
 	if t.userDestinationRules == nil {
-		contextutils.LoggerFrom(ctx).Infof("miles hi early end")
 		return destinationRule
 	}
 
