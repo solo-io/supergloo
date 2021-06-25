@@ -70,6 +70,21 @@ message IssuedCertificateSpec {
         IntermediateCertificateAuthority agent_ca = 8;
     }
 
+    message Rotation {
+
+        oneof desired_certificate_authority {
+            // Gloo Mesh CA options
+            RootCertificateAuthority desired_gloo_mesh_ca = 1;
+            // Agent CA options
+            IntermediateCertificateAuthority desired_agent_ca = 2;
+        }
+
+        CertificateRotationState state = 3;
+        
+    }   
+
+    Rotation rotation = 9;
+
 }
 
 // Set of options which represent the certificate authorities the management cluster can use

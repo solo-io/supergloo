@@ -101,6 +101,16 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetRotation()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRotation()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRotation(), target.GetRotation()) {
+			return false
+		}
+	}
+
 	switch m.CertificateAuthority.(type) {
 
 	case *IssuedCertificateSpec_GlooMeshCa:
@@ -222,6 +232,73 @@ func (m *IssuedCertificateStatus) Equal(that interface{}) bool {
 
 	if m.GetState() != target.GetState() {
 		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *IssuedCertificateSpec_Rotation) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*IssuedCertificateSpec_Rotation)
+	if !ok {
+		that2, ok := that.(IssuedCertificateSpec_Rotation)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetState() != target.GetState() {
+		return false
+	}
+
+	switch m.DesiredCertificateAuthority.(type) {
+
+	case *IssuedCertificateSpec_Rotation_DesiredGlooMeshCa:
+		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateSpec_Rotation_DesiredGlooMeshCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetDesiredGlooMeshCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetDesiredGlooMeshCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetDesiredGlooMeshCa(), target.GetDesiredGlooMeshCa()) {
+				return false
+			}
+		}
+
+	case *IssuedCertificateSpec_Rotation_DesiredAgentCa:
+		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateSpec_Rotation_DesiredAgentCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetDesiredAgentCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetDesiredAgentCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetDesiredAgentCa(), target.GetDesiredAgentCa()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.DesiredCertificateAuthority != target.DesiredCertificateAuthority {
+			return false
+		}
 	}
 
 	return true

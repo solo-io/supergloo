@@ -22,6 +22,85 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// State of Certificate Rotation
+// Possible states in which a CertificateRotation can exist.
+type CertificateRotationState int32
+
+const (
+	// No Certificate rotation is currently happening
+	CertificateRotationState_NOT_APPLICABLE CertificateRotationState = 0
+	// The CertificateRotation has yet to be picked up by the management-plane.
+	CertificateRotationState_PENDING CertificateRotationState = 1
+	// The CertificateRotation is underway, both roots are set, and the new root is being propogated
+	CertificateRotationState_ADDING_NEW_ROOT CertificateRotationState = 2
+	// The CertificateRotation is underway again.
+	// The initial verification is over, the traffic continues to work with both roots present.
+	// Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters
+	CertificateRotationState_PROPOGATING_NEW_INTERMEDIATE CertificateRotationState = 3
+	// The CertificateRotation is underway again.
+	// Removing the old-root from all data-plane clusters
+	CertificateRotationState_DELETING_OLD_ROOT CertificateRotationState = 4
+	// Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified.
+	// This can either be manual or in the future automated
+	CertificateRotationState_VERIFYING CertificateRotationState = 5
+	// The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
+	// been verified successfully.
+	CertificateRotationState_FINISHED CertificateRotationState = 6
+	// Processing the certificate rotation workflow failed.
+	CertificateRotationState_FAILED CertificateRotationState = 7
+)
+
+// Enum value maps for CertificateRotationState.
+var (
+	CertificateRotationState_name = map[int32]string{
+		0: "NOT_APPLICABLE",
+		1: "PENDING",
+		2: "ADDING_NEW_ROOT",
+		3: "PROPOGATING_NEW_INTERMEDIATE",
+		4: "DELETING_OLD_ROOT",
+		5: "VERIFYING",
+		6: "FINISHED",
+		7: "FAILED",
+	}
+	CertificateRotationState_value = map[string]int32{
+		"NOT_APPLICABLE":               0,
+		"PENDING":                      1,
+		"ADDING_NEW_ROOT":              2,
+		"PROPOGATING_NEW_INTERMEDIATE": 3,
+		"DELETING_OLD_ROOT":            4,
+		"VERIFYING":                    5,
+		"FINISHED":                     6,
+		"FAILED":                       7,
+	}
+)
+
+func (x CertificateRotationState) Enum() *CertificateRotationState {
+	p := new(CertificateRotationState)
+	*p = x
+	return p
+}
+
+func (x CertificateRotationState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CertificateRotationState) Descriptor() protoreflect.EnumDescriptor {
+	return file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumTypes[0].Descriptor()
+}
+
+func (CertificateRotationState) Type() protoreflect.EnumType {
+	return &file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumTypes[0]
+}
+
+func (x CertificateRotationState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CertificateRotationState.Descriptor instead.
+func (CertificateRotationState) EnumDescriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDescGZIP(), []int{0}
+}
+
 // Configuration for generating a self-signed root certificate.
 // Uses the X.509 format, RFC5280.
 type CommonCertOptions struct {
@@ -203,13 +282,24 @@ var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDe
 	0x32, 0x27, 0x2e, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x2e,
 	0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
 	0x6f, 0x2e, 0x56, 0x61, 0x75, 0x6c, 0x74, 0x43, 0x41, 0x48, 0x00, 0x52, 0x05, 0x76, 0x61, 0x75,
-	0x6c, 0x74, 0x42, 0x0b, 0x0a, 0x09, 0x63, 0x61, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42,
-	0x4c, 0x5a, 0x46, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f,
-	0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f,
-	0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63,
-	0x61, 0x74, 0x65, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73,
-	0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6c, 0x74, 0x42, 0x0b, 0x0a, 0x09, 0x63, 0x61, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x2a,
+	0xb2, 0x01, 0x0a, 0x18, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52,
+	0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x12, 0x0a, 0x0e,
+	0x4e, 0x4f, 0x54, 0x5f, 0x41, 0x50, 0x50, 0x4c, 0x49, 0x43, 0x41, 0x42, 0x4c, 0x45, 0x10, 0x00,
+	0x12, 0x0b, 0x0a, 0x07, 0x50, 0x45, 0x4e, 0x44, 0x49, 0x4e, 0x47, 0x10, 0x01, 0x12, 0x13, 0x0a,
+	0x0f, 0x41, 0x44, 0x44, 0x49, 0x4e, 0x47, 0x5f, 0x4e, 0x45, 0x57, 0x5f, 0x52, 0x4f, 0x4f, 0x54,
+	0x10, 0x02, 0x12, 0x20, 0x0a, 0x1c, 0x50, 0x52, 0x4f, 0x50, 0x4f, 0x47, 0x41, 0x54, 0x49, 0x4e,
+	0x47, 0x5f, 0x4e, 0x45, 0x57, 0x5f, 0x49, 0x4e, 0x54, 0x45, 0x52, 0x4d, 0x45, 0x44, 0x49, 0x41,
+	0x54, 0x45, 0x10, 0x03, 0x12, 0x15, 0x0a, 0x11, 0x44, 0x45, 0x4c, 0x45, 0x54, 0x49, 0x4e, 0x47,
+	0x5f, 0x4f, 0x4c, 0x44, 0x5f, 0x52, 0x4f, 0x4f, 0x54, 0x10, 0x04, 0x12, 0x0d, 0x0a, 0x09, 0x56,
+	0x45, 0x52, 0x49, 0x46, 0x59, 0x49, 0x4e, 0x47, 0x10, 0x05, 0x12, 0x0c, 0x0a, 0x08, 0x46, 0x49,
+	0x4e, 0x49, 0x53, 0x48, 0x45, 0x44, 0x10, 0x06, 0x12, 0x0a, 0x0a, 0x06, 0x46, 0x41, 0x49, 0x4c,
+	0x45, 0x44, 0x10, 0x07, 0x42, 0x4c, 0x5a, 0x46, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d,
+	0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x65, 0x72,
+	0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
+	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5,
+	0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -224,14 +314,16 @@ func file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawD
 	return file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDescData
 }
 
+var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_goTypes = []interface{}{
-	(*CommonCertOptions)(nil),                // 0: certificates.mesh.gloo.solo.io.CommonCertOptions
-	(*IntermediateCertificateAuthority)(nil), // 1: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
-	(*VaultCA)(nil),                          // 2: certificates.mesh.gloo.solo.io.VaultCA
+	(CertificateRotationState)(0),            // 0: certificates.mesh.gloo.solo.io.CertificateRotationState
+	(*CommonCertOptions)(nil),                // 1: certificates.mesh.gloo.solo.io.CommonCertOptions
+	(*IntermediateCertificateAuthority)(nil), // 2: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
+	(*VaultCA)(nil),                          // 3: certificates.mesh.gloo.solo.io.VaultCA
 }
 var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_depIdxs = []int32{
-	2, // 0: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority.vault:type_name -> certificates.mesh.gloo.solo.io.VaultCA
+	3, // 0: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority.vault:type_name -> certificates.mesh.gloo.solo.io.VaultCA
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -279,13 +371,14 @@ func file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_init
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDesc,
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_goTypes,
 		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_depIdxs,
+		EnumInfos:         file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumTypes,
 		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_msgTypes,
 	}.Build()
 	File_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto = out.File

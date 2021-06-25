@@ -26,13 +26,12 @@ title: "virtual_mesh.proto"
   - [VirtualMeshSpec.MTLSConfig](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig)
   - [VirtualMeshSpec.MTLSConfig.LimitedTrust](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust)
   - [VirtualMeshStatus](#networking.mesh.gloo.solo.io.VirtualMeshStatus)
-  - [VirtualMeshStatus.AppliedCertifiacateByMeshEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertifiacateByMeshEntry)
   - [VirtualMeshStatus.AppliedCertificateStatus](#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus)
+  - [VirtualMeshStatus.CertificateRotationCondition](#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition)
   - [VirtualMeshStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry)
   - [VirtualMeshStatus.MeshesEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry)
 
   - [VirtualMeshSpec.GlobalAccessPolicy](#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy)
-  - [VirtualMeshStatus.AppliedCertificateStatus.CertificateRotationState](#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus.CertificateRotationState)
 
 
 
@@ -164,23 +163,8 @@ Limited trust is a trust model which does not require trusting Meshes to share t
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
   | destinations | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry" >}}) | repeated | The status of the VirtualMesh for each Destination to which it has been applied. A VirtualMesh may be Accepted for some Destinations and rejected for others. |
-  | appliedCertifiacateByMesh | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertifiacateByMeshEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertifiacateByMeshEntry" >}}) | repeated |  |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertifiacateByMeshEntry"></a>
-
-### VirtualMeshStatus.AppliedCertifiacateByMeshEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus" >}}) |  |  |
+  | appliedCertificate | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus" >}}) |  |  |
+  | certRotationConditions | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition" >}}) | repeated |  |
   
 
 
@@ -196,7 +180,24 @@ Limited trust is a trust model which does not require trusting Meshes to share t
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | sharedTrust | [networking.mesh.gloo.solo.io.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.SharedTrust" >}}) |  |  |
-  | certRotationState | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus.CertificateRotationState" >}}) |  |  |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition"></a>
+
+### VirtualMeshStatus.CertificateRotationCondition
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| timestamp | string |  | The time at which this condition was recorded |
+  | state | [certificates.mesh.gloo.solo.io.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationState" >}}) |  | The current state of the cert rotation |
+  | message | string |  | A human readable message related to the current condition |
+  | errors | []string | repeated | Any errors which occured during the current rotation stage |
   
 
 
@@ -247,23 +248,6 @@ Specify a global access policy for all Workloads and Destinations associated wit
 | MESH_DEFAULT | 0 | Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`. |
 | ENABLED | 1 | Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" >}}). |
 | DISABLED | 2 | Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy/" >}}). |
-
-
-
-<a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus.CertificateRotationState"></a>
-
-### VirtualMeshStatus.AppliedCertificateStatus.CertificateRotationState
-State of Certificate Rotation Possible states in which a CertificateRotation can exist.
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| PENDING | 0 | The CertificateRotation has yet to be picked up by the management-plane. |
-| ADDING_NEW_ROOT | 1 | The CertificateRotation is underway, both roots are set, and the new root is being propogated |
-| PROPOGATING_NEW_INTERMEDIATE | 2 | The CertificateRotation is underway again. The initial verification is over, the traffic continues to work with both roots present. Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters |
-| DELETING_OLD_ROOT | 3 | The CertificateRotation is underway again. Removing the old-root from all data-plane clusters |
-| VERIFYING | 4 | Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified. This can either be manual or in the future automated |
-| FINISHED | 5 | The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has been verified successfully. |
-| FAILED | 6 | Processing the certificate rotation workflow failed. |
 
 
  <!-- end enums -->

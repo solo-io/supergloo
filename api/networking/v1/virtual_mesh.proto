@@ -187,40 +187,28 @@ message VirtualMeshStatus {
         // Reserve for limited trust when it's implemented
         reserved 2;
 
-        // State of Certificate Rotation
-        // Possible states in which a CertificateRotation can exist.
-        enum CertificateRotationState {
-            // The CertificateRotation has yet to be picked up by the management-plane.
-            PENDING = 0;
+    }
 
-            // The CertificateRotation is underway, both roots are set, and the new root is being propogated 
-            ADDING_NEW_ROOT = 1;
+    AppliedCertificateStatus applied_certificate = 6;
 
-            // The CertificateRotation is underway again.
-            // The initial verification is over, the traffic continues to work with both roots present.
-            // Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters
-            PROPOGATING_NEW_INTERMEDIATE = 2;
+    // map<string, AppliedCertificateStatus> applied_certifiacate_by_mesh = 6;
 
-            // The CertificateRotation is underway again.
-            // Removing the old-root from all data-plane clusters
-            DELETING_OLD_ROOT = 3;
+    message CertificateRotationCondition {
+        
+        // The time at which this condition was recorded
+        string timestamp = 1;
 
-            // Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified.
-            // This can either be manual or in the future automated
-            VERIFYING = 4;
+        // The current state of the cert rotation
+        .certificates.mesh.gloo.solo.io.CertificateRotationState state = 2;
 
-            // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
-            // been verified successfully.
-            FINISHED = 5;
+        // A human readable message related to the current condition
+        string message = 3;
 
-            // Processing the certificate rotation workflow failed.
-            FAILED = 6;
-        }
-
-        CertificateRotationState cert_rotation_state = 3;
+        // Any errors which occured during the current rotation stage
+        repeated string errors = 4;
 
     }
 
-    map<string, AppliedCertificateStatus> applied_certifiacate_by_mesh = 6;
+    repeated CertificateRotationCondition cert_rotation_conditions = 7;
 
 }

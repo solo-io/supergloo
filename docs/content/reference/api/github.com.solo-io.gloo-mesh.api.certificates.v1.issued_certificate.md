@@ -19,6 +19,7 @@ title: "issued_certificate.proto"
 
 ## Table of Contents
   - [IssuedCertificateSpec](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec)
+  - [IssuedCertificateSpec.Rotation](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec.Rotation)
   - [IssuedCertificateStatus](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus)
   - [RootCertificateAuthority](#certificates.mesh.gloo.solo.io.RootCertificateAuthority)
 
@@ -45,6 +46,24 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
   | certOptions | [certificates.mesh.gloo.solo.io.CommonCertOptions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CommonCertOptions" >}}) |  | Set of options to configure the intermediate certificate being generated |
   | glooMeshCa | [certificates.mesh.gloo.solo.io.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.RootCertificateAuthority" >}}) |  | Gloo Mesh CA options |
   | agentCa | [certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority" >}}) |  | Agent CA options |
+  | rotation | [certificates.mesh.gloo.solo.io.IssuedCertificateSpec.Rotation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateSpec.Rotation" >}}) |  |  |
+  
+
+
+
+
+
+<a name="certificates.mesh.gloo.solo.io.IssuedCertificateSpec.Rotation"></a>
+
+### IssuedCertificateSpec.Rotation
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| desiredGlooMeshCa | [certificates.mesh.gloo.solo.io.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.RootCertificateAuthority" >}}) |  | Gloo Mesh CA options |
+  | desiredAgentCa | [certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority" >}}) |  | Agent CA options |
+  | state | [certificates.mesh.gloo.solo.io.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationState" >}}) |  |  |
   
 
 
