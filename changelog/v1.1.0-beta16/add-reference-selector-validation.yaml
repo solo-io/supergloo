@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add validation for reference-based selectors. Report an error to CR status if missing any fields (`name`, `namespace`, or `clusterName`).
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/686
+
