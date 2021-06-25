@@ -266,13 +266,13 @@ message TrafficPolicySpec {
         repeated .core.skv2.solo.io.ObjectRef virtual_host_refs = 1;
 
         // Select Virtual Hosts by label/namespace
-        .common.mesh.gloo.solo.io.ObjectSelector virtual_host_selector = 2;
+        .core.skv2.solo.io.ObjectSelector virtual_host_selector = 2;
 
         // Select Route Tables by Reference
         repeated .core.skv2.solo.io.ObjectRef route_table_refs = 3;
 
         // Select Route Tables by label/namespace
-        .common.mesh.gloo.solo.io.ObjectSelector route_table_selector = 4;
+        .core.skv2.solo.io.ObjectSelector route_table_selector = 4;
 
         // Map of route labels to match. All labels listed here must be
         // present on a route for that route to be considered matched.
