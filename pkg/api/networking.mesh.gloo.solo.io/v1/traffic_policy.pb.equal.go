@@ -195,6 +195,58 @@ func (m *TrafficPolicyStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetGatewayRoutes()) != len(target.GetGatewayRoutes()) {
+		return false
+	}
+	for k, v := range m.GetGatewayRoutes() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGatewayRoutes()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetGatewayRoutes()[k]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *GatewayRoutes) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GatewayRoutes)
+	if !ok {
+		that2, ok := that.(GatewayRoutes)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetRoutes()) != len(target.GetRoutes()) {
+		return false
+	}
+	for idx, v := range m.GetRoutes() {
+
+		if strings.Compare(v, target.GetRoutes()[idx]) != 0 {
+			return false
+		}
+
+	}
+
 	return true
 }
 

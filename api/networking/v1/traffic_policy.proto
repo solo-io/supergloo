@@ -301,5 +301,15 @@ message TrafficPolicyStatus {
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
+
+    // The Gateway resoures to which this traffic policy has been applied.
+    // The resource names are in the format `name.namespace (resourceType)`
+    map<string, GatewayRoutes> gateway_routes = 6;
 }
 
+// Represents a specific gateway resource and which routes on that resource have been selected
+message GatewayRoutes {
+    // The list of routes selected. If no routeLabelMatcher was provided,
+    // the value "*" will be used to indicate all routes were selected.
+    repeated string routes = 4;
+}

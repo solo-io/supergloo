@@ -209,6 +209,9 @@ type TrafficPolicyStatus struct {
 	Workloads []string `protobuf:"bytes,4,rep,name=workloads,proto3" json:"workloads,omitempty"`
 	// Any errors found while processing this generation of the resource.
 	Errors []string `protobuf:"bytes,5,rep,name=errors,proto3" json:"errors,omitempty"`
+	// The Gateway resoures to which this traffic policy has been applied.
+	// The resource names are in the format `name.namespace (resourceType)`
+	GatewayRoutes map[string]*GatewayRoutes `protobuf:"bytes,6,rep,name=gateway_routes,json=gatewayRoutes,proto3" json:"gateway_routes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *TrafficPolicyStatus) Reset() {
@@ -278,6 +281,63 @@ func (x *TrafficPolicyStatus) GetErrors() []string {
 	return nil
 }
 
+func (x *TrafficPolicyStatus) GetGatewayRoutes() map[string]*GatewayRoutes {
+	if x != nil {
+		return x.GatewayRoutes
+	}
+	return nil
+}
+
+// Represents a specific gateway resource and which routes on that resource have been selected
+type GatewayRoutes struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The list of routes selected. If no routeLabelMatcher was provided,
+	// the value "*" will be used to indicate all routes were selected.
+	Routes []string `protobuf:"bytes,4,rep,name=routes,proto3" json:"routes,omitempty"`
+}
+
+func (x *GatewayRoutes) Reset() {
+	*x = GatewayRoutes{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GatewayRoutes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GatewayRoutes) ProtoMessage() {}
+
+func (x *GatewayRoutes) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GatewayRoutes.ProtoReflect.Descriptor instead.
+func (*GatewayRoutes) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GatewayRoutes) GetRoutes() []string {
+	if x != nil {
+		return x.Routes
+	}
+	return nil
+}
+
 // Specify L7 routing and post-routing configuration.
 type TrafficPolicySpec_Policy struct {
 	state         protoimpl.MessageState
@@ -315,7 +375,7 @@ type TrafficPolicySpec_Policy struct {
 func (x *TrafficPolicySpec_Policy) Reset() {
 	*x = TrafficPolicySpec_Policy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[2]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -328,7 +388,7 @@ func (x *TrafficPolicySpec_Policy) String() string {
 func (*TrafficPolicySpec_Policy) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[2]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -457,7 +517,7 @@ type TrafficPolicySpec_RouteSelector struct {
 func (x *TrafficPolicySpec_RouteSelector) Reset() {
 	*x = TrafficPolicySpec_RouteSelector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[3]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -470,12 +530,17 @@ func (x *TrafficPolicySpec_RouteSelector) String() string {
 func (*TrafficPolicySpec_RouteSelector) ProtoMessage() {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 func (x *TrafficPolicySpec_GatewaySelector) ProtoReflect() protoreflect.Message {
 	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[3]
 =======
 func (x *TrafficPolicySpec_RouteSelector) ProtoReflect() protoreflect.Message {
 	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5]
 >>>>>>> 940ca5bae (TrafficPolicies can now select RouteTables, and labelled routes)
+=======
+func (x *TrafficPolicySpec_RouteSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[4]
+>>>>>>> 7279098b1 (Add Gateways to TrafficPolicy Status)
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -541,7 +606,7 @@ type TrafficPolicySpec_Policy_RetryPolicy struct {
 func (x *TrafficPolicySpec_Policy_RetryPolicy) Reset() {
 	*x = TrafficPolicySpec_Policy_RetryPolicy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[4]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -554,7 +619,7 @@ func (x *TrafficPolicySpec_Policy_RetryPolicy) String() string {
 func (*TrafficPolicySpec_Policy_RetryPolicy) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_RetryPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[4]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -597,7 +662,7 @@ type TrafficPolicySpec_Policy_MultiDestination struct {
 func (x *TrafficPolicySpec_Policy_MultiDestination) Reset() {
 	*x = TrafficPolicySpec_Policy_MultiDestination{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -610,7 +675,7 @@ func (x *TrafficPolicySpec_Policy_MultiDestination) String() string {
 func (*TrafficPolicySpec_Policy_MultiDestination) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_MultiDestination) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -652,7 +717,7 @@ type TrafficPolicySpec_Policy_FaultInjection struct {
 func (x *TrafficPolicySpec_Policy_FaultInjection) Reset() {
 	*x = TrafficPolicySpec_Policy_FaultInjection{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[6]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -665,7 +730,7 @@ func (x *TrafficPolicySpec_Policy_FaultInjection) String() string {
 func (*TrafficPolicySpec_Policy_FaultInjection) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_FaultInjection) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[6]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -759,7 +824,7 @@ type TrafficPolicySpec_Policy_CorsPolicy struct {
 func (x *TrafficPolicySpec_Policy_CorsPolicy) Reset() {
 	*x = TrafficPolicySpec_Policy_CorsPolicy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[7]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -772,7 +837,7 @@ func (x *TrafficPolicySpec_Policy_CorsPolicy) String() string {
 func (*TrafficPolicySpec_Policy_CorsPolicy) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_CorsPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[7]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -850,7 +915,7 @@ type TrafficPolicySpec_Policy_Mirror struct {
 func (x *TrafficPolicySpec_Policy_Mirror) Reset() {
 	*x = TrafficPolicySpec_Policy_Mirror{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[8]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -863,7 +928,7 @@ func (x *TrafficPolicySpec_Policy_Mirror) String() string {
 func (*TrafficPolicySpec_Policy_Mirror) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_Mirror) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[8]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -941,7 +1006,7 @@ type TrafficPolicySpec_Policy_OutlierDetection struct {
 func (x *TrafficPolicySpec_Policy_OutlierDetection) Reset() {
 	*x = TrafficPolicySpec_Policy_OutlierDetection{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[9]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -954,7 +1019,7 @@ func (x *TrafficPolicySpec_Policy_OutlierDetection) String() string {
 func (*TrafficPolicySpec_Policy_OutlierDetection) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_OutlierDetection) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[9]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1012,7 +1077,7 @@ type TrafficPolicySpec_Policy_MTLS struct {
 func (x *TrafficPolicySpec_Policy_MTLS) Reset() {
 	*x = TrafficPolicySpec_Policy_MTLS{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[10]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1025,7 +1090,7 @@ func (x *TrafficPolicySpec_Policy_MTLS) String() string {
 func (*TrafficPolicySpec_Policy_MTLS) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_MTLS) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[10]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1061,7 +1126,7 @@ type TrafficPolicySpec_Policy_Transform struct {
 func (x *TrafficPolicySpec_Policy_Transform) Reset() {
 	*x = TrafficPolicySpec_Policy_Transform{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[11]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1074,7 +1139,7 @@ func (x *TrafficPolicySpec_Policy_Transform) String() string {
 func (*TrafficPolicySpec_Policy_Transform) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_Transform) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[11]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1110,7 +1175,7 @@ type TrafficPolicySpec_Policy_DLPPolicy struct {
 func (x *TrafficPolicySpec_Policy_DLPPolicy) Reset() {
 	*x = TrafficPolicySpec_Policy_DLPPolicy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[12]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1123,7 +1188,7 @@ func (x *TrafficPolicySpec_Policy_DLPPolicy) String() string {
 func (*TrafficPolicySpec_Policy_DLPPolicy) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_DLPPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[12]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1159,7 +1224,7 @@ type TrafficPolicySpec_Policy_ExtAuth struct {
 func (x *TrafficPolicySpec_Policy_ExtAuth) Reset() {
 	*x = TrafficPolicySpec_Policy_ExtAuth{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[13]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1172,7 +1237,7 @@ func (x *TrafficPolicySpec_Policy_ExtAuth) String() string {
 func (*TrafficPolicySpec_Policy_ExtAuth) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_ExtAuth) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[13]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1208,7 +1273,7 @@ type TrafficPolicySpec_Policy_FaultInjection_Abort struct {
 func (x *TrafficPolicySpec_Policy_FaultInjection_Abort) Reset() {
 	*x = TrafficPolicySpec_Policy_FaultInjection_Abort{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[14]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1221,7 +1286,7 @@ func (x *TrafficPolicySpec_Policy_FaultInjection_Abort) String() string {
 func (*TrafficPolicySpec_Policy_FaultInjection_Abort) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_FaultInjection_Abort) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[14]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1257,7 +1322,7 @@ type TrafficPolicySpec_Policy_MTLS_Istio struct {
 func (x *TrafficPolicySpec_Policy_MTLS_Istio) Reset() {
 	*x = TrafficPolicySpec_Policy_MTLS_Istio{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[15]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1270,7 +1335,7 @@ func (x *TrafficPolicySpec_Policy_MTLS_Istio) String() string {
 func (*TrafficPolicySpec_Policy_MTLS_Istio) ProtoMessage() {}
 
 func (x *TrafficPolicySpec_Policy_MTLS_Istio) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[15]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1765,6 +1830,7 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_raw
 	0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f,
 	0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c,
 	0x69, 0x63, 0x79, 0x53, 0x70, 0x65, 0x63, 0x2e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x2e, 0x4d,
+<<<<<<< HEAD
 	0x54, 0x4c, 0x53, 0x2e, 0x49, 0x73, 0x74, 0x69, 0x6f, 0x52, 0x05, 0x69, 0x73, 0x74, 0x69, 0x6f,
 	0x1a, 0xa3, 0x01, 0x0a, 0x05, 0x49, 0x73, 0x74, 0x69, 0x6f, 0x12, 0x64, 0x0a, 0x08, 0x74, 0x6c,
 	0x73, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x49, 0x2e, 0x6e,
@@ -1875,6 +1941,100 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_raw
 	0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f,
 	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62,
 	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+=======
+	0x54, 0x4c, 0x53, 0x2e, 0x49, 0x73, 0x74, 0x69, 0x6f, 0x2e, 0x54, 0x4c, 0x53, 0x6d, 0x6f, 0x64,
+	0x65, 0x52, 0x07, 0x74, 0x6c, 0x73, 0x4d, 0x6f, 0x64, 0x65, 0x22, 0x34, 0x0a, 0x07, 0x54, 0x4c,
+	0x53, 0x6d, 0x6f, 0x64, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x44, 0x49, 0x53, 0x41, 0x42, 0x4c, 0x45,
+	0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x53, 0x49, 0x4d, 0x50, 0x4c, 0x45, 0x10, 0x01, 0x12, 0x10,
+	0x0a, 0x0c, 0x49, 0x53, 0x54, 0x49, 0x4f, 0x5f, 0x4d, 0x55, 0x54, 0x55, 0x41, 0x4c, 0x10, 0x02,
+	0x1a, 0x1f, 0x0a, 0x09, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x6f, 0x72, 0x6d, 0x12, 0x12, 0x0a,
+	0x04, 0x74, 0x6f, 0x64, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x6f, 0x64,
+	0x6f, 0x1a, 0x1f, 0x0a, 0x09, 0x44, 0x4c, 0x50, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x12,
+	0x0a, 0x04, 0x74, 0x6f, 0x64, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x6f,
+	0x64, 0x6f, 0x1a, 0x1d, 0x0a, 0x07, 0x45, 0x78, 0x74, 0x41, 0x75, 0x74, 0x68, 0x12, 0x12, 0x0a,
+	0x04, 0x74, 0x6f, 0x64, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x6f, 0x64,
+	0x6f, 0x1a, 0x9a, 0x04, 0x0a, 0x0d, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x53, 0x65, 0x6c, 0x65, 0x63,
+	0x74, 0x6f, 0x72, 0x12, 0x48, 0x0a, 0x11, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x68,
+	0x6f, 0x73, 0x74, 0x5f, 0x72, 0x65, 0x66, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c,
+	0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
+	0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x0f, 0x76, 0x69,
+	0x72, 0x74, 0x75, 0x61, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x52, 0x65, 0x66, 0x73, 0x12, 0x55, 0x0a,
+	0x15, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x68, 0x6f, 0x73, 0x74, 0x5f, 0x73, 0x65,
+	0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x63,
+	0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
+	0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52,
+	0x13, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x53, 0x65, 0x6c, 0x65,
+	0x63, 0x74, 0x6f, 0x72, 0x12, 0x46, 0x0a, 0x10, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x5f, 0x74, 0x61,
+	0x62, 0x6c, 0x65, 0x5f, 0x72, 0x65, 0x66, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c,
+	0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e,
+	0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x0e, 0x72, 0x6f,
+	0x75, 0x74, 0x65, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x52, 0x65, 0x66, 0x73, 0x12, 0x53, 0x0a, 0x14,
+	0x72, 0x6f, 0x75, 0x74, 0x65, 0x5f, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x6c, 0x65,
+	0x63, 0x74, 0x6f, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x63, 0x6f, 0x72,
+	0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x12, 0x72,
+	0x6f, 0x75, 0x74, 0x65, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f,
+	0x72, 0x12, 0x84, 0x01, 0x0a, 0x13, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x5f, 0x6c, 0x61, 0x62, 0x65,
+	0x6c, 0x5f, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x54, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73,
+	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54,
+	0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x70, 0x65, 0x63,
+	0x2e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x2e, 0x52,
+	0x6f, 0x75, 0x74, 0x65, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x11, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x4c, 0x61, 0x62, 0x65,
+	0x6c, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x1a, 0x44, 0x0a, 0x16, 0x52, 0x6f, 0x75, 0x74,
+	0x65, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0xef,
+	0x04, 0x0a, 0x13, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x2f, 0x0a, 0x13, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x64, 0x5f, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e,
+	0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x3d, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x27, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
+	0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
+	0x6f, 0x2e, 0x41, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52,
+	0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x67, 0x0a, 0x0c, 0x64, 0x65, 0x73, 0x74, 0x69, 0x6e,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x43, 0x2e, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
+	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66,
+	0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2e,
+	0x44, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72,
+	0x79, 0x52, 0x0c, 0x64, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12,
+	0x1c, 0x0a, 0x09, 0x77, 0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x73, 0x18, 0x04, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x09, 0x77, 0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x73, 0x12, 0x16, 0x0a,
+	0x06, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x65,
+	0x72, 0x72, 0x6f, 0x72, 0x73, 0x12, 0x6b, 0x0a, 0x0e, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79,
+	0x5f, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x44, 0x2e,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e,
+	0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61,
+	0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x2e, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x45, 0x6e,
+	0x74, 0x72, 0x79, 0x52, 0x0d, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52, 0x6f, 0x75, 0x74,
+	0x65, 0x73, 0x1a, 0x6d, 0x0a, 0x11, 0x44, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x42, 0x0a, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x41, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38,
+	0x01, 0x1a, 0x6d, 0x0a, 0x12, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52, 0x6f, 0x75, 0x74,
+	0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x41, 0x0a, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52,
+	0x6f, 0x75, 0x74, 0x65, 0x73, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01,
+	0x22, 0x27, 0x0a, 0x0d, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52, 0x6f, 0x75, 0x74, 0x65,
+	0x73, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28,
+	0x09, 0x52, 0x06, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x73, 0x42, 0x4a, 0x5a, 0x44, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f,
+	0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73,
+	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76,
+	0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+>>>>>>> 7279098b1 (Add Gateways to TrafficPolicy Status)
 }
 
 var (
@@ -1890,11 +2050,12 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_ra
 }
 
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_goTypes = []interface{}{
 	(TrafficPolicySpec_Policy_MTLS_Istio_TLSmode)(0),      // 0: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio.TLSmode
 	(*TrafficPolicySpec)(nil),                             // 1: networking.mesh.gloo.solo.io.TrafficPolicySpec
 	(*TrafficPolicyStatus)(nil),                           // 2: networking.mesh.gloo.solo.io.TrafficPolicyStatus
+<<<<<<< HEAD
 <<<<<<< HEAD
 	(*TrafficPolicySpec_Policy)(nil),                      // 3: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
 	(*TrafficPolicySpec_GatewaySelector)(nil),             // 4: networking.mesh.gloo.solo.io.TrafficPolicySpec.GatewaySelector
@@ -2042,6 +2203,86 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_dep
 	36, // [36:36] is the sub-list for extension extendee
 	0,  // [0:36] is the sub-list for field type_name
 >>>>>>> 940ca5bae (TrafficPolicies can now select RouteTables, and labelled routes)
+=======
+	(*GatewayRoutes)(nil),                                 // 3: networking.mesh.gloo.solo.io.GatewayRoutes
+	(*TrafficPolicySpec_Policy)(nil),                      // 4: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
+	(*TrafficPolicySpec_RouteSelector)(nil),               // 5: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector
+	(*TrafficPolicySpec_Policy_RetryPolicy)(nil),          // 6: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy
+	(*TrafficPolicySpec_Policy_MultiDestination)(nil),     // 7: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination
+	(*TrafficPolicySpec_Policy_FaultInjection)(nil),       // 8: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection
+	(*TrafficPolicySpec_Policy_CorsPolicy)(nil),           // 9: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy
+	(*TrafficPolicySpec_Policy_Mirror)(nil),               // 10: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror
+	(*TrafficPolicySpec_Policy_OutlierDetection)(nil),     // 11: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection
+	(*TrafficPolicySpec_Policy_MTLS)(nil),                 // 12: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS
+	(*TrafficPolicySpec_Policy_Transform)(nil),            // 13: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Transform
+	(*TrafficPolicySpec_Policy_DLPPolicy)(nil),            // 14: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.DLPPolicy
+	(*TrafficPolicySpec_Policy_ExtAuth)(nil),              // 15: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.ExtAuth
+	(*TrafficPolicySpec_Policy_FaultInjection_Abort)(nil), // 16: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.Abort
+	(*TrafficPolicySpec_Policy_MTLS_Istio)(nil),           // 17: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio
+	nil,                              // 18: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry
+	nil,                              // 19: networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry
+	nil,                              // 20: networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry
+	(*v1.WorkloadSelector)(nil),      // 21: common.mesh.gloo.solo.io.WorkloadSelector
+	(*v1.DestinationSelector)(nil),   // 22: common.mesh.gloo.solo.io.DestinationSelector
+	(*HttpMatcher)(nil),              // 23: networking.mesh.gloo.solo.io.HttpMatcher
+	(v1.ApprovalState)(0),            // 24: common.mesh.gloo.solo.io.ApprovalState
+	(*duration.Duration)(nil),        // 25: google.protobuf.Duration
+	(*HeaderManipulation)(nil),       // 26: networking.mesh.gloo.solo.io.HeaderManipulation
+	(*csrf.CsrfPolicy)(nil),          // 27: csrf.networking.mesh.gloo.solo.io.CsrfPolicy
+	(*ratelimit.RouteRateLimit)(nil), // 28: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit
+	(*v11.ObjectRef)(nil),            // 29: core.skv2.solo.io.ObjectRef
+	(*v11.ObjectSelector)(nil),       // 30: core.skv2.solo.io.ObjectSelector
+	(*WeightedDestination)(nil),      // 31: networking.mesh.gloo.solo.io.WeightedDestination
+	(*v1.StringMatch)(nil),           // 32: common.mesh.gloo.solo.io.StringMatch
+	(*wrappers.BoolValue)(nil),       // 33: google.protobuf.BoolValue
+	(*v11.ClusterObjectRef)(nil),     // 34: core.skv2.solo.io.ClusterObjectRef
+	(*ApprovalStatus)(nil),           // 35: networking.mesh.gloo.solo.io.ApprovalStatus
+}
+var file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_depIdxs = []int32{
+	21, // 0: networking.mesh.gloo.solo.io.TrafficPolicySpec.source_selector:type_name -> common.mesh.gloo.solo.io.WorkloadSelector
+	22, // 1: networking.mesh.gloo.solo.io.TrafficPolicySpec.destination_selector:type_name -> common.mesh.gloo.solo.io.DestinationSelector
+	5,  // 2: networking.mesh.gloo.solo.io.TrafficPolicySpec.route_selector:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector
+	23, // 3: networking.mesh.gloo.solo.io.TrafficPolicySpec.http_request_matchers:type_name -> networking.mesh.gloo.solo.io.HttpMatcher
+	4,  // 4: networking.mesh.gloo.solo.io.TrafficPolicySpec.policy:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy
+	24, // 5: networking.mesh.gloo.solo.io.TrafficPolicyStatus.state:type_name -> common.mesh.gloo.solo.io.ApprovalState
+	19, // 6: networking.mesh.gloo.solo.io.TrafficPolicyStatus.destinations:type_name -> networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry
+	20, // 7: networking.mesh.gloo.solo.io.TrafficPolicyStatus.gateway_routes:type_name -> networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry
+	7,  // 8: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.traffic_shift:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination
+	8,  // 9: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.fault_injection:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection
+	25, // 10: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.request_timeout:type_name -> google.protobuf.Duration
+	6,  // 11: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.retries:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy
+	9,  // 12: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.cors_policy:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy
+	10, // 13: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.mirror:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror
+	26, // 14: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.header_manipulation:type_name -> networking.mesh.gloo.solo.io.HeaderManipulation
+	11, // 15: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.outlier_detection:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection
+	12, // 16: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.mtls:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS
+	27, // 17: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.csrf:type_name -> csrf.networking.mesh.gloo.solo.io.CsrfPolicy
+	28, // 18: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.rate_limit:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit
+	29, // 19: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.virtual_host_refs:type_name -> core.skv2.solo.io.ObjectRef
+	30, // 20: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.virtual_host_selector:type_name -> core.skv2.solo.io.ObjectSelector
+	29, // 21: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.route_table_refs:type_name -> core.skv2.solo.io.ObjectRef
+	30, // 22: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.route_table_selector:type_name -> core.skv2.solo.io.ObjectSelector
+	18, // 23: networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.route_label_matcher:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry
+	25, // 24: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy.per_try_timeout:type_name -> google.protobuf.Duration
+	31, // 25: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.destinations:type_name -> networking.mesh.gloo.solo.io.WeightedDestination
+	25, // 26: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.fixed_delay:type_name -> google.protobuf.Duration
+	16, // 27: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.abort:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.Abort
+	32, // 28: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.allow_origins:type_name -> common.mesh.gloo.solo.io.StringMatch
+	25, // 29: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.max_age:type_name -> google.protobuf.Duration
+	33, // 30: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.allow_credentials:type_name -> google.protobuf.BoolValue
+	34, // 31: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror.kube_service:type_name -> core.skv2.solo.io.ClusterObjectRef
+	25, // 32: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection.interval:type_name -> google.protobuf.Duration
+	25, // 33: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection.base_ejection_time:type_name -> google.protobuf.Duration
+	17, // 34: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.istio:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio
+	0,  // 35: networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio.tls_mode:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio.TLSmode
+	35, // 36: networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
+	3,  // 37: networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry.value:type_name -> networking.mesh.gloo.solo.io.GatewayRoutes
+	38, // [38:38] is the sub-list for method output_type
+	38, // [38:38] is the sub-list for method input_type
+	38, // [38:38] is the sub-list for extension type_name
+	38, // [38:38] is the sub-list for extension extendee
+	0,  // [0:38] is the sub-list for field type_name
+>>>>>>> 7279098b1 (Add Gateways to TrafficPolicy Status)
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_init() }
@@ -2078,7 +2319,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy); i {
+			switch v := v.(*GatewayRoutes); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2091,11 +2332,15 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 		}
 <<<<<<< HEAD
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+<<<<<<< HEAD
 			switch v := v.(*TrafficPolicySpec_GatewaySelector); i {
 =======
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TrafficPolicySpec_RouteSelector); i {
 >>>>>>> 940ca5bae (TrafficPolicies can now select RouteTables, and labelled routes)
+=======
+			switch v := v.(*TrafficPolicySpec_Policy); i {
+>>>>>>> 7279098b1 (Add Gateways to TrafficPolicy Status)
 			case 0:
 				return &v.state
 			case 1:
@@ -2107,7 +2352,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_RetryPolicy); i {
+			switch v := v.(*TrafficPolicySpec_RouteSelector); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2119,7 +2364,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_MultiDestination); i {
+			switch v := v.(*TrafficPolicySpec_Policy_RetryPolicy); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2131,7 +2376,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_FaultInjection); i {
+			switch v := v.(*TrafficPolicySpec_Policy_MultiDestination); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2143,7 +2388,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_CorsPolicy); i {
+			switch v := v.(*TrafficPolicySpec_Policy_FaultInjection); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2155,7 +2400,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_Mirror); i {
+			switch v := v.(*TrafficPolicySpec_Policy_CorsPolicy); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2167,7 +2412,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_OutlierDetection); i {
+			switch v := v.(*TrafficPolicySpec_Policy_Mirror); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2179,7 +2424,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_MTLS); i {
+			switch v := v.(*TrafficPolicySpec_Policy_OutlierDetection); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2191,7 +2436,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_Transform); i {
+			switch v := v.(*TrafficPolicySpec_Policy_MTLS); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2203,7 +2448,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_DLPPolicy); i {
+			switch v := v.(*TrafficPolicySpec_Policy_Transform); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2215,7 +2460,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_ExtAuth); i {
+			switch v := v.(*TrafficPolicySpec_Policy_DLPPolicy); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2227,7 +2472,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficPolicySpec_Policy_FaultInjection_Abort); i {
+			switch v := v.(*TrafficPolicySpec_Policy_ExtAuth); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2239,6 +2484,18 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TrafficPolicySpec_Policy_FaultInjection_Abort); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TrafficPolicySpec_Policy_MTLS_Istio); i {
 			case 0:
 				return &v.state
@@ -2251,11 +2508,11 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			}
 		}
 	}
-	file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[6].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[7].OneofWrappers = []interface{}{
 		(*TrafficPolicySpec_Policy_FaultInjection_FixedDelay)(nil),
 		(*TrafficPolicySpec_Policy_FaultInjection_Abort_)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[8].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_msgTypes[9].OneofWrappers = []interface{}{
 		(*TrafficPolicySpec_Policy_Mirror_KubeService)(nil),
 	}
 	type x struct{}
@@ -2264,7 +2521,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_in
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_networking_v1_traffic_policy_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

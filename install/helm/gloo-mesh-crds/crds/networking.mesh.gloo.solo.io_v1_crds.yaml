@@ -1357,6 +1357,21 @@ spec:
               items:
                 type: string
               type: array
+            gatewayRoutes:
+              additionalProperties:
+                properties:
+                  routes:
+                    description: |-
+                      The list of routes selected. If no routeLabelMatcher was provided,
+                      the value "*" will be used to indicate all routes were selected.
+                    items:
+                      type: string
+                    type: array
+                type: object
+              description: |-
+                The Gateway resoures to which this traffic policy has been applied.
+                The resource names are in the format `name.namespace (resourceType)`
+              type: object
             observedGeneration:
               description: |-
                 The most recent generation observed in the the TrafficPolicy metadata.

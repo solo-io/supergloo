@@ -18,6 +18,7 @@ title: "traffic_policy.proto"
 
 
 ## Table of Contents
+  - [GatewayRoutes](#networking.mesh.gloo.solo.io.GatewayRoutes)
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
@@ -36,9 +37,25 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry)
+  - [TrafficPolicyStatus.GatewayRoutesEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry)
 
   - [TrafficPolicySpec.Policy.MTLS.Istio.TLSmode](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio.TLSmode)
 
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.GatewayRoutes"></a>
+
+### GatewayRoutes
+Represents a specific gateway resource and which routes on that resource have been selected
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| routes | []string | repeated | The list of routes selected. If no routeLabelMatcher was provided, the value "*" will be used to indicate all routes were selected. |
+  
 
 
 
@@ -334,6 +351,7 @@ Specify selected gateway traffic by specifying which gateway resources (virtualH
   | destinations | [][networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry" >}}) | repeated | The status of the TrafficPolicy for each selected Destination. A TrafficPolicy may be Accepted for some Destinations and rejected for others. |
   | workloads | []string | repeated | The list of selected Workloads for which this policy has been applied. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | gatewayRoutes | [][networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry" >}}) | repeated | The Gateway resoures to which this traffic policy has been applied. The resource names are in the format `name.namespace (resourceType)` |
   
 
 
@@ -350,6 +368,22 @@ Specify selected gateway traffic by specifying which gateway resources (virtualH
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
   | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.status#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicyStatus.GatewayRoutesEntry"></a>
+
+### TrafficPolicyStatus.GatewayRoutesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | [networking.mesh.gloo.solo.io.GatewayRoutes]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.GatewayRoutes" >}}) |  |  |
   
 
 
