@@ -2001,10 +2001,12 @@ spec:
                       type: object
                   type: object
               type: object
-            certRotationConditions:
+            conditions:
               description: |-
                 A list of CertificateRotationCondition in the order in which the system
                 recorded them.
+                Use generic name `conditions` here so that this resource/status can be used
+                in conjunction with `kubectl wait --for=condition=VERIFIED virtualmesh/my-virtualmesh`
               items:
                 properties:
                   errors:

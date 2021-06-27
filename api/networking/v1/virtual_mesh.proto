@@ -215,6 +215,8 @@ message VirtualMeshStatus {
 
     // A list of CertificateRotationCondition in the order in which the system
     // recorded them.
-    repeated CertificateRotationCondition cert_rotation_conditions = 7;
+    // Use generic name `conditions` here so that this resource/status can be used
+    // in conjunction with `kubectl wait --for=condition=VERIFIED virtualmesh/my-virtualmesh`
+    repeated CertificateRotationCondition conditions = 7;
 
 }
