@@ -3,6 +3,7 @@ package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
 
 import "extproto/ext.proto";
+import "google/protobuf/empty.proto";
 import "github.com/solo-io/gloo-mesh/api/certificates/v1/vault_ca.proto";
 option (extproto.equal_all) = true;
 
@@ -60,10 +61,13 @@ enum CertificateRotationState {
   // This can either be manual or in the future automated
   VERIFYING = 5;
 
+  // The connectivity has been verified. 
+  VERIFIED = 6;
+
   // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
   // been verified successfully.
-  FINISHED = 6;
+  FINISHED = 7;
 
   // Processing the certificate rotation workflow failed.
-  FAILED = 7;
+  FAILED = 8;
 }

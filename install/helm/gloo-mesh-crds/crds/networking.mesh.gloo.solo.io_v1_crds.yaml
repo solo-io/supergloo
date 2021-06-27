@@ -2027,6 +2027,7 @@ spec:
                     - PROPOGATING_NEW_INTERMEDIATE
                     - DELETING_OLD_ROOT
                     - VERIFYING
+                    - VERIFIED
                     - FINISHED
                     - FAILED
                     type: string
