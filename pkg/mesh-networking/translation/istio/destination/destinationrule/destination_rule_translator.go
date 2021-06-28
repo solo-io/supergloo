@@ -256,8 +256,9 @@ func conflictsWithUserDestinationRule(
 // Possible Todo: refactor this code into a decorator if keepalive conflicts become possible.
 func addKeepaliveToDestinationRule(destination *discoveryv1.Destination, sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation, destinationRule *networkingv1alpha3.DestinationRule) {
 	keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
-	// if we also have a non-nil keepalive and source mesh install, then extract and apply the keepalive value
+	// If we also have a non-nil keepalive and this is a federated destination, then extract and apply the keepalive value
 	// to the resulting destination rule.
+	// If the destination is in a different mesh than the sourceMeshInstallation, then it's a federated destination.
 	if sourceMeshInstallation != nil && destination.Spec.GetKubeService().GetRef().GetClusterName() != sourceMeshInstallation.GetCluster() && keepalive != nil {
 		// ensure the entire chain of values in the resulting dest rule is instantiated.
 		trafficPolicy := destinationRule.Spec.GetTrafficPolicy()
@@ -276,7 +277,7 @@ func addKeepaliveToDestinationRule(destination *discoveryv1.Destination, sourceM
 		// Istio uses gogo duration structs. Since we don't use gogo in our protos, we have to convert durations during runtime.
 		gogoTime := gogoutils.DurationProtoToGogo(keepalive.GetTime())
 		gogoInterval := gogoutils.DurationProtoToGogo(keepalive.GetInterval())
-		destinationRule.Spec.GetTrafficPolicy().GetConnectionPool().GetTcp().TcpKeepalive = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings_TcpKeepalive{
+		destinationRule.Spec.TrafficPolicy.ConnectionPool.Tcp.TcpKeepalive = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings_TcpKeepalive{
 			Probes:   keepalive.GetProbes(),
 			Time:     gogoTime,
 			Interval: gogoInterval,
