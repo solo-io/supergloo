@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
@@ -62,7 +64,7 @@ func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1.VirtualMe
 		virtualMesh.Status.Errors = getErrStrings(errs)
 	}
 
-	validateOneVirtualMeshPerMesh(virtualMeshes)
+	validateOneVirtualMeshPerMesh(virtualMeshes, c.destinations)
 }
 
 func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1.TrafficPolicySlice) {
@@ -150,7 +152,7 @@ func getErrStrings(errs []error) []string {
 
 // For each VirtualMesh, sort them by accepted date, then invalidate if it applies to a Mesh that
 // is already grouped into a VirtualMesh.
-func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh) {
+func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh, destinations discoveryv1sets.DestinationSet) {
 	sortVirtualMeshesByAcceptedDate(virtualMeshes)
 
 	vMeshesPerMesh := map[string]*v1.VirtualMesh{}
@@ -186,6 +188,56 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh) {
 				)
 			}
 			invalidVirtualMeshes.Insert(vMesh)
+		}
+
+		if len(vMesh.Spec.GetFederation().GetIngressGatewayServiceSelectors()) > 0 {
+			// Validate Ingress gateway service selectors
+			matchedDestinations := 0
+			for _, ingressGatewayServiceSelector := range vMesh.Spec.GetFederation().GetIngressGatewayServiceSelectors() {
+				gatewayTlsPortName := "tls"
+				if ingressGatewayServiceSelector.GetGatewayTlsPortName() != "" {
+					gatewayTlsPortName = ingressGatewayServiceSelector.GetGatewayTlsPortName()
+				}
+				for _, destination := range destinations.List() {
+					if selectorutils.SelectorMatchesDestination(ingressGatewayServiceSelector.GetDestinationSelectors(), destination) {
+						if len(destination.Spec.GetKubeService().GetWorkloadSelectorLabels()) != 0 {
+							if len(destination.Spec.GetKubeService().GetWorkloadSelectorLabels()) == 0 {
+								vMesh.Status.State = commonv1.ApprovalState_INVALID
+								vMesh.Status.Errors = append(
+									vMesh.Status.Errors,
+									fmt.Sprintf("Attempting to select ingress gateway destination %v with no workload labels", sets.Key(destination)),
+								)
+								continue
+							}
+						}
+						hasPort := false
+						for _, ports := range destination.Spec.GetKubeService().GetPorts() {
+							if ports.GetName() == gatewayTlsPortName {
+								hasPort = true
+								break
+							}
+						}
+						if !hasPort {
+							vMesh.Status.State = commonv1.ApprovalState_INVALID
+							vMesh.Status.Errors = append(
+								vMesh.Status.Errors,
+								fmt.Sprintf("Attempting to select ingress gateway destination %v with no port named %v",
+									sets.Key(destination), gatewayTlsPortName),
+							)
+							continue
+						}
+					}
+					matchedDestinations++
+				}
+				if matchedDestinations == 0 {
+					vMesh.Status.State = commonv1.ApprovalState_INVALID
+					vMesh.Status.Errors = append(
+						vMesh.Status.Errors,
+						fmt.Sprintf("One or more of your ingress gateway destination selectors did not match any destinations"),
+					)
+				}
+			}
+
 		}
 	}
 }

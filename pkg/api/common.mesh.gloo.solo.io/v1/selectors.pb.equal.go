@@ -148,6 +148,68 @@ func (m *IdentitySelector) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *IngressGatewayServiceSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*IngressGatewayServiceSelector)
+	if !ok {
+		that2, ok := that.(IngressGatewayServiceSelector)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetDestinationSelectors()) != len(target.GetDestinationSelectors()) {
+		return false
+	}
+	for idx, v := range m.GetDestinationSelectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetDestinationSelectors()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetDestinationSelectors()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
+		return false
+	}
+
+	if len(m.GetMeshes()) != len(target.GetMeshes()) {
+		return false
+	}
+	for idx, v := range m.GetMeshes() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetMeshes()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetMeshes()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *DestinationSelector_KubeServiceMatcher) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

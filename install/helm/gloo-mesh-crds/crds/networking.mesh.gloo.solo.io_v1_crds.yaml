@@ -888,6 +888,90 @@ spec:
                     otherwise setting this field results in an error.
                     If omitted, the hostname suffix defaults to "global".
                   type: string
+                ingressGatewayServiceSelectors:
+                  items:
+                    properties:
+                      destinationSelectors:
+                        description: |-
+                          The set of Destinations that will be used as ingress gateway services for the external Meshes.
+                          If omitted, the default ingressgateway destination will be used.
+                        items:
+                          properties:
+                            kubeServiceMatcher:
+                              description: Match Kubernetes Services by their labels,
+                                namespaces, and/or clusters.
+                              properties:
+                                clusters:
+                                  description: |-
+                                    If specified, match Kubernetes Services if they exist in one of the specified clusters.
+                                               When used in a networking policy, omission matches any cluster.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                  items:
+                                    type: string
+                                  type: array
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: |-
+                                    If specified, a match requires all labels to exist on a Kubernetes Service.
+                                               When used in a networking policy, omission matches any labels.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                  type: object
+                                namespaces:
+                                  description: |-
+                                    If specified, match Kubernetes Services if they exist in one of the specified namespaces.
+                                               When used in a networking policy, omission matches any namespace.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            kubeServiceRefs:
+                              description: Match Kubernetes Services by direct reference.
+                              properties:
+                                services:
+                                  description: |-
+                                    Match Kubernetes Services by direct reference. All fields are required.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
+                                  items:
+                                    properties:
+                                      clusterName:
+                                        description: name of the cluster in which
+                                          the resource exists
+                                        type: string
+                                      name:
+                                        description: name of the resource being referenced
+                                        type: string
+                                      namespace:
+                                        description: namespace of the resource being
+                                          referenced
+                                        type: string
+                                    type: object
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                      gatewayTlsPortName:
+                        description: |-
+                          The name of the TLS port on the service used as an ingress gateway. Kubernetes services must have a port with this name
+                          in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
+                        type: string
+                      meshes:
+                        description: |-
+                          The Meshes for which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
+                          If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
+                        items:
+                          properties:
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
                 permissive:
                   description: |-
                     DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics.

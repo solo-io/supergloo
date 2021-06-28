@@ -195,6 +195,23 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetIngressDestinations()) != len(target.GetIngressDestinations()) {
+		return false
+	}
+	for idx, v := range m.GetIngressDestinations() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetIngressDestinations()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetIngressDestinations()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -566,6 +583,44 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 		if m.ExternalAddressType != target.ExternalAddressType {
 			return false
 		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *MeshStatus_IngressGatewayDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*MeshStatus_IngressGatewayDestination)
+	if !ok {
+		that2, ok := that.(MeshStatus_IngressGatewayDestination)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetDestinationRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDestinationRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDestinationRef(), target.GetDestinationRef()) {
+			return false
+		}
+	}
+
+	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
+		return false
 	}
 
 	return true

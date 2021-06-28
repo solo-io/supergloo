@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -41,17 +42,12 @@ var _ = Describe("FederationTranslator", func() {
 						Cluster:   clusterName,
 						Version:   "1.8.1",
 					},
-					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
-							DnsName: "mesh-gateway.dns.name",
-						},
-						ExternalTlsPort:  8181,
-						TlsContainerPort: 9191,
-						WorkloadLabels:   map[string]string{"gatewaylabels": "righthere"},
-					}},
 				}},
 			},
 		}
+
+		mesh2 := mesh.DeepCopy()
+		mesh2.Name = "federated-mesh-2"
 
 		clientMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -72,6 +68,46 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
+		federatedMeshIngressGatewayDestination := &discoveryv1.Destination{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "istio-system",
+				Name:      "istio-ingressgateway",
+			},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
+							Name:        "istio-ingressgateway",
+							Namespace:   "istio-system",
+							ClusterName: clusterName,
+						},
+						WorkloadSelectorLabels: map[string]string{"gatewaylabels": "righthere"},
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+							&discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								Port:     80,
+								Name:     "http2",
+								Protocol: "TCP",
+								TargetPort: &discoveryv1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber{
+									TargetPortNumber: 8080,
+								},
+								NodePort: 30742,
+							},
+							&discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								Port:     9191,
+								Name:     "tls2",
+								Protocol: "TCP",
+								TargetPort: &discoveryv1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber{
+									TargetPortNumber: 15443,
+								},
+								NodePort: 32001,
+							},
+						},
+						ServiceType: discoveryv1.DestinationSpec_KubeService_NODE_PORT,
+					},
+				},
+			},
+		}
+
 		vMesh := &discoveryv1.MeshStatus_AppliedVirtualMesh{
 			Ref: &skv2corev1.ObjectRef{
 				Name:      "my-virtual-mesh",
@@ -83,6 +119,27 @@ var _ = Describe("FederationTranslator", func() {
 					clientMeshRef,
 				},
 				Federation: &v1.VirtualMeshSpec_Federation{
+					IngressGatewayServiceSelectors: []*commonv1.IngressGatewayServiceSelector{
+						&commonv1.IngressGatewayServiceSelector{
+							Meshes: []*skv2corev1.ObjectRef{
+								ezkube.MakeObjectRef(mesh),
+							},
+							DestinationSelectors: []*commonv1.DestinationSelector{
+								{
+									KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+										Services: []*skv2corev1.ClusterObjectRef{
+											{
+												Name:        "istio-ingressgateway",
+												Namespace:   "istio-system",
+												ClusterName: clusterName,
+											},
+										},
+									},
+								},
+							},
+							GatewayTlsPortName: "tls2",
+						},
+					},
 					HostnameSuffix: "soloio",
 				},
 			},
@@ -96,8 +153,9 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddMeshes(discoveryv1.MeshSlice{mesh, clientMesh}).
+			AddMeshes(discoveryv1.MeshSlice{mesh, mesh2, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
+			AddDestinations(discoveryv1.DestinationSlice{federatedMeshIngressGatewayDestination}).
 			Build()
 
 		t := NewTranslator(ctx)
@@ -110,38 +168,51 @@ var _ = Describe("FederationTranslator", func() {
 			outputs,
 			nil, // no reports expected
 		)
-
 		Expect(outputs.GetGateways().Length()).To(Equal(1))
-		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
+		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway(9191, map[string]string{"gatewaylabels": "righthere"})))
+
+		// Default - if there are no destinations selected for a mesh.
+		outputs2 := istio.NewBuilder(context.TODO(), "")
+		t.Translate(
+			in,
+			mesh2,
+			vMesh,
+			outputs2,
+			nil, // no reports expected
+		)
+		Expect(outputs2.GetGateways().Length()).To(Equal(1))
+		Expect(outputs2.GetGateways().List()[0]).To(Equal(expectedGateway(15443, map[string]string{"istio": "ingressgateway"})))
 	})
 })
 
-var expectedGateway = &networkingv1alpha3.Gateway{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "my-virtual-mesh-config-namespace",
-		Namespace:   "namespace",
-		ClusterName: "cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-		},
-	},
-	Spec: networkingv1alpha3spec.Gateway{
-		Servers: []*networkingv1alpha3spec.Server{
-			{
-				Port: &networkingv1alpha3spec.Port{
-					Number:   9191,
-					Protocol: "TLS",
-					Name:     "tls",
-				},
-				Hosts: []string{
-					"*.soloio",
-				},
-				Tls: &networkingv1alpha3spec.ServerTLSSettings{
-					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
-				},
+func expectedGateway(port uint32, labels map[string]string) *networkingv1alpha3.Gateway {
+	return &networkingv1alpha3.Gateway{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "my-virtual-mesh-config-namespace",
+			Namespace:   "namespace",
+			ClusterName: "cluster",
+			Labels:      metautils.TranslatedObjectLabels(),
+			Annotations: map[string]string{
+				metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 			},
 		},
-		Selector: map[string]string{"gatewaylabels": "righthere"},
-	},
+		Spec: networkingv1alpha3spec.Gateway{
+			Servers: []*networkingv1alpha3spec.Server{
+				{
+					Port: &networkingv1alpha3spec.Port{
+						Number:   port,
+						Protocol: "TLS",
+						Name:     "tls",
+					},
+					Hosts: []string{
+						"*.soloio",
+					},
+					Tls: &networkingv1alpha3spec.ServerTLSSettings{
+						Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
+					},
+				},
+			},
+			Selector: labels,
+		},
+	}
 }

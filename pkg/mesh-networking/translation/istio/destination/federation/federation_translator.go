@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"strings"
 
@@ -180,9 +181,22 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 		return nil, eris.Errorf("istio mesh %v has no ingress gateway", sets.Key(destinationMesh))
 	}
 
+	if len(destination.Spec.GetKubeService().GetExternalAddresses()) == 0 {
+		// There is no way to reach this destination.
+		return nil, eris.Errorf("destination %v on mesh %v has no ingress gateway", sets.Key(destination), sets.Key(destinationMesh))
+	}
 	// TODO: support multiple ingress gateways or selecting a specific gateway.
 	// Currently, we just default to using the first one in the list.
+	// in destination.Spec.GetKubeService().GetExternalAddresses()
+	// add validation that the selected destination is externally addressable
+	// check the service type - isn't cluster IP or external name
 	ingressGateway := istioMesh.IngressGateways[0]
+
+	firstOne := destination.Spec.GetKubeService().GetExternalAddresses()[0]
+	addressNew := firstOne.GetDnsName()
+	if addressNew == "" {
+		addressNew = firstOne.GetIp()
+	}
 
 	serviceEntryIP, err := destinationutils.ConstructUniqueIpForKubeService(kubeService.GetRef())
 	if err != nil {
@@ -214,6 +228,7 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 		// remove when deprecated field is removed
 		address = ingressGateway.GetExternalAddress()
 	}
+	fmt.Printf("Old address is %v, new address is %v", address, addressNew)
 
 	var workloadEntries []*networkingv1alpha3spec.WorkloadEntry
 	// construct a WorkloadEntry for each endpoint (i.e. backing Workload) for the Destination
