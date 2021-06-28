@@ -25,7 +25,7 @@ import (
 const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
-	DefaultGatewayPortName = "tls"
+	defaultGatewayPortName = "tls"
 	defaultGatewayPort     = 15443
 )
 
@@ -107,7 +107,7 @@ func (t *translator) Translate(
 			continue
 		}
 
-		gatewayTlsPortName := DefaultGatewayPortName
+		gatewayTlsPortName := defaultGatewayPortName
 		if ingressGatewayServiceSelector.GetGatewayTlsPortName() != "" {
 			gatewayTlsPortName = ingressGatewayServiceSelector.GetGatewayTlsPortName()
 		}
@@ -159,7 +159,7 @@ func (t *translator) Translate(
 					Port: &networkingv1alpha3spec.Port{
 						Number:   federatedMeshIngressGateway.port,
 						Protocol: defaultGatewayProtocol,
-						Name:     DefaultGatewayPortName,
+						Name:     defaultGatewayPortName,
 					},
 					Hosts: []string{"*." + federatedHostnameSuffix},
 					Tls: &networkingv1alpha3spec.ServerTLSSettings{
