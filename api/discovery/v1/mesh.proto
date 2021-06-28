@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/virtual_mesh.proto";
 import "github.com/solo-io/gloo-mesh/api/discovery/v1/destination.proto";
+import "github.com/solo-io/gloo-mesh/api/certificates/v1/ca_options.proto";
 import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
@@ -192,7 +193,15 @@ message MeshStatus {
 
         // The spec of the last known valid VirtualMesh.
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
+
+        // Certificate which is currently applied to the mesh
+        .networking.mesh.gloo.solo.io.AppliedCertificateStatus applied_certificate_status = 4;
+
+        // List of rotation conditions which have been completed/carried out for this mesh
+        repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 5;
     }
+
+
 
     // Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.
     message AppliedVirtualDestination {

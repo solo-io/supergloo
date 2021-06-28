@@ -227,6 +227,40 @@ func (m *SharedTrust) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *AppliedCertificateStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*AppliedCertificateStatus)
+	if !ok {
+		that2, ok := that.(AppliedCertificateStatus)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetSharedTrust()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSharedTrust()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetSharedTrust(), target.GetSharedTrust()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -294,40 +328,6 @@ func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 			}
 		} else {
 			if !proto.Equal(v, target.GetDestinations()[k]) {
-				return false
-			}
-		}
-
-	}
-
-	if len(m.GetAppliedCertificate()) != len(target.GetAppliedCertificate()) {
-		return false
-	}
-	for k, v := range m.GetAppliedCertificate() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetAppliedCertificate()[k]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetAppliedCertificate()[k]) {
-				return false
-			}
-		}
-
-	}
-
-	if len(m.GetConditions()) != len(target.GetConditions()) {
-		return false
-	}
-	for idx, v := range m.GetConditions() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetConditions()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetConditions()[idx]) {
 				return false
 			}
 		}
@@ -552,87 +552,6 @@ func (m *VirtualMeshSpec_Federation_FederationSelector) Equal(that interface{}) 
 			if !proto.Equal(v, target.GetMeshes()[idx]) {
 				return false
 			}
-		}
-
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VirtualMeshStatus_AppliedCertificateStatus) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshStatus_AppliedCertificateStatus)
-	if !ok {
-		that2, ok := that.(VirtualMeshStatus_AppliedCertificateStatus)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetSharedTrust()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSharedTrust()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSharedTrust(), target.GetSharedTrust()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *VirtualMeshStatus_CertificateRotationCondition) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*VirtualMeshStatus_CertificateRotationCondition)
-	if !ok {
-		that2, ok := that.(VirtualMeshStatus_CertificateRotationCondition)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetTimestamp(), target.GetTimestamp()) != 0 {
-		return false
-	}
-
-	if m.GetState() != target.GetState() {
-		return false
-	}
-
-	if strings.Compare(m.GetMessage(), target.GetMessage()) != 0 {
-		return false
-	}
-
-	if len(m.GetErrors()) != len(target.GetErrors()) {
-		return false
-	}
-	for idx, v := range m.GetErrors() {
-
-		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
-			return false
 		}
 
 	}

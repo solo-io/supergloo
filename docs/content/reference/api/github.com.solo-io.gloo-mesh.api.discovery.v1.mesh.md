@@ -274,6 +274,8 @@ Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/githu
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the applied VirtualMesh object. |
   | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
   | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The spec of the last known valid VirtualMesh. |
+  | appliedCertificateStatus | [networking.mesh.gloo.solo.io.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.AppliedCertificateStatus" >}}) |  | Certificate which is currently applied to the mesh |
+  | certRotationConditions | [][certificates.mesh.gloo.solo.io.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationCondition" >}}) | repeated |  |
   
 
 

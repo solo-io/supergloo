@@ -18,11 +18,30 @@ title: "ca_options.proto"
 
 
 ## Table of Contents
+  - [CertificateRotationCondition](#certificates.mesh.gloo.solo.io.CertificateRotationCondition)
   - [CommonCertOptions](#certificates.mesh.gloo.solo.io.CommonCertOptions)
   - [IntermediateCertificateAuthority](#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority)
 
   - [CertificateRotationState](#certificates.mesh.gloo.solo.io.CertificateRotationState)
 
+
+
+
+
+
+<a name="certificates.mesh.gloo.solo.io.CertificateRotationCondition"></a>
+
+### CertificateRotationCondition
+CertificateRotationCondition represents a timesptamped snapshot of the certificate rotation workflow. This is used to keep track of the steps which have been completed thus far.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| timestamp | string |  | The time at which this condition was recorded |
+  | state | [certificates.mesh.gloo.solo.io.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationState" >}}) |  | The current state of the cert rotation |
+  | message | string |  | A human readable message related to the current condition |
+  | errors | []string | repeated | Any errors which occured during the current rotation stage |
+  
 
 
 

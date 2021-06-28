@@ -616,6 +616,33 @@ func (m *MeshStatus_AppliedVirtualMesh) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetAppliedCertificateStatus()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetAppliedCertificateStatus()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetAppliedCertificateStatus(), target.GetAppliedCertificateStatus()) {
+			return false
+		}
+	}
+
+	if len(m.GetCertRotationConditions()) != len(target.GetCertRotationConditions()) {
+		return false
+	}
+	for idx, v := range m.GetCertRotationConditions() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetCertRotationConditions()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetCertRotationConditions()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 

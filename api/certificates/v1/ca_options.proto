@@ -71,3 +71,22 @@ enum CertificateRotationState {
   // Processing the certificate rotation workflow failed.
   FAILED = 8;
 }
+
+// CertificateRotationCondition represents a timesptamped snapshot of the certificate
+// rotation workflow. This is used to keep track of the steps which have been completed
+// thus far.
+message CertificateRotationCondition {
+    
+  // The time at which this condition was recorded
+  string timestamp = 1;
+
+  // The current state of the cert rotation
+  CertificateRotationState state = 2;
+
+  // A human readable message related to the current condition
+  string message = 3;
+
+  // Any errors which occured during the current rotation stage
+  repeated string errors = 4;
+
+}

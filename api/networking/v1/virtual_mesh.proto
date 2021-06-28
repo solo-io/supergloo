@@ -158,6 +158,18 @@ message SharedTrust {
 
 }
 
+
+// Message representing the current applied CA config
+message AppliedCertificateStatus {
+
+    // Shared trust CA config
+    SharedTrust shared_trust = 1;
+
+    // Reserve for limited trust when it's implemented
+    reserved 2;
+
+}
+
 message VirtualMeshStatus {
 
     // The most recent generation observed in the the VirtualMesh metadata.
@@ -179,44 +191,4 @@ message VirtualMeshStatus {
     // The status of the VirtualMesh for each Destination to which it has been applied.
     // A VirtualMesh may be Accepted for some Destinations and rejected for others.
     map<string, ApprovalStatus> destinations = 5;
-
-    // Message representing the current applied CA config
-    message AppliedCertificateStatus {
-
-        // Shared trust CA config
-        SharedTrust shared_trust = 1;
-
-        // Reserve for limited trust when it's implemented
-        reserved 2;
-
-    }
-
-    // Currently applied CA config
-    map<string, AppliedCertificateStatus> applied_certificate = 6;
-
-    // CertificateRotationCondition represents a timesptamped snapshot of the certificate
-    // rotation workflow. This is used to keep track of the steps which have been completed
-    // thus far.
-    message CertificateRotationCondition {
-        
-        // The time at which this condition was recorded
-        string timestamp = 1;
-
-        // The current state of the cert rotation
-        .certificates.mesh.gloo.solo.io.CertificateRotationState state = 2;
-
-        // A human readable message related to the current condition
-        string message = 3;
-
-        // Any errors which occured during the current rotation stage
-        repeated string errors = 4;
-
-    }
-
-    // A list of CertificateRotationCondition in the order in which the system
-    // recorded them.
-    // Use generic name `conditions` here so that this resource/status can be used
-    // in conjunction with `kubectl wait --for=condition=VERIFIED virtualmesh/my-virtualmesh`
-    repeated CertificateRotationCondition conditions = 7;
-
 }

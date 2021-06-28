@@ -127,7 +127,7 @@ func (t *translator) Translate(
 		// applied is different from VM spec, time to rotate
 
 		// Check conditions to see what needs to be done.
-		if len(vmStatus.GetConditions()) == 0 {
+		if len(vmStatus.GetCertRotationConditions()) == 0 {
 			// No conditions yet, begin rotation
 			// Build issuedCert with current + next CA
 			// Phase: ADDING_NEW_ROOT
