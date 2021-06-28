@@ -1287,7 +1287,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					{
 						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
 							{
-								Port: 8080,
+								Port: 0,
 							},
 						},
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{

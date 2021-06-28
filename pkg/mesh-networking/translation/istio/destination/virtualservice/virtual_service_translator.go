@@ -140,7 +140,7 @@ func (t *translator) Translate(
 
 		// set a default destination for the route (to the target Destination)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, destinationFQDN, kubeService.Ports)
+		t.setDefaultDestinationAndPortMatchers(baseRoute, destinationFQDN)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -319,11 +319,16 @@ func initializeBaseRoute(trafficPolicy *v1.TrafficPolicySpec, sourceClusterName 
 	}
 }
 
-func (t *translator) setDefaultDestination(
+func (t *translator) setDefaultDestinationAndPortMatchers(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
 	destinationFQDN string,
-	ports []*discoveryv1.DestinationSpec_KubeService_KubeServicePort,
 ) {
+	// need a default matcher for the destination, which
+	// gets populated later in duplicateRouteForEachPort()
+	if len(baseRoute.Match) == 0 {
+		baseRoute.Match = []*networkingv1alpha3spec.HTTPMatchRequest{{}}
+	}
+
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
 		return
@@ -334,22 +339,6 @@ func (t *translator) setDefaultDestination(
 			Host: destinationFQDN,
 		},
 	}}
-
-	// need a default matcher for the destination, which gets populated later
-	// in duplicateRouteForEachPort()
-	if len(baseRoute.Match) == 0 {
-		var defaultMatchers []*networkingv1alpha3spec.HTTPMatchRequest
-		for _, p := range ports {
-			port := p.GetPort()
-			if port == 0 {
-				port = p.GetNodePort()
-			}
-			defaultMatchers = append(defaultMatchers, &networkingv1alpha3spec.HTTPMatchRequest{
-				Port: port,
-			})
-		}
-		baseRoute.Match = defaultMatchers
-	}
 }
 
 // construct a copy of a route for each service port
