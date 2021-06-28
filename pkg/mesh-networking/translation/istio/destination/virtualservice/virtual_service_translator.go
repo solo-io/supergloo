@@ -348,10 +348,6 @@ func duplicateRouteForEachPort(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
 	ports []*discoveryv1.DestinationSpec_KubeService_KubeServicePort,
 ) []*networkingv1alpha3spec.HTTPRoute {
-	if len(ports) == 1 {
-		// no need to specify port for single-port service
-		return []*networkingv1alpha3spec.HTTPRoute{baseRoute}
-	}
 	var routesWithPort []*networkingv1alpha3spec.HTTPRoute
 	for _, port := range ports {
 		// create a separate set of matchers for each port on the destination service

@@ -1271,12 +1271,16 @@ var _ = Describe("VirtualServiceTranslator", func() {
 										},
 									},
 								},
+								Port: 8080,
 							},
 						},
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
 							{
 								Destination: &networkingv1alpha3spec.Destination{
 									Host: "local-hostname",
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 8080,
+									},
 								},
 							},
 						},
@@ -1287,13 +1291,16 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					{
 						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
 							{
-								Port: 0,
+								Port: 8080,
 							},
 						},
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
 							{
 								Destination: &networkingv1alpha3spec.Destination{
 									Host: "local-hostname",
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 8080,
+									},
 								},
 							},
 						},
