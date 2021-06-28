@@ -180,10 +180,6 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 		return nil, eris.Errorf("istio mesh %v has no ingress gateway", sets.Key(destinationMesh))
 	}
 
-	if len(destination.Spec.GetKubeService().GetExternalAddresses()) == 0 {
-		// There is no way to reach this destination.
-		return nil, eris.Errorf("destination %v on mesh %v has no ingress gateway", sets.Key(destination), sets.Key(destinationMesh))
-	}
 	// TODO: support multiple ingress gateways or selecting a specific gateway.
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
