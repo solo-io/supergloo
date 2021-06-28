@@ -195,7 +195,7 @@ done
 
 ## Modifying Istiod
 
-Now that we have created our VirtualMesh to use vault as an intermediate CA, we need to go ahead and modify our istio deployment to support fetching and dynamically reloading the intermediate CA from Vault.
+Now that we have created our VirtualMesh to use Vault for the intermediate CA, we need to go ahead and modify our Istio installation to support fetching and dynamically reloading the intermediate CA from Vault.
 
 First things first, we need to get the verison of our components running in cluster:
 ```shell
