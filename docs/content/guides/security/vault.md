@@ -31,7 +31,7 @@ CONTEXT_2="cluster_2's_context"
 
 ## Installing Vault
 
-{{% notice note %}} Installing Vault is an optional step. An existing Vault deployment may be used if you or your organization already has one. {{% /notice %}}
+{{% notice note %}} Installing Vault is an optional step. An existing Vault deployment may be used if you already have access to one. {{% /notice %}}
 
 1. Install Vault using helm
 ```shell
