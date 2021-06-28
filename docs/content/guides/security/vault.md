@@ -438,7 +438,7 @@ kubectl patch -n istio-system istiod --patch '{
 
 ## Final Steps
 
-Now that istio has been patched with the gloo-mesh istiod-agent sidecar, we can go ahead and verify that all of our traffic is being secured using the root-ca we generated for vault in the previous steps.
+Now that Istio has been patched with the Gloo Mesh `istiod-agent` sidecar, we can verify that all of our traffic is being secured using the root CA we generated for Vault in the previous steps.
 
 The easiest way to do this will be to check `root-cert.pem` in the`istio-ca-root-cert` config map which Istio propagates for initial TLS connection. This command will check the propagated root-cert against the local cert which we supplied to vault in an earlier step. If Vault was not setup using the earlier part of the tutorial, the Vault root-cert should instead be fetched and saved to the file `root-cert.pem` in the current directory.
 
