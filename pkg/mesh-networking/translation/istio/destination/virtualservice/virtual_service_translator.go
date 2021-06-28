@@ -337,10 +337,14 @@ func (t *translator) setDefaultDestination(
 
 	// need a default matcher for the destination, which gets populated later
 	// in duplicateRouteForEachPort()
-	// in the event there is only one port, we should leave the generated
-	// HTTPMatchRequest nil since it cannot be empty
-	if len(baseRoute.Match) == 0 && len(ports) > 1 {
-		baseRoute.Match = []*networkingv1alpha3spec.HTTPMatchRequest{{}}
+	if len(baseRoute.Match) == 0 {
+		var defaultMatchers []*networkingv1alpha3spec.HTTPMatchRequest
+		for _, p := range ports {
+			defaultMatchers = append(defaultMatchers, &networkingv1alpha3spec.HTTPMatchRequest{
+				Port: p.GetPort(),
+			})
+		}
+		baseRoute.Match = defaultMatchers
 	}
 }
 
