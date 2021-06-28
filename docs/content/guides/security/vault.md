@@ -173,7 +173,7 @@ EOF
 
 ## Updating RBAC
 
-In order for the new istio-agent sidecar we are going to install in the next step to work, we will need to give it the necessary RBAC permissions. These include reading and modifying Gloo Mesh resources. To do this we are going to update our `enterprise-agent` helm release on both clusters.
+The new istio-agent sidecar (we'll install in the next step) will need to read and modify Gloo Mesh resources. To enable the necessary RBAC permissions, we are going to update our `enterprise-agent` helm release on both clusters.
 
 If your `enterprise-agents` were installed via helm, and those manifests are applied using GitOps then add the following values to your `values.yaml` file.
 ```yaml
