@@ -180,17 +180,15 @@ message MeshStatus {
     // The VirtualDestinations, if any, which apply to this mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
-    // The list of ingress gateway destinations used to access services in this mesh in non-flat-networking mode.
-    // Each individual IngressGatewayDestination should translate to a single ingress gateway on this mesh.
-    repeated IngressGatewayDestination ingress_destinations = 4;
+    // The Destination(s) acting as ingress gateways for east west traffic.
+    repeated IngressGateway east_west_ingress_gateways = 4;
 
-    message IngressGatewayDestination {
-        // The destination on the mesh that acts as the ingress gateway for the mesh.
+    message IngressGateway {
+        // The Destination on the mesh that acts as an ingress gateway for the mesh.
         .core.skv2.solo.io.ObjectRef destination_ref = 1;
 
-        // The name of the TLS port on the service used as an ingress gateway. Kubernetes services must have a port with this name
-        // in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
-        string gateway_tls_port_name = 2;
+        // The name of the TLS port on the ingress gateway Destination.
+        string tls_port_name = 2;
     }
 
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
