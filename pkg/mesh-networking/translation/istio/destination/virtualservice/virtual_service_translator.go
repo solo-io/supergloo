@@ -31,7 +31,7 @@ import (
 
 //go:generate mockgen -source ./virtual_service_translator.go -destination mocks/virtual_service_translator.go
 
-// the VirtualService translator translates a Destination into a VirtualService.
+// Translator translates a Destination into a VirtualService.
 type Translator interface {
 	/*
 		Translate translates the appropriate VirtualService for the given Destination.
@@ -140,7 +140,7 @@ func (t *translator) Translate(
 
 		// set a default destination for the route (to the target Destination)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, destinationFQDN)
+		t.setDefaultDestination(baseRoute, destinationFQDN, kubeService.Ports)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -322,6 +322,7 @@ func initializeBaseRoute(trafficPolicy *v1.TrafficPolicySpec, sourceClusterName 
 func (t *translator) setDefaultDestination(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
 	destinationFQDN string,
+	ports []*discoveryv1.DestinationSpec_KubeService_KubeServicePort,
 ) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
@@ -333,6 +334,14 @@ func (t *translator) setDefaultDestination(
 			Host: destinationFQDN,
 		},
 	}}
+
+	// need a default matcher for the destination, which gets populated later
+	// in duplicateRouteForEachPort()
+	// in the event there is only one port, we should leave the generated
+	// HTTPMatchRequest nil since it cannot be empty
+	if len(baseRoute.Match) == 0 && len(ports) > 1 {
+		baseRoute.Match = []*networkingv1alpha3spec.HTTPMatchRequest{{}}
+	}
 }
 
 // construct a copy of a route for each service port
