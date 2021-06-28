@@ -7,7 +7,9 @@ weight: 30
 
 {{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
 
-[Vault](https://github.com/hashicorp/vault) is a popular open source secret management tool. One of its many use cases is PKI (Private Key Infrastructure). Vault allows for easy and secure storage of our private keys, as well as generation of new leaf/intermediary certificates. This guide will explore using Vault as an intermediate CA in conjunction with Gloo Mesh.
+[Vault](https://github.com/hashicorp/vault) is a popular open source secret management tool. One of its many use cases is PKI (Private Key Infrastructure). Vault allows for easy and secure storage of our private keys, as well as generation of new leaf/intermediary certificates. 
+
+For multi-cluster traffic routing, we need to establish a shared root of trust using a single root CA and intermediate CA that is signed by the same root CA for each cluster. This guide will show you how to configure Istio and Gloo Mesh to use Vault to store our root CA and generate intermediate CA to be used by Istio on each cluster to sign its workload certificates.
 
 In addition to using Vault as the intermediate CA, this guide will also explore the added security benefits of using Gloo Mesh Enterprise + Vault. The Gloo Mesh Enterprise integration with Vault uses the `istiod-agent`, which runs as a `sidecar` to the `istiod` pod, and communicates with Vault to request private keys and sign certificates. This allows Gloo Mesh to load the private key directly into the pod filesystem, thereby allowing for an added layer of security by not saving the key to `etcd` (or any permanent storage). 
 
