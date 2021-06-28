@@ -173,8 +173,13 @@ EOF
 
 In order for the new istio-agent sidecar we are going to install in the next step to work, we will need to give it the necessary RBAC permissions. These include reading and modifying Gloo Mesh resources. To do this we are going to update our `enterprise-agent` helm release on both clusters.
 
-If you have the `values` file for each agent on your local machine, then you should insert the following value. Otherwise run the following to get the currently deployed values.
+If your `enterprise-agents` were installed via helm, and those manifests are applied using GitOps then add the following values to your `values.yaml` file.
+```yaml
+istiodSidecar:
+  createRoleBinding: true
+```
 
+Otherwise run the following to update the currently deployed agent helm releases
 ```shell
 for cluster in ${CONTEXT_1} ${CONTEXT_2}; do
   helm get values -n gloo-mesh enterprise-agent --kube-context="${cluster}" > $cluster-values.yaml
