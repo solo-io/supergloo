@@ -875,26 +875,15 @@ spec:
               - required:
                 - permissive
               properties:
-                flatNetwork:
-                  description: |-
-                    If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
-                    rather than through an ingress gateway. This mode requires a flat network environment.
-                    This feature is exclusive to Gloo Mesh Enterprise.
-                  type: boolean
-                hostnameSuffix:
-                  description: |-
-                    Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
-                    Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
-                    otherwise setting this field results in an error.
-                    If omitted, the hostname suffix defaults to "global".
-                  type: string
-                ingressGatewayServiceSelectors:
+                eastWestIngressGatewaySelectors:
+                  description: Selects the Destination(s) acting as ingress gateways
+                    for east west traffic across meshes in the same virtual mesh.
                   items:
                     properties:
                       destinationSelectors:
                         description: |-
                           The set of Destinations that will be used as ingress gateway services for the external Meshes.
-                          If omitted, the default ingressgateway destination will be used.
+                          If omitted, a mesh-specific default ingress gateway destination will be used.
                         items:
                           properties:
                             kubeServiceMatcher:
@@ -952,14 +941,13 @@ spec:
                           type: object
                         type: array
                       gatewayTlsPortName:
-                        description: |-
-                          The name of the TLS port on the service used as an ingress gateway. Kubernetes services must have a port with this name
-                          in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
+                        description: Specify by name the TLS port on the ingress gateway
+                          destination. If not specified, will default to "tls".
                         type: string
                       meshes:
                         description: |-
-                          The Meshes for which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
-                          If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
+                          The Meshes for which the selected Destinations will be configured as ingress gateways. All referenced Meshes must exist in this VirtualMesh.
+                          If omitted, the selected Destinations will be configured as ingress gateways for all Meshes in the VirtualMesh.
                         items:
                           properties:
                             name:
@@ -972,6 +960,19 @@ spec:
                         type: array
                     type: object
                   type: array
+                flatNetwork:
+                  description: |-
+                    If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
+                    rather than through an ingress gateway. This mode requires a flat network environment.
+                    This feature is exclusive to Gloo Mesh Enterprise.
+                  type: boolean
+                hostnameSuffix:
+                  description: |-
+                    Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
+                    Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
+                    otherwise setting this field results in an error.
+                    If omitted, the hostname suffix defaults to "global".
+                  type: string
                 permissive:
                   description: |-
                     DEPRECATED: Use `selectors` with an empty selector (i.e. `{}`) for permissive semantics.

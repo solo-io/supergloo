@@ -69,7 +69,8 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
-        repeated .common.mesh.gloo.solo.io.IngressGatewayServiceSelector ingress_gateway_service_selectors = 5;
+        // Selects the Destination(s) acting as ingress gateways for east west traffic across meshes in the same virtual mesh.
+        repeated .common.mesh.gloo.solo.io.IngressGatewaySelector east_west_ingress_gateway_selectors = 5;
 
         // Selectively federate Destinations to specific external meshes.
         // If omitted, no Destinations will be federated.

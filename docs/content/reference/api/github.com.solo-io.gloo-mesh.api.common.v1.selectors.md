@@ -25,7 +25,7 @@ title: "selectors.proto"
   - [IdentitySelector](#common.mesh.gloo.solo.io.IdentitySelector)
   - [IdentitySelector.KubeIdentityMatcher](#common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher)
   - [IdentitySelector.KubeServiceAccountRefs](#common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs)
-  - [IngressGatewayServiceSelector](#common.mesh.gloo.solo.io.IngressGatewayServiceSelector)
+  - [IngressGatewaySelector](#common.mesh.gloo.solo.io.IngressGatewaySelector)
   - [WorkloadSelector](#common.mesh.gloo.solo.io.WorkloadSelector)
   - [WorkloadSelector.KubeWorkloadMatcher](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher)
   - [WorkloadSelector.KubeWorkloadMatcher.LabelsEntry](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry)
@@ -147,17 +147,17 @@ Select Destination identities using one or more platform-specific selectors.
 
 
 
-<a name="common.mesh.gloo.solo.io.IngressGatewayServiceSelector"></a>
+<a name="common.mesh.gloo.solo.io.IngressGatewaySelector"></a>
 
-### IngressGatewayServiceSelector
+### IngressGatewaySelector
 Select a set of Destinations with tls ports to use as ingress gateway services for the referenced Meshes.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be used as ingress gateway services for the external Meshes. If omitted, the default ingressgateway destination will be used. |
-  | gatewayTlsPortName | string |  | The name of the TLS port on the service used as an ingress gateway. Kubernetes services must have a port with this name in order to be recognized as an ingress gateway. If not specified, will default to `tls`. |
-  | meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Meshes for which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh. If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh. |
+| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be used as ingress gateway services for the external Meshes. If omitted, a mesh-specific default ingress gateway destination will be used. |
+  | gatewayTlsPortName | string |  | Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls". |
+  | meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Meshes for which the selected Destinations will be configured as ingress gateways. All referenced Meshes must exist in this VirtualMesh. If omitted, the selected Destinations will be configured as ingress gateways for all Meshes in the VirtualMesh. |
   
 
 

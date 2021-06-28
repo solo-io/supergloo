@@ -32,7 +32,7 @@ title: "mesh.proto"
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
   - [MeshStatus.AppliedVirtualDestination](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
-  - [MeshStatus.IngressGatewayDestination](#discovery.mesh.gloo.solo.io.MeshStatus.IngressGatewayDestination)
+  - [MeshStatus.IngressGateway](#discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway)
 
 
 
@@ -241,7 +241,7 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
   | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this mesh. |
-  | ingressDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.IngressGatewayDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.IngressGatewayDestination" >}}) | repeated | The list of ingress gateway destinations used to access services in this mesh in non-flat-networking mode. Each individual IngressGatewayDestination should translate to a single ingress gateway on this mesh. |
+  | eastWestIngressGateways | [][discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway" >}}) | repeated | The Destination(s) acting as ingress gateways for east west traffic. |
   
 
 
@@ -282,16 +282,16 @@ Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/githu
 
 
 
-<a name="discovery.mesh.gloo.solo.io.MeshStatus.IngressGatewayDestination"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway"></a>
 
-### MeshStatus.IngressGatewayDestination
+### MeshStatus.IngressGateway
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The destination on the mesh that acts as the ingress gateway for the mesh. |
-  | gatewayTlsPortName | string |  | The name of the TLS port on the service used as an ingress gateway. Kubernetes services must have a port with this name in order to be recognized as an ingress gateway. If not specified, will default to `tls`. |
+| destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The Destination on the mesh that acts as an ingress gateway for the mesh. |
+  | tlsPortName | string |  | The name of the TLS port on the ingress gateway Destination. |
   
 
 

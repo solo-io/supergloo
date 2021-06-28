@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -25,12 +24,12 @@ import (
 const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
-	defaultGatewayPortName = "tls"
+	DefaultGatewayPortName = "tls"
 	defaultGatewayPort     = 15443
 )
 
 var (
-	// [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
+	// Defaults to {"istio": "ingressgateway"} based on https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73
 	defaultGatewayWorkloadLabels = map[string]string{"istio": "ingressgateway"}
 )
 
@@ -87,66 +86,35 @@ func (t *translator) Translate(
 	istioNamespace := istioMesh.Installation.Namespace
 	federatedHostnameSuffix := hostutils.GetFederatedHostnameSuffix(virtualMesh.Spec)
 
-	// istio gateway names must be DNS-1123 labels
-	// hyphens are legal, dots are not, so we convert here
-	gwName := BuildGatewayName(virtualMesh)
+	// create the east west ingress gateways
+	for _, ewIngressGatewayInfo := range mesh.Status.GetEastWestIngressGateways() {
+		destination, err := in.Destinations().Find(ewIngressGatewayInfo.GetDestinationRef())
+		if err != nil {
+			continue // should log an error in the VirtualMesh status
+		}
 
-	// one gatweay for each destination, port tuple
-	var selectedIngressGatewayList []*ingressGatewayInfo
-
-	for _, ingressGatewayServiceSelector := range virtualMesh.GetSpec().GetFederation().GetIngressGatewayServiceSelectors() {
-		// Check if this selector applies to this mesh
-		var applies bool
-		for _, meshRef := range ingressGatewayServiceSelector.GetMeshes() {
-			if meshRef.GetName() == mesh.GetName() && meshRef.GetNamespace() == mesh.GetNamespace() {
-				applies = true
+		// Figure out the ingress gateway tls port
+		ingressGatewayContainerTlsPort := uint32(defaultGatewayPort)
+		gatewayTlsPortName := DefaultGatewayPortName
+		if ewIngressGatewayInfo.GetTlsPortName() != "" {
+			gatewayTlsPortName = ewIngressGatewayInfo.GetTlsPortName()
+		}
+		for _, ports := range destination.Spec.GetKubeService().GetPorts() {
+			if ports.GetName() == gatewayTlsPortName {
+				ingressGatewayContainerTlsPort = ports.GetPort()
 				break
 			}
 		}
-		if !applies {
-			continue
+
+		// figure out the ingress gateway workload labels
+		ingressGatewayWorkloadLabels := defaultGatewayWorkloadLabels
+		if len(destination.Spec.GetKubeService().GetWorkloadSelectorLabels()) != 0 {
+			ingressGatewayWorkloadLabels = destination.Spec.GetKubeService().GetWorkloadSelectorLabels()
 		}
 
-		gatewayTlsPortName := defaultGatewayPortName
-		if ingressGatewayServiceSelector.GetGatewayTlsPortName() != "" {
-			gatewayTlsPortName = ingressGatewayServiceSelector.GetGatewayTlsPortName()
-		}
-		for _, destination := range in.Destinations().List() {
-			// Currently, we can only create gateways out of kube service destination types.
-			if destination.Spec.GetExternalService() != nil {
-				continue
-			}
-			if selectorutils.SelectorMatchesDestination(ingressGatewayServiceSelector.GetDestinationSelectors(), destination) {
-				ingressGatewayContainerTlsPort := uint32(defaultGatewayPort)
-				ingressGatewayWorkloadLabels := defaultGatewayWorkloadLabels
-				if len(destination.Spec.GetKubeService().GetWorkloadSelectorLabels()) != 0 {
-					ingressGatewayWorkloadLabels = destination.Spec.GetKubeService().GetWorkloadSelectorLabels()
-				}
-				for _, ports := range destination.Spec.GetKubeService().GetPorts() {
-					if ports.GetName() == gatewayTlsPortName {
-						ingressGatewayContainerTlsPort = ports.GetPort()
-						break
-					}
-				}
-				selectedIngressGatewayList = append(selectedIngressGatewayList, &ingressGatewayInfo{
-					labels: ingressGatewayWorkloadLabels,
-					port:   ingressGatewayContainerTlsPort,
-				})
-			}
-		}
-	}
-
-	if len(selectedIngressGatewayList) == 0 {
-		selectedIngressGatewayList = append(selectedIngressGatewayList, &ingressGatewayInfo{
-			labels: defaultGatewayWorkloadLabels,
-			port:   defaultGatewayPort,
-		})
-	}
-
-	// Each federated mesh ingress gateway will only responsible for east-west traffic in between meshes in
-	// the same virtual mesh.
-	for _, federatedMeshIngressGateway := range selectedIngressGatewayList {
-		// currently, in non flat-network mode, only TLS-secured cross cluster traffic is supported
+		// istio gateway names must be DNS-1123 labels
+		// hyphens are legal, dots are not, so we convert here
+		gwName := BuildGatewayName(virtualMesh, destination)
 		gw := &networkingv1alpha3.Gateway{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        gwName,
@@ -157,16 +125,16 @@ func (t *translator) Translate(
 			Spec: networkingv1alpha3spec.Gateway{
 				Servers: []*networkingv1alpha3spec.Server{{
 					Port: &networkingv1alpha3spec.Port{
-						Number:   federatedMeshIngressGateway.port,
+						Number:   ingressGatewayContainerTlsPort,
 						Protocol: defaultGatewayProtocol,
-						Name:     defaultGatewayPortName,
+						Name:     DefaultGatewayPortName,
 					},
 					Hosts: []string{"*." + federatedHostnameSuffix},
 					Tls: &networkingv1alpha3spec.ServerTLSSettings{
 						Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
 					},
 				}},
-				Selector: federatedMeshIngressGateway.labels,
+				Selector: ingressGatewayWorkloadLabels,
 			},
 		}
 
@@ -176,8 +144,9 @@ func (t *translator) Translate(
 	}
 }
 
-func BuildGatewayName(virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh) string {
+func BuildGatewayName(virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh, destination *discoveryv1.Destination) string {
 	return kubeutils.SanitizeNameV2(
-		fmt.Sprintf("%s-%s", virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace()),
+		fmt.Sprintf("%s-%s-%s", virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace(),
+			destination.GetName()),
 	)
 }

@@ -195,17 +195,17 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetIngressDestinations()) != len(target.GetIngressDestinations()) {
+	if len(m.GetEastWestIngressGateways()) != len(target.GetEastWestIngressGateways()) {
 		return false
 	}
-	for idx, v := range m.GetIngressDestinations() {
+	for idx, v := range m.GetEastWestIngressGateways() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetIngressDestinations()[idx]) {
+			if !h.Equal(target.GetEastWestIngressGateways()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetIngressDestinations()[idx]) {
+			if !proto.Equal(v, target.GetEastWestIngressGateways()[idx]) {
 				return false
 			}
 		}
@@ -589,14 +589,14 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *MeshStatus_IngressGatewayDestination) Equal(that interface{}) bool {
+func (m *MeshStatus_IngressGateway) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*MeshStatus_IngressGatewayDestination)
+	target, ok := that.(*MeshStatus_IngressGateway)
 	if !ok {
-		that2, ok := that.(MeshStatus_IngressGatewayDestination)
+		that2, ok := that.(MeshStatus_IngressGateway)
 		if ok {
 			target = &that2
 		} else {
@@ -619,7 +619,7 @@ func (m *MeshStatus_IngressGatewayDestination) Equal(that interface{}) bool {
 		}
 	}
 
-	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
+	if strings.Compare(m.GetTlsPortName(), target.GetTlsPortName()) != 0 {
 		return false
 	}
 

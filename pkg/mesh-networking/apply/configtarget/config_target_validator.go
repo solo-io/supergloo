@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
+
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 
 	"github.com/hashicorp/go-multierror"
@@ -64,7 +66,8 @@ func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1.VirtualMe
 		virtualMesh.Status.Errors = getErrStrings(errs)
 	}
 
-	validateOneVirtualMeshPerMesh(virtualMeshes, c.destinations)
+	validateOneVirtualMeshPerMesh(virtualMeshes)
+	validateVirtualMeshIngressGatewaySelectors(virtualMeshes, c.destinations)
 }
 
 func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1.TrafficPolicySlice) {
@@ -152,7 +155,7 @@ func getErrStrings(errs []error) []string {
 
 // For each VirtualMesh, sort them by accepted date, then invalidate if it applies to a Mesh that
 // is already grouped into a VirtualMesh.
-func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh, destinations discoveryv1sets.DestinationSet) {
+func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh) {
 	sortVirtualMeshesByAcceptedDate(virtualMeshes)
 
 	vMeshesPerMesh := map[string]*v1.VirtualMesh{}
@@ -189,11 +192,22 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh, destinations
 			}
 			invalidVirtualMeshes.Insert(vMesh)
 		}
+	}
+}
 
-		if len(vMesh.Spec.GetFederation().GetIngressGatewayServiceSelectors()) > 0 {
+// For each VirtualMesh, if it has ingress gateway selectors, validate those selectors.
+func validateVirtualMeshIngressGatewaySelectors(virtualMeshes []*v1.VirtualMesh, destinations discoveryv1sets.DestinationSet) {
+	// Invalidate VirtualMesh if it applies to a Mesh that already has an applied VirtualMesh.
+	for _, vMesh := range virtualMeshes {
+		if vMesh.Status.State != commonv1.ApprovalState_ACCEPTED {
+			continue
+		}
+		vMesh := vMesh
+
+		if len(vMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors()) > 0 {
 			// Validate Ingress gateway service selectors
 			matchedDestinations := 0
-			for _, ingressGatewayServiceSelector := range vMesh.Spec.GetFederation().GetIngressGatewayServiceSelectors() {
+			for _, ingressGatewayServiceSelector := range vMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
 				gatewayTlsPortName := "tls"
 				if ingressGatewayServiceSelector.GetGatewayTlsPortName() != "" {
 					gatewayTlsPortName = ingressGatewayServiceSelector.GetGatewayTlsPortName()
@@ -233,11 +247,29 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh, destinations
 					vMesh.Status.State = commonv1.ApprovalState_INVALID
 					vMesh.Status.Errors = append(
 						vMesh.Status.Errors,
-						fmt.Sprintf("One or more of your ingress gateway destination selectors did not match any destinations"),
+						fmt.Sprintf("No Destinations selected as ingress gateway. At least one must be selected."),
 					)
 				}
 			}
-
+		} else {
+			// Check the mesh specific default exists
+			defaultExists := false
+			for _, destination := range destinations.List() {
+				if destination.Spec.GetKubeService().GetWorkloadSelectorLabels()["istio"] == "ingressgateway" {
+					for _, ports := range destination.Spec.GetKubeService().GetPorts() {
+						if ports.GetName() == federation.DefaultGatewayPortName && ports.GetPort() != 0 {
+							defaultExists = true
+						}
+					}
+				}
+			}
+			if !defaultExists {
+				vMesh.Status.State = commonv1.ApprovalState_INVALID
+				vMesh.Status.Errors = append(
+					vMesh.Status.Errors,
+					fmt.Sprintf("Unable to find default ingress gateway."),
+				)
+			}
 		}
 	}
 }

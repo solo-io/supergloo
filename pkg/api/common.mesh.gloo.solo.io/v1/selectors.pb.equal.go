@@ -148,14 +148,14 @@ func (m *IdentitySelector) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *IngressGatewayServiceSelector) Equal(that interface{}) bool {
+func (m *IngressGatewaySelector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*IngressGatewayServiceSelector)
+	target, ok := that.(*IngressGatewaySelector)
 	if !ok {
-		that2, ok := that.(IngressGatewayServiceSelector)
+		that2, ok := that.(IngressGatewaySelector)
 		if ok {
 			target = &that2
 		} else {

@@ -44,10 +44,18 @@ var _ = Describe("FederationTranslator", func() {
 					},
 				}},
 			},
+			Status: discoveryv1.MeshStatus{
+				EastWestIngressGateways: []*discoveryv1.MeshStatus_IngressGateway{
+					&discoveryv1.MeshStatus_IngressGateway{
+						DestinationRef: &skv2corev1.ObjectRef{
+							Name:      "istio-ingressgateway",
+							Namespace: "istio-system",
+						},
+						TlsPortName: "tls2",
+					},
+				},
+			},
 		}
-
-		mesh2 := mesh.DeepCopy()
-		mesh2.Name = "federated-mesh-2"
 
 		clientMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -119,8 +127,8 @@ var _ = Describe("FederationTranslator", func() {
 					clientMeshRef,
 				},
 				Federation: &v1.VirtualMeshSpec_Federation{
-					IngressGatewayServiceSelectors: []*commonv1.IngressGatewayServiceSelector{
-						&commonv1.IngressGatewayServiceSelector{
+					EastWestIngressGatewaySelectors: []*commonv1.IngressGatewaySelector{
+						&commonv1.IngressGatewaySelector{
 							Meshes: []*skv2corev1.ObjectRef{
 								ezkube.MakeObjectRef(mesh),
 							},
@@ -153,7 +161,7 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddMeshes(discoveryv1.MeshSlice{mesh, mesh2, clientMesh}).
+			AddMeshes(discoveryv1.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			AddDestinations(discoveryv1.DestinationSlice{federatedMeshIngressGatewayDestination}).
 			Build()
@@ -169,26 +177,14 @@ var _ = Describe("FederationTranslator", func() {
 			nil, // no reports expected
 		)
 		Expect(outputs.GetGateways().Length()).To(Equal(1))
-		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway(9191, map[string]string{"gatewaylabels": "righthere"})))
-
-		// Default - if there are no destinations selected for a mesh.
-		outputs2 := istio.NewBuilder(context.TODO(), "")
-		t.Translate(
-			in,
-			mesh2,
-			vMesh,
-			outputs2,
-			nil, // no reports expected
-		)
-		Expect(outputs2.GetGateways().Length()).To(Equal(1))
-		Expect(outputs2.GetGateways().List()[0]).To(Equal(expectedGateway(15443, map[string]string{"istio": "ingressgateway"})))
+		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
 	})
 })
 
-func expectedGateway(port uint32, labels map[string]string) *networkingv1alpha3.Gateway {
-	return &networkingv1alpha3.Gateway{
+var (
+	expectedGateway = &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "my-virtual-mesh-config-namespace",
+			Name:        "my-virtual-mesh-config-namespace-istio-ingressgateway",
 			Namespace:   "namespace",
 			ClusterName: "cluster",
 			Labels:      metautils.TranslatedObjectLabels(),
@@ -200,7 +196,7 @@ func expectedGateway(port uint32, labels map[string]string) *networkingv1alpha3.
 			Servers: []*networkingv1alpha3spec.Server{
 				{
 					Port: &networkingv1alpha3spec.Port{
-						Number:   port,
+						Number:   9191,
 						Protocol: "TLS",
 						Name:     "tls",
 					},
@@ -212,7 +208,7 @@ func expectedGateway(port uint32, labels map[string]string) *networkingv1alpha3.
 					},
 				},
 			},
-			Selector: labels,
+			Selector: map[string]string{"gatewaylabels": "righthere"},
 		},
 	}
-}
+)
