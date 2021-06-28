@@ -12,6 +12,7 @@ import (
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -181,6 +182,17 @@ var _ = Describe("Applier", func() {
 					Mesh: &skv2corev1.ObjectRef{
 						Name:      "mesh1",
 						Namespace: "ns",
+					},
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							WorkloadSelectorLabels: map[string]string{"istio":"ingressgateway"},
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								{
+									Port:        1234,
+									Name:        federation.DefaultGatewayPortName,
+								},
+							},
+						},
 					},
 				},
 			}
