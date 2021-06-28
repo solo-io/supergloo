@@ -1,13 +1,13 @@
 ---
-title: Vault PKI
-menuTitle: Vault PKI
-description: Guide to using vault with gloo-mesh to secure istio traffic
+title: Vault PKI Integration
+menuTitle: Vault PKI Integration
+description: Guide to using Vault with Gloo Mesh Enterprise to manage Istio certificates
 weight: 30
 ---
 
 {{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
 
-[Vault](https://github.com/hashicorp/vault) is a popular open source secret management tool, one of it's many use cases is PKI (Private Key Infrastructure). Vault allows for easy and secure storage of our private keys, as well as generation of new leaf/intermediary certificates. This guide will explore using vault as an intermediate CA in conjunction with Gloo Mesh.
+[Vault](https://github.com/hashicorp/vault) is a popular open source secret management tool. One of its many use cases is PKI (Private Key Infrastructure). Vault allows for easy and secure storage of our private keys, as well as generation of new leaf/intermediary certificates. This guide will explore using Vault as an intermediate CA in conjunction with Gloo Mesh.
 
 In addition to using Vault as the intermediate CA, this guide will also explore the added security benefits of using Gloo Mesh Enterprise + Vault. The Gloo Mesh Enterprise integration with Vault uses the `istiod-agent`, which runs as a `sidecar` to the `istiod` pod, and communicates with Vault to request private keys and sign certificates. This allows Gloo Mesh to load the private key directly into the pod filesystem, thereby allowing for an added layer of security by not saving the key to `etcd` (or any permanent storage). 
 
