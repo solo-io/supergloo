@@ -26,6 +26,7 @@ title: "virtual_mesh.proto"
   - [VirtualMeshSpec.MTLSConfig](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig)
   - [VirtualMeshSpec.MTLSConfig.LimitedTrust](#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust)
   - [VirtualMeshStatus](#networking.mesh.gloo.solo.io.VirtualMeshStatus)
+  - [VirtualMeshStatus.AppliedCertificateEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateEntry)
   - [VirtualMeshStatus.AppliedCertificateStatus](#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus)
   - [VirtualMeshStatus.CertificateRotationCondition](#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition)
   - [VirtualMeshStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry)
@@ -163,8 +164,24 @@ Limited trust is a trust model which does not require trusting Meshes to share t
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
   | destinations | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry" >}}) | repeated | The status of the VirtualMesh for each Destination to which it has been applied. A VirtualMesh may be Accepted for some Destinations and rejected for others. |
-  | appliedCertificate | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus" >}}) |  | Currently applied CA config |
+  | appliedCertificate | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateEntry" >}}) | repeated | Currently applied CA config |
   | conditions | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.CertificateRotationCondition" >}}) | repeated | A list of CertificateRotationCondition in the order in which the system recorded them. Use generic name `conditions` here so that this resource/status can be used in conjunction with `kubectl wait --for=condition=VERIFIED virtualmesh/my-virtualmesh` |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateEntry"></a>
+
+### VirtualMeshStatus.AppliedCertificateEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | [networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.AppliedCertificateStatus" >}}) |  |  |
   
 
 

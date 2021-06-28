@@ -192,7 +192,7 @@ message VirtualMeshStatus {
     }
 
     // Currently applied CA config
-    AppliedCertificateStatus applied_certificate = 6;
+    map<string, AppliedCertificateStatus> applied_certificate = 6;
 
     // CertificateRotationCondition represents a timesptamped snapshot of the certificate
     // rotation workflow. This is used to keep track of the steps which have been completed

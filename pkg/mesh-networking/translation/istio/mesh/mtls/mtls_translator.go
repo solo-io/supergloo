@@ -119,6 +119,24 @@ func (t *translator) Translate(
 		return
 	}
 
+	vmStatus := &networkingv1.VirtualMeshStatus{}
+
+	appliedMeshCa, _ := vmStatus.AppliedCertificate[sets.Key(mesh)]
+
+	if !proto.Equal(appliedMeshCa.GetSharedTrust(), virtualMesh.GetSpec().GetMtlsConfig().GetShared()) {
+		// applied is different from VM spec, time to rotate
+
+		// Check conditions to see what needs to be done.
+		if len(vmStatus.GetConditions()) == 0 {
+			// No conditions yet, begin rotation
+			// Build issuedCert with current + next CA
+			// Phase: ADDING_NEW_ROOT
+		} else {
+			// Check previous rotation condition to see what to do.
+
+		}
+	}
+
 	if err := t.updateMtlsOutputs(mesh, virtualMesh, istioOutputs, localOutputs); err != nil {
 		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 	}

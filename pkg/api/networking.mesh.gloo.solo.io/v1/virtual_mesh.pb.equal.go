@@ -300,14 +300,21 @@ func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetAppliedCertificate()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetAppliedCertificate()) {
-			return false
+	if len(m.GetAppliedCertificate()) != len(target.GetAppliedCertificate()) {
+		return false
+	}
+	for k, v := range m.GetAppliedCertificate() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedCertificate()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedCertificate()[k]) {
+				return false
+			}
 		}
-	} else {
-		if !proto.Equal(m.GetAppliedCertificate(), target.GetAppliedCertificate()) {
-			return false
-		}
+
 	}
 
 	if len(m.GetConditions()) != len(target.GetConditions()) {
