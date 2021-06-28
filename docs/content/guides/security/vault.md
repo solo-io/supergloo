@@ -11,7 +11,7 @@ weight: 30
 
 For multi-cluster traffic routing, we need to establish a shared root of trust using a single root CA and intermediate CA that is signed by the same root CA for each cluster. This guide will show you how to configure Istio and Gloo Mesh to use Vault to store our root CA and generate intermediate CA to be used by Istio on each cluster to sign its workload certificates.
 
-In addition to using Vault as the intermediate CA, this guide will also explore the added security benefits of using Gloo Mesh Enterprise + Vault. The Gloo Mesh Enterprise integration with Vault uses the `istiod-agent`, which runs as a `sidecar` to the `istiod` pod, and communicates with Vault to request private keys and sign certificates. This allows Gloo Mesh to load the private key directly into the pod filesystem, thereby allowing for an added layer of security by not saving the key to `etcd` (or any permanent storage). 
+In addition to using Vault for the intermediate CA, this guide will also explore the added security benefits of using Gloo Mesh Enterprise with Vault. The Gloo Mesh Enterprise integration with Vault uses the `istiod-agent`, which runs as a sidecar to the `istiod` pod, and communicates with Vault to request private keys and sign certificates. This allows Gloo Mesh to load the private key directly into the pod filesystem, thereby allowing for an added layer of security by not saving the key to `etcd` (or any permanent storage). 
 
 ## Before you begin
 
