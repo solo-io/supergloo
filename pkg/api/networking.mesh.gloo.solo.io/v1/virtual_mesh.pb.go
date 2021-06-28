@@ -338,55 +338,6 @@ func (*SharedTrust_RootCertificateAuthority) isSharedTrust_CertificateAuthority(
 
 func (*SharedTrust_IntermediateCertificateAuthority) isSharedTrust_CertificateAuthority() {}
 
-// Message representing the current applied CA config
-type AppliedCertificateStatus struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Shared trust CA config
-	SharedTrust *SharedTrust `protobuf:"bytes,1,opt,name=shared_trust,json=sharedTrust,proto3" json:"shared_trust,omitempty"`
-}
-
-func (x *AppliedCertificateStatus) Reset() {
-	*x = AppliedCertificateStatus{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AppliedCertificateStatus) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AppliedCertificateStatus) ProtoMessage() {}
-
-func (x *AppliedCertificateStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AppliedCertificateStatus.ProtoReflect.Descriptor instead.
-func (*AppliedCertificateStatus) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *AppliedCertificateStatus) GetSharedTrust() *SharedTrust {
-	if x != nil {
-		return x.SharedTrust
-	}
-	return nil
-}
-
 type VirtualMeshStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -412,7 +363,7 @@ type VirtualMeshStatus struct {
 func (x *VirtualMeshStatus) Reset() {
 	*x = VirtualMeshStatus{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -425,7 +376,7 @@ func (x *VirtualMeshStatus) String() string {
 func (*VirtualMeshStatus) ProtoMessage() {}
 
 func (x *VirtualMeshStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -438,7 +389,7 @@ func (x *VirtualMeshStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualMeshStatus.ProtoReflect.Descriptor instead.
 func (*VirtualMeshStatus) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDescGZIP(), []int{4}
+	return file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *VirtualMeshStatus) GetObservedGeneration() int64 {
@@ -500,7 +451,7 @@ type VirtualMeshSpec_MTLSConfig struct {
 func (x *VirtualMeshSpec_MTLSConfig) Reset() {
 	*x = VirtualMeshSpec_MTLSConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -513,7 +464,7 @@ func (x *VirtualMeshSpec_MTLSConfig) String() string {
 func (*VirtualMeshSpec_MTLSConfig) ProtoMessage() {}
 
 func (x *VirtualMeshSpec_MTLSConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -605,7 +556,7 @@ type VirtualMeshSpec_Federation struct {
 func (x *VirtualMeshSpec_Federation) Reset() {
 	*x = VirtualMeshSpec_Federation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -618,7 +569,7 @@ func (x *VirtualMeshSpec_Federation) String() string {
 func (*VirtualMeshSpec_Federation) ProtoMessage() {}
 
 func (x *VirtualMeshSpec_Federation) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -700,7 +651,7 @@ type VirtualMeshSpec_MTLSConfig_LimitedTrust struct {
 func (x *VirtualMeshSpec_MTLSConfig_LimitedTrust) Reset() {
 	*x = VirtualMeshSpec_MTLSConfig_LimitedTrust{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[7]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -713,7 +664,7 @@ func (x *VirtualMeshSpec_MTLSConfig_LimitedTrust) String() string {
 func (*VirtualMeshSpec_MTLSConfig_LimitedTrust) ProtoMessage() {}
 
 func (x *VirtualMeshSpec_MTLSConfig_LimitedTrust) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[7]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -746,7 +697,7 @@ type VirtualMeshSpec_Federation_FederationSelector struct {
 func (x *VirtualMeshSpec_Federation_FederationSelector) Reset() {
 	*x = VirtualMeshSpec_Federation_FederationSelector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[8]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -759,7 +710,7 @@ func (x *VirtualMeshSpec_Federation_FederationSelector) String() string {
 func (*VirtualMeshSpec_Federation_FederationSelector) ProtoMessage() {}
 
 func (x *VirtualMeshSpec_Federation_FederationSelector) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[8]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -930,14 +881,7 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDe
 	0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x17, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6d,
 	0x65, 0x64, 0x69, 0x61, 0x74, 0x65, 0x43, 0x65, 0x72, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
 	0x73, 0x42, 0x17, 0x0a, 0x15, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
-	0x5f, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x22, 0x6e, 0x0a, 0x18, 0x41, 0x70,
-	0x70, 0x6c, 0x69, 0x65, 0x64, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
-	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x4c, 0x0a, 0x0c, 0x73, 0x68, 0x61, 0x72, 0x65, 0x64,
-	0x5f, 0x74, 0x72, 0x75, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
-	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x68, 0x61, 0x72,
-	0x65, 0x64, 0x54, 0x72, 0x75, 0x73, 0x74, 0x52, 0x0b, 0x73, 0x68, 0x61, 0x72, 0x65, 0x64, 0x54,
-	0x72, 0x75, 0x73, 0x74, 0x4a, 0x04, 0x08, 0x02, 0x10, 0x03, 0x22, 0xaf, 0x04, 0x0a, 0x11, 0x56,
+	0x5f, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x22, 0xaf, 0x04, 0x0a, 0x11, 0x56,
 	0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x65, 0x73, 0x68, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
 	0x12, 0x2f, 0x0a, 0x13, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x5f, 0x67, 0x65, 0x6e,
 	0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x6f,
@@ -993,55 +937,53 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawD
 }
 
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_goTypes = []interface{}{
 	(VirtualMeshSpec_GlobalAccessPolicy)(0),               // 0: networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy
 	(*VirtualMeshSpec)(nil),                               // 1: networking.mesh.gloo.solo.io.VirtualMeshSpec
 	(*RootCertificateAuthority)(nil),                      // 2: networking.mesh.gloo.solo.io.RootCertificateAuthority
 	(*SharedTrust)(nil),                                   // 3: networking.mesh.gloo.solo.io.SharedTrust
-	(*AppliedCertificateStatus)(nil),                      // 4: networking.mesh.gloo.solo.io.AppliedCertificateStatus
-	(*VirtualMeshStatus)(nil),                             // 5: networking.mesh.gloo.solo.io.VirtualMeshStatus
-	(*VirtualMeshSpec_MTLSConfig)(nil),                    // 6: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig
-	(*VirtualMeshSpec_Federation)(nil),                    // 7: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation
-	(*VirtualMeshSpec_MTLSConfig_LimitedTrust)(nil),       // 8: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust
-	(*VirtualMeshSpec_Federation_FederationSelector)(nil), // 9: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector
-	nil,                           // 10: networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry
-	nil,                           // 11: networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry
-	(*v1.ObjectRef)(nil),          // 12: core.skv2.solo.io.ObjectRef
-	(*v11.CommonCertOptions)(nil), // 13: certificates.mesh.gloo.solo.io.CommonCertOptions
-	(*v11.IntermediateCertificateAuthority)(nil), // 14: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
-	(v12.ApprovalState)(0),                       // 15: common.mesh.gloo.solo.io.ApprovalState
-	(*empty.Empty)(nil),                          // 16: google.protobuf.Empty
-	(*v12.DestinationSelector)(nil),              // 17: common.mesh.gloo.solo.io.DestinationSelector
-	(*ApprovalStatus)(nil),                       // 18: networking.mesh.gloo.solo.io.ApprovalStatus
+	(*VirtualMeshStatus)(nil),                             // 4: networking.mesh.gloo.solo.io.VirtualMeshStatus
+	(*VirtualMeshSpec_MTLSConfig)(nil),                    // 5: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig
+	(*VirtualMeshSpec_Federation)(nil),                    // 6: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation
+	(*VirtualMeshSpec_MTLSConfig_LimitedTrust)(nil),       // 7: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust
+	(*VirtualMeshSpec_Federation_FederationSelector)(nil), // 8: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector
+	nil,                           // 9: networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry
+	nil,                           // 10: networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry
+	(*v1.ObjectRef)(nil),          // 11: core.skv2.solo.io.ObjectRef
+	(*v11.CommonCertOptions)(nil), // 12: certificates.mesh.gloo.solo.io.CommonCertOptions
+	(*v11.IntermediateCertificateAuthority)(nil), // 13: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
+	(v12.ApprovalState)(0),                       // 14: common.mesh.gloo.solo.io.ApprovalState
+	(*empty.Empty)(nil),                          // 15: google.protobuf.Empty
+	(*v12.DestinationSelector)(nil),              // 16: common.mesh.gloo.solo.io.DestinationSelector
+	(*ApprovalStatus)(nil),                       // 17: networking.mesh.gloo.solo.io.ApprovalStatus
 }
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_depIdxs = []int32{
-	12, // 0: networking.mesh.gloo.solo.io.VirtualMeshSpec.meshes:type_name -> core.skv2.solo.io.ObjectRef
-	6,  // 1: networking.mesh.gloo.solo.io.VirtualMeshSpec.mtls_config:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig
-	7,  // 2: networking.mesh.gloo.solo.io.VirtualMeshSpec.federation:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation
+	11, // 0: networking.mesh.gloo.solo.io.VirtualMeshSpec.meshes:type_name -> core.skv2.solo.io.ObjectRef
+	5,  // 1: networking.mesh.gloo.solo.io.VirtualMeshSpec.mtls_config:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig
+	6,  // 2: networking.mesh.gloo.solo.io.VirtualMeshSpec.federation:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation
 	0,  // 3: networking.mesh.gloo.solo.io.VirtualMeshSpec.global_access_policy:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy
-	13, // 4: networking.mesh.gloo.solo.io.RootCertificateAuthority.generated:type_name -> certificates.mesh.gloo.solo.io.CommonCertOptions
-	12, // 5: networking.mesh.gloo.solo.io.RootCertificateAuthority.secret:type_name -> core.skv2.solo.io.ObjectRef
+	12, // 4: networking.mesh.gloo.solo.io.RootCertificateAuthority.generated:type_name -> certificates.mesh.gloo.solo.io.CommonCertOptions
+	11, // 5: networking.mesh.gloo.solo.io.RootCertificateAuthority.secret:type_name -> core.skv2.solo.io.ObjectRef
 	2,  // 6: networking.mesh.gloo.solo.io.SharedTrust.root_certificate_authority:type_name -> networking.mesh.gloo.solo.io.RootCertificateAuthority
-	14, // 7: networking.mesh.gloo.solo.io.SharedTrust.intermediate_certificate_authority:type_name -> certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
-	13, // 8: networking.mesh.gloo.solo.io.SharedTrust.intermediate_cert_options:type_name -> certificates.mesh.gloo.solo.io.CommonCertOptions
-	3,  // 9: networking.mesh.gloo.solo.io.AppliedCertificateStatus.shared_trust:type_name -> networking.mesh.gloo.solo.io.SharedTrust
-	15, // 10: networking.mesh.gloo.solo.io.VirtualMeshStatus.state:type_name -> common.mesh.gloo.solo.io.ApprovalState
-	10, // 11: networking.mesh.gloo.solo.io.VirtualMeshStatus.meshes:type_name -> networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry
-	11, // 12: networking.mesh.gloo.solo.io.VirtualMeshStatus.destinations:type_name -> networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry
-	3,  // 13: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.shared:type_name -> networking.mesh.gloo.solo.io.SharedTrust
-	8,  // 14: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.limited:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust
-	9,  // 15: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.selectors:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector
-	16, // 16: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.permissive:type_name -> google.protobuf.Empty
-	17, // 17: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.destination_selectors:type_name -> common.mesh.gloo.solo.io.DestinationSelector
-	12, // 18: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.meshes:type_name -> core.skv2.solo.io.ObjectRef
-	18, // 19: networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
-	18, // 20: networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
-	21, // [21:21] is the sub-list for method output_type
-	21, // [21:21] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	13, // 7: networking.mesh.gloo.solo.io.SharedTrust.intermediate_certificate_authority:type_name -> certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
+	12, // 8: networking.mesh.gloo.solo.io.SharedTrust.intermediate_cert_options:type_name -> certificates.mesh.gloo.solo.io.CommonCertOptions
+	14, // 9: networking.mesh.gloo.solo.io.VirtualMeshStatus.state:type_name -> common.mesh.gloo.solo.io.ApprovalState
+	9,  // 10: networking.mesh.gloo.solo.io.VirtualMeshStatus.meshes:type_name -> networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry
+	10, // 11: networking.mesh.gloo.solo.io.VirtualMeshStatus.destinations:type_name -> networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry
+	3,  // 12: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.shared:type_name -> networking.mesh.gloo.solo.io.SharedTrust
+	7,  // 13: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.limited:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust
+	8,  // 14: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.selectors:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector
+	15, // 15: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.permissive:type_name -> google.protobuf.Empty
+	16, // 16: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.destination_selectors:type_name -> common.mesh.gloo.solo.io.DestinationSelector
+	11, // 17: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.meshes:type_name -> core.skv2.solo.io.ObjectRef
+	17, // 18: networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
+	17, // 19: networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
+	20, // [20:20] is the sub-list for method output_type
+	20, // [20:20] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init() }
@@ -1088,18 +1030,6 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AppliedCertificateStatus); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VirtualMeshStatus); i {
 			case 0:
 				return &v.state
@@ -1111,7 +1041,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VirtualMeshSpec_MTLSConfig); i {
 			case 0:
 				return &v.state
@@ -1123,7 +1053,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VirtualMeshSpec_Federation); i {
 			case 0:
 				return &v.state
@@ -1135,7 +1065,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VirtualMeshSpec_MTLSConfig_LimitedTrust); i {
 			case 0:
 				return &v.state
@@ -1147,7 +1077,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*VirtualMeshSpec_Federation_FederationSelector); i {
 			case 0:
 				return &v.state
@@ -1168,11 +1098,11 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 		(*SharedTrust_RootCertificateAuthority)(nil),
 		(*SharedTrust_IntermediateCertificateAuthority)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[4].OneofWrappers = []interface{}{
 		(*VirtualMeshSpec_MTLSConfig_Shared)(nil),
 		(*VirtualMeshSpec_MTLSConfig_Limited)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[6].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_msgTypes[5].OneofWrappers = []interface{}{
 		(*VirtualMeshSpec_Federation_Permissive)(nil),
 	}
 	type x struct{}
@@ -1181,7 +1111,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   11,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

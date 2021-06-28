@@ -18,7 +18,6 @@ title: "virtual_mesh.proto"
 
 
 ## Table of Contents
-  - [AppliedCertificateStatus](#networking.mesh.gloo.solo.io.AppliedCertificateStatus)
   - [RootCertificateAuthority](#networking.mesh.gloo.solo.io.RootCertificateAuthority)
   - [SharedTrust](#networking.mesh.gloo.solo.io.SharedTrust)
   - [VirtualMeshSpec](#networking.mesh.gloo.solo.io.VirtualMeshSpec)
@@ -32,21 +31,6 @@ title: "virtual_mesh.proto"
 
   - [VirtualMeshSpec.GlobalAccessPolicy](#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy)
 
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.AppliedCertificateStatus"></a>
-
-### AppliedCertificateStatus
-Message representing the current applied CA config
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| sharedTrust | [networking.mesh.gloo.solo.io.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.SharedTrust" >}}) |  | Shared trust CA config |
-  
 
 
 

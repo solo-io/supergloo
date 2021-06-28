@@ -227,40 +227,6 @@ func (m *SharedTrust) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *AppliedCertificateStatus) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*AppliedCertificateStatus)
-	if !ok {
-		that2, ok := that.(AppliedCertificateStatus)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetSharedTrust()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSharedTrust()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSharedTrust(), target.GetSharedTrust()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

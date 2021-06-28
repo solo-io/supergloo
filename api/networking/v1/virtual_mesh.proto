@@ -158,18 +158,6 @@ message SharedTrust {
 
 }
 
-
-// Message representing the current applied CA config
-message AppliedCertificateStatus {
-
-    // Shared trust CA config
-    SharedTrust shared_trust = 1;
-
-    // Reserve for limited trust when it's implemented
-    reserved 2;
-
-}
-
 message VirtualMeshStatus {
 
     // The most recent generation observed in the the VirtualMesh metadata.

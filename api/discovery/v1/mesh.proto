@@ -193,15 +193,7 @@ message MeshStatus {
 
         // The spec of the last known valid VirtualMesh.
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
-
-        // Certificate which is currently applied to the mesh
-        .networking.mesh.gloo.solo.io.AppliedCertificateStatus applied_certificate_status = 4;
-
-        // List of rotation conditions which have been completed/carried out for this mesh
-        repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 5;
     }
-
-
 
     // Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.
     message AppliedVirtualDestination {
@@ -214,5 +206,18 @@ message MeshStatus {
 
         // Any errors encountered while processing the VirtualDestination.
         repeated string errors = 3;
+    }
+
+    message AppliedCA {
+
+        // Certificate which is currently applied to the mesh
+        .networking.mesh.gloo.solo.io.SharedTrust applied_shared_trust = 1;
+
+        
+        // Reserve for limited trust when it's implemented
+        reserved 2;
+
+        // List of rotation conditions which have been completed/carried out for this mesh
+        repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 3;
     }
 }
