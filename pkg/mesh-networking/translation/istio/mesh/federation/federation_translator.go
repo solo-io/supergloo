@@ -114,7 +114,8 @@ func (t *translator) Translate(
 
 		// istio gateway names must be DNS-1123 labels
 		// hyphens are legal, dots are not, so we convert here
-		gwName := BuildGatewayName(virtualMesh, destination)
+		gwName := BuildGatewayName(virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace(),
+			destination.GetName(), destination.GetNamespace())
 		gw := &networkingv1alpha3.Gateway{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        gwName,
@@ -144,9 +145,8 @@ func (t *translator) Translate(
 	}
 }
 
-func BuildGatewayName(virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh, destination *discoveryv1.Destination) string {
+func BuildGatewayName(vmeshName, vmeshNamespace, destName, destNamespace string) string {
 	return kubeutils.SanitizeNameV2(
-		fmt.Sprintf("%s-%s-%s", virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace(),
-			destination.GetName()),
+		fmt.Sprintf("%s-%s-%s-%s", vmeshName, vmeshNamespace, destName, destNamespace),
 	)
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/k8s-utils/kubeutils"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -184,7 +185,7 @@ var _ = Describe("FederationTranslator", func() {
 var (
 	expectedGateway = &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "my-virtual-mesh-config-namespace-istio-ingressgateway",
+			Name:        kubeutils.SanitizeNameV2("my-virtual-mesh-config-namespace-istio-ingressgateway-istio-system"),
 			Namespace:   "namespace",
 			ClusterName: "cluster",
 			Labels:      metautils.TranslatedObjectLabels(),

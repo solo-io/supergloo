@@ -263,11 +263,13 @@ func (c *configTargetValidator) validateVirtualMeshIngressGatewaySelectors(virtu
 		} else {
 			// Check the mesh specific default exists
 			defaultExists := false
-			for _, destination := range c.destinations.List() {
-				if destination.Spec.GetKubeService().GetWorkloadSelectorLabels()["istio"] == "ingressgateway" {
-					for _, ports := range destination.Spec.GetKubeService().GetPorts() {
-						if ports.GetName() == federation.DefaultGatewayPortName && ports.GetPort() != 0 {
-							defaultExists = true
+			if c.destinations != nil {
+				for _, destination := range c.destinations.List() {
+					if destination.Spec.GetKubeService().GetWorkloadSelectorLabels()["istio"] == "ingressgateway" {
+						for _, ports := range destination.Spec.GetKubeService().GetPorts() {
+							if ports.GetName() == federation.DefaultGatewayPortName && ports.GetPort() != 0 {
+								defaultExists = true
+							}
 						}
 					}
 				}

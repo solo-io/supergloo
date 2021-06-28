@@ -7,8 +7,10 @@ import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -49,6 +51,13 @@ var _ = Describe("ConfigTargetValidator", func() {
 								Name:        "foo",
 								Namespace:   "bar",
 								ClusterName: "cluster",
+							},
+							WorkloadSelectorLabels: map[string]string{"istio": "ingressgateway"},
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								{
+									Port: 1234,
+									Name: federation.DefaultGatewayPortName,
+								},
 							},
 						},
 					},
@@ -231,7 +240,33 @@ var _ = Describe("ConfigTargetValidator", func() {
 			},
 		)
 
-		validator = configtarget.NewConfigTargetValidator(meshes, nil)
+		destinations := discoveryv1sets.NewDestinationSet(
+			&discoveryv1.Destination{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "destination",
+					Namespace: "namespace",
+				},
+				Spec: discoveryv1.DestinationSpec{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
+								Name:        "foo",
+								Namespace:   "bar",
+								ClusterName: "cluster",
+							},
+							WorkloadSelectorLabels: map[string]string{"istio": "ingressgateway"},
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								{
+									Port: 1234,
+									Name: federation.DefaultGatewayPortName,
+								},
+							},
+						},
+					},
+				},
+			})
+
+		validator = configtarget.NewConfigTargetValidator(meshes, destinations)
 
 		vm1 := &v1.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -328,6 +363,118 @@ var _ = Describe("ConfigTargetValidator", func() {
 		Expect(vm2.Status.State).To(Equal(commonv1.ApprovalState_INVALID))
 		Expect(vm3.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
 		Expect(vm5.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
+	})
+
+	It("should validate each virtual mesh has a valid ingress gateway selector", func() {
+		meshes := discoveryv1sets.NewMeshSet(
+			&discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh1",
+					Namespace: "namespace1",
+				},
+			},
+			&discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh2",
+					Namespace: "namespace1",
+				},
+			},
+			&discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh3",
+					Namespace: "namespace1",
+				},
+			},
+		)
+
+		destinations := discoveryv1sets.NewDestinationSet(
+			&discoveryv1.Destination{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "destination",
+					Namespace: "namespace",
+				},
+				Spec: discoveryv1.DestinationSpec{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
+								Name:        "foo",
+								Namespace:   "bar",
+								ClusterName: "cluster",
+							},
+							WorkloadSelectorLabels: map[string]string{"other": "workloadlabel"},
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								{
+									Port: 1234,
+									Name: "other-port-name",
+								},
+							},
+						},
+					},
+				},
+			})
+
+		validator = configtarget.NewConfigTargetValidator(meshes, destinations)
+
+		vm1 := &v1.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm1",
+				Namespace: "namespace1",
+			},
+			Spec: v1.VirtualMeshSpec{
+				Meshes: []*skv2corev1.ObjectRef{
+					{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+				},
+			},
+			Status: v1.VirtualMeshStatus{
+				State: commonv1.ApprovalState_ACCEPTED,
+			},
+		}
+		vm2 := &v1.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm2",
+				Namespace: "namespace1",
+			},
+			Spec: v1.VirtualMeshSpec{
+				Meshes: []*skv2corev1.ObjectRef{
+					{
+						Name:      "mesh2",
+						Namespace: "namespace1",
+					},
+					{
+						Name:      "mesh3",
+						Namespace: "namespace1",
+					},
+				},
+				Federation: &networkingv1.VirtualMeshSpec_Federation{
+					EastWestIngressGatewaySelectors: []*commonv1.IngressGatewaySelector{
+						&commonv1.IngressGatewaySelector{
+							DestinationSelectors: nil,
+							GatewayTlsPortName:   "other-port-name",
+							Meshes: []*skv2corev1.ObjectRef{
+								{
+									Name:      "mesh2",
+									Namespace: "namespace1",
+								},
+								{
+									Name:      "mesh3",
+									Namespace: "namespace1",
+								},
+							},
+						},
+					},
+				},
+			},
+			Status: v1.VirtualMeshStatus{
+				State: commonv1.ApprovalState_ACCEPTED,
+			},
+		}
+		validator.ValidateVirtualMeshes(v1.VirtualMeshSlice{vm2, vm1})
+
+		Expect(vm1.Status.State).To(Equal(commonv1.ApprovalState_INVALID))
+		Expect(vm2.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
 	})
 
 	It("should invalidate any policies that don't specify all fields in a reference-based selector", func() {

@@ -185,11 +185,11 @@ var _ = Describe("Applier", func() {
 					},
 					Type: &discoveryv1.DestinationSpec_KubeService_{
 						KubeService: &discoveryv1.DestinationSpec_KubeService{
-							WorkloadSelectorLabels: map[string]string{"istio":"ingressgateway"},
+							WorkloadSelectorLabels: map[string]string{"istio": "ingressgateway"},
 							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
-									Port:        1234,
-									Name:        federation.DefaultGatewayPortName,
+									Port: 1234,
+									Name: federation.DefaultGatewayPortName,
 								},
 							},
 						},
