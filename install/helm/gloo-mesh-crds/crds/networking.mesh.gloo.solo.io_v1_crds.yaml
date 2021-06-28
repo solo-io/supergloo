@@ -981,7 +981,9 @@ spec:
                     with this VirtualMesh
                   properties:
                     interval:
-                      description: The time duration between keep-alive probes.
+                      description: |-
+                        The time duration between keep-alive probes.
+                        Format examples: `1h`/`1m`/`1s`/`1ms`
                       type: string
                     probes:
                       description: Maximum number of TCP keepalive probes to send
@@ -990,8 +992,9 @@ spec:
                       minimum: 0
                       type: integer
                     time:
-                      description: The time duration a connection needs to be idle
-                        before keep-alive probes start being sent.
+                      description: |-
+                        The time duration a connection needs to be idle before keep-alive probes start being sent.
+                        Format examples: `1h`/`1m`/`1s`/`1ms`.
                       type: string
                   type: object
               type: object

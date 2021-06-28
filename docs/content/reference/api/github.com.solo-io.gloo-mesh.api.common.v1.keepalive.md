@@ -35,8 +35,8 @@ Configure TCP keepalive for the ingress gateways of all meshes in this VirtualMe
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | probes | uint32 |  | Maximum number of TCP keepalive probes to send before determining that connection is dead. |
-  | time | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration a connection needs to be idle before keep-alive probes start being sent. |
-  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration between keep-alive probes. |
+  | time | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration a connection needs to be idle before keep-alive probes start being sent. Format examples: `1h`/`1m`/`1s`/`1ms`. |
+  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration between keep-alive probes. Format examples: `1h`/`1m`/`1s`/`1ms` |
   
 
 

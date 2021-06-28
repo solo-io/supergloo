@@ -32,8 +32,10 @@ type TCPKeepalive struct {
 	// Maximum number of TCP keepalive probes to send before determining that connection is dead.
 	Probes uint32 `protobuf:"varint,1,opt,name=probes,proto3" json:"probes,omitempty"`
 	// The time duration a connection needs to be idle before keep-alive probes start being sent.
+	// Format examples: `1h`/`1m`/`1s`/`1ms`.
 	Time *duration.Duration `protobuf:"bytes,2,opt,name=time,proto3" json:"time,omitempty"`
 	// The time duration between keep-alive probes.
+	// Format examples: `1h`/`1m`/`1s`/`1ms`
 	Interval *duration.Duration `protobuf:"bytes,3,opt,name=interval,proto3" json:"interval,omitempty"`
 }
 
