@@ -60,6 +60,11 @@ weight: 2
 |admin.port.name|string|admin|The name of this port within the service.|
 |admin.port.port|int32|11100|The default port that will be exposed by this service.|
 |disableRelayCa|bool|false||
+|relay|struct|{"additionalSans":null,"serverCommonName":"enterprise-networking","rootCommonName":"enterprise-networking-ca"}||
+|relay.additionalSans[]|[]string|null|additional SANs to add to  relay-server cert|
+|relay.additionalSans[]|string| |additional SANs to add to  relay-server cert|
+|relay.serverCommonName|string|enterprise-networking|CN (CommonName) to use for the relay-server cert. Default: enterprise-networking|
+|relay.rootCommonName|string|enterprise-networking-ca|CN (CommonName) to use for the relay-rooot cert. Default: enterprise-networking-ca|
 |enterpriseNetworking|struct|{"image":{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"LoadBalancer","ports":{"grpc":9900,"http":8080},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"LICENSE_KEY","valueFrom":{"secretKeyRef":{"name":"gloo-mesh-enterprise-license","key":"key"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the enterpriseNetworking deployment.|
 |enterpriseNetworking.image|struct|{"repository":"enterprise-networking","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |enterpriseNetworking.image.tag|string| |Tag for the container.|
