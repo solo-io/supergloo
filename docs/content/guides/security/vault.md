@@ -102,7 +102,7 @@ done
 
 ## Enabling Vault as an intermediate CA provider
 
-Now we need to federate our 2 meshes together using Vault to federate identity. To do this we will need to create/edit a `VirtualMesh` with the new Vault shared mTLS config. The highlighted lines are the new config which the remote clusters will use to authenticate, and communicate with vault. There are brief explinations below, but for further information see the [API docs]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.vault_ca/" %}})
+Now we need to federate our 2 meshes together using Vault to federate identity. To do this, we will need to create/edit a `VirtualMesh` with the new Vault shared mTLS config. The highlighted lines are the new config which the remote clusters will use to authenticate, and communicate with vault. There are brief explanations as comments below, but for further information see the [API docs]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.vault_ca/" %}})
 
 {{< highlight yaml "hl_lines=10-20" >}}
 apiVersion: networking.mesh.gloo.solo.io/v1
