@@ -340,8 +340,12 @@ func (t *translator) setDefaultDestination(
 	if len(baseRoute.Match) == 0 {
 		var defaultMatchers []*networkingv1alpha3spec.HTTPMatchRequest
 		for _, p := range ports {
+			port := p.GetPort()
+			if port == 0 {
+				port = p.GetNodePort()
+			}
 			defaultMatchers = append(defaultMatchers, &networkingv1alpha3spec.HTTPMatchRequest{
-				Port: p.GetPort(),
+				Port: port,
 			})
 		}
 		baseRoute.Match = defaultMatchers
