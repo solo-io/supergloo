@@ -202,7 +202,7 @@ First things first, we need to get the verison of our components running in clus
 export MGMT_PLANE_VERSION=$(meshctl version | jq '.server[].components[] | select(.componentName == "enterprise-networking") | .images[] | select(.name == "enterprise-networking") | .version')
 ```
 
-Then we need to update our istiod deployment with the sidecar to load and store the certificates. Most installations can use the `istioctl` command for this. However, when running in `kind` a manual json patch is necessary. This operation should be performed on both clusters
+Then we need to update our `istiod` deployment with the sidecar to load and store the certificates. Most installations can use the IstioOperator API and `istioctl` or operator for this. However, when running in Kind, a manual json patch is necessary. This operation should be performed on both clusters.
 
 {{< tabs >}}
 {{< tab name="Standard" codelang="shell" >}}
