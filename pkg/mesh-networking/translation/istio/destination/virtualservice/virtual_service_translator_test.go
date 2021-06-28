@@ -1304,7 +1304,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
-	FIt("should add HttpMatchRequest for each port", func() {
+	It("should add HttpMatchRequest for each port", func() {
 		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
