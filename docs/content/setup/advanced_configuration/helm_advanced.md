@@ -23,6 +23,7 @@ yaml specified in this field will be merged with the default deployment and serv
 ## Examples
 
 The following values.yaml file, passed into the Gloo Mesh community helm chart, will add a custom label to the discovery pod:
+
 ```yaml
 discovery:
   deploymentOverrides:
