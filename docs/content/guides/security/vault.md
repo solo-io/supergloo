@@ -181,7 +181,7 @@ istiodSidecar:
   createRoleBinding: true
 ```
 
-Otherwise run the following to update the currently deployed agent helm releases.
+Otherwise, run the following to update the currently deployed agent helm releases.
 ```shell
 for cluster in ${CONTEXT_1} ${CONTEXT_2}; do
   helm get values -n gloo-mesh enterprise-agent --kube-context="${cluster}" > $cluster-values.yaml
