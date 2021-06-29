@@ -254,7 +254,7 @@ func conflictsWithUserDestinationRule(
 
 // If this is a federated (AKA cross-cluster) destination, add keepalive values if they're present.
 // Possible Todo: refactor this code into a decorator if keepalive conflicts become possible.
-func addKeepaliveToDestinationRule(destination *discoveryv1.Destination, sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation, destinationRule *networkingv1alpha3.DestinationRule) {
+func addKeepaliveToDestinationRule(destination *discoveryv1.Destination, sourceMeshInstallation *discoveryv1.MeshInstallation, destinationRule *networkingv1alpha3.DestinationRule) {
 	keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
 	// If we also have a non-nil keepalive and this is a federated destination, then extract and apply the keepalive value
 	// to the resulting destination rule.
