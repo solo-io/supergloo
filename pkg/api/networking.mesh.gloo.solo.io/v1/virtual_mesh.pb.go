@@ -551,7 +551,8 @@ type VirtualMeshSpec_Federation struct {
 	// otherwise setting this field results in an error.
 	// If omitted, the hostname suffix defaults to "global".
 	HostnameSuffix string `protobuf:"bytes,3,opt,name=hostname_suffix,json=hostnameSuffix,proto3" json:"hostname_suffix,omitempty"`
-	// Specify a keepalive rule for all destinations associated with this VirtualMesh
+	// Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+	// as well as any requests to externalService type destinations.
 	TcpKeepalive *v12.TCPKeepalive `protobuf:"bytes,5,opt,name=tcp_keepalive,json=tcpKeepalive,proto3" json:"tcp_keepalive,omitempty"`
 }
 

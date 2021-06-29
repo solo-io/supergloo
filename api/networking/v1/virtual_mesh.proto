@@ -94,7 +94,8 @@ message VirtualMeshSpec {
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
 
-        // Specify a keepalive rule for all destinations associated with this VirtualMesh
+        // Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+        // as well as any requests to externalService type destinations.
         .common.mesh.gloo.solo.io.TCPKeepalive tcp_keepalive = 5;
 
         // Selects a set of Destinations to federate to the referenced Meshes.

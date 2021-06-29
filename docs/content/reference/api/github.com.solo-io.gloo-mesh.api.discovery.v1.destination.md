@@ -388,7 +388,7 @@ Describes the federation configuration applied to this Destination through a [Vi
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this Destination's `federated_hostname`. |
   | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   | virtualMeshRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh object. |
-  | tcpKeepalive | [common.mesh.gloo.solo.io.TCPKeepalive]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.keepalive#common.mesh.gloo.solo.io.TCPKeepalive" >}}) |  | Specify a keepalive rule for all destinations associated with this VirtualMesh |
+  | tcpKeepalive | [common.mesh.gloo.solo.io.TCPKeepalive]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.keepalive#common.mesh.gloo.solo.io.TCPKeepalive" >}}) |  | Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh, as well as any requests to externalService type destinations. |
   
 
 

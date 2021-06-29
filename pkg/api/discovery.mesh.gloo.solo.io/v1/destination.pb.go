@@ -1295,7 +1295,8 @@ type DestinationStatus_AppliedFederation struct {
 	FlatNetwork bool `protobuf:"varint,3,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
 	// Reference to the VirtualMesh object.
 	VirtualMeshRef *v1.ObjectRef `protobuf:"bytes,4,opt,name=virtual_mesh_ref,json=virtualMeshRef,proto3" json:"virtual_mesh_ref,omitempty"`
-	// Specify a keepalive rule for all destinations associated with this VirtualMesh
+	// Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+	// as well as any requests to externalService type destinations.
 	TcpKeepalive *v12.TCPKeepalive `protobuf:"bytes,5,opt,name=tcp_keepalive,json=tcpKeepalive,proto3" json:"tcp_keepalive,omitempty"`
 }
 

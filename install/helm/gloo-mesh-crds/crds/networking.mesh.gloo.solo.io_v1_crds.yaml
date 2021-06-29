@@ -977,8 +977,9 @@ spec:
                     type: object
                   type: array
                 tcpKeepalive:
-                  description: Specify a keepalive rule for all destinations associated
-                    with this VirtualMesh
+                  description: |-
+                    Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+                    as well as any requests to externalService type destinations.
                   properties:
                     interval:
                       description: |-
