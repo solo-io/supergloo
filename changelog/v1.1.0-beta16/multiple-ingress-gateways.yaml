@@ -1,5 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Allow users to select specific destinations as ingress gateways for meshes in the same virtual mesh.
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/659
-
