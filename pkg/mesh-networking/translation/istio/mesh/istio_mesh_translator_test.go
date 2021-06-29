@@ -57,7 +57,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 			Spec: discoveryv1.MeshSpec{
 				Type: &discoveryv1.MeshSpec_Istio_{
 					Istio: &discoveryv1.MeshSpec_Istio{
-						Installation: &discoveryv1.MeshSpec_MeshInstallation{
+						Installation: &discoveryv1.MeshInstallation{
 							Cluster:   "cluster-1",
 							Namespace: "istio-system",
 						},

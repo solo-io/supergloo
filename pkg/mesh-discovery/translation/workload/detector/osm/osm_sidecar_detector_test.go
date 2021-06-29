@@ -52,7 +52,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 				Spec: v1.MeshSpec{
 					Type: &v1.MeshSpec_Osm{
 						Osm: &v1.MeshSpec_OSM{
-							Installation: &v1.MeshSpec_MeshInstallation{
+							Installation: &v1.MeshInstallation{
 								Namespace: ns,
 								Cluster:   cluster,
 							},

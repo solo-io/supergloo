@@ -187,7 +187,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			},
 		}
 
-		sourceMeshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
+		sourceMeshInstallation := &discoveryv1.MeshInstallation{
 			Cluster: "federated-cluster-name",
 		}
 		globalTrafficShiftHostname := "name.namespace.svc.local-cluster.global"

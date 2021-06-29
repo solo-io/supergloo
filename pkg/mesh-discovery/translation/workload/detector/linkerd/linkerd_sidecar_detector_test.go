@@ -49,7 +49,7 @@ package linkerd_test
 // 				Spec: v1alpha2.MeshSpec{
 // 					Type: &v1alpha2.MeshSpec_Linkerd{
 // 						Linkerd: &v1alpha2.MeshSpec_LinkerdMesh{
-// 							Installation: &v1alpha2.MeshSpec_MeshInstallation{
+// 							Installation: &v1alpha2.MeshInstallation{
 // 								Cluster: cluster,
 // 							},
 // 						},
