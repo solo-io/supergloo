@@ -45,7 +45,7 @@ type Translator interface {
 		ctx context.Context,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
-		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+		sourceMeshInstallation *discoveryv1.MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
 }
@@ -81,7 +81,7 @@ func (t *translator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
-	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1.MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := destination.Spec.GetKubeService()
@@ -181,7 +181,7 @@ func registerFieldFunc(
 func (t *translator) initializeDestinationRule(
 	destination *discoveryv1.Destination,
 	mtlsDefault *v1.TrafficPolicySpec_Policy_MTLS,
-	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1.MeshInstallation,
 ) (*networkingv1alpha3.DestinationRule, error) {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {

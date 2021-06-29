@@ -438,7 +438,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -462,7 +462,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -478,7 +478,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	It("should translate for a federated Destination", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
-		meshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
+		meshInstallation := &discoveryv1.MeshInstallation{
 			Namespace: "foobar",
 			Cluster:   "mgmt-cluster",
 		}
@@ -802,7 +802,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1057,7 +1057,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1216,7 +1216,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1239,7 +1239,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {

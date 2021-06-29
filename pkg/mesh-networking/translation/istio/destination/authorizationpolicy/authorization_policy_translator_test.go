@@ -95,7 +95,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Spec: discoveryv1.MeshSpec{
 					Type: &discoveryv1.MeshSpec_Istio_{
 						Istio: &discoveryv1.MeshSpec_Istio{
-							Installation: &discoveryv1.MeshSpec_MeshInstallation{
+							Installation: &discoveryv1.MeshInstallation{
 								Cluster: "cluster1",
 							},
 							TrustDomain: "cluster1.local",
@@ -110,7 +110,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Spec: discoveryv1.MeshSpec{
 					Type: &discoveryv1.MeshSpec_Istio_{
 						Istio: &discoveryv1.MeshSpec_Istio{
-							Installation: &discoveryv1.MeshSpec_MeshInstallation{
+							Installation: &discoveryv1.MeshInstallation{
 								Cluster: "cluster2",
 							},
 							TrustDomain: "cluster2.local",
@@ -235,7 +235,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Spec: discoveryv1.MeshSpec{
 					Type: &discoveryv1.MeshSpec_Istio_{
 						Istio: &discoveryv1.MeshSpec_Istio{
-							Installation: &discoveryv1.MeshSpec_MeshInstallation{
+							Installation: &discoveryv1.MeshInstallation{
 								Cluster: "cluster1",
 							},
 							TrustDomain: "cluster1.local",
@@ -250,7 +250,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Spec: discoveryv1.MeshSpec{
 					Type: &discoveryv1.MeshSpec_Istio_{
 						Istio: &discoveryv1.MeshSpec_Istio{
-							Installation: &discoveryv1.MeshSpec_MeshInstallation{
+							Installation: &discoveryv1.MeshInstallation{
 								Cluster: "cluster2",
 							},
 							TrustDomain: "cluster2.local",

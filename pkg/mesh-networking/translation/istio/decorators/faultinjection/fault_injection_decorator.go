@@ -37,7 +37,7 @@ func (d *faultInjectionDecorator) DecoratorName() string {
 func (d *faultInjectionDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 	_ *discoveryv1.Destination,
-	_ *discoveryv1.MeshSpec_MeshInstallation,
+	_ *discoveryv1.MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
