@@ -1624,6 +1624,28 @@ spec:
                         type: array
                     type: object
                   type: array
+                tcpKeepalive:
+                  description: |-
+                    Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+                    as well as any requests to externalService type destinations.
+                  properties:
+                    interval:
+                      description: |-
+                        The time duration between keep-alive probes.
+                        Format examples: `1h`/`1m`/`1s`/`1ms`
+                      type: string
+                    probes:
+                      description: Maximum number of TCP keepalive probes to send
+                        before determining that connection is dead.
+                      maximum: 4294967295
+                      minimum: 0
+                      type: integer
+                    time:
+                      description: |-
+                        The time duration a connection needs to be idle before keep-alive probes start being sent.
+                        Format examples: `1h`/`1m`/`1s`/`1ms`.
+                      type: string
+                  type: object
               type: object
             globalAccessPolicy:
               description: Specify a global access policy for all Workloads and Destinations

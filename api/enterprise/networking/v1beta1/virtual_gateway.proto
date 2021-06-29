@@ -175,9 +175,6 @@ message VirtualGatewaySpec {
                 // Configure the Global Extauth options for clients connected to this Gateway
                 .extauth.networking.mesh.gloo.solo.io.GatewayExtauth extauth = 4;
 
-                // Enable and configure global HTTP request/response transformations for client connected to this Gateway.
-                .transformation.networking.mesh.gloo.solo.io.GatewayTransformations transformation = 15;
-
             }
         }
 
