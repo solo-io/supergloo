@@ -36,7 +36,7 @@ var _ = Describe("FederationTranslator", func() {
 			Spec: discoveryv1.MeshSpec{
 				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: true,
-					Installation: &discoveryv1.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshInstallation{
 						Namespace: namespace,
 						Cluster:   clusterName,
 						Version:   "1.8.1",
@@ -61,7 +61,7 @@ var _ = Describe("FederationTranslator", func() {
 			Spec: discoveryv1.MeshSpec{
 				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: true,
-					Installation: &discoveryv1.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshInstallation{
 						Namespace: "remote-namespace",
 						Cluster:   "remote-cluster",
 					},

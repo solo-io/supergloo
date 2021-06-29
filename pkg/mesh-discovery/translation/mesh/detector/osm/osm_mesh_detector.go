@@ -64,7 +64,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1.Mesh, erro
 		Spec: v1.MeshSpec{
 			Type: &v1.MeshSpec_Osm{
 				Osm: &v1.MeshSpec_OSM{
-					Installation: &v1.MeshSpec_MeshInstallation{
+					Installation: &v1.MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
 						PodLabels: deployment.Spec.Selector.MatchLabels,

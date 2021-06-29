@@ -51,7 +51,7 @@ func TranslatedObjectMeta(sourceObj ezkube.ClusterResourceId, annotations map[st
 // meshInstallation represents the mesh instance to which the object will be output
 func FederatedObjectMeta(
 	sourceObj ezkube.ClusterResourceId,
-	meshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	meshInstallation *discoveryv1.MeshInstallation,
 	annotations map[string]string,
 ) metav1.ObjectMeta {
 	if annotations == nil {
