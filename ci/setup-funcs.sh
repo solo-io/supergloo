@@ -335,6 +335,29 @@ spec:
           - name: ISTIO_META_ROUTER_MODE
             value: "sni-dnat"
         service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: ${port}
+    - name: istio-ingressgateway2
+      enabled: true
+      label:
+        istio: test-ingressgateway2
+      k8s:
+        env:
+          # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
           ports:
             - port: 80
               targetPort: 8080
@@ -359,14 +382,6 @@ spec:
   values:
     prometheus:
       enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: ${port}
-            port: 15443
     global:
       pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
