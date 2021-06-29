@@ -1,0 +1,51 @@
+syntax = "proto3";
+package networking.enterprise.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/solo-apis/api/rate-limiter/v1alpha1/ratelimit.proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+import "encoding/protobuf/cue/cue.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+import "google/protobuf/struct.proto";
+
+// Copied from Gloo Edge solo-apis: https://github.com/solo-io/solo-apis/blob/master/api/rate-limiter/v1alpha1/ratelimit.proto
+
+// RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the external rate-limiting server used by
+// mesh proxies to rate-limit HTTP requests. One or more rate limiter servers may be deployed in order to
+// rate limit traffic across East-West and North-South routes. The RateLimiterConfig allows users to map
+// a single rate-limiter configuration to multiple rate-limiter server instances, deployed across managed clusters.
+message RateLimiterServerConfigSpec {
+    // The per-server rate limit config objects will be generated from the given config for each provided ref.
+    // Each rate limit server must be configured to read its server configuration from one of these refs.
+    repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
+
+    // the configuration which will be deployed to the selected rate limit servers.
+    // TODO: move disable validation annotation into solo-apis
+    .ratelimit.api.solo.io.RateLimitConfigSpec rate_limit_config = 2 [(cue.opt).disable_openapi_validation = true];
+}
+
+// The current status of the `RateLimitConfig`.
+message RateLimiterServerConfigStatus {
+
+    // The most recent generation observed in the the RateLimiterServerConfig metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
+
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
+
+    // a list of rate limit server workloads which have been configured with this RateLimiterConfig
+    repeated .core.skv2.solo.io.ClusterObjectRef configured_servers = 4;
+
+}

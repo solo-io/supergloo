@@ -42,7 +42,11 @@ var (
 			Version: "v1beta1",
 		}: {
 			"WasmDeployment",
+			"RateLimiterServerConfig",
 			"VirtualDestination",
+			"VirtualGateway",
+			"VirtualHost",
+			"RouteTable",
 			"ServiceDependency",
 		},
 		schema.GroupVersion{

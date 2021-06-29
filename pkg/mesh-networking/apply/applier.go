@@ -357,8 +357,8 @@ func validateAndReturnRequiredSubsets(
 	ctx context.Context,
 	input input.LocalSnapshot,
 	destination *discoveryv1.Destination,
-) []*discoveryv1.DestinationStatus_RequiredSubsets {
-	var requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets
+) []*discoveryv1.RequiredSubsets {
+	var requiredSubsets []*discoveryv1.RequiredSubsets
 
 	for _, requiredSubset := range destination.Status.RequiredSubsets {
 
@@ -694,7 +694,7 @@ func getAppliedFederation(
 func getRequiredSubsets(
 	trafficPolicies networkingv1.TrafficPolicySlice,
 	destination *discoveryv1.Destination,
-) []*discoveryv1.DestinationStatus_RequiredSubsets {
+) []*discoveryv1.RequiredSubsets {
 	var matchingTrafficPolicies networkingv1.TrafficPolicySlice
 	for _, policy := range trafficPolicies {
 		if referencedByTrafficShiftSubset(destination, policy) {
@@ -702,10 +702,10 @@ func getRequiredSubsets(
 		}
 	}
 
-	var requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets
+	var requiredSubsets []*discoveryv1.RequiredSubsets
 	for _, policy := range matchingTrafficPolicies {
 		policy := policy // pike
-		requiredSubsets = append(requiredSubsets, &discoveryv1.DestinationStatus_RequiredSubsets{
+		requiredSubsets = append(requiredSubsets, &discoveryv1.RequiredSubsets{
 			TrafficPolicyRef:   ezkube.MakeObjectRef(policy),
 			ObservedGeneration: policy.Generation,
 			TrafficShift:       policy.Spec.Policy.TrafficShift,
