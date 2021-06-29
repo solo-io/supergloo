@@ -1,0 +1,26 @@
+syntax = "proto3";
+package common.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1";
+
+// Describes how to match a given string in HTTP headers. Match is case-sensitive.
+message StringMatch {
+
+  // The string match type.
+  oneof match_type {
+
+    // Exact string match.
+    string exact = 1;
+
+    // Prefix-based match.
+    string prefix = 2;
+
+    // ECMAscript style regex-based match.
+    string regex = 3;
+
+    // Suffix-based match.
+    string suffix = 4;
+  }
+
+  //If true, indicates the exact/prefix/suffix matching should be case insensitive. This has no effect for the regex match.
+  bool ignore_case = 5;
+}

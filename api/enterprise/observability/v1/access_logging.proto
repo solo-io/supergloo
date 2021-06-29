@@ -3,12 +3,12 @@ package observability.enterprise.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1";
 
-import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 
 /*
     Describes a record of access logs sourced from a set of workloads and optionally
@@ -43,10 +43,10 @@ message AccessLogRecordSpec {
         // Criteria type.
         oneof type {
             // Matches against a response status code. Omit to match any status code.
-            .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
+            .networking.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
 
             // Matches against a request or response header. Omit to match any headers.
-            .common.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
+            .networking.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
         }
     }
 }

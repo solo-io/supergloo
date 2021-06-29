@@ -30,7 +30,7 @@ message VirtualMeshSpec {
     GlobalAccessPolicy global_access_policy = 4;
 
     // Specify mTLS options.
-    // This includes options for configuring Mutual TLS within an individual mesh, as
+    // This includes options for configuring Mutual TLS within an individual Mesh, as
     // well as enabling mTLS across Meshes by establishing cross-mesh trust.
     message MTLSConfig {
 
@@ -70,7 +70,7 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
-        // Selectively federate Destinations to specific external meshes.
+        // Selectively federate Destinations to specific external Meshes.
         // If omitted, no Destinations will be federated.
         repeated FederationSelector selectors = 4;
 
@@ -158,7 +158,7 @@ message SharedTrust {
         .certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority intermediate_certificate_authority = 2;   
     }
 
-    // Configuration options for generated intermediate certs
+    // Configuration options for generated intermediate certs.
     .certificates.mesh.gloo.solo.io.CommonCertOptions intermediate_cert_options = 3; 
 
 }

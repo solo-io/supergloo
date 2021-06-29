@@ -134,6 +134,123 @@ func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
 	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }
 
+// Reconcile Upsert events for the RateLimiterServerConfig Resource.
+// implemented by the user
+type RateLimiterServerConfigReconciler interface {
+	ReconcileRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the RateLimiterServerConfig Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type RateLimiterServerConfigDeletionReconciler interface {
+	ReconcileRateLimiterServerConfigDeletion(req reconcile.Request) error
+}
+
+type RateLimiterServerConfigReconcilerFuncs struct {
+	OnReconcileRateLimiterServerConfig         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error)
+	OnReconcileRateLimiterServerConfigDeletion func(req reconcile.Request) error
+}
+
+func (f *RateLimiterServerConfigReconcilerFuncs) ReconcileRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error) {
+	if f.OnReconcileRateLimiterServerConfig == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileRateLimiterServerConfig(obj)
+}
+
+func (f *RateLimiterServerConfigReconcilerFuncs) ReconcileRateLimiterServerConfigDeletion(req reconcile.Request) error {
+	if f.OnReconcileRateLimiterServerConfigDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileRateLimiterServerConfigDeletion(req)
+}
+
+// Reconcile and finalize the RateLimiterServerConfig Resource
+// implemented by the user
+type RateLimiterServerConfigFinalizer interface {
+	RateLimiterServerConfigReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	RateLimiterServerConfigFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+}
+
+type RateLimiterServerConfigReconcileLoop interface {
+	RunRateLimiterServerConfigReconciler(ctx context.Context, rec RateLimiterServerConfigReconciler, predicates ...predicate.Predicate) error
+}
+
+type rateLimiterServerConfigReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewRateLimiterServerConfigReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RateLimiterServerConfigReconcileLoop {
+	return &rateLimiterServerConfigReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}, options),
+	}
+}
+
+func (c *rateLimiterServerConfigReconcileLoop) RunRateLimiterServerConfigReconciler(ctx context.Context, reconciler RateLimiterServerConfigReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericRateLimiterServerConfigReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(RateLimiterServerConfigFinalizer); ok {
+		reconcilerWrapper = genericRateLimiterServerConfigFinalizer{
+			genericRateLimiterServerConfigReconciler: genericReconciler,
+			finalizingReconciler:                     finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericRateLimiterServerConfigHandler implements a generic reconcile.Reconciler
+type genericRateLimiterServerConfigReconciler struct {
+	reconciler RateLimiterServerConfigReconciler
+}
+
+func (r genericRateLimiterServerConfigReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileRateLimiterServerConfig(obj)
+}
+
+func (r genericRateLimiterServerConfigReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(RateLimiterServerConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRateLimiterServerConfigDeletion(request)
+	}
+	return nil
+}
+
+// genericRateLimiterServerConfigFinalizer implements a generic reconcile.FinalizingReconciler
+type genericRateLimiterServerConfigFinalizer struct {
+	genericRateLimiterServerConfigReconciler
+	finalizingReconciler RateLimiterServerConfigFinalizer
+}
+
+func (r genericRateLimiterServerConfigFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.RateLimiterServerConfigFinalizerName()
+}
+
+func (r genericRateLimiterServerConfigFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeRateLimiterServerConfig(obj)
+}
+
 // Reconcile Upsert events for the VirtualDestination Resource.
 // implemented by the user
 type VirtualDestinationReconciler interface {
@@ -249,6 +366,357 @@ func (r genericVirtualDestinationFinalizer) Finalize(object ezkube.Object) error
 		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
 	}
 	return r.finalizingReconciler.FinalizeVirtualDestination(obj)
+}
+
+// Reconcile Upsert events for the VirtualGateway Resource.
+// implemented by the user
+type VirtualGatewayReconciler interface {
+	ReconcileVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the VirtualGateway Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type VirtualGatewayDeletionReconciler interface {
+	ReconcileVirtualGatewayDeletion(req reconcile.Request) error
+}
+
+type VirtualGatewayReconcilerFuncs struct {
+	OnReconcileVirtualGateway         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) (reconcile.Result, error)
+	OnReconcileVirtualGatewayDeletion func(req reconcile.Request) error
+}
+
+func (f *VirtualGatewayReconcilerFuncs) ReconcileVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) (reconcile.Result, error) {
+	if f.OnReconcileVirtualGateway == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileVirtualGateway(obj)
+}
+
+func (f *VirtualGatewayReconcilerFuncs) ReconcileVirtualGatewayDeletion(req reconcile.Request) error {
+	if f.OnReconcileVirtualGatewayDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileVirtualGatewayDeletion(req)
+}
+
+// Reconcile and finalize the VirtualGateway Resource
+// implemented by the user
+type VirtualGatewayFinalizer interface {
+	VirtualGatewayReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	VirtualGatewayFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+}
+
+type VirtualGatewayReconcileLoop interface {
+	RunVirtualGatewayReconciler(ctx context.Context, rec VirtualGatewayReconciler, predicates ...predicate.Predicate) error
+}
+
+type virtualGatewayReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewVirtualGatewayReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualGatewayReconcileLoop {
+	return &virtualGatewayReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway{}, options),
+	}
+}
+
+func (c *virtualGatewayReconcileLoop) RunVirtualGatewayReconciler(ctx context.Context, reconciler VirtualGatewayReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericVirtualGatewayReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(VirtualGatewayFinalizer); ok {
+		reconcilerWrapper = genericVirtualGatewayFinalizer{
+			genericVirtualGatewayReconciler: genericReconciler,
+			finalizingReconciler:            finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericVirtualGatewayHandler implements a generic reconcile.Reconciler
+type genericVirtualGatewayReconciler struct {
+	reconciler VirtualGatewayReconciler
+}
+
+func (r genericVirtualGatewayReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: VirtualGateway handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileVirtualGateway(obj)
+}
+
+func (r genericVirtualGatewayReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(VirtualGatewayDeletionReconciler); ok {
+		return deletionReconciler.ReconcileVirtualGatewayDeletion(request)
+	}
+	return nil
+}
+
+// genericVirtualGatewayFinalizer implements a generic reconcile.FinalizingReconciler
+type genericVirtualGatewayFinalizer struct {
+	genericVirtualGatewayReconciler
+	finalizingReconciler VirtualGatewayFinalizer
+}
+
+func (r genericVirtualGatewayFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.VirtualGatewayFinalizerName()
+}
+
+func (r genericVirtualGatewayFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return errors.Errorf("internal error: VirtualGateway handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeVirtualGateway(obj)
+}
+
+// Reconcile Upsert events for the VirtualHost Resource.
+// implemented by the user
+type VirtualHostReconciler interface {
+	ReconcileVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the VirtualHost Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type VirtualHostDeletionReconciler interface {
+	ReconcileVirtualHostDeletion(req reconcile.Request) error
+}
+
+type VirtualHostReconcilerFuncs struct {
+	OnReconcileVirtualHost         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) (reconcile.Result, error)
+	OnReconcileVirtualHostDeletion func(req reconcile.Request) error
+}
+
+func (f *VirtualHostReconcilerFuncs) ReconcileVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) (reconcile.Result, error) {
+	if f.OnReconcileVirtualHost == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileVirtualHost(obj)
+}
+
+func (f *VirtualHostReconcilerFuncs) ReconcileVirtualHostDeletion(req reconcile.Request) error {
+	if f.OnReconcileVirtualHostDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileVirtualHostDeletion(req)
+}
+
+// Reconcile and finalize the VirtualHost Resource
+// implemented by the user
+type VirtualHostFinalizer interface {
+	VirtualHostReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	VirtualHostFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+}
+
+type VirtualHostReconcileLoop interface {
+	RunVirtualHostReconciler(ctx context.Context, rec VirtualHostReconciler, predicates ...predicate.Predicate) error
+}
+
+type virtualHostReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewVirtualHostReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualHostReconcileLoop {
+	return &virtualHostReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost{}, options),
+	}
+}
+
+func (c *virtualHostReconcileLoop) RunVirtualHostReconciler(ctx context.Context, reconciler VirtualHostReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericVirtualHostReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(VirtualHostFinalizer); ok {
+		reconcilerWrapper = genericVirtualHostFinalizer{
+			genericVirtualHostReconciler: genericReconciler,
+			finalizingReconciler:         finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericVirtualHostHandler implements a generic reconcile.Reconciler
+type genericVirtualHostReconciler struct {
+	reconciler VirtualHostReconciler
+}
+
+func (r genericVirtualHostReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: VirtualHost handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileVirtualHost(obj)
+}
+
+func (r genericVirtualHostReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(VirtualHostDeletionReconciler); ok {
+		return deletionReconciler.ReconcileVirtualHostDeletion(request)
+	}
+	return nil
+}
+
+// genericVirtualHostFinalizer implements a generic reconcile.FinalizingReconciler
+type genericVirtualHostFinalizer struct {
+	genericVirtualHostReconciler
+	finalizingReconciler VirtualHostFinalizer
+}
+
+func (r genericVirtualHostFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.VirtualHostFinalizerName()
+}
+
+func (r genericVirtualHostFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return errors.Errorf("internal error: VirtualHost handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeVirtualHost(obj)
+}
+
+// Reconcile Upsert events for the RouteTable Resource.
+// implemented by the user
+type RouteTableReconciler interface {
+	ReconcileRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the RouteTable Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type RouteTableDeletionReconciler interface {
+	ReconcileRouteTableDeletion(req reconcile.Request) error
+}
+
+type RouteTableReconcilerFuncs struct {
+	OnReconcileRouteTable         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error)
+	OnReconcileRouteTableDeletion func(req reconcile.Request) error
+}
+
+func (f *RouteTableReconcilerFuncs) ReconcileRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error) {
+	if f.OnReconcileRouteTable == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileRouteTable(obj)
+}
+
+func (f *RouteTableReconcilerFuncs) ReconcileRouteTableDeletion(req reconcile.Request) error {
+	if f.OnReconcileRouteTableDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileRouteTableDeletion(req)
+}
+
+// Reconcile and finalize the RouteTable Resource
+// implemented by the user
+type RouteTableFinalizer interface {
+	RouteTableReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	RouteTableFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+}
+
+type RouteTableReconcileLoop interface {
+	RunRouteTableReconciler(ctx context.Context, rec RouteTableReconciler, predicates ...predicate.Predicate) error
+}
+
+type routeTableReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewRouteTableReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RouteTableReconcileLoop {
+	return &routeTableReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable{}, options),
+	}
+}
+
+func (c *routeTableReconcileLoop) RunRouteTableReconciler(ctx context.Context, reconciler RouteTableReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericRouteTableReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(RouteTableFinalizer); ok {
+		reconcilerWrapper = genericRouteTableFinalizer{
+			genericRouteTableReconciler: genericReconciler,
+			finalizingReconciler:        finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericRouteTableHandler implements a generic reconcile.Reconciler
+type genericRouteTableReconciler struct {
+	reconciler RouteTableReconciler
+}
+
+func (r genericRouteTableReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileRouteTable(obj)
+}
+
+func (r genericRouteTableReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(RouteTableDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRouteTableDeletion(request)
+	}
+	return nil
+}
+
+// genericRouteTableFinalizer implements a generic reconcile.FinalizingReconciler
+type genericRouteTableFinalizer struct {
+	genericRouteTableReconciler
+	finalizingReconciler RouteTableFinalizer
+}
+
+func (r genericRouteTableFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.RouteTableFinalizerName()
+}
+
+func (r genericRouteTableFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeRouteTable(obj)
 }
 
 // Reconcile Upsert events for the ServiceDependency Resource.

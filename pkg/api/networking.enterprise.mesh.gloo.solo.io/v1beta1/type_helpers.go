@@ -6,8 +6,20 @@ package v1beta1
 // WasmDeploymentSlice represents a slice of *WasmDeployment
 type WasmDeploymentSlice []*WasmDeployment
 
+// RateLimiterServerConfigSlice represents a slice of *RateLimiterServerConfig
+type RateLimiterServerConfigSlice []*RateLimiterServerConfig
+
 // VirtualDestinationSlice represents a slice of *VirtualDestination
 type VirtualDestinationSlice []*VirtualDestination
+
+// VirtualGatewaySlice represents a slice of *VirtualGateway
+type VirtualGatewaySlice []*VirtualGateway
+
+// VirtualHostSlice represents a slice of *VirtualHost
+type VirtualHostSlice []*VirtualHost
+
+// RouteTableSlice represents a slice of *RouteTable
+type RouteTableSlice []*RouteTable
 
 // ServiceDependencySlice represents a slice of *ServiceDependency
 type ServiceDependencySlice []*ServiceDependency

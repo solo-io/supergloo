@@ -20,6 +20,18 @@ func (in *WasmDeploymentStatus) DeepCopyInto(out *WasmDeploymentStatus) {
 	*out = *p
 }
 
+// DeepCopyInto for the RateLimiterServerConfig.Spec
+func (in *RateLimiterServerConfigSpec) DeepCopyInto(out *RateLimiterServerConfigSpec) {
+	p := proto.Clone(in).(*RateLimiterServerConfigSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the RateLimiterServerConfig.Status
+func (in *RateLimiterServerConfigStatus) DeepCopyInto(out *RateLimiterServerConfigStatus) {
+	p := proto.Clone(in).(*RateLimiterServerConfigStatus)
+	*out = *p
+}
+
 // DeepCopyInto for the VirtualDestination.Spec
 func (in *VirtualDestinationSpec) DeepCopyInto(out *VirtualDestinationSpec) {
 	p := proto.Clone(in).(*VirtualDestinationSpec)
@@ -29,6 +41,42 @@ func (in *VirtualDestinationSpec) DeepCopyInto(out *VirtualDestinationSpec) {
 // DeepCopyInto for the VirtualDestination.Status
 func (in *VirtualDestinationStatus) DeepCopyInto(out *VirtualDestinationStatus) {
 	p := proto.Clone(in).(*VirtualDestinationStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualGateway.Spec
+func (in *VirtualGatewaySpec) DeepCopyInto(out *VirtualGatewaySpec) {
+	p := proto.Clone(in).(*VirtualGatewaySpec)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualGateway.Status
+func (in *VirtualGatewayStatus) DeepCopyInto(out *VirtualGatewayStatus) {
+	p := proto.Clone(in).(*VirtualGatewayStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualHost.Spec
+func (in *VirtualHostSpec) DeepCopyInto(out *VirtualHostSpec) {
+	p := proto.Clone(in).(*VirtualHostSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualHost.Status
+func (in *VirtualHostStatus) DeepCopyInto(out *VirtualHostStatus) {
+	p := proto.Clone(in).(*VirtualHostStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the RouteTable.Spec
+func (in *RouteTableSpec) DeepCopyInto(out *RouteTableSpec) {
+	p := proto.Clone(in).(*RouteTableSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the RouteTable.Status
+func (in *RouteTableStatus) DeepCopyInto(out *RouteTableStatus) {
+	p := proto.Clone(in).(*RouteTableStatus)
 	*out = *p
 }
 

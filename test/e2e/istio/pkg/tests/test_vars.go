@@ -67,11 +67,26 @@ var (
 	}
 
 	CurlGateway = func(hostname, path, body, method string) string {
-		out, err := exec.Command("curl", "--connect-timeout", "1", "--max-time", "5", "-H", hostname, "http://localhost:32000"+path, "-v", "-d", body, "-X", method).CombinedOutput()
+		out, err := CurlLocal(hostname, path, body, method, "32000")
 		Expect(err).NotTo(HaveOccurred())
+		return out
+	}
 
-		GinkgoWriter.Write(out)
+	CurlIngressMgmt = func(hostname, path, body, method string) (string, error) {
+		return CurlLocal(hostname, path, body, method, "32011")
+	}
 
-		return string(out)
+	CurlIngressRemote = func(hostname, path, body, method string) (string, error) {
+		return CurlLocal(hostname, path, body, method, "32010")
+	}
+
+	CurlLocal = func(hostname, path, body, method, port string) (string, error) {
+		curlCmd := exec.Command("curl", "--connect-timeout", "1", "--max-time", "5", "-H", "Host: "+hostname, "http://localhost:"+port+path, "-v", "-d", body, "-X", method)
+		out, err := curlCmd.CombinedOutput()
+		if err == nil {
+			GinkgoWriter.Write(out)
+		}
+
+		return string(out), err
 	}
 )

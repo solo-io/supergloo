@@ -23,10 +23,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	mock_decorators "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/mocks"
 	mock_trafficpolicy "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/mocks"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -109,17 +109,17 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{},
 					},
 				},
-				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
+				RequiredSubsets: []*discoveryv1.RequiredSubsets{
 					{
 						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "another-tp",
 							Namespace: "tp-namespace-1",
 						},
 						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*v1.WeightedDestination{
 								{
-									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
 											Subset: map[string]string{"foo": "bar", "version": "v1"},
 										},
 									},
@@ -156,10 +156,10 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{
 							Policy: &v1.TrafficPolicySpec_Policy{
 								TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-									Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+									Destinations: []*v1.WeightedDestination{
 										{
-											DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-												KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											DestinationType: &v1.WeightedDestination_KubeService{
+												KubeService: &v1.WeightedDestination_KubeDestination{
 													// original service
 													Name:        destination.Spec.GetKubeService().GetRef().Name,
 													Namespace:   destination.Spec.GetKubeService().GetRef().Namespace,
@@ -281,17 +281,17 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						},
 					},
 				},
-				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
+				RequiredSubsets: []*discoveryv1.RequiredSubsets{
 					{
 						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
 						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*v1.WeightedDestination{
 								{
-									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
 											Name:        "traffic-target",
 											Namespace:   "traffic-target-namespace",
 											ClusterName: "traffic-target-clustername",
@@ -309,10 +309,10 @@ var _ = Describe("DestinationRuleTranslator", func() {
 							Namespace: "tp-namespace-2",
 						},
 						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*v1.WeightedDestination{
 								{
-									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
 											Name:        "traffic-target",
 											Namespace:   "traffic-target-namespace",
 											ClusterName: "traffic-target-clustername",
@@ -354,7 +354,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 					},
 				},
-				Subsets: trafficshift.MakeDestinationRuleSubsets(destination.Status.RequiredSubsets),
+				Subsets: routeutils.MakeDestinationRuleSubsets(destination.Status.RequiredSubsets),
 			},
 		}
 

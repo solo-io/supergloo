@@ -4,5 +4,6 @@
 package tools
 
 import (
+	_ "github.com/solo-io/solo-apis"
 	_ "istio.io/tools/cmd/protoc-gen-jsonshim"
 )

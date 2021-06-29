@@ -56,8 +56,8 @@ Specify criteria for recording access logs. A request must match all specified c
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| statusCodeMatcher | [common.mesh.gloo.solo.io.StatusCodeMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher" >}}) |  | Matches against a response status code. Omit to match any status code. |
-  | headerMatcher | [common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) |  | Matches against a request or response header. Omit to match any headers. |
+| statusCodeMatcher | [networking.mesh.gloo.solo.io.StatusCodeMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.StatusCodeMatcher" >}}) |  | Matches against a response status code. Omit to match any status code. |
+  | headerMatcher | [networking.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.request_matchers#networking.mesh.gloo.solo.io.HeaderMatcher" >}}) |  | Matches against a request or response header. Omit to match any headers. |
   
 
 
