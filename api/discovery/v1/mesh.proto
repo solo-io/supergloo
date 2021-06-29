@@ -208,10 +208,10 @@ message MeshStatus {
         repeated string errors = 3;
     }
 
-    message AppliedCA {
+    message DeployedCA {
 
-        // Certificate which is currently applied to the mesh
-        .networking.mesh.gloo.solo.io.SharedTrust applied_shared_trust = 1;
+        // Certificate which is currently deployed to the mesh
+        .networking.mesh.gloo.solo.io.SharedTrust shared_trust = 1;
 
         
         // Reserve for limited trust when it's implemented
@@ -221,5 +221,5 @@ message MeshStatus {
         repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 3;
     }
 
-    AppliedCA applied_ca = 4;
+    DeployedCA deployed_ca = 4;
 }

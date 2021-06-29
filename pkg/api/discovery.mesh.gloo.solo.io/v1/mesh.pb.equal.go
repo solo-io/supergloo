@@ -246,12 +246,12 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetAppliedCa()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetAppliedCa()) {
+	if h, ok := interface{}(m.GetDeployedCa()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDeployedCa()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetAppliedCa(), target.GetAppliedCa()) {
+		if !proto.Equal(m.GetDeployedCa(), target.GetDeployedCa()) {
 			return false
 		}
 	}
@@ -679,14 +679,14 @@ func (m *MeshStatus_AppliedVirtualDestination) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *MeshStatus_AppliedCA) Equal(that interface{}) bool {
+func (m *MeshStatus_DeployedCA) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*MeshStatus_AppliedCA)
+	target, ok := that.(*MeshStatus_DeployedCA)
 	if !ok {
-		that2, ok := that.(MeshStatus_AppliedCA)
+		that2, ok := that.(MeshStatus_DeployedCA)
 		if ok {
 			target = &that2
 		} else {
@@ -699,12 +699,12 @@ func (m *MeshStatus_AppliedCA) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetAppliedSharedTrust()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetAppliedSharedTrust()) {
+	if h, ok := interface{}(m.GetSharedTrust()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSharedTrust()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetAppliedSharedTrust(), target.GetAppliedSharedTrust()) {
+		if !proto.Equal(m.GetSharedTrust(), target.GetSharedTrust()) {
 			return false
 		}
 	}

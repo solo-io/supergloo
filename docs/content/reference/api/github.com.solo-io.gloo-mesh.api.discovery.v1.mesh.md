@@ -30,9 +30,9 @@ title: "mesh.proto"
   - [MeshSpec.LinkerdMesh](#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh)
   - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
-  - [MeshStatus.AppliedCA](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedCA)
   - [MeshStatus.AppliedVirtualDestination](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
+  - [MeshStatus.DeployedCA](#discovery.mesh.gloo.solo.io.MeshStatus.DeployedCA)
 
 
 
@@ -241,23 +241,7 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
   | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this mesh. |
-  | appliedCa | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedCA]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedCA" >}}) |  |  |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedCA"></a>
-
-### MeshStatus.AppliedCA
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| appliedSharedTrust | [networking.mesh.gloo.solo.io.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.SharedTrust" >}}) |  | Certificate which is currently applied to the mesh |
-  | certRotationConditions | [][certificates.mesh.gloo.solo.io.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationCondition" >}}) | repeated | List of rotation conditions which have been completed/carried out for this mesh |
+  | deployedCa | [discovery.mesh.gloo.solo.io.MeshStatus.DeployedCA]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.DeployedCA" >}}) |  |  |
   
 
 
@@ -292,6 +276,22 @@ Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/githu
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the applied VirtualMesh object. |
   | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
   | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The spec of the last known valid VirtualMesh. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.DeployedCA"></a>
+
+### MeshStatus.DeployedCA
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sharedTrust | [networking.mesh.gloo.solo.io.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.SharedTrust" >}}) |  | Certificate which is currently deployed to the mesh |
+  | certRotationConditions | [][certificates.mesh.gloo.solo.io.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationCondition" >}}) | repeated | List of rotation conditions which have been completed/carried out for this mesh |
   
 
 
