@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.s
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/keepalive.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/certificates/v1/ca_options.proto";
@@ -92,6 +93,10 @@ message VirtualMeshSpec {
         // otherwise setting this field results in an error.
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
+
+        // Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+        // as well as any requests to externalService type destinations.
+        .common.mesh.gloo.solo.io.TCPKeepalive tcp_keepalive = 5;
 
         // Selects a set of Destinations to federate to the referenced Meshes.
         message FederationSelector {

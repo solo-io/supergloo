@@ -313,3 +313,4 @@ message GatewayRoutes {
     // the value "*" will be used to indicate all routes were selected.
     repeated string routes = 4;
 }
+

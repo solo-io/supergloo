@@ -13,7 +13,9 @@
 {{- $discoveryExtraPodLabels := $discovery.extraPodLabels }}
 {{- $discoveryExtraPodAnnotations := $discovery.extraPodAnnotations }}
 {{- $discoveryExtraDeploymentLabels := $discovery.extraDeploymentLabels }}
-{{- $discoveryExtraDeploymentAnnotations := $discovery.extraDeploymentAnnotations }}# Deployment manifest for discovery
+{{- $discoveryExtraDeploymentAnnotations := $discovery.extraDeploymentAnnotations }}
+
+# Deployment manifest for discovery
 
 apiVersion: apps/v1
 kind: Deployment
@@ -166,7 +168,9 @@ spec:
 {{- $networkingExtraPodLabels := $networking.extraPodLabels }}
 {{- $networkingExtraPodAnnotations := $networking.extraPodAnnotations }}
 {{- $networkingExtraDeploymentLabels := $networking.extraDeploymentLabels }}
-{{- $networkingExtraDeploymentAnnotations := $networking.extraDeploymentAnnotations }}# Deployment manifest for networking
+{{- $networkingExtraDeploymentAnnotations := $networking.extraDeploymentAnnotations }}
+
+# Deployment manifest for networking
 
 apiVersion: apps/v1
 kind: Deployment

@@ -7,6 +7,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
+	duration "github.com/golang/protobuf/ptypes/duration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -377,6 +378,194 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				})
 
 				Expect(proto.Equal(destinationRuleSpec, &expectedDestinatonRule.Spec)).To(BeTrue())
+				return nil
+			})
+
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, sourceMeshInstallation, mockReporter)
+
+		// sort subsets for deterministic comparison
+		sort.Slice(destinationRule.Spec.Subsets, func(i, j int) bool {
+			return destinationRule.Spec.Subsets[i].Name < destinationRule.Spec.Subsets[j].Name
+		})
+
+		Expect(destinationRule).To(Equal(expectedDestinatonRule))
+	})
+
+	It("should output DestinationRule with keepalive for federated Destination with appropriate inputs", func() {
+		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
+			nil,
+			mockClusterDomainRegistry,
+			mockDecoratorFactory,
+			destinations,
+		)
+
+		sourceMeshInstallation := &discoveryv1.MeshInstallation{
+			Cluster: "source-cluster",
+		}
+
+		settings.Spec = settingsv1.SettingsSpec{
+			Mtls: &v1.TrafficPolicySpec_Policy_MTLS{
+				Istio: &v1.TrafficPolicySpec_Policy_MTLS_Istio{
+					TlsMode: v1.TrafficPolicySpec_Policy_MTLS_Istio_ISTIO_MUTUAL,
+				},
+			},
+		}
+
+		destination := &discoveryv1.Destination{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "traffic-target",
+				Namespace: "gloo-mesh",
+			},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-clustername",
+						},
+					},
+				},
+			},
+			Status: discoveryv1.DestinationStatus{
+				AppliedFederation: &discoveryv1.DestinationStatus_AppliedFederation{
+					TcpKeepalive: &commonv1.TCPKeepalive{
+						Probes: 1,
+						Time: &duration.Duration{
+							Seconds: 2,
+							Nanos:   3,
+						},
+						Interval: &duration.Duration{
+							Seconds: 4,
+							Nanos:   5,
+						},
+					},
+				},
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+					{
+						Ref: &skv2corev1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &v1.TrafficPolicySpec{
+							SourceSelector: []*commonv1.WorkloadSelector{
+								{
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{sourceMeshInstallation.Cluster},
+									},
+								},
+							},
+						},
+					},
+				},
+				RequiredSubsets: []*discoveryv1.RequiredSubsets{
+					{
+						TrafficPolicyRef: &skv2corev1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*v1.WeightedDestination{
+								{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
+											Name:        "traffic-target",
+											Namespace:   "traffic-target-namespace",
+											ClusterName: "traffic-target-clustername",
+											Subset:      map[string]string{"k1": "v1"},
+											Port:        9080,
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						TrafficPolicyRef: &skv2corev1.ObjectRef{
+							Name:      "tp-2",
+							Namespace: "tp-namespace-2",
+						},
+						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*v1.WeightedDestination{
+								{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
+											Name:        "traffic-target",
+											Namespace:   "traffic-target-namespace",
+											ClusterName: "traffic-target-clustername",
+											Subset:      map[string]string{"k2": "v2"},
+											Port:        9080,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationFQDN(sourceMeshInstallation.Cluster, destination.Spec.GetKubeService().Ref).
+			Return("global-hostname")
+
+		expectedDestinatonRule := &networkingv1alpha3.DestinationRule{
+			ObjectMeta: metautils.FederatedObjectMeta(
+				destination.Spec.GetKubeService().Ref,
+				sourceMeshInstallation,
+				destination.Annotations,
+			),
+			Spec: networkingv1alpha3spec.DestinationRule{
+				Host: "global-hostname",
+				TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+					Tls: &networkingv1alpha3spec.ClientTLSSettings{
+						Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+					},
+					ConnectionPool: &networkingv1alpha3spec.ConnectionPoolSettings{
+						Tcp: &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings{
+							TcpKeepalive: &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings_TcpKeepalive{
+								Probes: 1,
+								Time: &types.Duration{
+									Seconds: 2,
+									Nanos:   3,
+								},
+								Interval: &types.Duration{
+									Seconds: 4,
+									Nanos:   5,
+								},
+							},
+						},
+					},
+				},
+
+				Subsets: routeutils.MakeDestinationRuleSubsets(destination.Status.RequiredSubsets),
+			},
+		}
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToDestinationRule(
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
+				gomock.Any(),
+				gomock.Any(),
+			).
+			DoAndReturn(func(
+				_ *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				destinationRuleSpec *networkingv1alpha3spec.DestinationRule,
+				_ decorators.RegisterField,
+			) error {
 				return nil
 			})
 
