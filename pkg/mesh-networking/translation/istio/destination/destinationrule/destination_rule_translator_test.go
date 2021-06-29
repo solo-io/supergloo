@@ -459,17 +459,17 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						},
 					},
 				},
-				RequiredSubsets: []*discoveryv1.DestinationStatus_RequiredSubsets{
+				RequiredSubsets: []*discoveryv1.RequiredSubsets{
 					{
 						TrafficPolicyRef: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
 						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*v1.WeightedDestination{
 								{
-									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
 											Name:        "traffic-target",
 											Namespace:   "traffic-target-namespace",
 											ClusterName: "traffic-target-clustername",
@@ -487,10 +487,10 @@ var _ = Describe("DestinationRuleTranslator", func() {
 							Namespace: "tp-namespace-2",
 						},
 						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*v1.WeightedDestination{
 								{
-									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &v1.WeightedDestination_KubeService{
+										KubeService: &v1.WeightedDestination_KubeDestination{
 											Name:        "traffic-target",
 											Namespace:   "traffic-target-namespace",
 											ClusterName: "traffic-target-clustername",
@@ -548,7 +548,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 					},
 				},
 
-				Subsets: trafficshift.MakeDestinationRuleSubsets(destination.Status.RequiredSubsets),
+				Subsets: routeutils.MakeDestinationRuleSubsets(destination.Status.RequiredSubsets),
 			},
 		}
 
