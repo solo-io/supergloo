@@ -2,24 +2,13 @@ syntax = "proto3";
 package transformation.networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/transformation";
 
-
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/duration.proto";
-
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
-
-import "google/protobuf/struct.proto";
-
-import "encoding/protobuf/cue/cue.proto";
-
-import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo/projects/gloo/api/external/envoy/extensions/transformation/transformation.proto";
 
 import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
 
 // GatewayTransformation enables use of the Transformation feature on Gateway.
-message GatewayTransformation {
+message GatewayTransformations {
     // Apply transformations to all traffic served by this Gateway (HTTP only).
     // Optional. If strict filter management is enabled on the gateway, a GatewayTransformation must be provided even if no
     // global transformations are defined in order to enable the transformation filter on that gateway.
