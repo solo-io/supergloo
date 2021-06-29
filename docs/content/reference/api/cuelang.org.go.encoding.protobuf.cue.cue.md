@@ -35,7 +35,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | required | bool |  |  |
-  | disableOpenapiValidation | bool |  | Enable this option to treat this field use an unstructured object in the OpenAPI schema for this field. This is currently required to disable infinite recursion when expanding references with CUE on recursive types. |
+  | disableOpenapiValidation | bool |  | Enable this option to treat this field as an unstructured object in the OpenAPI schema. This is currently required to disable infinite recursion when expanding references with CUE on recursive types. |
   
 
 
