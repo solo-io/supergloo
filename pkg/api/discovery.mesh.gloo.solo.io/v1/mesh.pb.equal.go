@@ -195,6 +195,16 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetAppliedCa()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetAppliedCa()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetAppliedCa(), target.GetAppliedCa()) {
+			return false
+		}
+	}
+
 	return true
 }
 

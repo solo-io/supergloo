@@ -119,10 +119,6 @@ func (t *translator) Translate(
 		return
 	}
 
-	vmStatus := &networkingv1.VirtualMeshStatus{}
-
-	appliedMeshCa, _ := vmStatus.AppliedCertificate[sets.Key(mesh)]
-
 	if !proto.Equal(appliedMeshCa.GetSharedTrust(), virtualMesh.GetSpec().GetMtlsConfig().GetShared()) {
 		// applied is different from VM spec, time to rotate
 
@@ -159,16 +155,39 @@ func (t *translator) updateMtlsOutputs(
 		return eris.Errorf("must specify trust model to use for issuing certificates")
 	}
 
+	// No currently applied shared trust config
+	if mesh.Status.GetAppliedCa().GetAppliedSharedTrust() == nil {
+		mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
+			AppliedSharedTrust: mtlsConfig.GetShared(),
+		}
+	}
+
 	switch trustModel := mtlsConfig.TrustModel.(type) {
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Shared:
-		return t.configureSharedTrust(
+
+		if err := t.configureSharedTrust(
 			mesh,
 			trustModel.Shared,
 			virtualMesh.Ref,
 			istioOutputs,
 			localOutputs,
 			mtlsConfig.AutoRestartPods,
-		)
+		); err != nil {
+			return err
+		}
+
+		rotationConditions := mesh.Status.GetAppliedCa().GetCertRotationConditions()
+		// Do not update the applied shared_trust if there is currently a rotation happening,
+		// and the rotation is not finished
+		if len(rotationConditions) > 0 &&
+			rotationConditions[len(rotationConditions)-1].State != certificatesv1.CertificateRotationState_FINISHED {
+		}
+
+		// Shared trust has been succesffuly processed, add it to the applied_ca
+		mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
+			AppliedSharedTrust:     trustModel.Shared,
+			CertRotationConditions: mesh.Status.GetAppliedCa().GetCertRotationConditions(),
+		}
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Limited:
 		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}

@@ -220,4 +220,6 @@ message MeshStatus {
         // List of rotation conditions which have been completed/carried out for this mesh
         repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 3;
     }
+
+    AppliedCA applied_ca = 4;
 }
