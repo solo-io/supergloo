@@ -3,6 +3,7 @@ package discovery.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/keepalive.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/access_policy.proto";
 import "google/protobuf/wrappers.proto";
@@ -299,6 +300,10 @@ message DestinationStatus {
 
         // Reference to the VirtualMesh object.
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
+
+        // Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+        // as well as any requests to externalService type destinations.
+        .common.mesh.gloo.solo.io.TCPKeepalive tcp_keepalive = 5;
     }
 
 }
