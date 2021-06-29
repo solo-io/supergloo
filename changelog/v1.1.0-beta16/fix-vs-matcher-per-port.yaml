@@ -5,4 +5,4 @@ changelog:
       service that itself has several ports. Before this fix, the generated virtual service did not have an istio
       `HttpMatchRequest` for each port, so HTTP requests would always match the first route on the virtual service
       (which might have the wrong port) rather than the correct route.
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/688
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1639
