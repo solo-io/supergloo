@@ -197,6 +197,7 @@ type IngressGatewaySelector struct {
 
 	// The set of Destinations that will be used as ingress gateway services for the external Meshes.
 	// If omitted, a mesh-specific default ingress gateway destination will be used.
+	// For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected.
 	DestinationSelectors []*DestinationSelector `protobuf:"bytes,1,rep,name=destination_selectors,json=destinationSelectors,proto3" json:"destination_selectors,omitempty"`
 	// Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls".
 	GatewayTlsPortName string `protobuf:"bytes,2,opt,name=gateway_tls_port_name,json=gatewayTlsPortName,proto3" json:"gateway_tls_port_name,omitempty"`

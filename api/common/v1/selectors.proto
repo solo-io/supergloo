@@ -124,6 +124,7 @@ message IngressGatewaySelector {
 
     // The set of Destinations that will be used as ingress gateway services for the external Meshes.
     // If omitted, a mesh-specific default ingress gateway destination will be used.
+    // For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected.
     repeated DestinationSelector destination_selectors = 1;
 
     // Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls".

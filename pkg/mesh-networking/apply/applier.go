@@ -9,9 +9,9 @@ import (
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
@@ -764,19 +764,12 @@ func getAppliedEastWestIngressGateways(
 	for _, virtualMesh := range virtualMeshes {
 		for _, ingressGatewayServiceSelector := range virtualMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
 			// Check if this selector applies to this mesh
-			var applies bool
-			for _, meshRef := range ingressGatewayServiceSelector.GetMeshes() {
-				if meshRef.GetName() == mesh.GetName() && meshRef.GetNamespace() == mesh.GetNamespace() {
-					applies = true
-					break
-				}
-			}
-			if !applies {
+			if !selectorutils.IngressGatewaySelectorMatchesMesh(ingressGatewayServiceSelector, mesh) {
 				continue
 			}
 			for _, destination := range destinations {
 				// Currently, we can only create gateways out of kube service destination types.
-				if destination.Spec.GetExternalService() != nil {
+				if destination.Spec.GetKubeService() == nil {
 					continue
 				}
 				if selectorutils.SelectorMatchesDestination(ingressGatewayServiceSelector.GetDestinationSelectors(), destination) {
@@ -792,17 +785,16 @@ func getAppliedEastWestIngressGateways(
 		}
 	}
 	if len(selectedIngressGatewayList) == 0 {
-		// Attempt to apply a mesh-specific default
 		for _, destination := range destinations {
 			if destination.Spec.GetKubeService().GetWorkloadSelectorLabels()["istio"] == "ingressgateway" {
 				for _, ports := range destination.Spec.GetKubeService().GetPorts() {
-					if ports.GetName() == federation.DefaultGatewayPortName && ports.GetPort() != 0 {
+					if ports.GetName() == defaults.DefaultGatewayPortName && ports.GetPort() != 0 {
 						selectedIngressGatewayList = append(selectedIngressGatewayList, &discoveryv1.MeshStatus_IngressGateway{
 							DestinationRef: &v1.ObjectRef{
 								Name:      destination.GetName(),
 								Namespace: destination.GetNamespace(),
 							},
-							TlsPortName: federation.DefaultGatewayPortName,
+							TlsPortName: defaults.DefaultGatewayPortName,
 						})
 					}
 				}

@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/skv2/pkg/ezkube"
+
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -24,7 +27,6 @@ import (
 const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
-	DefaultGatewayPortName = "tls"
 	defaultGatewayPort     = 15443
 )
 
@@ -87,6 +89,18 @@ func (t *translator) Translate(
 	federatedHostnameSuffix := hostutils.GetFederatedHostnameSuffix(virtualMesh.Spec)
 
 	// create the east west ingress gateways
+	if len(mesh.Status.GetEastWestIngressGateways()) == 0 {
+		// fall back to old behavior
+		ingressGateway := istioMesh.IngressGateways[0]
+
+		// istio gateway names must be DNS-1123 labels
+		// hyphens are legal, dots are not, so we convert here
+		gwName := BuildGatewayName(virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace())
+		t.buildGatewayObject(gwName, istioNamespace, istioCluster,
+			ingressGateway.TlsContainerPort, federatedHostnameSuffix, ingressGateway.WorkloadLabels,
+			virtualMesh.GetRef(), outputs)
+
+	}
 	for _, ewIngressGatewayInfo := range mesh.Status.GetEastWestIngressGateways() {
 		destination, err := in.Destinations().Find(ewIngressGatewayInfo.GetDestinationRef())
 		if err != nil {
@@ -95,7 +109,7 @@ func (t *translator) Translate(
 
 		// Figure out the ingress gateway tls port
 		ingressGatewayContainerTlsPort := uint32(defaultGatewayPort)
-		gatewayTlsPortName := DefaultGatewayPortName
+		gatewayTlsPortName := defaults.DefaultGatewayPortName
 		if ewIngressGatewayInfo.GetTlsPortName() != "" {
 			gatewayTlsPortName = ewIngressGatewayInfo.GetTlsPortName()
 		}
@@ -114,39 +128,46 @@ func (t *translator) Translate(
 
 		// istio gateway names must be DNS-1123 labels
 		// hyphens are legal, dots are not, so we convert here
-		gwName := BuildGatewayName(virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace(),
-			destination.GetName(), destination.GetNamespace())
-		gw := &networkingv1alpha3.Gateway{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        gwName,
-				Namespace:   istioNamespace,
-				ClusterName: istioCluster,
-				Labels:      metautils.TranslatedObjectLabels(),
-			},
-			Spec: networkingv1alpha3spec.Gateway{
-				Servers: []*networkingv1alpha3spec.Server{{
-					Port: &networkingv1alpha3spec.Port{
-						Number:   ingressGatewayContainerTlsPort,
-						Protocol: defaultGatewayProtocol,
-						Name:     DefaultGatewayPortName,
-					},
-					Hosts: []string{"*." + federatedHostnameSuffix},
-					Tls: &networkingv1alpha3spec.ServerTLSSettings{
-						Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
-					},
-				}},
-				Selector: ingressGatewayWorkloadLabels,
-			},
-		}
-
-		// Append the virtual mesh as a parent to each output resource
-		metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
-		outputs.AddGateways(gw)
+		gwName := BuildGatewayName(destination.GetName(), destination.GetNamespace())
+		t.buildGatewayObject(gwName, istioNamespace, istioCluster,
+			ingressGatewayContainerTlsPort, federatedHostnameSuffix, ingressGatewayWorkloadLabels,
+			virtualMesh.GetRef(), outputs)
 	}
 }
 
-func BuildGatewayName(vmeshName, vmeshNamespace, destName, destNamespace string) string {
+func (t *translator) buildGatewayObject(name, namespace, cluster string, ingressGatewayContainerTlsPort uint32,
+	federatedHostnameSuffix string, ingressGatewayWorkloadLabels map[string]string,
+	virtualMeshRef ezkube.ResourceId, outputs istio.Builder) {
+	gw := &networkingv1alpha3.Gateway{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   namespace,
+			ClusterName: cluster,
+			Labels:      metautils.TranslatedObjectLabels(),
+		},
+		Spec: networkingv1alpha3spec.Gateway{
+			Servers: []*networkingv1alpha3spec.Server{{
+				Port: &networkingv1alpha3spec.Port{
+					Number:   ingressGatewayContainerTlsPort,
+					Protocol: defaultGatewayProtocol,
+					Name:     defaults.DefaultGatewayPortName,
+				},
+				Hosts: []string{"*." + federatedHostnameSuffix},
+				Tls: &networkingv1alpha3spec.ServerTLSSettings{
+					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
+				},
+			}},
+			Selector: ingressGatewayWorkloadLabels,
+		},
+	}
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
+	outputs.AddGateways(gw)
+}
+
+func BuildGatewayName(name, namespace string) string {
 	return kubeutils.SanitizeNameV2(
-		fmt.Sprintf("%s-%s-%s-%s", vmeshName, vmeshNamespace, destName, destNamespace),
+		fmt.Sprintf("%s-%s", name, namespace),
 	)
 }

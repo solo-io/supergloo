@@ -1693,6 +1693,7 @@ spec:
                                 description: |-
                                   The set of Destinations that will be used as ingress gateway services for the external Meshes.
                                   If omitted, a mesh-specific default ingress gateway destination will be used.
+                                  For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected.
                                 items:
                                   properties:
                                     kubeServiceMatcher:

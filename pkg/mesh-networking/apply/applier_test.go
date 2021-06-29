@@ -10,9 +10,9 @@ import (
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -173,7 +173,7 @@ var _ = Describe("Applier", func() {
 
 	Context("setting workloads status", func() {
 		var (
-			destination = &discoveryv1.Destination{
+			destination1 = &discoveryv1.Destination{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
@@ -189,7 +189,30 @@ var _ = Describe("Applier", func() {
 							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port: 1234,
-									Name: federation.DefaultGatewayPortName,
+									Name: defaults.DefaultGatewayPortName,
+								},
+							},
+						},
+					},
+				},
+			}
+			destination2 = &discoveryv1.Destination{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "ms2",
+					Namespace: "ns",
+				},
+				Spec: discoveryv1.DestinationSpec{
+					Mesh: &skv2corev1.ObjectRef{
+						Name:      "mesh2",
+						Namespace: "ns",
+					},
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							WorkloadSelectorLabels: map[string]string{"istio": "ingressgateway"},
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								{
+									Port: 1234,
+									Name: defaults.DefaultGatewayPortName,
 								},
 							},
 						},
@@ -262,7 +285,7 @@ var _ = Describe("Applier", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(networkingv1.AccessPolicySlice{accessPolicy}).
-				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddDestinations(discoveryv1.DestinationSlice{destination1}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
 				Build()
@@ -272,7 +295,7 @@ var _ = Describe("Applier", func() {
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 
-			// destination and workload1 are both in mesh1
+			// destination1 and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
 			Expect(trafficPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
 			Expect(accessPolicy.Status.Workloads).To(HaveLen(1))
@@ -282,7 +305,7 @@ var _ = Describe("Applier", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(networkingv1.AccessPolicySlice{accessPolicy}).
-				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddDestinations(discoveryv1.DestinationSlice{destination1, destination2}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
 				AddVirtualMeshes(networkingv1.VirtualMeshSlice{virtualMesh}).
@@ -293,7 +316,7 @@ var _ = Describe("Applier", func() {
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 
-			// destination is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
+			// destination1 is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
 			// since mesh1 and mesh2 are in the same VirtualMesh, both workloads are returned
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(2))
 			Expect(trafficPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
@@ -307,7 +330,7 @@ var _ = Describe("Applier", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(networkingv1.AccessPolicySlice{accessPolicy}).
-				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddDestinations(discoveryv1.DestinationSlice{destination1}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
 				Build()
@@ -317,7 +340,7 @@ var _ = Describe("Applier", func() {
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 
-			// destination is in mesh1, but both workloads are in mesh2
+			// destination1 is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
 			Expect(accessPolicy.Status.Workloads).To(BeNil())
 		})
@@ -484,9 +507,9 @@ var _ = Describe("Applier", func() {
 		})
 
 		It("restrictive federation with defined selectors should selectively federate Destinations", func() {
-			destination2 := &discoveryv1.Destination{
+			destination3 := &discoveryv1.Destination{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "d2",
+					Name:      "d3",
 					Namespace: "ns",
 				},
 				Spec: discoveryv1.DestinationSpec{
@@ -559,7 +582,7 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap.AddDestinations([]*discoveryv1.Destination{destination2})
+			snap.AddDestinations([]*discoveryv1.Destination{destination3})
 			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{restrictiveVirtualMesh})
 
 			expectedAppliedFederation1 := &discoveryv1.DestinationStatus_AppliedFederation{
@@ -584,7 +607,7 @@ var _ = Describe("Applier", func() {
 			applier.Apply(context.TODO(), snap.Build(), nil)
 
 			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation1))
-			Expect(destination2.Status.AppliedFederation).To(Equal(expectedAppliedFederation2))
+			Expect(destination3.Status.AppliedFederation).To(Equal(expectedAppliedFederation2))
 		})
 	})
 
