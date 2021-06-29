@@ -284,10 +284,8 @@ type TrafficPolicySpec_Policy struct {
 	HeaderManipulation *HeaderManipulation `protobuf:"bytes,10,opt,name=header_manipulation,json=headerManipulation,proto3" json:"header_manipulation,omitempty"`
 	// Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
 	// Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-	// DEPRECATED: use DestinationPolicy to configure Outlier Detection
 	OutlierDetection *TrafficPolicySpec_Policy_OutlierDetection `protobuf:"bytes,11,opt,name=outlier_detection,json=outlierDetection,proto3" json:"outlier_detection,omitempty"`
 	// Configure mTLS settings. If specified will override global default defined in Settings.
-	// DEPRECATED: use DestinationPolicy to configure MTLS
 	Mtls *TrafficPolicySpec_Policy_MTLS `protobuf:"bytes,12,opt,name=mtls,proto3" json:"mtls,omitempty"`
 	// Configure the Envoy based CSRF filter
 	Csrf *csrf.CsrfPolicy `protobuf:"bytes,13,opt,name=csrf,proto3" json:"csrf,omitempty"`
@@ -799,7 +797,6 @@ func (*TrafficPolicySpec_Policy_Mirror_KubeService) isTrafficPolicySpec_Policy_M
 
 // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
 // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-// DEPRECATED: use DestinationPolicy to configure Outlier Detection
 type TrafficPolicySpec_Policy_OutlierDetection struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -877,7 +874,6 @@ func (x *TrafficPolicySpec_Policy_OutlierDetection) GetMaxEjectionPercent() uint
 }
 
 // Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
-// DEPRECATED: use DestinationPolicy to configure MTLS
 type TrafficPolicySpec_Policy_MTLS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -75,8 +75,8 @@ Specify L7 routing and post-routing configuration.
   | corsPolicy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy" >}}) |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for further details about cross origin resource sharing. |
   | mirror | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror" >}}) |  | Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations). |
   | headerManipulation | [networking.mesh.gloo.solo.io.HeaderManipulation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.weighed_destination#networking.mesh.gloo.solo.io.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
-  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. DEPRECATED: use DestinationPolicy to configure Outlier Detection |
-  | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. DEPRECATED: use DestinationPolicy to configure MTLS |
+  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. |
+  | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. |
   | csrf | [csrf.networking.mesh.gloo.solo.io.CsrfPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.csrf.csrf#csrf.networking.mesh.gloo.solo.io.CsrfPolicy" >}}) |  | Configure the Envoy based CSRF filter |
   | rateLimit | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit" >}}) |  | Config the Envoy based Ratelimit filter |
   
@@ -170,7 +170,7 @@ Abort the request and return the specified error code back to traffic source.
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS"></a>
 
 ### TrafficPolicySpec.Policy.MTLS
-Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings. DEPRECATED: use DestinationPolicy to configure MTLS
+Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
 
 
 | Field | Type | Label | Description |
@@ -232,7 +232,7 @@ Specify a traffic shift destination.
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection"></a>
 
 ### TrafficPolicySpec.Policy.OutlierDetection
-Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic. DEPRECATED: use DestinationPolicy to configure Outlier Detection
+Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations. Specifying this field requires an empty `source_selector` because it must apply to all traffic.
 
 
 | Field | Type | Label | Description |

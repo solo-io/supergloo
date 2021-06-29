@@ -66,11 +66,9 @@ message TrafficPolicySpec {
 
         // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
         // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-        // DEPRECATED: use DestinationPolicy to configure Outlier Detection
         OutlierDetection outlier_detection = 11;
 
         // Configure mTLS settings. If specified will override global default defined in Settings.
-        // DEPRECATED: use DestinationPolicy to configure MTLS
         MTLS mtls = 12;
 
         // Configure the Envoy based CSRF filter
@@ -173,7 +171,6 @@ message TrafficPolicySpec {
 
         // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
         // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
-        // DEPRECATED: use DestinationPolicy to configure Outlier Detection
         message OutlierDetection {
 
             // The number of errors before a host is ejected from the connection pool. A default will be used if not set.
@@ -191,7 +188,6 @@ message TrafficPolicySpec {
         }
 
         // Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
-        // DEPRECATED: use DestinationPolicy to configure MTLS
         message MTLS {
 
             // Istio TLS settings.

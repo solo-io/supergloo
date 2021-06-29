@@ -13,8 +13,6 @@ import (
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/render"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	protoutil "github.com/solo-io/skv2/codegen/proto"
 )
 
 const (
