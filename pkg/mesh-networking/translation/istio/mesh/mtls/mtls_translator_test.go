@@ -51,7 +51,7 @@ var _ = Describe("MtlsTranslator", func() {
 					Istio: &discoveryv1.MeshSpec_Istio{
 						TrustDomain:          "cluster.not-local",
 						IstiodServiceAccount: "istiod-not-standard",
-						Installation: &discoveryv1.MeshSpec_MeshInstallation{
+						Installation: &discoveryv1.MeshInstallation{
 							Namespace: "istio-system-2",
 							Cluster:   "cluster-name",
 						},

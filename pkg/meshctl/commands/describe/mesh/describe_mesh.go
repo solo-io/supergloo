@@ -156,7 +156,7 @@ func getMeshMetadata(mesh *discoveryv1.Mesh) meshMetadata {
 			Clusters:     appmesh.Clusters,
 		}
 	}
-	var meshInstallation *discoveryv1.MeshSpec_MeshInstallation
+	var meshInstallation *discoveryv1.MeshInstallation
 	switch mesh.Spec.GetType().(type) {
 	case *discoveryv1.MeshSpec_Istio_:
 		meshType = "istio"
