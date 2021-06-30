@@ -1,5 +1,7 @@
 FROM alpine:3.11.6
 
+USER 10101
+
 # installs public root certs
 # needed to establish trust with third party sources
 RUN apk upgrade --update-cache \
