@@ -182,104 +182,6 @@ func (m *TrafficPolicyStatus) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficPolicySpec_HttpMatcher) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_HttpMatcher)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_HttpMatcher)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if len(m.GetHeaders()) != len(target.GetHeaders()) {
-		return false
-	}
-	for idx, v := range m.GetHeaders() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetHeaders()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetHeaders()[idx]) {
-				return false
-			}
-		}
-
-	}
-
-	if len(m.GetQueryParameters()) != len(target.GetQueryParameters()) {
-		return false
-	}
-	for idx, v := range m.GetQueryParameters() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetQueryParameters()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetQueryParameters()[idx]) {
-				return false
-			}
-		}
-
-	}
-
-	if strings.Compare(m.GetMethod(), target.GetMethod()) != 0 {
-		return false
-	}
-
-	switch m.PathSpecifier.(type) {
-
-	case *TrafficPolicySpec_HttpMatcher_Prefix:
-		if _, ok := target.PathSpecifier.(*TrafficPolicySpec_HttpMatcher_Prefix); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_HttpMatcher_Exact:
-		if _, ok := target.PathSpecifier.(*TrafficPolicySpec_HttpMatcher_Exact); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_HttpMatcher_Regex:
-		if _, ok := target.PathSpecifier.(*TrafficPolicySpec_HttpMatcher_Regex); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.PathSpecifier != target.PathSpecifier {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *TrafficPolicySpec_Policy) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -390,40 +292,24 @@ func (m *TrafficPolicySpec_Policy) Equal(that interface{}) bool {
 		}
 	}
 
-	return true
-}
-
-// Equal function
-func (m *TrafficPolicySpec_HttpMatcher_QueryParameterMatcher) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_HttpMatcher_QueryParameterMatcher)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_HttpMatcher_QueryParameterMatcher)
-		if ok {
-			target = &that2
-		} else {
+	if h, ok := interface{}(m.GetCsrf()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetCsrf()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetCsrf(), target.GetCsrf()) {
 			return false
 		}
 	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
 
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetValue(), target.GetValue()) != 0 {
-		return false
-	}
-
-	if m.GetRegex() != target.GetRegex() {
-		return false
+	if h, ok := interface{}(m.GetRateLimit()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRateLimit()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRateLimit(), target.GetRateLimit()) {
+			return false
+		}
 	}
 
 	return true
@@ -570,74 +456,6 @@ func (m *TrafficPolicySpec_Policy_FaultInjection) Equal(that interface{}) bool {
 		if m.FaultInjectionType != target.FaultInjectionType {
 			return false
 		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *TrafficPolicySpec_Policy_HeaderManipulation) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_Policy_HeaderManipulation)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_HeaderManipulation)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if len(m.GetRemoveResponseHeaders()) != len(target.GetRemoveResponseHeaders()) {
-		return false
-	}
-	for idx, v := range m.GetRemoveResponseHeaders() {
-
-		if strings.Compare(v, target.GetRemoveResponseHeaders()[idx]) != 0 {
-			return false
-		}
-
-	}
-
-	if len(m.GetAppendResponseHeaders()) != len(target.GetAppendResponseHeaders()) {
-		return false
-	}
-	for k, v := range m.GetAppendResponseHeaders() {
-
-		if strings.Compare(v, target.GetAppendResponseHeaders()[k]) != 0 {
-			return false
-		}
-
-	}
-
-	if len(m.GetRemoveRequestHeaders()) != len(target.GetRemoveRequestHeaders()) {
-		return false
-	}
-	for idx, v := range m.GetRemoveRequestHeaders() {
-
-		if strings.Compare(v, target.GetRemoveRequestHeaders()[idx]) != 0 {
-			return false
-		}
-
-	}
-
-	if len(m.GetAppendRequestHeaders()) != len(target.GetAppendRequestHeaders()) {
-		return false
-	}
-	for k, v := range m.GetAppendRequestHeaders() {
-
-		if strings.Compare(v, target.GetAppendRequestHeaders()[k]) != 0 {
-			return false
-		}
-
 	}
 
 	return true
@@ -880,14 +698,14 @@ func (m *TrafficPolicySpec_Policy_MTLS) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) Equal(that interface{}) bool {
+func (m *TrafficPolicySpec_Policy_Transform) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination)
+	target, ok := that.(*TrafficPolicySpec_Policy_Transform)
 	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_MultiDestination_WeightedDestination)
+		that2, ok := that.(TrafficPolicySpec_Policy_Transform)
 		if ok {
 			target = &that2
 		} else {
@@ -900,97 +718,7 @@ func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) Equal(th
 		return false
 	}
 
-	if m.GetWeight() != target.GetWeight() {
-		return false
-	}
-
-	switch m.DestinationType.(type) {
-
-	case *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
-		if _, ok := target.DestinationType.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetKubeService()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetKubeService(), target.GetKubeService()) {
-				return false
-			}
-		}
-
-	case *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
-		if _, ok := target.DestinationType.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetVirtualDestination()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetVirtualDestination()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetVirtualDestination(), target.GetVirtualDestination()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.DestinationType != target.DestinationType {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetClusterName(), target.GetClusterName()) != 0 {
-		return false
-	}
-
-	if len(m.GetSubset()) != len(target.GetSubset()) {
-		return false
-	}
-	for k, v := range m.GetSubset() {
-
-		if strings.Compare(v, target.GetSubset()[k]) != 0 {
-			return false
-		}
-
-	}
-
-	if m.GetPort() != target.GetPort() {
+	if strings.Compare(m.GetTodo(), target.GetTodo()) != 0 {
 		return false
 	}
 
@@ -998,14 +726,14 @@ func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDesti
 }
 
 // Equal function
-func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference) Equal(that interface{}) bool {
+func (m *TrafficPolicySpec_Policy_DLPPolicy) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference)
+	target, ok := that.(*TrafficPolicySpec_Policy_DLPPolicy)
 	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference)
+		that2, ok := that.(TrafficPolicySpec_Policy_DLPPolicy)
 		if ok {
 			target = &that2
 		} else {
@@ -1018,23 +746,36 @@ func (m *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDe
 		return false
 	}
 
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+	if strings.Compare(m.GetTodo(), target.GetTodo()) != 0 {
 		return false
 	}
 
-	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
-		return false
+	return true
+}
+
+// Equal function
+func (m *TrafficPolicySpec_Policy_ExtAuth) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
 	}
 
-	if len(m.GetSubset()) != len(target.GetSubset()) {
-		return false
-	}
-	for k, v := range m.GetSubset() {
-
-		if strings.Compare(v, target.GetSubset()[k]) != 0 {
+	target, ok := that.(*TrafficPolicySpec_Policy_ExtAuth)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_Policy_ExtAuth)
+		if ok {
+			target = &that2
+		} else {
 			return false
 		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
 
+	if strings.Compare(m.GetTodo(), target.GetTodo()) != 0 {
+		return false
 	}
 
 	return true
@@ -1063,66 +804,6 @@ func (m *TrafficPolicySpec_Policy_FaultInjection_Abort) Equal(that interface{}) 
 
 	if m.GetHttpStatus() != target.GetHttpStatus() {
 		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *TrafficPolicySpec_Policy_CorsPolicy_StringMatch) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_Policy_CorsPolicy_StringMatch)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.MatchType.(type) {
-
-	case *TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
-			return false
-		}
-
-	case *TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex); !ok {
-			return false
-		}
-
-		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
-			return false
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.MatchType != target.MatchType {
-			return false
-		}
 	}
 
 	return true

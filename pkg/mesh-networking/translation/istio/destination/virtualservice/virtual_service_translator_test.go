@@ -103,15 +103,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
-										Exact: "path",
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
+											Exact: "path",
+										},
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -143,15 +145,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
-										Exact: "path",
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
+											Exact: "path",
+										},
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -527,15 +531,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
-										Exact: "path",
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
+											Exact: "path",
+										},
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -1131,9 +1137,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:  "user-agent",
 											Value: "'.*Firefox.*'",

@@ -58,6 +58,12 @@ message MeshSpec {
         // DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects.
         // Describes the ingress gateway.
         message IngressGatewayInfo {
+            // TODO: remove name and namespace as ingress gw info now contains a ref
+            // The name of the Ingress Gateway Service
+            string name = 8;
+
+            // The namespace in which the ingress gateway is running.
+            string namespace = 7;
 
             // Labels matching the workload backing the gateway.
             // [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
@@ -174,10 +180,10 @@ message MeshStatus {
     // has processed the latest version of the Mesh.
     int64 observed_generation = 1;
 
-    // The VirtualMesh, if any, which contains this mesh.
+    // The VirtualMesh, if any, which contains this Mesh.
     AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // The VirtualDestinations, if any, which apply to this mesh.
+    // The VirtualDestinations, if any, which apply to this Mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
     // The Destination(s) acting as ingress gateways for east west traffic.

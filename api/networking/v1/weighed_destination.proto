@@ -1,0 +1,97 @@
+syntax = "proto3";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+
+// Specify a traffic shift or routing destination along with a weight.
+// Weight is only relevant when supplying multiple destinations.
+message WeightedDestination {
+
+    // Specify the proportion of traffic to be forwarded to this destination.
+    // Weights across all of the `destinations` must sum to 100.
+    uint32 weight = 1;
+
+    // Platform specific destinations.
+    oneof destination_type {
+
+        // Specify a Kubernetes Service.
+        KubeDestination kube_service = 2;
+
+        // Specify a VirtualDestination.
+        VirtualDestination virtual_destination = 3;
+
+        // Reference to a gloo mesh Static Destination
+        .core.skv2.solo.io.ObjectRef static_destination  = 4;
+
+        // Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+        // If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+        // Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+        // {{/* NOTE: unimplemented */}}
+        string cluster_header = 5;
+
+    }
+
+    // additional options / config for a route which will be applied
+    // when this destination is selected.
+    DestinationOptions options = 6;
+
+    // A Kubernetes destination.
+    message KubeDestination {
+
+        // The name of the service.
+        string name = 1;
+
+        // The namespace of the service.
+        string namespace = 2;
+
+        // The Gloo Mesh cluster name (registration name) of the service.
+        string cluster_name = 3;
+
+        // Specify, by labels, a subset of service instances to route to.
+        map<string, string> subset = 4;
+
+        // Port on the service to receive traffic. Required if the service exposes more than one port.
+        uint32 port = 5;
+    }
+
+    // Specify a VirtualDestination traffic shift destination.
+    message VirtualDestination {
+
+        // The name of the VirtualDestination object.
+        string name = 1;
+
+        // The namespace of the VirtualDestination object.
+        string namespace = 2;
+
+        // Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+        map<string, string> subset = 3;
+    }
+
+    // Specify functionality which will be applied to traffic when this particular destination
+    // is selected for routing.
+    message DestinationOptions {
+        // manipualte headers on traffic sent to this destination
+        HeaderManipulation header_manipulation = 1;
+    }
+}
+
+// Specify modifications to request and response headers.
+message HeaderManipulation {
+
+    // HTTP headers to remove before returning a response to the caller.
+    repeated string remove_response_headers = 1;
+
+    // Additional HTTP headers to add before returning a response to the caller.
+    map<string, string> append_response_headers = 2;
+
+    // HTTP headers to remove before forwarding a request to the destination service.
+    repeated string remove_request_headers = 3;
+
+    // Additional HTTP headers to add before forwarding a request to the destination service.
+    map<string, string> append_request_headers = 4;
+}

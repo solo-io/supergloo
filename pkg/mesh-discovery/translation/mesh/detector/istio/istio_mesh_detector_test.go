@@ -238,6 +238,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+							Namespace:      "namespace",
+							Name:           "ingress-svc",
 							WorkloadLabels: workloadLabels,
 							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 								Ip: "12.34.56.78",
@@ -312,6 +314,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+							Namespace:      "namespace",
+							Name:           "ingress-svc",
 							WorkloadLabels: workloadLabels,
 							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 								Ip: "12.34.56.78",
@@ -394,6 +398,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+							Namespace:      "namespace",
+							Name:           "ingress-svc",
 							WorkloadLabels: workloadLabels,
 							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
 								DnsName: "hello.hostname",
@@ -475,6 +481,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+							Namespace:      "namespace",
+							Name:           "ingress-svc",
 							WorkloadLabels: workloadLabels,
 							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 								Ip: "12.34.56.78",
@@ -548,6 +556,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						TrustDomain:          trustDomain,
 						IstiodServiceAccount: serviceAccountName,
 						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+							Namespace:      "namespace",
+							Name:           "ingress-svc",
 							WorkloadLabels: workloadLabels,
 							ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 								Ip: "12.34.56.78",
@@ -665,6 +675,8 @@ var _ = Describe("IstioMeshDetector", func() {
 					TrustDomain:          trustDomain,
 					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
+						Namespace:      "namespace",
+						Name:           "ingress-svc",
 						WorkloadLabels: workloadLabels,
 						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_Ip{
 							Ip: "12.34.56.78",

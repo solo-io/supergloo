@@ -667,11 +667,11 @@ var _ = Describe("Applier", func() {
 				Spec: networkingv1.TrafficPolicySpec{
 					Policy: &networkingv1.TrafficPolicySpec_Policy{
 						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*networkingv1.WeightedDestination{
 								{
 									Weight: 50,
-									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &networkingv1.WeightedDestination_KubeService{
+										KubeService: &networkingv1.WeightedDestination_KubeDestination{
 											Name:        destination.Spec.GetKubeService().Ref.Name,
 											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
 											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
@@ -683,8 +683,8 @@ var _ = Describe("Applier", func() {
 								},
 								{
 									Weight: 50,
-									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &networkingv1.WeightedDestination_KubeService{
+										KubeService: &networkingv1.WeightedDestination_KubeDestination{
 											Name:        "ignored",
 											Namespace:   "ignored",
 											ClusterName: "ignored",
@@ -707,11 +707,11 @@ var _ = Describe("Applier", func() {
 				Spec: networkingv1.TrafficPolicySpec{
 					Policy: &networkingv1.TrafficPolicySpec_Policy{
 						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*networkingv1.WeightedDestination{
 								{
 									Weight: 50,
-									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &networkingv1.WeightedDestination_KubeService{
+										KubeService: &networkingv1.WeightedDestination_KubeDestination{
 											Name:        destination.Spec.GetKubeService().Ref.Name,
 											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
 											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
@@ -723,8 +723,8 @@ var _ = Describe("Applier", func() {
 								},
 								{
 									Weight: 50,
-									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &networkingv1.WeightedDestination_KubeService{
+										KubeService: &networkingv1.WeightedDestination_KubeDestination{
 											Name:        "ignored",
 											Namespace:   "ignored",
 											ClusterName: "ignored",
@@ -761,10 +761,10 @@ var _ = Describe("Applier", func() {
 					},
 					Policy: &networkingv1.TrafficPolicySpec_Policy{
 						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*networkingv1.WeightedDestination{
 								{
-									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &networkingv1.WeightedDestination_KubeService{
+										KubeService: &networkingv1.WeightedDestination_KubeDestination{
 											Name:        destination.Spec.GetKubeService().Ref.Name,
 											Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
 											ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
@@ -789,7 +789,7 @@ var _ = Describe("Applier", func() {
 
 			applier.Apply(context.TODO(), snap, nil)
 
-			expectedRequiredSubsets := []*discoveryv1.DestinationStatus_RequiredSubsets{
+			expectedRequiredSubsets := []*discoveryv1.RequiredSubsets{
 				{
 					TrafficPolicyRef:   ezkube.MakeObjectRef(trafficPolicy1),
 					ObservedGeneration: trafficPolicy1.Generation,

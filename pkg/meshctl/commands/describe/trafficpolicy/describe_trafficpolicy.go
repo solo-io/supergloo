@@ -106,15 +106,16 @@ func formattedWorkloadSelectors(sels []*commonv1.WorkloadSelector) string {
 	return s.String()
 }
 
-func formattedHttpMatchers(sels []*networkingv1.TrafficPolicySpec_HttpMatcher) string {
+func formattedHttpMatchers(sels []*networkingv1.HttpMatcher) string {
 	if len(sels) < 1 {
 		return ""
 	}
 	var s strings.Builder
 	for i, matcher := range sels {
-		s.WriteString(printing.FormattedField("Prefix", matcher.GetPrefix()))
-		s.WriteString(printing.FormattedField("Exact", matcher.GetExact()))
-		s.WriteString(printing.FormattedField("Regex", matcher.GetRegex()))
+		uri := matcher.GetUri()
+		s.WriteString(printing.FormattedField("Prefix", uri.GetPrefix()))
+		s.WriteString(printing.FormattedField("Exact", uri.GetExact()))
+		s.WriteString(printing.FormattedField("Regex", uri.GetRegex()))
 		s.WriteString(printing.FormattedField("Method", matcher.GetMethod()))
 		s.WriteString("HEADERS\n")
 		for _, header := range matcher.GetHeaders() {
@@ -143,7 +144,7 @@ type trafficPolicyDescription struct {
 	Metadata            *v1.ClusterObjectRef
 	SourceWorkloads     []*commonv1.WorkloadSelector
 	DestinationServices []*v1.ClusterObjectRef
-	HttpMatchers        []*networkingv1.TrafficPolicySpec_HttpMatcher
+	HttpMatchers        []*networkingv1.HttpMatcher
 }
 
 func matchTrafficPolicy(trafficPolicy networkingv1.TrafficPolicy, searchTerms []string) bool {

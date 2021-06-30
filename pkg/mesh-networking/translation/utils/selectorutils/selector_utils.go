@@ -3,6 +3,7 @@ package selectorutils
 import (
 	"context"
 
+	"github.com/rotisserie/eris"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/go-utils/contextutils"
@@ -10,6 +11,31 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
+)
+
+// Reserved value for object namespace selection.
+// If a selector contains this value in its 'namespace' field, we match objects from any namespace
+const allNamespaceObjectSelector = "*"
+
+var (
+	ObjectSelectorExpressionsAndLabelsWarning = eris.New("cannot use both labels and expressions within the " +
+		"same selector")
+	ObjectSelectorInvalidExpressionWarning = eris.New("the object selector expression is invalid")
+
+	// Map connecting Objects expression operator values and Kubernetes expression operator string values.
+	ObjectExpressionOperatorValues = map[v1.ObjectSelector_Expression_Operator]selection.Operator{
+		v1.ObjectSelector_Expression_Equals:       selection.Equals,
+		v1.ObjectSelector_Expression_DoubleEquals: selection.DoubleEquals,
+		v1.ObjectSelector_Expression_NotEquals:    selection.NotEquals,
+		v1.ObjectSelector_Expression_In:           selection.In,
+		v1.ObjectSelector_Expression_NotIn:        selection.NotIn,
+		v1.ObjectSelector_Expression_Exists:       selection.Exists,
+		v1.ObjectSelector_Expression_DoesNotExist: selection.DoesNotExist,
+		v1.ObjectSelector_Expression_GreaterThan:  selection.GreaterThan,
+		v1.ObjectSelector_Expression_LessThan:     selection.LessThan,
+	}
 )
 
 func SelectorMatchesWorkload(ctx context.Context, selectors []*commonv1.WorkloadSelector, workload *discoveryv1.Workload) bool {
@@ -192,4 +218,121 @@ func IngressGatewaySelectorMatchesMesh(ingressGatewayServiceSelector *commonv1.I
 		}
 	}
 	return applies
+}
+
+// used in enterprise
+func ValidateSelector(
+	selector *v1.ObjectSelector,
+) error {
+
+	if len(selector.Labels) > 0 {
+		// expressions and labels cannot be both specified at the same time
+		if len(selector.Expressions) > 0 {
+			return ObjectSelectorExpressionsAndLabelsWarning
+		}
+	}
+
+	if len(selector.Expressions) > 0 {
+		for _, expression := range selector.Expressions {
+			if _, err := labels.NewRequirement(
+				expression.Key,
+				ObjectExpressionOperatorValues[expression.Operator],
+				expression.Values); err != nil {
+				return eris.Wrap(ObjectSelectorInvalidExpressionWarning, err.Error())
+			}
+		}
+	}
+
+	return nil
+}
+
+// TODO: validate the logic contained here
+func SelectorMatchesObject(
+	candidate ezkube.Object,
+	selector *v1.ObjectSelector,
+	ownerNamespace string,
+) bool {
+	type nsSelectorType int
+	const (
+		// Match objects in the owner namespace
+		owner nsSelectorType = iota
+		// Match objects in all namespaces watched by Gloo
+		all
+		// Match objects in the specified namespaces
+		list
+	)
+
+	nsSelector := owner
+	if len(selector.Namespaces) > 0 {
+		nsSelector = list
+	}
+	for _, ns := range selector.Namespaces {
+		if ns == allNamespaceObjectSelector {
+			nsSelector = all
+		}
+	}
+
+	rtLabels := labels.Set(candidate.GetLabels())
+
+	if len(selector.Labels) > 0 {
+		// expressions and labels cannot be both specified at the same time
+		if len(selector.Expressions) > 0 {
+			return false
+		}
+
+		labelSelector := labels.SelectorFromSet(selector.Labels)
+
+		// Check whether labels match (strict equality)
+		if selector.Labels != nil {
+			if !labelSelector.Matches(rtLabels) {
+				return false
+			}
+		}
+
+	} else if len(selector.Expressions) > 0 {
+		var requirements labels.Requirements
+		for _, expression := range selector.Expressions {
+			r, err := labels.NewRequirement(
+				expression.Key,
+				ObjectExpressionOperatorValues[expression.Operator],
+				expression.Values)
+			if err != nil {
+				return false
+			}
+			requirements = append(requirements, *r)
+		}
+		// Check whether labels match (expression requirements)
+		if requirements != nil {
+			if !objectLabelsMatchRequirements(requirements, rtLabels) {
+				return false
+			}
+		}
+	}
+
+	// Check whether namespace matches
+	nsMatches := false
+	switch nsSelector {
+	case all:
+		nsMatches = true
+	case owner:
+		nsMatches = candidate.GetNamespace() == ownerNamespace
+	case list:
+		for _, ns := range selector.Namespaces {
+			if ns == candidate.GetNamespace() {
+				nsMatches = true
+			}
+		}
+	}
+
+	return nsMatches
+}
+
+// Asserts that the object labels matches all of the expression requirements (logical AND).
+func objectLabelsMatchRequirements(requirements labels.Requirements, rtLabels labels.Set) bool {
+	for _, r := range requirements {
+		if !r.Matches(rtLabels) {
+			return false
+		}
+	}
+	return true
 }

@@ -1,0 +1,57 @@
+syntax = "proto3";
+package networking.enterprise.mesh.gloo.solo.io;
+
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/route.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+/*
+   
+    RouteTable is a resource which can be referenced either from the top level VirtualHost resource, or from
+    other RouteTables. It's primary use is to organizationally and logically separate the configuration of Routes,
+    so that the responsibilities of Route configuration and maintenance can be divided between teams where appropriate.
+*/
+message RouteTableSpec {
+
+    // The list of HTTP Routes define routing actions to be taken for incoming HTTP requests whose host header matches
+    // this virtual host. If the request matches more than one Route in the list, the first Route matched will be selected.
+    // If the list of Routes is empty, the virtual host will be ignored by Gloo.
+    repeated .networking.enterprise.mesh.gloo.solo.io.Route routes = 1;
+}
+
+message RouteTableStatus {
+    // The most recent generation observed in the the RouteTable metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
+
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
+
+    // List of resources which have selected this RouteTable. Can be VirtualHosts or other RouteTables
+    repeated SelectedBy selected_by = 4;
+
+    // List of child RouteTables that this RouteTable delegates to
+    repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 5;
+}
+
+message SelectedBy {
+    // Name of resource selecting this RouteTable
+    string name = 1;
+
+    // Namespace of resource selecting this RouteTable
+    string namespace = 2;
+
+    // Type of resource selecting this RouteTable. Can be
+    // VirtualGateway, VirtualHost, or RouteTable.
+    string type = 3;
+    
+    // TODO: Path selected upon?
+}

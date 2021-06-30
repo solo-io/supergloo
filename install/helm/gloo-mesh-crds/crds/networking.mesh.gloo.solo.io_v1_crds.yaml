@@ -91,26 +91,7 @@ spec:
                 Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
                 Omit to apply to any HTTP request.
               items:
-                oneOf:
-                - not:
-                    anyOf:
-                    - required:
-                      - prefix
-                    - required:
-                      - exact
-                    - required:
-                      - regex
-                - required:
-                  - prefix
-                - required:
-                  - exact
-                - required:
-                  - regex
                 properties:
-                  exact:
-                    description: If specified, the targeted path must exactly match
-                      the value.
-                    type: string
                   headers:
                     description: Specify a set of headers which requests must match
                       in entirety (all headers must match).
@@ -143,9 +124,11 @@ spec:
                   method:
                     description: Specify an HTTP method to match against.
                     type: string
-                  prefix:
-                    description: If specified, the targeted path must begin with the
-                      prefix.
+                  name:
+                    description: |-
+                      The name assigned to a match. The match's name will be
+                      concatenated with the parent route's name and will be logged in
+                      the access logs for requests matching this route.
                     type: string
                   queryParameters:
                     description: Specify a set of URL query parameters which requests
@@ -165,9 +148,46 @@ spec:
                           type: string
                       type: object
                     type: array
-                  regex:
-                    description: If specified, the targeted path must match the regex.
-                    type: string
+                  uri:
+                    description: Specify match criteria against the targeted path.
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - exact
+                        - required:
+                          - prefix
+                        - required:
+                          - regex
+                        - required:
+                          - suffix
+                    - required:
+                      - exact
+                    - required:
+                      - prefix
+                    - required:
+                      - regex
+                    - required:
+                      - suffix
+                    properties:
+                      exact:
+                        description: Exact string match.
+                        type: string
+                      ignoreCase:
+                        description: If true, indicates the exact/prefix/suffix matching
+                          should be case insensitive. This has no effect for the regex
+                          match.
+                        type: boolean
+                      prefix:
+                        description: Prefix-based match.
+                        type: string
+                      regex:
+                        description: ECMAscript style regex-based match.
+                        type: string
+                      suffix:
+                        description: Suffix-based match.
+                        type: string
+                    type: object
                 type: object
               type: array
             policy:
@@ -212,21 +232,33 @@ spec:
                               - prefix
                             - required:
                               - regex
+                            - required:
+                              - suffix
                         - required:
                           - exact
                         - required:
                           - prefix
                         - required:
                           - regex
+                        - required:
+                          - suffix
                         properties:
                           exact:
                             description: Exact string match.
                             type: string
+                          ignoreCase:
+                            description: If true, indicates the exact/prefix/suffix
+                              matching should be case insensitive. This has no effect
+                              for the regex match.
+                            type: boolean
                           prefix:
                             description: Prefix-based match.
                             type: string
                           regex:
                             description: ECMAscript style regex-based match.
+                            type: string
+                          suffix:
+                            description: Suffix-based match.
                             type: string
                         type: object
                       type: array
@@ -242,6 +274,75 @@ spec:
                         Specify how long the results of a preflight request can be
                         cached. Serialized to the `Access-Control-Max-Age` header.
                       type: string
+                  type: object
+                csrf:
+                  description: Configure the Envoy based CSRF filter
+                  properties:
+                    additionalOrigins:
+                      description: |-
+                        Specifies additional source origins that will be allowed in addition to
+                        the destination origin.
+                      items:
+                        oneOf:
+                        - not:
+                            anyOf:
+                            - required:
+                              - exact
+                            - required:
+                              - prefix
+                            - required:
+                              - regex
+                            - required:
+                              - suffix
+                        - required:
+                          - exact
+                        - required:
+                          - prefix
+                        - required:
+                          - regex
+                        - required:
+                          - suffix
+                        properties:
+                          exact:
+                            description: Exact string match.
+                            type: string
+                          ignoreCase:
+                            description: If true, indicates the exact/prefix/suffix
+                              matching should be case insensitive. This has no effect
+                              for the regex match.
+                            type: boolean
+                          prefix:
+                            description: Prefix-based match.
+                            type: string
+                          regex:
+                            description: ECMAscript style regex-based match.
+                            type: string
+                          suffix:
+                            description: Suffix-based match.
+                            type: string
+                        type: object
+                      type: array
+                    filterEnabled:
+                      description: Specifies that CSRF policies will be evaluated,
+                        tracked and enforced.
+                      type: boolean
+                    percentage:
+                      description: |-
+                        Specifies the % of requests for which the CSRF filter is enabled or when shadow mode is enabled the % of requests
+                        evaluated and tracked, but not enforced.
+
+                        If filter_enabled or shadow_enabled is true.
+                        Envoy will lookup the runtime key to get the percentage of requests to filter.
+
+                        .. note:: This field defaults to 100
+                      format: double
+                      type: number
+                    shadowEnabled:
+                      description: |-
+                        Specifies that CSRF policies will be evaluated and tracked, but not enforced.
+
+                        This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
+                      type: boolean
                   type: object
                 faultInjection:
                   description: Inject faulty responses.
@@ -387,6 +488,493 @@ spec:
                       minimum: 0
                       type: integer
                   type: object
+                rateLimit:
+                  description: Config the Envoy based Ratelimit filter
+                  oneOf:
+                  - not:
+                      anyOf:
+                      - required:
+                        - basic
+                      - required:
+                        - advanced
+                      - required:
+                        - configRefs
+                  - required:
+                    - basic
+                  - required:
+                    - advanced
+                  - required:
+                    - configRefs
+                  properties:
+                    advanced:
+                      description: |-
+                        Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
+                        supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
+                        Configure rate-limit *actions* here, which define how request characteristics get translated into
+                        descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
+                        their associated limits on the Gloo settings.
+                        Only one of `ratelimit` or `rate_limit_configs` can be set.
+                      properties:
+                        actions:
+                          description: |-
+                            Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
+                            would be throttled, the entire request returns a 429 (gets throttled)
+                          items:
+                            properties:
+                              actions:
+                                description: 'TODO: come up with descriptive names
+                                  and comments for these fields'
+                                items:
+                                  oneOf:
+                                  - not:
+                                      anyOf:
+                                      - required:
+                                        - sourceCluster
+                                      - required:
+                                        - destinationCluster
+                                      - required:
+                                        - requestHeaders
+                                      - required:
+                                        - remoteAddress
+                                      - required:
+                                        - genericKey
+                                      - required:
+                                        - headerValueMatch
+                                  - required:
+                                    - sourceCluster
+                                  - required:
+                                    - destinationCluster
+                                  - required:
+                                    - requestHeaders
+                                  - required:
+                                    - remoteAddress
+                                  - required:
+                                    - genericKey
+                                  - required:
+                                    - headerValueMatch
+                                  properties:
+                                    destinationCluster:
+                                      description: Rate limit on destination cluster.
+                                      type: object
+                                    genericKey:
+                                      description: Rate limit on a generic key.
+                                      properties:
+                                        descriptorValue:
+                                          description: The value to use in the descriptor
+                                            entry.
+                                          type: string
+                                      type: object
+                                    headerValueMatch:
+                                      description: Rate limit on the existence of
+                                        request headers.
+                                      properties:
+                                        descriptorValue:
+                                          description: The value to use in the descriptor
+                                            entry.
+                                          type: string
+                                        expectMatch:
+                                          description: |-
+                                            If set to true, the action will append a descriptor entry when the
+                                            request matches the headers. If set to false, the action will append a
+                                            descriptor entry when the request does not match the headers. The
+                                            default value is true.
+                                          nullable: true
+                                          type: boolean
+                                        headers:
+                                          description: |-
+                                            Specifies a set of headers that the rate limit action should match
+                                            on. The action will check the request’s headers against all the
+                                            specified headers in the config. A match will happen if all the
+                                            headers in the config are present in the request with the same values
+                                            (or based on presence if the value field is not in the config).
+                                          items:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - exactMatch
+                                                - required:
+                                                  - regexMatch
+                                                - required:
+                                                  - rangeMatch
+                                                - required:
+                                                  - presentMatch
+                                                - required:
+                                                  - prefixMatch
+                                                - required:
+                                                  - suffixMatch
+                                            - required:
+                                              - exactMatch
+                                            - required:
+                                              - regexMatch
+                                            - required:
+                                              - rangeMatch
+                                            - required:
+                                              - presentMatch
+                                            - required:
+                                              - prefixMatch
+                                            - required:
+                                              - suffixMatch
+                                            properties:
+                                              exactMatch:
+                                                description: If specified, header
+                                                  match will be performed based on
+                                                  the value of the header.
+                                                type: string
+                                              invertMatch:
+                                                description: |-
+                                                  If specified, the match result will be inverted before checking. Defaults to false.
+
+                                                  Examples:
+
+                                                  * The regex *\d{3}* does not match the value *1234*, so it will match when inverted.
+                                                  * The range [-10,0) will match the value -1, so it will not match when inverted.
+                                                type: boolean
+                                              name:
+                                                description: Specifies the name of
+                                                  the header in the request.
+                                                type: string
+                                              prefixMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on the prefix of the header value.
+                                                  Note: empty prefix is not allowed, please use present_match instead.
+
+                                                  Examples:
+
+                                                  * The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.
+                                                type: string
+                                              presentMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on whether the header is in the
+                                                  request.
+                                                type: boolean
+                                              rangeMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on range.
+                                                  The rule will match if the request header value is within this range.
+                                                  The entire request header value must represent an integer in base 10 notation: consisting of
+                                                  an optional plus or minus sign followed by a sequence of digits. The rule will not match if
+                                                  the header value does not represent an integer. Match will fail for empty values, floating
+                                                  point numbers or if only a subsequence of the header value is an integer.
+
+                                                  Examples:
+
+                                                  * For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,
+                                                    "-1somestring"
+                                                properties:
+                                                  end:
+                                                    description: end of the range
+                                                      (exclusive)
+                                                    format: int64
+                                                    type: integer
+                                                  start:
+                                                    description: start of the range
+                                                      (inclusive)
+                                                    format: int64
+                                                    type: integer
+                                                type: object
+                                              regexMatch:
+                                                description: |-
+                                                  If specified, this regex string is a regular expression rule which implies the entire request
+                                                  header value must match the regex. The rule will not match if only a subsequence of the
+                                                  request header value matches the regex. The regex grammar used in the value field is defined
+                                                  `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.
+
+                                                  Examples:
+
+                                                  * The regex *\d{3}* matches the value *123*
+                                                  * The regex *\d{3}* does not match the value *1234*
+                                                  * The regex *\d{3}* does not match the value *123.456*
+                                                type: string
+                                              suffixMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on the suffix of the header value.
+                                                  Note: empty suffix is not allowed, please use present_match instead.
+
+                                                  Examples:
+
+                                                  * The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.
+                                                type: string
+                                            type: object
+                                          type: array
+                                      type: object
+                                    remoteAddress:
+                                      description: Rate limit on remote address.
+                                      type: object
+                                    requestHeaders:
+                                      description: Rate limit on request headers.
+                                      properties:
+                                        descriptorKey:
+                                          description: The key to use in the descriptor
+                                            entry.
+                                          type: string
+                                        headerName:
+                                          description: |-
+                                            The header name to be queried from the request headers. The header’s
+                                            value is used to populate the value of the descriptor entry for the
+                                            descriptor_key.
+                                          type: string
+                                      type: object
+                                    sourceCluster:
+                                      description: Rate limit on source cluster.
+                                      type: object
+                                  type: object
+                                type: array
+                              setActions:
+                                items:
+                                  oneOf:
+                                  - not:
+                                      anyOf:
+                                      - required:
+                                        - sourceCluster
+                                      - required:
+                                        - destinationCluster
+                                      - required:
+                                        - requestHeaders
+                                      - required:
+                                        - remoteAddress
+                                      - required:
+                                        - genericKey
+                                      - required:
+                                        - headerValueMatch
+                                  - required:
+                                    - sourceCluster
+                                  - required:
+                                    - destinationCluster
+                                  - required:
+                                    - requestHeaders
+                                  - required:
+                                    - remoteAddress
+                                  - required:
+                                    - genericKey
+                                  - required:
+                                    - headerValueMatch
+                                  properties:
+                                    destinationCluster:
+                                      description: Rate limit on destination cluster.
+                                      type: object
+                                    genericKey:
+                                      description: Rate limit on a generic key.
+                                      properties:
+                                        descriptorValue:
+                                          description: The value to use in the descriptor
+                                            entry.
+                                          type: string
+                                      type: object
+                                    headerValueMatch:
+                                      description: Rate limit on the existence of
+                                        request headers.
+                                      properties:
+                                        descriptorValue:
+                                          description: The value to use in the descriptor
+                                            entry.
+                                          type: string
+                                        expectMatch:
+                                          description: |-
+                                            If set to true, the action will append a descriptor entry when the
+                                            request matches the headers. If set to false, the action will append a
+                                            descriptor entry when the request does not match the headers. The
+                                            default value is true.
+                                          nullable: true
+                                          type: boolean
+                                        headers:
+                                          description: |-
+                                            Specifies a set of headers that the rate limit action should match
+                                            on. The action will check the request’s headers against all the
+                                            specified headers in the config. A match will happen if all the
+                                            headers in the config are present in the request with the same values
+                                            (or based on presence if the value field is not in the config).
+                                          items:
+                                            oneOf:
+                                            - not:
+                                                anyOf:
+                                                - required:
+                                                  - exactMatch
+                                                - required:
+                                                  - regexMatch
+                                                - required:
+                                                  - rangeMatch
+                                                - required:
+                                                  - presentMatch
+                                                - required:
+                                                  - prefixMatch
+                                                - required:
+                                                  - suffixMatch
+                                            - required:
+                                              - exactMatch
+                                            - required:
+                                              - regexMatch
+                                            - required:
+                                              - rangeMatch
+                                            - required:
+                                              - presentMatch
+                                            - required:
+                                              - prefixMatch
+                                            - required:
+                                              - suffixMatch
+                                            properties:
+                                              exactMatch:
+                                                description: If specified, header
+                                                  match will be performed based on
+                                                  the value of the header.
+                                                type: string
+                                              invertMatch:
+                                                description: |-
+                                                  If specified, the match result will be inverted before checking. Defaults to false.
+
+                                                  Examples:
+
+                                                  * The regex *\d{3}* does not match the value *1234*, so it will match when inverted.
+                                                  * The range [-10,0) will match the value -1, so it will not match when inverted.
+                                                type: boolean
+                                              name:
+                                                description: Specifies the name of
+                                                  the header in the request.
+                                                type: string
+                                              prefixMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on the prefix of the header value.
+                                                  Note: empty prefix is not allowed, please use present_match instead.
+
+                                                  Examples:
+
+                                                  * The prefix *abcd* matches the value *abcdxyz*, but not for *abcxyz*.
+                                                type: string
+                                              presentMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on whether the header is in the
+                                                  request.
+                                                type: boolean
+                                              rangeMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on range.
+                                                  The rule will match if the request header value is within this range.
+                                                  The entire request header value must represent an integer in base 10 notation: consisting of
+                                                  an optional plus or minus sign followed by a sequence of digits. The rule will not match if
+                                                  the header value does not represent an integer. Match will fail for empty values, floating
+                                                  point numbers or if only a subsequence of the header value is an integer.
+
+                                                  Examples:
+
+                                                  * For range [-10,0), route will match for header value -1, but not for 0, "somestring", 10.9,
+                                                    "-1somestring"
+                                                properties:
+                                                  end:
+                                                    description: end of the range
+                                                      (exclusive)
+                                                    format: int64
+                                                    type: integer
+                                                  start:
+                                                    description: start of the range
+                                                      (inclusive)
+                                                    format: int64
+                                                    type: integer
+                                                type: object
+                                              regexMatch:
+                                                description: |-
+                                                  If specified, this regex string is a regular expression rule which implies the entire request
+                                                  header value must match the regex. The rule will not match if only a subsequence of the
+                                                  request header value matches the regex. The regex grammar used in the value field is defined
+                                                  `(here)[https://en.cppreference.com/w/cpp/regex/ecmascript]`.
+
+                                                  Examples:
+
+                                                  * The regex *\d{3}* matches the value *123*
+                                                  * The regex *\d{3}* does not match the value *1234*
+                                                  * The regex *\d{3}* does not match the value *123.456*
+                                                type: string
+                                              suffixMatch:
+                                                description: |-
+                                                  If specified, header match will be performed based on the suffix of the header value.
+                                                  Note: empty suffix is not allowed, please use present_match instead.
+
+                                                  Examples:
+
+                                                  * The suffix *abcd* matches the value *xyzabcd*, but not for *xyzbcd*.
+                                                type: string
+                                            type: object
+                                          type: array
+                                      type: object
+                                    remoteAddress:
+                                      description: Rate limit on remote address.
+                                      type: object
+                                    requestHeaders:
+                                      description: Rate limit on request headers.
+                                      properties:
+                                        descriptorKey:
+                                          description: The key to use in the descriptor
+                                            entry.
+                                          type: string
+                                        headerName:
+                                          description: |-
+                                            The header name to be queried from the request headers. The header’s
+                                            value is used to populate the value of the descriptor entry for the
+                                            descriptor_key.
+                                          type: string
+                                      type: object
+                                    sourceCluster:
+                                      description: Rate limit on source cluster.
+                                      type: object
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                      type: object
+                    basic:
+                      description: Config for rate-limiting using simplified (gloo-specific)
+                        API
+                      properties:
+                        anonymousLimits:
+                          description: limits for unauthorized users
+                          properties:
+                            requestsPerUnit:
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                            unit:
+                              enum:
+                              - UNKNOWN
+                              - SECOND
+                              - MINUTE
+                              - HOUR
+                              - DAY
+                              type: string
+                          type: object
+                        authorizedLimits:
+                          description: limits for authorized users
+                          properties:
+                            requestsPerUnit:
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                            unit:
+                              enum:
+                              - UNKNOWN
+                              - SECOND
+                              - MINUTE
+                              - HOUR
+                              - DAY
+                              type: string
+                          type: object
+                      type: object
+                    configRefs:
+                      description: |-
+                        References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
+                        Only one of `ratelimit` or `rate_limit_configs` can be set.
+                      properties:
+                        refs:
+                          items:
+                            properties:
+                              name:
+                                description: name of the resource being referenced
+                                type: string
+                              namespace:
+                                description: namespace of the resource being referenced
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                  type: object
                 requestTimeout:
                   description: Set a timeout on requests.
                   type: string
@@ -415,11 +1003,26 @@ spec:
                               - kubeService
                             - required:
                               - virtualDestination
+                            - required:
+                              - staticDestination
+                            - required:
+                              - clusterHeader
                         - required:
                           - kubeService
                         - required:
                           - virtualDestination
+                        - required:
+                          - staticDestination
+                        - required:
+                          - clusterHeader
                         properties:
+                          clusterHeader:
+                            description: |-
+                              Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                              If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                              Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                              {{/* NOTE: unimplemented */}}
+                            type: string
                           kubeService:
                             description: Specify a Kubernetes Service.
                             properties:
@@ -445,6 +1048,51 @@ spec:
                                 description: Specify, by labels, a subset of service
                                   instances to route to.
                                 type: object
+                            type: object
+                          options:
+                            description: |-
+                              additional options / config for a route which will be applied
+                              when this destination is selected.
+                            properties:
+                              headerManipulation:
+                                description: manipualte headers on traffic sent to
+                                  this destination
+                                properties:
+                                  appendRequestHeaders:
+                                    additionalProperties:
+                                      type: string
+                                    description: Additional HTTP headers to add before
+                                      forwarding a request to the destination service.
+                                    type: object
+                                  appendResponseHeaders:
+                                    additionalProperties:
+                                      type: string
+                                    description: Additional HTTP headers to add before
+                                      returning a response to the caller.
+                                    type: object
+                                  removeRequestHeaders:
+                                    description: HTTP headers to remove before forwarding
+                                      a request to the destination service.
+                                    items:
+                                      type: string
+                                    type: array
+                                  removeResponseHeaders:
+                                    description: HTTP headers to remove before returning
+                                      a response to the caller.
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                            type: object
+                          staticDestination:
+                            description: Reference to a gloo mesh Static Destination
+                            properties:
+                              name:
+                                description: name of the resource being referenced
+                                type: string
+                              namespace:
+                                description: namespace of the resource being referenced
+                                type: string
                             type: object
                           virtualDestination:
                             description: Specify a VirtualDestination.
@@ -1541,7 +2189,7 @@ spec:
                   properties:
                     intermediateCertOptions:
                       description: Configuration options for generated intermediate
-                        certs
+                        certs.
                       properties:
                         orgName:
                           description: Root cert organization name. Defaults to "gloo-mesh".
