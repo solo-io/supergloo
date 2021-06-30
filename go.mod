@@ -9,7 +9,6 @@ replace (
 	// github.com/Azure/go-autorest/autorest has different versions for the Go
 	// modules than it does for releases on the repository. Note the correct
 	// version when updating.
-	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6
@@ -85,7 +84,7 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.23
+	github.com/solo-io/skv2 v0.18.0
 	github.com/solo-io/solo-apis v1.6.30
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1

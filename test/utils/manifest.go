@@ -7,13 +7,12 @@ import (
 	"runtime"
 
 	"github.com/onsi/ginkgo"
+	"github.com/solo-io/skv2/codegen/proto"
 
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/render"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	protoutil "github.com/solo-io/skv2/codegen/proto"
 )
 
 const (
@@ -69,7 +68,7 @@ func (m Manifest) AppendResources(resources ...metav1.Object) error {
 				return resources, nil
 			},
 		},
-	}.RenderManifests(model.Group{RenderManifests: true}, protoutil.Options{})
+	}.RenderManifests(model.Group{RenderManifests: true}, proto.Options{})
 	if err != nil {
 		return err
 	}

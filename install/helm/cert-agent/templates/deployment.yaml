@@ -13,7 +13,9 @@
 {{- $certAgentExtraPodLabels := $certAgent.extraPodLabels }}
 {{- $certAgentExtraPodAnnotations := $certAgent.extraPodAnnotations }}
 {{- $certAgentExtraDeploymentLabels := $certAgent.extraDeploymentLabels }}
-{{- $certAgentExtraDeploymentAnnotations := $certAgent.extraDeploymentAnnotations }}# Deployment manifest for cert-agent
+{{- $certAgentExtraDeploymentAnnotations := $certAgent.extraDeploymentAnnotations }}
+
+# Deployment manifest for cert-agent
 
 apiVersion: apps/v1
 kind: Deployment
