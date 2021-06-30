@@ -37,7 +37,7 @@ weight: 2
 |watchOutputTypes|bool|true|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|9091|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |verbose|bool|false|If true, enables verbose/debug logging.|
-|discovery|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091},"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the discovery deployment.|
+|discovery|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091},"extraPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the discovery deployment.|
 |discovery|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"125m","memory":"256Mi"}}}||
 |discovery.-[]|[]string|["discovery","--metrics-port={{ $.Values.discovery.ports.metrics | default $.Values.defaultMetricsPort }}","--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}","--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}","--verbose={{ $.Values.verbose }}"]||
 |discovery.-[]|string| ||
@@ -67,6 +67,31 @@ weight: 2
 |discovery.resources.requests.cpu|string|DecimalSI||
 |discovery.resources.requests.memory|struct|"256Mi"||
 |discovery.resources.requests.memory|string|BinarySI||
+|discovery.securityContext|struct| |Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details.|
+|discovery.securityContext.capabilities|struct| ||
+|discovery.securityContext.capabilities.add[]|[]string| ||
+|discovery.securityContext.capabilities.add[]|string| ||
+|discovery.securityContext.capabilities.drop[]|[]string| ||
+|discovery.securityContext.capabilities.drop[]|string| ||
+|discovery.securityContext.privileged|bool| ||
+|discovery.securityContext.seLinuxOptions|struct| ||
+|discovery.securityContext.seLinuxOptions.user|string| ||
+|discovery.securityContext.seLinuxOptions.role|string| ||
+|discovery.securityContext.seLinuxOptions.type|string| ||
+|discovery.securityContext.seLinuxOptions.level|string| ||
+|discovery.securityContext.windowsOptions|struct| ||
+|discovery.securityContext.windowsOptions.gmsaCredentialSpecName|string| ||
+|discovery.securityContext.windowsOptions.gmsaCredentialSpec|string| ||
+|discovery.securityContext.windowsOptions.runAsUserName|string| ||
+|discovery.securityContext.runAsUser|int64| ||
+|discovery.securityContext.runAsGroup|int64| ||
+|discovery.securityContext.runAsNonRoot|bool| ||
+|discovery.securityContext.readOnlyRootFilesystem|bool| ||
+|discovery.securityContext.allowPrivilegeEscalation|bool| ||
+|discovery.securityContext.procMount|string| ||
+|discovery.securityContext.seccompProfile|struct| ||
+|discovery.securityContext.seccompProfile.type|string| ||
+|discovery.securityContext.seccompProfile.localhostProfile|string| ||
 |discovery.sidecars|map[string, struct]| |Configuration for the deployed containers.|
 |discovery.sidecars.<MAP_KEY>|struct| |Configuration for the deployed containers.|
 |discovery.sidecars.<MAP_KEY>.-[]|[]string| ||
@@ -93,24 +118,49 @@ weight: 2
 |discovery.sidecars.<MAP_KEY>.resources.requests|map[string, struct]| ||
 |discovery.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|struct| ||
 |discovery.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext|struct| |Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details.|
+|discovery.sidecars.<MAP_KEY>.securityContext.capabilities|struct| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.capabilities.add[]|[]string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.capabilities.add[]|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.capabilities.drop[]|[]string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.capabilities.drop[]|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.privileged|bool| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seLinuxOptions|struct| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.user|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.role|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.type|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.level|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.windowsOptions|struct| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.windowsOptions.gmsaCredentialSpecName|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.windowsOptions.gmsaCredentialSpec|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.windowsOptions.runAsUserName|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.runAsUser|int64| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.runAsGroup|int64| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.runAsNonRoot|bool| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.readOnlyRootFilesystem|bool| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.allowPrivilegeEscalation|bool| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.procMount|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seccompProfile|struct| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seccompProfile.type|string| ||
+|discovery.sidecars.<MAP_KEY>.securityContext.seccompProfile.localhostProfile|string| ||
 |discovery.serviceType|string|ClusterIP|Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
 |discovery.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |discovery.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |discovery.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
-|discovery.customPodLabels|map[string, string]| |Custom labels for the pod|
-|discovery.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
-|discovery.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
-|discovery.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
-|discovery.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
-|discovery.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
-|discovery.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
-|discovery.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
-|discovery.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
-|discovery.customServiceLabels|map[string, string]| |Custom labels for the service|
-|discovery.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
-|discovery.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
-|discovery.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
-|networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"sidecars":{},"serviceType":"","ports":{},"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the networking deployment.|
+|discovery.extraPodLabels|map[string, string]| |Custom labels for the pod|
+|discovery.extraPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
+|discovery.extraPodAnnotations|map[string, string]| |Custom annotations for the pod|
+|discovery.extraPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
+|discovery.extraPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
+|discovery.extraDeploymentLabels|map[string, string]| |Custom labels for the deployment|
+|discovery.extraDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
+|discovery.extraDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
+|discovery.extraDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
+|discovery.extraServiceLabels|map[string, string]| |Custom labels for the service|
+|discovery.extraServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
+|discovery.extraServiceAnnotations|map[string, string]| |Custom annotations for the service|
+|discovery.extraServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
+|networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"sidecars":{},"serviceType":"","ports":{},"extraPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the networking deployment.|
 |networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"125m","memory":"256Mi"}}}||
 |networking.-[]|[]string|["networking","--metrics-port={{ $.Values.defaultMetricsPort }}","--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}","--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}","--verbose={{ $.Values.verbose }}","--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}","--watch-output-types={{ $.Values.watchOutputTypes }}"]||
 |networking.-[]|string| ||
@@ -140,6 +190,31 @@ weight: 2
 |networking.resources.requests.cpu|string|DecimalSI||
 |networking.resources.requests.memory|struct|"256Mi"||
 |networking.resources.requests.memory|string|BinarySI||
+|networking.securityContext|struct| |Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details.|
+|networking.securityContext.capabilities|struct| ||
+|networking.securityContext.capabilities.add[]|[]string| ||
+|networking.securityContext.capabilities.add[]|string| ||
+|networking.securityContext.capabilities.drop[]|[]string| ||
+|networking.securityContext.capabilities.drop[]|string| ||
+|networking.securityContext.privileged|bool| ||
+|networking.securityContext.seLinuxOptions|struct| ||
+|networking.securityContext.seLinuxOptions.user|string| ||
+|networking.securityContext.seLinuxOptions.role|string| ||
+|networking.securityContext.seLinuxOptions.type|string| ||
+|networking.securityContext.seLinuxOptions.level|string| ||
+|networking.securityContext.windowsOptions|struct| ||
+|networking.securityContext.windowsOptions.gmsaCredentialSpecName|string| ||
+|networking.securityContext.windowsOptions.gmsaCredentialSpec|string| ||
+|networking.securityContext.windowsOptions.runAsUserName|string| ||
+|networking.securityContext.runAsUser|int64| ||
+|networking.securityContext.runAsGroup|int64| ||
+|networking.securityContext.runAsNonRoot|bool| ||
+|networking.securityContext.readOnlyRootFilesystem|bool| ||
+|networking.securityContext.allowPrivilegeEscalation|bool| ||
+|networking.securityContext.procMount|string| ||
+|networking.securityContext.seccompProfile|struct| ||
+|networking.securityContext.seccompProfile.type|string| ||
+|networking.securityContext.seccompProfile.localhostProfile|string| ||
 |networking.sidecars|map[string, struct]| |Configuration for the deployed containers.|
 |networking.sidecars.<MAP_KEY>|struct| |Configuration for the deployed containers.|
 |networking.sidecars.<MAP_KEY>.-[]|[]string| ||
@@ -166,19 +241,44 @@ weight: 2
 |networking.sidecars.<MAP_KEY>.resources.requests|map[string, struct]| ||
 |networking.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|struct| ||
 |networking.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext|struct| |Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details.|
+|networking.sidecars.<MAP_KEY>.securityContext.capabilities|struct| ||
+|networking.sidecars.<MAP_KEY>.securityContext.capabilities.add[]|[]string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.capabilities.add[]|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.capabilities.drop[]|[]string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.capabilities.drop[]|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.privileged|bool| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seLinuxOptions|struct| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.user|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.role|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.type|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.level|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.windowsOptions|struct| ||
+|networking.sidecars.<MAP_KEY>.securityContext.windowsOptions.gmsaCredentialSpecName|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.windowsOptions.gmsaCredentialSpec|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.windowsOptions.runAsUserName|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.runAsUser|int64| ||
+|networking.sidecars.<MAP_KEY>.securityContext.runAsGroup|int64| ||
+|networking.sidecars.<MAP_KEY>.securityContext.runAsNonRoot|bool| ||
+|networking.sidecars.<MAP_KEY>.securityContext.readOnlyRootFilesystem|bool| ||
+|networking.sidecars.<MAP_KEY>.securityContext.allowPrivilegeEscalation|bool| ||
+|networking.sidecars.<MAP_KEY>.securityContext.procMount|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seccompProfile|struct| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seccompProfile.type|string| ||
+|networking.sidecars.<MAP_KEY>.securityContext.seccompProfile.localhostProfile|string| ||
 |networking.serviceType|string| |Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
 |networking.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |networking.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
-|networking.customPodLabels|map[string, string]| |Custom labels for the pod|
-|networking.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
-|networking.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
-|networking.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
-|networking.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
-|networking.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
-|networking.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
-|networking.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
-|networking.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
-|networking.customServiceLabels|map[string, string]| |Custom labels for the service|
-|networking.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
-|networking.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
-|networking.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
+|networking.extraPodLabels|map[string, string]| |Custom labels for the pod|
+|networking.extraPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
+|networking.extraPodAnnotations|map[string, string]| |Custom annotations for the pod|
+|networking.extraPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
+|networking.extraPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
+|networking.extraDeploymentLabels|map[string, string]| |Custom labels for the deployment|
+|networking.extraDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
+|networking.extraDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
+|networking.extraDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
+|networking.extraServiceLabels|map[string, string]| |Custom labels for the service|
+|networking.extraServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
+|networking.extraServiceAnnotations|map[string, string]| |Custom annotations for the service|
+|networking.extraServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|

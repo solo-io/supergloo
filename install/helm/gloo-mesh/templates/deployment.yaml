@@ -80,12 +80,19 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+{{- if $discovery.securityContext }}
         securityContext:
+{{ toYaml $discovery.securityContext | indent 10 }}
+{{- else }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10101
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
+{{- end }}
       {{- if $discoveryImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $discoveryImage.pullSecret }}
@@ -237,12 +244,19 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+{{- if $networking.securityContext }}
         securityContext:
+{{ toYaml $networking.securityContext | indent 10 }}
+{{- else }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10101
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
+{{- end }}
       {{- if $networkingImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $networkingImage.pullSecret }}

@@ -77,12 +77,19 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
+{{- if $certAgent.securityContext }}
         securityContext:
+{{ toYaml $certAgent.securityContext | indent 10 }}
+{{- else }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10101
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
+{{- end }}
       {{- if $certAgentImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $certAgentImage.pullSecret }}
