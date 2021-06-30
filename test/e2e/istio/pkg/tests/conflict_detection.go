@@ -174,7 +174,7 @@ func ConflictDetectionTest() {
 			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 			// output VS should not exist on remote cluster
 			Consistently(func() bool {
-				_, err := getVirtualService(remoteClient, &skv2corev1.ObjectRef{
+				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
