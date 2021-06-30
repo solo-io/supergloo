@@ -75,9 +75,9 @@ message RouteRateLimit {
     }
 
     // Use this field if you want to inline the Envoy rate limits for this VirtualHost.
-    // Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to
-    // specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are
-    // running a custom rate limit server you need to configure it yourself.
+    // Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to
+    // specify the server configuration via the appropriate field in the Gloo Mesh `GatewayRateLimit` resource on the gateway.
+    // If you are running a custom rate limit server you need to configure it yourself.
     message AdvancedRateLimit {
 
         // Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
@@ -150,8 +150,13 @@ message RouteRateLimit {
         //    requestsPerUnit: 20
         //    unit: MINUTE
         message RateLimitActions {
-            // TODO: come up with descriptive names and comments for these fields
+
+            // Defines an ordered descriptor set that maps part of the request to a descriptor sent to the rate limit
+            // server and matched against the rate limit rules.
             repeated .ratelimit.api.solo.io.Action actions = 1;
+
+            // Defines an unordered descriptor set that maps part of the request to a descriptor sent to the rate limit
+            // server and matched against the rate limit rules.
             repeated .ratelimit.api.solo.io.Action set_actions = 2;
         }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/gloo-mesh/codegen/constants"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
+	"github.com/solo-io/solo-apis/codegen"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -37,13 +38,14 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate
 
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
-	{Kind: "RateLimiterServerConfig"},
 	{Kind: "VirtualDestination"},
 	{Kind: "VirtualGateway"},
 	{Kind: "VirtualHost"},
 	{Kind: "RouteTable"},
 	{Kind: "ServiceDependency"},
 })
+
+var GlooMeshRatelimitGroup = codegen.RateLimiterGroups()[0]
 
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1", []ResourceToGenerate{
 	{Kind: "AccessLogRecord"},
@@ -57,6 +59,7 @@ var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceT
 var GlooMeshGroups = []model.Group{
 	GlooMeshEnterpriseNetworkingGroup,
 	GlooMeshNetworkingGroup,
+	GlooMeshRatelimitGroup,
 	GlooMeshSettingsGroup,
 	GlooMeshDiscoveryGroup,
 	GlooMeshEnterpriseObservabilityGroup,
@@ -90,11 +93,11 @@ type ResourceToGenerate struct {
 }
 
 func makeGroup(groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
-	return MakeGroup(glooMeshModule, glooMeshApiRoot, groupPrefix, version, resourcesToGenerate)
+	return MakeGroup(glooMeshModule, glooMeshApiRoot, groupPrefix, constants.GlooMeshApiGroupSuffix, version, resourcesToGenerate)
 }
 
 // exported for use in enterprise repo
-func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
+func MakeGroup(module, apiRoot, groupPrefix, groupSuffix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
 	var resources []model.Resource
 	for _, resource := range resourcesToGenerate {
 		res := model.Resource{
@@ -116,7 +119,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 
 	return model.Group{
 		GroupVersion: schema.GroupVersion{
-			Group:   groupPrefix + "." + constants.GlooMeshApiGroupSuffix,
+			Group:   groupPrefix + "." + groupSuffix,
 			Version: version,
 		},
 		Module:                  module,

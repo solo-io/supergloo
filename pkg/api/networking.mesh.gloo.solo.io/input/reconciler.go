@@ -30,6 +30,8 @@ import (
 	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_controllers "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/controller"
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_controllers "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/controller"
+	ratelimit_solo_io_v1alpha1 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
+	ratelimit_solo_io_v1alpha1_controllers "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/controller"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/core/v1"
@@ -51,7 +53,6 @@ import (
 // * AuthorizationPolicies
 // from a remote cluster.
 // * WasmDeployments
-// * RateLimiterServerConfigs
 // * VirtualDestinations
 // * VirtualGateways
 // * VirtualHosts
@@ -60,6 +61,7 @@ import (
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
+// * RateLimitConfigs
 // * Settings
 // * Destinations
 // * Workloads
@@ -89,7 +91,7 @@ func RegisterInputReconciler(
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
 	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
-	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
+	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 ratelimit.solo.io/v1alpha1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
 
 	base := input.NewInputReconciler(
 		ctx,
@@ -128,10 +130,6 @@ func RegisterInputReconciler(
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
-	// initialize RateLimiterServerConfigs reconcile loop for local cluster
-	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewRateLimiterServerConfigReconcileLoop("RateLimiterServerConfig", mgr, options.Local.RateLimiterServerConfigs).RunRateLimiterServerConfigReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
 	// initialize VirtualDestinations reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualDestinationReconcileLoop("VirtualDestination", mgr, options.Local.VirtualDestinations).RunVirtualDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
@@ -163,6 +161,11 @@ func RegisterInputReconciler(
 	}
 	// initialize VirtualMeshes reconcile loop for local cluster
 	if err := networking_mesh_gloo_solo_io_v1_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize RateLimitConfigs reconcile loop for local cluster
+	if err := ratelimit_solo_io_v1alpha1_controllers.NewRateLimitConfigReconcileLoop("RateLimitConfig", mgr, options.Local.RateLimitConfigs).RunRateLimitConfigReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -392,8 +395,6 @@ type LocalReconcileOptions struct {
 
 	// Options for reconciling WasmDeployments
 	WasmDeployments reconcile.Options
-	// Options for reconciling RateLimiterServerConfigs
-	RateLimiterServerConfigs reconcile.Options
 	// Options for reconciling VirtualDestinations
 	VirtualDestinations reconcile.Options
 	// Options for reconciling VirtualGateways
@@ -411,6 +412,9 @@ type LocalReconcileOptions struct {
 	AccessPolicies reconcile.Options
 	// Options for reconciling VirtualMeshes
 	VirtualMeshes reconcile.Options
+
+	// Options for reconciling RateLimitConfigs
+	RateLimitConfigs reconcile.Options
 
 	// Options for reconciling Settings
 	Settings reconcile.Options
@@ -444,19 +448,6 @@ func (r *localInputReconciler) ReconcileWasmDeployment(obj *networking_enterpris
 }
 
 func (r *localInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileRateLimiterServerConfigDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -561,6 +552,19 @@ func (r *localInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_so
 }
 
 func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileRateLimitConfig(obj *ratelimit_solo_io_v1alpha1.RateLimitConfig) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileRateLimitConfigDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

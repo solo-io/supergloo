@@ -70,7 +70,7 @@ Rate limit configuration for a Route or TrafficPolicy. Configures rate limits fo
 <a name="ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit"></a>
 
 ### RouteRateLimit.AdvancedRateLimit
-Use this field if you want to inline the Envoy rate limits for this VirtualHost. Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are running a custom rate limit server you need to configure it yourself.
+Use this field if you want to inline the Envoy rate limits for this VirtualHost. Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to specify the server configuration via the appropriate field in the Gloo Mesh `GatewayRateLimit` resource on the gateway. If you are running a custom rate limit server you need to configure it yourself.
 
 
 | Field | Type | Label | Description |
@@ -90,8 +90,8 @@ Each action and setAction in the lists maps part of the request (or its context)
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| actions | [][ratelimit.api.solo.io.Action]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action" >}}) | repeated | TODO: come up with descriptive names and comments for these fields |
-  | setActions | [][ratelimit.api.solo.io.Action]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action" >}}) | repeated |  |
+| actions | [][ratelimit.api.solo.io.Action]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action" >}}) | repeated | Defines an ordered descriptor set that maps part of the request to a descriptor sent to the rate limit server and matched against the rate limit rules. |
+  | setActions | [][ratelimit.api.solo.io.Action]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action" >}}) | repeated | Defines an unordered descriptor set that maps part of the request to a descriptor sent to the rate limit server and matched against the rate limit rules. |
   
 
 

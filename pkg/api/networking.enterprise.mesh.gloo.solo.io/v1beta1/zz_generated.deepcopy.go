@@ -68,66 +68,6 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-// Generated Deepcopy methods for RateLimiterServerConfig
-
-func (in *RateLimiterServerConfig) DeepCopyInto(out *RateLimiterServerConfig) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-
-	// deepcopy spec
-	in.Spec.DeepCopyInto(&out.Spec)
-	// deepcopy status
-	in.Status.DeepCopyInto(&out.Status)
-
-	return
-}
-
-func (in *RateLimiterServerConfig) DeepCopy() *RateLimiterServerConfig {
-	if in == nil {
-		return nil
-	}
-	out := new(RateLimiterServerConfig)
-	in.DeepCopyInto(out)
-	return out
-}
-
-func (in *RateLimiterServerConfig) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopy(); c != nil {
-		return c
-	}
-	return nil
-}
-
-func (in *RateLimiterServerConfigList) DeepCopyInto(out *RateLimiterServerConfigList) {
-	*out = *in
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	if in.Items != nil {
-		in, out := &in.Items, &out.Items
-		*out = make([]RateLimiterServerConfig, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
-	return
-}
-
-func (in *RateLimiterServerConfigList) DeepCopy() *RateLimiterServerConfigList {
-	if in == nil {
-		return nil
-	}
-	out := new(RateLimiterServerConfigList)
-	in.DeepCopyInto(out)
-	return out
-}
-
-func (in *RateLimiterServerConfigList) DeepCopyObject() runtime.Object {
-	if c := in.DeepCopy(); c != nil {
-		return c
-	}
-	return nil
-}
-
 // Generated Deepcopy methods for VirtualDestination
 
 func (in *VirtualDestination) DeepCopyInto(out *VirtualDestination) {

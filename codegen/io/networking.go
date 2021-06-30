@@ -42,12 +42,17 @@ var (
 			Version: "v1beta1",
 		}: {
 			"WasmDeployment",
-			"RateLimiterServerConfig",
 			"VirtualDestination",
 			"VirtualGateway",
 			"VirtualHost",
 			"RouteTable",
 			"ServiceDependency",
+		},
+		schema.GroupVersion{
+			Group:   "ratelimit.solo.io",
+			Version: "v1alpha1",
+		}: {
+			"RateLimitConfig",
 		},
 		schema.GroupVersion{
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,

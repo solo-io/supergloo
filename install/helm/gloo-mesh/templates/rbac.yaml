@@ -118,7 +118,6 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments
-  - ratelimiterserverconfigs
   - virtualdestinations
   - virtualgateways
   - virtualhosts
@@ -142,6 +141,14 @@ rules:
   - observability.enterprise.mesh.gloo.solo.io
   resources:
   - accesslogrecords
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ratelimit.solo.io
+  resources:
+  - ratelimitconfigs
   verbs:
   - get
   - list
@@ -181,7 +188,6 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments/status
-  - ratelimiterserverconfigs/status
   - virtualdestinations/status
   - virtualgateways/status
   - virtualhosts/status
@@ -203,6 +209,13 @@ rules:
   - observability.enterprise.mesh.gloo.solo.io
   resources:
   - accesslogrecords/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ratelimit.solo.io
+  resources:
+  - ratelimitconfigs/status
   verbs:
   - get
   - update

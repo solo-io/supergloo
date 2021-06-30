@@ -325,9 +325,9 @@ func (x *RouteRateLimit_BasicRateLimit) GetAnonymousLimits() *RouteRateLimit_Bas
 }
 
 // Use this field if you want to inline the Envoy rate limits for this VirtualHost.
-// Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to
-// specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are
-// running a custom rate limit server you need to configure it yourself.
+// Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to
+// specify the server configuration via the appropriate field in the Gloo Mesh `GatewayRateLimit` resource on the gateway.
+// If you are running a custom rate limit server you need to configure it yourself.
 type RouteRateLimit_AdvancedRateLimit struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -503,8 +503,11 @@ type RouteRateLimit_AdvancedRateLimit_RateLimitActions struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// TODO: come up with descriptive names and comments for these fields
-	Actions    []*v1alpha1.Action `protobuf:"bytes,1,rep,name=actions,proto3" json:"actions,omitempty"`
+	// Defines an ordered descriptor set that maps part of the request to a descriptor sent to the rate limit
+	// server and matched against the rate limit rules.
+	Actions []*v1alpha1.Action `protobuf:"bytes,1,rep,name=actions,proto3" json:"actions,omitempty"`
+	// Defines an unordered descriptor set that maps part of the request to a descriptor sent to the rate limit
+	// server and matched against the rate limit rules.
 	SetActions []*v1alpha1.Action `protobuf:"bytes,2,rep,name=set_actions,json=setActions,proto3" json:"set_actions,omitempty"`
 }
 

@@ -524,8 +524,9 @@ spec:
                           items:
                             properties:
                               actions:
-                                description: 'TODO: come up with descriptive names
-                                  and comments for these fields'
+                                description: |-
+                                  Defines an ordered descriptor set that maps part of the request to a descriptor sent to the rate limit
+                                  server and matched against the rate limit rules.
                                 items:
                                   oneOf:
                                   - not:
@@ -723,6 +724,9 @@ spec:
                                   type: object
                                 type: array
                               setActions:
+                                description: |-
+                                  Defines an unordered descriptor set that maps part of the request to a descriptor sent to the rate limit
+                                  server and matched against the rate limit rules.
                                 items:
                                   oneOf:
                                   - not:
