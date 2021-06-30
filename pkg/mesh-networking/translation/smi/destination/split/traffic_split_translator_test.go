@@ -62,10 +62,10 @@ var _ = Describe("TrafficSplitTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{
 							Policy: &v1.TrafficPolicySpec_Policy{
 								TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-									Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+									Destinations: []*v1.WeightedDestination{
 										{
-											DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-												KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											DestinationType: &v1.WeightedDestination_KubeService{
+												KubeService: &v1.WeightedDestination_KubeDestination{
 													Name:      "one",
 													Namespace: ns,
 												},
@@ -73,8 +73,8 @@ var _ = Describe("TrafficSplitTranslator", func() {
 											Weight: 40,
 										},
 										{
-											DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-												KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											DestinationType: &v1.WeightedDestination_KubeService{
+												KubeService: &v1.WeightedDestination_KubeDestination{
 													Name:      "two",
 													Namespace: ns,
 												},

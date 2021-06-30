@@ -3,9 +3,12 @@ package discovery.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/keepalive.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/access_policy.proto";
 import "google/protobuf/wrappers.proto";
+
+import "encoding/protobuf/cue/cue.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -231,7 +234,8 @@ message DestinationStatus {
     int64 observed_generation = 1;
 
     // The set of TrafficPolicies that have been applied to this Destination.
-    repeated AppliedTrafficPolicy applied_traffic_policies = 3;
+    // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+    repeated AppliedTrafficPolicy applied_traffic_policies = 3  [(cue.opt).disable_openapi_validation = true];
 
     // The set of AccessPolicies that have been applied to this Destination.
     repeated AppliedAccessPolicy applied_access_policies = 4;
@@ -296,19 +300,24 @@ message DestinationStatus {
 
         // Reference to the VirtualMesh object.
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
+
+        // Specify a keepalive rule for all requests made within the VirtualMesh which cross clusters within that VirtualMesh,
+        // as well as any requests to externalService type destinations.
+        .common.mesh.gloo.solo.io.TCPKeepalive tcp_keepalive = 5;
     }
 
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}})
-    // that references subsets on this Destination in a traffic shift.
-    // Note: this is an Istio-specific feature.
-    message RequiredSubsets {
-        // Reference to the TrafficPolicy object.
-        .core.skv2.solo.io.ObjectRef traffic_policy_ref = 1;
+}
 
-        // The observed generation of the TrafficPolicy.
-        int64 observedGeneration = 2;
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}})
+// that references subsets on this Destination in a traffic shift.
+// Note: this is an Istio-specific feature.
+message RequiredSubsets {
+    // Reference to the TrafficPolicy object.
+    .core.skv2.solo.io.ObjectRef traffic_policy_ref = 1;
 
-        // The applied traffic shift.
-        .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination traffic_shift = 3;
-    }
+    // The observed generation of the TrafficPolicy.
+    int64 observedGeneration = 2;
+
+    // The applied traffic shift.
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination traffic_shift = 3;
 }

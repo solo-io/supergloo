@@ -144,6 +144,34 @@ func (mr *MockLocalSnapshotMockRecorder) Meshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockLocalSnapshot)(nil).Meshes))
 }
 
+// RateLimiterServerConfigs mocks base method.
+func (m *MockLocalSnapshot) RateLimiterServerConfigs() v1beta1sets.RateLimiterServerConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RateLimiterServerConfigs")
+	ret0, _ := ret[0].(v1beta1sets.RateLimiterServerConfigSet)
+	return ret0
+}
+
+// RateLimiterServerConfigs indicates an expected call of RateLimiterServerConfigs.
+func (mr *MockLocalSnapshotMockRecorder) RateLimiterServerConfigs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RateLimiterServerConfigs", reflect.TypeOf((*MockLocalSnapshot)(nil).RateLimiterServerConfigs))
+}
+
+// RouteTables mocks base method.
+func (m *MockLocalSnapshot) RouteTables() v1beta1sets.RouteTableSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteTables")
+	ret0, _ := ret[0].(v1beta1sets.RouteTableSet)
+	return ret0
+}
+
+// RouteTables indicates an expected call of RouteTables.
+func (mr *MockLocalSnapshotMockRecorder) RouteTables() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).RouteTables))
+}
+
 // Secrets mocks base method.
 func (m *MockLocalSnapshot) Secrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()
@@ -240,6 +268,34 @@ func (m *MockLocalSnapshot) VirtualDestinations() v1beta1sets.VirtualDestination
 func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
+}
+
+// VirtualGateways mocks base method.
+func (m *MockLocalSnapshot) VirtualGateways() v1beta1sets.VirtualGatewaySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualGateways")
+	ret0, _ := ret[0].(v1beta1sets.VirtualGatewaySet)
+	return ret0
+}
+
+// VirtualGateways indicates an expected call of VirtualGateways.
+func (mr *MockLocalSnapshotMockRecorder) VirtualGateways() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualGateways", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualGateways))
+}
+
+// VirtualHosts mocks base method.
+func (m *MockLocalSnapshot) VirtualHosts() v1beta1sets.VirtualHostSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualHosts")
+	ret0, _ := ret[0].(v1beta1sets.VirtualHostSet)
+	return ret0
+}
+
+// VirtualHosts indicates an expected call of VirtualHosts.
+func (mr *MockLocalSnapshotMockRecorder) VirtualHosts() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualHosts", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualHosts))
 }
 
 // VirtualMeshes mocks base method.

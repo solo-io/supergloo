@@ -1,0 +1,12 @@
+syntax = "proto3";
+package extauth.networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/extauth";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+// Configure the Extauth Filter on a Gateway
+message GatewayExtauth {
+  // TODO: extauth
+  string todo = 1;
+}

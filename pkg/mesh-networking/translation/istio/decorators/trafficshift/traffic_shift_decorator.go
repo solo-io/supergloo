@@ -1,10 +1,6 @@
 package trafficshift
 
 import (
-	"reflect"
-	"sort"
-	"strings"
-
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
@@ -13,8 +9,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/trafficpolicyutils"
-	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -99,7 +95,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 		}
 		var trafficShiftDestination *networkingv1alpha3spec.HTTPRouteDestination
 		switch destinationType := weightedDest.DestinationType.(type) {
-		case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+		case *networkingv1.WeightedDestination_KubeService:
 			var err error
 			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
@@ -110,7 +106,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			if err != nil {
 				return nil, err
 			}
-		case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
+		case *networkingv1.WeightedDestination_VirtualDestination_:
 			var err error
 			trafficShiftDestination, err = d.buildVirtualDestinationDestination(
 				destinationType.VirtualDestination,
@@ -130,7 +126,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 }
 
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
-	kubeDest *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination,
+	kubeDest *networkingv1.WeightedDestination_KubeDestination,
 	destination *discoveryv1.Destination,
 	weight uint32,
 	sourceClusterName string,
@@ -189,14 +185,14 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 
 	if kubeDest.Subset != nil {
 		// Use the canonical GlooMesh unique name for this subset.
-		httpRouteDestination.Destination.Subset = subsetName(kubeDest.Subset)
+		httpRouteDestination.Destination.Subset = routeutils.SubsetName(kubeDest.Subset)
 	}
 
 	return httpRouteDestination, nil
 }
 
 func (d *trafficShiftDecorator) buildVirtualDestinationDestination(
-	virtualDestinationDest *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference,
+	virtualDestinationDest *networkingv1.WeightedDestination_VirtualDestination,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	virtualDestination, err := d.virtualDestinations.Find(ezkube.MakeObjectRef(virtualDestinationDest))
@@ -231,59 +227,8 @@ func (d *trafficShiftDecorator) buildHttpRouteDestination(
 
 	if subset != nil {
 		// Use the canonical GlooMesh unique name for this subset.
-		httpRouteDestination.Destination.Subset = subsetName(subset)
+		httpRouteDestination.Destination.Subset = routeutils.SubsetName(subset)
 	}
 
 	return httpRouteDestination
-}
-
-func MakeDestinationRuleSubsets(
-	requiredSubsets []*discoveryv1.DestinationStatus_RequiredSubsets,
-) []*networkingv1alpha3spec.Subset {
-	var uniqueSubsets []map[string]string
-	appendUniqueSubset := func(subsetLabels map[string]string) {
-		if len(subsetLabels) == 0 {
-			return
-		}
-		for _, subset := range uniqueSubsets {
-			if reflect.DeepEqual(subset, subsetLabels) {
-				return
-			}
-		}
-		uniqueSubsets = append(uniqueSubsets, subsetLabels)
-	}
-
-	for _, requiredSubset := range requiredSubsets {
-		for _, dest := range requiredSubset.TrafficShift.Destinations {
-			switch destType := dest.DestinationType.(type) {
-			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
-				appendUniqueSubset(destType.KubeService.Subset)
-			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
-				appendUniqueSubset(destType.VirtualDestination.Subset)
-			}
-		}
-	}
-
-	var subsets []*networkingv1alpha3spec.Subset
-	for _, subsetLabels := range uniqueSubsets {
-		subsets = append(subsets, &networkingv1alpha3spec.Subset{
-			Name:   subsetName(subsetLabels),
-			Labels: subsetLabels,
-		})
-	}
-
-	return subsets
-}
-
-// used in DestinationRule translator as well
-func subsetName(labels map[string]string) string {
-	if len(labels) == 0 {
-		return ""
-	}
-	var keys []string
-	for key, val := range labels {
-		keys = append(keys, key+"-"+val)
-	}
-	sort.Strings(keys)
-	return kubeutils.SanitizeNameV2(strings.Join(keys, "-"))
 }

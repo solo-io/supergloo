@@ -1,0 +1,22 @@
+syntax = "proto3";
+package common.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1";
+import "google/protobuf/duration.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+// Configure TCP keepalive for the ingress gateways of all meshes in this VirtualMesh.
+message TCPKeepalive {
+
+  // Maximum number of TCP keepalive probes to send before determining that connection is dead.
+  uint32 probes = 1;
+
+  // The time duration a connection needs to be idle before keep-alive probes start being sent.
+  // Format examples: `1h`/`1m`/`1s`/`1ms`.
+  google.protobuf.Duration time = 2;
+
+  // The time duration between keep-alive probes.
+  // Format examples: `1h`/`1m`/`1s`/`1ms`
+  google.protobuf.Duration interval   = 3;
+}

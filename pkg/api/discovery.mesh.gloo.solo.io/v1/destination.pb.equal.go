@@ -192,6 +192,54 @@ func (m *DestinationStatus) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *RequiredSubsets) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*RequiredSubsets)
+	if !ok {
+		that2, ok := that.(RequiredSubsets)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTrafficPolicyRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTrafficPolicyRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTrafficPolicyRef(), target.GetTrafficPolicyRef()) {
+			return false
+		}
+	}
+
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetTrafficShift()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTrafficShift()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTrafficShift(), target.GetTrafficShift()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *DestinationSpec_KubeService) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -970,50 +1018,12 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 		}
 	}
 
-	return true
-}
-
-// Equal function
-func (m *DestinationStatus_RequiredSubsets) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DestinationStatus_RequiredSubsets)
-	if !ok {
-		that2, ok := that.(DestinationStatus_RequiredSubsets)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetTrafficPolicyRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetTrafficPolicyRef()) {
+	if h, ok := interface{}(m.GetTcpKeepalive()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTcpKeepalive()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetTrafficPolicyRef(), target.GetTrafficPolicyRef()) {
-			return false
-		}
-	}
-
-	if m.GetObservedGeneration() != target.GetObservedGeneration() {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetTrafficShift()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetTrafficShift()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetTrafficShift(), target.GetTrafficShift()) {
+		if !proto.Equal(m.GetTcpKeepalive(), target.GetTcpKeepalive()) {
 			return false
 		}
 	}

@@ -77,10 +77,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Destinations: []*networkingv1.WeightedDestination{
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -169,10 +169,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Destinations: []*networkingv1.WeightedDestination{
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -271,10 +271,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Destinations: []*networkingv1.WeightedDestination{
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -291,10 +291,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Destinations: []*networkingv1.WeightedDestination{
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -375,10 +375,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Destinations: []*networkingv1.WeightedDestination{
 							{
-								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &networkingv1.WeightedDestination_KubeService{
+									KubeService: &networkingv1.WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",

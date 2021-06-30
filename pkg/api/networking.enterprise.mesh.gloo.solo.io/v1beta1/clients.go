@@ -42,7 +42,15 @@ type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	WasmDeployments() WasmDeploymentClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	RateLimiterServerConfigs() RateLimiterServerConfigClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualDestinations() VirtualDestinationClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	VirtualGateways() VirtualGatewayClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	VirtualHosts() VirtualHostClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	RouteTables() RouteTableClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	ServiceDependencies() ServiceDependencyClient
 }
@@ -75,8 +83,28 @@ func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) RateLimiterServerConfigs() RateLimiterServerConfigClient {
+	return NewRateLimiterServerConfigClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
 	return NewVirtualDestinationClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) VirtualGateways() VirtualGatewayClient {
+	return NewVirtualGatewayClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) VirtualHosts() VirtualHostClient {
+	return NewVirtualHostClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) RouteTables() RouteTableClient {
+	return NewRouteTableClient(c.client)
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
@@ -226,6 +254,148 @@ func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeployme
 	return NewWasmDeploymentClient(client), nil
 }
 
+// Reader knows how to read and list RateLimiterServerConfigs.
+type RateLimiterServerConfigReader interface {
+	// Get retrieves a RateLimiterServerConfig for the given object key
+	GetRateLimiterServerConfig(ctx context.Context, key client.ObjectKey) (*RateLimiterServerConfig, error)
+
+	// List retrieves list of RateLimiterServerConfigs for a given namespace and list options.
+	ListRateLimiterServerConfig(ctx context.Context, opts ...client.ListOption) (*RateLimiterServerConfigList, error)
+}
+
+// RateLimiterServerConfigTransitionFunction instructs the RateLimiterServerConfigWriter how to transition between an existing
+// RateLimiterServerConfig object and a desired on an Upsert
+type RateLimiterServerConfigTransitionFunction func(existing, desired *RateLimiterServerConfig) error
+
+// Writer knows how to create, delete, and update RateLimiterServerConfigs.
+type RateLimiterServerConfigWriter interface {
+	// Create saves the RateLimiterServerConfig object.
+	CreateRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, opts ...client.CreateOption) error
+
+	// Delete deletes the RateLimiterServerConfig object.
+	DeleteRateLimiterServerConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given RateLimiterServerConfig object.
+	UpdateRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, opts ...client.UpdateOption) error
+
+	// Patch patches the given RateLimiterServerConfig object.
+	PatchRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all RateLimiterServerConfig objects matching the given options.
+	DeleteAllOfRateLimiterServerConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the RateLimiterServerConfig object.
+	UpsertRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, transitionFuncs ...RateLimiterServerConfigTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a RateLimiterServerConfig object.
+type RateLimiterServerConfigStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given RateLimiterServerConfig object.
+	UpdateRateLimiterServerConfigStatus(ctx context.Context, obj *RateLimiterServerConfig, opts ...client.UpdateOption) error
+
+	// Patch patches the given RateLimiterServerConfig object's subresource.
+	PatchRateLimiterServerConfigStatus(ctx context.Context, obj *RateLimiterServerConfig, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on RateLimiterServerConfigs.
+type RateLimiterServerConfigClient interface {
+	RateLimiterServerConfigReader
+	RateLimiterServerConfigWriter
+	RateLimiterServerConfigStatusWriter
+}
+
+type rateLimiterServerConfigClient struct {
+	client client.Client
+}
+
+func NewRateLimiterServerConfigClient(client client.Client) *rateLimiterServerConfigClient {
+	return &rateLimiterServerConfigClient{client: client}
+}
+
+func (c *rateLimiterServerConfigClient) GetRateLimiterServerConfig(ctx context.Context, key client.ObjectKey) (*RateLimiterServerConfig, error) {
+	obj := &RateLimiterServerConfig{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *rateLimiterServerConfigClient) ListRateLimiterServerConfig(ctx context.Context, opts ...client.ListOption) (*RateLimiterServerConfigList, error) {
+	list := &RateLimiterServerConfigList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *rateLimiterServerConfigClient) CreateRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *rateLimiterServerConfigClient) DeleteRateLimiterServerConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &RateLimiterServerConfig{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *rateLimiterServerConfigClient) UpdateRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *rateLimiterServerConfigClient) PatchRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *rateLimiterServerConfigClient) DeleteAllOfRateLimiterServerConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &RateLimiterServerConfig{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *rateLimiterServerConfigClient) UpsertRateLimiterServerConfig(ctx context.Context, obj *RateLimiterServerConfig, transitionFuncs ...RateLimiterServerConfigTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*RateLimiterServerConfig), desired.(*RateLimiterServerConfig)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *rateLimiterServerConfigClient) UpdateRateLimiterServerConfigStatus(ctx context.Context, obj *RateLimiterServerConfig, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *rateLimiterServerConfigClient) PatchRateLimiterServerConfigStatus(ctx context.Context, obj *RateLimiterServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides RateLimiterServerConfigClients for multiple clusters.
+type MulticlusterRateLimiterServerConfigClient interface {
+	// Cluster returns a RateLimiterServerConfigClient for the given cluster
+	Cluster(cluster string) (RateLimiterServerConfigClient, error)
+}
+
+type multiclusterRateLimiterServerConfigClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterRateLimiterServerConfigClient(client multicluster.Client) MulticlusterRateLimiterServerConfigClient {
+	return &multiclusterRateLimiterServerConfigClient{client: client}
+}
+
+func (m *multiclusterRateLimiterServerConfigClient) Cluster(cluster string) (RateLimiterServerConfigClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewRateLimiterServerConfigClient(client), nil
+}
+
 // Reader knows how to read and list VirtualDestinations.
 type VirtualDestinationReader interface {
 	// Get retrieves a VirtualDestination for the given object key
@@ -366,6 +536,432 @@ func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualD
 		return nil, err
 	}
 	return NewVirtualDestinationClient(client), nil
+}
+
+// Reader knows how to read and list VirtualGateways.
+type VirtualGatewayReader interface {
+	// Get retrieves a VirtualGateway for the given object key
+	GetVirtualGateway(ctx context.Context, key client.ObjectKey) (*VirtualGateway, error)
+
+	// List retrieves list of VirtualGateways for a given namespace and list options.
+	ListVirtualGateway(ctx context.Context, opts ...client.ListOption) (*VirtualGatewayList, error)
+}
+
+// VirtualGatewayTransitionFunction instructs the VirtualGatewayWriter how to transition between an existing
+// VirtualGateway object and a desired on an Upsert
+type VirtualGatewayTransitionFunction func(existing, desired *VirtualGateway) error
+
+// Writer knows how to create, delete, and update VirtualGateways.
+type VirtualGatewayWriter interface {
+	// Create saves the VirtualGateway object.
+	CreateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.CreateOption) error
+
+	// Delete deletes the VirtualGateway object.
+	DeleteVirtualGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given VirtualGateway object.
+	UpdateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualGateway object.
+	PatchVirtualGateway(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all VirtualGateway objects matching the given options.
+	DeleteAllOfVirtualGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the VirtualGateway object.
+	UpsertVirtualGateway(ctx context.Context, obj *VirtualGateway, transitionFuncs ...VirtualGatewayTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a VirtualGateway object.
+type VirtualGatewayStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given VirtualGateway object.
+	UpdateVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualGateway object's subresource.
+	PatchVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on VirtualGateways.
+type VirtualGatewayClient interface {
+	VirtualGatewayReader
+	VirtualGatewayWriter
+	VirtualGatewayStatusWriter
+}
+
+type virtualGatewayClient struct {
+	client client.Client
+}
+
+func NewVirtualGatewayClient(client client.Client) *virtualGatewayClient {
+	return &virtualGatewayClient{client: client}
+}
+
+func (c *virtualGatewayClient) GetVirtualGateway(ctx context.Context, key client.ObjectKey) (*VirtualGateway, error) {
+	obj := &VirtualGateway{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *virtualGatewayClient) ListVirtualGateway(ctx context.Context, opts ...client.ListOption) (*VirtualGatewayList, error) {
+	list := &VirtualGatewayList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *virtualGatewayClient) CreateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *virtualGatewayClient) DeleteVirtualGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &VirtualGateway{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *virtualGatewayClient) UpdateVirtualGateway(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *virtualGatewayClient) PatchVirtualGateway(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *virtualGatewayClient) DeleteAllOfVirtualGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &VirtualGateway{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *virtualGatewayClient) UpsertVirtualGateway(ctx context.Context, obj *VirtualGateway, transitionFuncs ...VirtualGatewayTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*VirtualGateway), desired.(*VirtualGateway)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *virtualGatewayClient) UpdateVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *virtualGatewayClient) PatchVirtualGatewayStatus(ctx context.Context, obj *VirtualGateway, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides VirtualGatewayClients for multiple clusters.
+type MulticlusterVirtualGatewayClient interface {
+	// Cluster returns a VirtualGatewayClient for the given cluster
+	Cluster(cluster string) (VirtualGatewayClient, error)
+}
+
+type multiclusterVirtualGatewayClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterVirtualGatewayClient(client multicluster.Client) MulticlusterVirtualGatewayClient {
+	return &multiclusterVirtualGatewayClient{client: client}
+}
+
+func (m *multiclusterVirtualGatewayClient) Cluster(cluster string) (VirtualGatewayClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualGatewayClient(client), nil
+}
+
+// Reader knows how to read and list VirtualHosts.
+type VirtualHostReader interface {
+	// Get retrieves a VirtualHost for the given object key
+	GetVirtualHost(ctx context.Context, key client.ObjectKey) (*VirtualHost, error)
+
+	// List retrieves list of VirtualHosts for a given namespace and list options.
+	ListVirtualHost(ctx context.Context, opts ...client.ListOption) (*VirtualHostList, error)
+}
+
+// VirtualHostTransitionFunction instructs the VirtualHostWriter how to transition between an existing
+// VirtualHost object and a desired on an Upsert
+type VirtualHostTransitionFunction func(existing, desired *VirtualHost) error
+
+// Writer knows how to create, delete, and update VirtualHosts.
+type VirtualHostWriter interface {
+	// Create saves the VirtualHost object.
+	CreateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.CreateOption) error
+
+	// Delete deletes the VirtualHost object.
+	DeleteVirtualHost(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given VirtualHost object.
+	UpdateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualHost object.
+	PatchVirtualHost(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all VirtualHost objects matching the given options.
+	DeleteAllOfVirtualHost(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the VirtualHost object.
+	UpsertVirtualHost(ctx context.Context, obj *VirtualHost, transitionFuncs ...VirtualHostTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a VirtualHost object.
+type VirtualHostStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given VirtualHost object.
+	UpdateVirtualHostStatus(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualHost object's subresource.
+	PatchVirtualHostStatus(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on VirtualHosts.
+type VirtualHostClient interface {
+	VirtualHostReader
+	VirtualHostWriter
+	VirtualHostStatusWriter
+}
+
+type virtualHostClient struct {
+	client client.Client
+}
+
+func NewVirtualHostClient(client client.Client) *virtualHostClient {
+	return &virtualHostClient{client: client}
+}
+
+func (c *virtualHostClient) GetVirtualHost(ctx context.Context, key client.ObjectKey) (*VirtualHost, error) {
+	obj := &VirtualHost{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *virtualHostClient) ListVirtualHost(ctx context.Context, opts ...client.ListOption) (*VirtualHostList, error) {
+	list := &VirtualHostList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *virtualHostClient) CreateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) DeleteVirtualHost(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &VirtualHost{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) UpdateVirtualHost(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) PatchVirtualHost(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *virtualHostClient) DeleteAllOfVirtualHost(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &VirtualHost{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) UpsertVirtualHost(ctx context.Context, obj *VirtualHost, transitionFuncs ...VirtualHostTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*VirtualHost), desired.(*VirtualHost)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *virtualHostClient) UpdateVirtualHostStatus(ctx context.Context, obj *VirtualHost, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *virtualHostClient) PatchVirtualHostStatus(ctx context.Context, obj *VirtualHost, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides VirtualHostClients for multiple clusters.
+type MulticlusterVirtualHostClient interface {
+	// Cluster returns a VirtualHostClient for the given cluster
+	Cluster(cluster string) (VirtualHostClient, error)
+}
+
+type multiclusterVirtualHostClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterVirtualHostClient(client multicluster.Client) MulticlusterVirtualHostClient {
+	return &multiclusterVirtualHostClient{client: client}
+}
+
+func (m *multiclusterVirtualHostClient) Cluster(cluster string) (VirtualHostClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualHostClient(client), nil
+}
+
+// Reader knows how to read and list RouteTables.
+type RouteTableReader interface {
+	// Get retrieves a RouteTable for the given object key
+	GetRouteTable(ctx context.Context, key client.ObjectKey) (*RouteTable, error)
+
+	// List retrieves list of RouteTables for a given namespace and list options.
+	ListRouteTable(ctx context.Context, opts ...client.ListOption) (*RouteTableList, error)
+}
+
+// RouteTableTransitionFunction instructs the RouteTableWriter how to transition between an existing
+// RouteTable object and a desired on an Upsert
+type RouteTableTransitionFunction func(existing, desired *RouteTable) error
+
+// Writer knows how to create, delete, and update RouteTables.
+type RouteTableWriter interface {
+	// Create saves the RouteTable object.
+	CreateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.CreateOption) error
+
+	// Delete deletes the RouteTable object.
+	DeleteRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given RouteTable object.
+	UpdateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error
+
+	// Patch patches the given RouteTable object.
+	PatchRouteTable(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all RouteTable objects matching the given options.
+	DeleteAllOfRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the RouteTable object.
+	UpsertRouteTable(ctx context.Context, obj *RouteTable, transitionFuncs ...RouteTableTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a RouteTable object.
+type RouteTableStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given RouteTable object.
+	UpdateRouteTableStatus(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error
+
+	// Patch patches the given RouteTable object's subresource.
+	PatchRouteTableStatus(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on RouteTables.
+type RouteTableClient interface {
+	RouteTableReader
+	RouteTableWriter
+	RouteTableStatusWriter
+}
+
+type routeTableClient struct {
+	client client.Client
+}
+
+func NewRouteTableClient(client client.Client) *routeTableClient {
+	return &routeTableClient{client: client}
+}
+
+func (c *routeTableClient) GetRouteTable(ctx context.Context, key client.ObjectKey) (*RouteTable, error) {
+	obj := &RouteTable{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *routeTableClient) ListRouteTable(ctx context.Context, opts ...client.ListOption) (*RouteTableList, error) {
+	list := &RouteTableList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *routeTableClient) CreateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) DeleteRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &RouteTable{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) UpdateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) PatchRouteTable(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *routeTableClient) DeleteAllOfRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &RouteTable{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) UpsertRouteTable(ctx context.Context, obj *RouteTable, transitionFuncs ...RouteTableTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*RouteTable), desired.(*RouteTable)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *routeTableClient) UpdateRouteTableStatus(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) PatchRouteTableStatus(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides RouteTableClients for multiple clusters.
+type MulticlusterRouteTableClient interface {
+	// Cluster returns a RouteTableClient for the given cluster
+	Cluster(cluster string) (RouteTableClient, error)
+}
+
+type multiclusterRouteTableClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterRouteTableClient(client multicluster.Client) MulticlusterRouteTableClient {
+	return &multiclusterRouteTableClient{client: client}
+}
+
+func (m *multiclusterRouteTableClient) Cluster(cluster string) (RouteTableClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewRouteTableClient(client), nil
 }
 
 // Reader knows how to read and list ServiceDependencys.

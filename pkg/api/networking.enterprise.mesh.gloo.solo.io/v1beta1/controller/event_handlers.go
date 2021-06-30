@@ -124,6 +124,113 @@ func (h genericWasmDeploymentHandler) Generic(object client.Object) error {
 	return h.handler.GenericWasmDeployment(obj)
 }
 
+// Handle events for the RateLimiterServerConfig Resource
+// DEPRECATED: Prefer reconciler pattern.
+type RateLimiterServerConfigEventHandler interface {
+	CreateRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	UpdateRateLimiterServerConfig(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	DeleteRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	GenericRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+}
+
+type RateLimiterServerConfigEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+}
+
+func (f *RateLimiterServerConfigEventHandlerFuncs) CreateRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *RateLimiterServerConfigEventHandlerFuncs) DeleteRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *RateLimiterServerConfigEventHandlerFuncs) UpdateRateLimiterServerConfig(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *RateLimiterServerConfigEventHandlerFuncs) GenericRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type RateLimiterServerConfigEventWatcher interface {
+	AddEventHandler(ctx context.Context, h RateLimiterServerConfigEventHandler, predicates ...predicate.Predicate) error
+}
+
+type rateLimiterServerConfigEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewRateLimiterServerConfigEventWatcher(name string, mgr manager.Manager) RateLimiterServerConfigEventWatcher {
+	return &rateLimiterServerConfigEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}),
+	}
+}
+
+func (c *rateLimiterServerConfigEventWatcher) AddEventHandler(ctx context.Context, h RateLimiterServerConfigEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericRateLimiterServerConfigHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericRateLimiterServerConfigHandler implements a generic events.EventHandler
+type genericRateLimiterServerConfigHandler struct {
+	handler RateLimiterServerConfigEventHandler
+}
+
+func (h genericRateLimiterServerConfigHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+	}
+	return h.handler.CreateRateLimiterServerConfig(obj)
+}
+
+func (h genericRateLimiterServerConfigHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+	}
+	return h.handler.DeleteRateLimiterServerConfig(obj)
+}
+
+func (h genericRateLimiterServerConfigHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", new)
+	}
+	return h.handler.UpdateRateLimiterServerConfig(objOld, objNew)
+}
+
+func (h genericRateLimiterServerConfigHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+	}
+	return h.handler.GenericRateLimiterServerConfig(obj)
+}
+
 // Handle events for the VirtualDestination Resource
 // DEPRECATED: Prefer reconciler pattern.
 type VirtualDestinationEventHandler interface {
@@ -229,6 +336,327 @@ func (h genericVirtualDestinationHandler) Generic(object client.Object) error {
 		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
 	}
 	return h.handler.GenericVirtualDestination(obj)
+}
+
+// Handle events for the VirtualGateway Resource
+// DEPRECATED: Prefer reconciler pattern.
+type VirtualGatewayEventHandler interface {
+	CreateVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+	UpdateVirtualGateway(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+	DeleteVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+	GenericVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+}
+
+type VirtualGatewayEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error
+}
+
+func (f *VirtualGatewayEventHandlerFuncs) CreateVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *VirtualGatewayEventHandlerFuncs) DeleteVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *VirtualGatewayEventHandlerFuncs) UpdateVirtualGateway(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *VirtualGatewayEventHandlerFuncs) GenericVirtualGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type VirtualGatewayEventWatcher interface {
+	AddEventHandler(ctx context.Context, h VirtualGatewayEventHandler, predicates ...predicate.Predicate) error
+}
+
+type virtualGatewayEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewVirtualGatewayEventWatcher(name string, mgr manager.Manager) VirtualGatewayEventWatcher {
+	return &virtualGatewayEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway{}),
+	}
+}
+
+func (c *virtualGatewayEventWatcher) AddEventHandler(ctx context.Context, h VirtualGatewayEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericVirtualGatewayHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericVirtualGatewayHandler implements a generic events.EventHandler
+type genericVirtualGatewayHandler struct {
+	handler VirtualGatewayEventHandler
+}
+
+func (h genericVirtualGatewayHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return errors.Errorf("internal error: VirtualGateway handler received event for %T", object)
+	}
+	return h.handler.CreateVirtualGateway(obj)
+}
+
+func (h genericVirtualGatewayHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return errors.Errorf("internal error: VirtualGateway handler received event for %T", object)
+	}
+	return h.handler.DeleteVirtualGateway(obj)
+}
+
+func (h genericVirtualGatewayHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return errors.Errorf("internal error: VirtualGateway handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return errors.Errorf("internal error: VirtualGateway handler received event for %T", new)
+	}
+	return h.handler.UpdateVirtualGateway(objOld, objNew)
+}
+
+func (h genericVirtualGatewayHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway)
+	if !ok {
+		return errors.Errorf("internal error: VirtualGateway handler received event for %T", object)
+	}
+	return h.handler.GenericVirtualGateway(obj)
+}
+
+// Handle events for the VirtualHost Resource
+// DEPRECATED: Prefer reconciler pattern.
+type VirtualHostEventHandler interface {
+	CreateVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+	UpdateVirtualHost(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+	DeleteVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+	GenericVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+}
+
+type VirtualHostEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error
+}
+
+func (f *VirtualHostEventHandlerFuncs) CreateVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *VirtualHostEventHandlerFuncs) DeleteVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *VirtualHostEventHandlerFuncs) UpdateVirtualHost(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *VirtualHostEventHandlerFuncs) GenericVirtualHost(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type VirtualHostEventWatcher interface {
+	AddEventHandler(ctx context.Context, h VirtualHostEventHandler, predicates ...predicate.Predicate) error
+}
+
+type virtualHostEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewVirtualHostEventWatcher(name string, mgr manager.Manager) VirtualHostEventWatcher {
+	return &virtualHostEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost{}),
+	}
+}
+
+func (c *virtualHostEventWatcher) AddEventHandler(ctx context.Context, h VirtualHostEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericVirtualHostHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericVirtualHostHandler implements a generic events.EventHandler
+type genericVirtualHostHandler struct {
+	handler VirtualHostEventHandler
+}
+
+func (h genericVirtualHostHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return errors.Errorf("internal error: VirtualHost handler received event for %T", object)
+	}
+	return h.handler.CreateVirtualHost(obj)
+}
+
+func (h genericVirtualHostHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return errors.Errorf("internal error: VirtualHost handler received event for %T", object)
+	}
+	return h.handler.DeleteVirtualHost(obj)
+}
+
+func (h genericVirtualHostHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return errors.Errorf("internal error: VirtualHost handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return errors.Errorf("internal error: VirtualHost handler received event for %T", new)
+	}
+	return h.handler.UpdateVirtualHost(objOld, objNew)
+}
+
+func (h genericVirtualHostHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost)
+	if !ok {
+		return errors.Errorf("internal error: VirtualHost handler received event for %T", object)
+	}
+	return h.handler.GenericVirtualHost(obj)
+}
+
+// Handle events for the RouteTable Resource
+// DEPRECATED: Prefer reconciler pattern.
+type RouteTableEventHandler interface {
+	CreateRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	UpdateRouteTable(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	DeleteRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	GenericRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+}
+
+type RouteTableEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+}
+
+func (f *RouteTableEventHandlerFuncs) CreateRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *RouteTableEventHandlerFuncs) DeleteRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *RouteTableEventHandlerFuncs) UpdateRouteTable(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *RouteTableEventHandlerFuncs) GenericRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type RouteTableEventWatcher interface {
+	AddEventHandler(ctx context.Context, h RouteTableEventHandler, predicates ...predicate.Predicate) error
+}
+
+type routeTableEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewRouteTableEventWatcher(name string, mgr manager.Manager) RouteTableEventWatcher {
+	return &routeTableEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable{}),
+	}
+}
+
+func (c *routeTableEventWatcher) AddEventHandler(ctx context.Context, h RouteTableEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericRouteTableHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericRouteTableHandler implements a generic events.EventHandler
+type genericRouteTableHandler struct {
+	handler RouteTableEventHandler
+}
+
+func (h genericRouteTableHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return h.handler.CreateRouteTable(obj)
+}
+
+func (h genericRouteTableHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return h.handler.DeleteRouteTable(obj)
+}
+
+func (h genericRouteTableHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", new)
+	}
+	return h.handler.UpdateRouteTable(objOld, objNew)
+}
+
+func (h genericRouteTableHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return h.handler.GenericRouteTable(obj)
 }
 
 // Handle events for the ServiceDependency Resource
