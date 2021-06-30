@@ -10,10 +10,6 @@
 {{/* Define variables in function scope */}}
 {{- $discovery := $.Values.discovery}}
 {{- $discoveryImage := $discovery.image }}
-{{- $discoveryExtraPodLabels := $discovery.extraPodLabels }}
-{{- $discoveryExtraPodAnnotations := $discovery.extraPodAnnotations }}
-{{- $discoveryExtraDeploymentLabels := $discovery.extraDeploymentLabels }}
-{{- $discoveryExtraDeploymentAnnotations := $discovery.extraDeploymentAnnotations }}
 
 # Deployment manifest for discovery
 
@@ -22,39 +18,24 @@ kind: Deployment
 metadata:
   labels:
     app: discovery
-    {{- range $key, $value := $discoveryExtraDeploymentLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: discovery
-    {{- range $key, $value := $discoveryExtraDeploymentAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: discovery
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
       app: discovery
-      {{- range $key, $value := $discoveryExtraPodLabels }}
-      {{ $key }}: {{ $value }}
-      {{- end }}
   template:
     metadata:
       labels:
         app: discovery
-        {{- range $key, $value := $discoveryExtraPodLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
       annotations:
         app.kubernetes.io/name: discovery
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
         sidecar.istio.io/inject: "false"
-        {{- range $key, $value := $discoveryExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
     spec:
       serviceAccountName: discovery
       containers:
@@ -80,10 +61,6 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-{{- if $discovery.securityContext }}
-        securityContext:
-{{ toYaml $discovery.securityContext | indent 10 }}
-{{- else }}
         securityContext:
           runAsNonRoot: true
           runAsUser: 10101
@@ -92,7 +69,6 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end }}
       {{- if $discoveryImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $discoveryImage.pullSecret }}
@@ -105,7 +81,8 @@ spec:
 {{- if $discovery.deploymentOverrides }}
 {{- $discoveryDeploymentOverrides = $discovery.deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $discoveryDeploymentOverrides "discovery.deploymentSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $discoveryDeploymentOverrides "discovery.deploymentSpec") }}
 
 ---
 
@@ -120,28 +97,16 @@ metadata:
 
 {{- define "discovery.serviceSpec"}}
 
-
-# Service for discovery
----
 # Service for discovery
 {{/* Define variables in function scope */}}
 {{- $discovery := $.Values.discovery}}
-{{- $discoveryExtraServiceLabels := $discovery.extraServiceLabels }}
-{{- $discoveryExtraServiceAnnotations := $discovery.extraServiceAnnotations }}
-
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: discovery
-    {{- range $key, $value := $discoveryExtraServiceLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: discovery
-    {{- range $key, $value := $discoveryExtraServiceAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: discovery
   namespace: {{ $.Release.Namespace }}
 spec:
@@ -160,7 +125,8 @@ spec:
 {{- if $discovery.serviceOverrides }}
 {{- $discoveryServiceOverrides = $discovery.serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $discoveryServiceOverrides "discovery.serviceSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $discoveryServiceOverrides "discovery.serviceSpec") }}
 
 
 
@@ -172,10 +138,6 @@ spec:
 {{/* Define variables in function scope */}}
 {{- $networking := $.Values.networking}}
 {{- $networkingImage := $networking.image }}
-{{- $networkingExtraPodLabels := $networking.extraPodLabels }}
-{{- $networkingExtraPodAnnotations := $networking.extraPodAnnotations }}
-{{- $networkingExtraDeploymentLabels := $networking.extraDeploymentLabels }}
-{{- $networkingExtraDeploymentAnnotations := $networking.extraDeploymentAnnotations }}
 
 # Deployment manifest for networking
 
@@ -184,39 +146,24 @@ kind: Deployment
 metadata:
   labels:
     app: networking
-    {{- range $key, $value := $networkingExtraDeploymentLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: networking
-    {{- range $key, $value := $networkingExtraDeploymentAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: networking
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
       app: networking
-      {{- range $key, $value := $networkingExtraPodLabels }}
-      {{ $key }}: {{ $value }}
-      {{- end }}
   template:
     metadata:
       labels:
         app: networking
-        {{- range $key, $value := $networkingExtraPodLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
       annotations:
         app.kubernetes.io/name: networking
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
         sidecar.istio.io/inject: "false"
-        {{- range $key, $value := $networkingExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
     spec:
       serviceAccountName: networking
       containers:
@@ -244,10 +191,6 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-{{- if $networking.securityContext }}
-        securityContext:
-{{ toYaml $networking.securityContext | indent 10 }}
-{{- else }}
         securityContext:
           runAsNonRoot: true
           runAsUser: 10101
@@ -256,7 +199,6 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end }}
       {{- if $networkingImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $networkingImage.pullSecret }}
@@ -269,7 +211,8 @@ spec:
 {{- if $networking.deploymentOverrides }}
 {{- $networkingDeploymentOverrides = $networking.deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $networkingDeploymentOverrides "networking.deploymentSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $networkingDeploymentOverrides "networking.deploymentSpec") }}
 
 ---
 
@@ -285,7 +228,6 @@ metadata:
 {{- define "networking.serviceSpec"}}
 
 
-
 {{- end }} {{/* define "networking.serviceSpec" */}}
 
 {{/* Render networking service template with overrides from values*/}}
@@ -293,6 +235,7 @@ metadata:
 {{- if $networking.serviceOverrides }}
 {{- $networkingServiceOverrides = $networking.serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $networkingServiceOverrides "networking.serviceSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $networkingServiceOverrides "networking.serviceSpec") }}
 
 

@@ -37,18 +37,8 @@ weight: 2
 |watchOutputTypes|bool|false|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|0|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |verbose|bool|false|If true, enables verbose/debug logging.|
-|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091},"extraPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the certAgent deployment.|
+|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091}}|Configuration for the certAgent deployment.|
 |certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}}}||
-|certAgent.-[]|[]string|["--metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}","--verbose={{ $.Values.verbose }}"]||
-|certAgent.-[]|string| ||
-|certAgent.-[]|[]struct|null||
-|certAgent.-[]|struct| ||
-|certAgent.-[].name|string| ||
-|certAgent.-[].readOnly|bool| ||
-|certAgent.-[].mountPath|string| ||
-|certAgent.-[].subPath|string| ||
-|certAgent.-[].mountPropagation|string| ||
-|certAgent.-[].subPathExpr|string| ||
 |certAgent.image|struct|{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the container image|
 |certAgent.image.tag|string| |Tag for the container.|
 |certAgent.image.repository|string|cert-agent|Image name (repository).|
@@ -67,43 +57,8 @@ weight: 2
 |certAgent.resources.requests.cpu|string|DecimalSI||
 |certAgent.resources.requests.memory|struct|"128Mi"||
 |certAgent.resources.requests.memory|string|BinarySI||
-|certAgent.securityContext|struct| |Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details.|
-|certAgent.securityContext.capabilities|struct| ||
-|certAgent.securityContext.capabilities.add[]|[]string| ||
-|certAgent.securityContext.capabilities.add[]|string| ||
-|certAgent.securityContext.capabilities.drop[]|[]string| ||
-|certAgent.securityContext.capabilities.drop[]|string| ||
-|certAgent.securityContext.privileged|bool| ||
-|certAgent.securityContext.seLinuxOptions|struct| ||
-|certAgent.securityContext.seLinuxOptions.user|string| ||
-|certAgent.securityContext.seLinuxOptions.role|string| ||
-|certAgent.securityContext.seLinuxOptions.type|string| ||
-|certAgent.securityContext.seLinuxOptions.level|string| ||
-|certAgent.securityContext.windowsOptions|struct| ||
-|certAgent.securityContext.windowsOptions.gmsaCredentialSpecName|string| ||
-|certAgent.securityContext.windowsOptions.gmsaCredentialSpec|string| ||
-|certAgent.securityContext.windowsOptions.runAsUserName|string| ||
-|certAgent.securityContext.runAsUser|int64| ||
-|certAgent.securityContext.runAsGroup|int64| ||
-|certAgent.securityContext.runAsNonRoot|bool| ||
-|certAgent.securityContext.readOnlyRootFilesystem|bool| ||
-|certAgent.securityContext.allowPrivilegeEscalation|bool| ||
-|certAgent.securityContext.procMount|string| ||
-|certAgent.securityContext.seccompProfile|struct| ||
-|certAgent.securityContext.seccompProfile.type|string| ||
-|certAgent.securityContext.seccompProfile.localhostProfile|string| ||
 |certAgent.sidecars|map[string, struct]| |Configuration for the deployed containers.|
 |certAgent.sidecars.<MAP_KEY>|struct| |Configuration for the deployed containers.|
-|certAgent.sidecars.<MAP_KEY>.-[]|[]string| ||
-|certAgent.sidecars.<MAP_KEY>.-[]|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[]|[]struct| ||
-|certAgent.sidecars.<MAP_KEY>.-[]|struct| ||
-|certAgent.sidecars.<MAP_KEY>.-[].name|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].readOnly|bool| ||
-|certAgent.sidecars.<MAP_KEY>.-[].mountPath|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].subPath|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].mountPropagation|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].subPathExpr|string| ||
 |certAgent.sidecars.<MAP_KEY>.image|struct| |Specify the container image|
 |certAgent.sidecars.<MAP_KEY>.image.tag|string| |Tag for the container.|
 |certAgent.sidecars.<MAP_KEY>.image.repository|string| |Image name (repository).|
@@ -118,45 +73,9 @@ weight: 2
 |certAgent.sidecars.<MAP_KEY>.resources.requests|map[string, struct]| ||
 |certAgent.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|struct| ||
 |certAgent.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext|struct| |Specify container security context. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core) for specification details.|
-|certAgent.sidecars.<MAP_KEY>.securityContext.capabilities|struct| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.capabilities.add[]|[]string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.capabilities.add[]|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.capabilities.drop[]|[]string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.capabilities.drop[]|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.privileged|bool| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seLinuxOptions|struct| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.user|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.role|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.type|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seLinuxOptions.level|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.windowsOptions|struct| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.windowsOptions.gmsaCredentialSpecName|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.windowsOptions.gmsaCredentialSpec|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.windowsOptions.runAsUserName|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.runAsUser|int64| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.runAsGroup|int64| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.runAsNonRoot|bool| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.readOnlyRootFilesystem|bool| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.allowPrivilegeEscalation|bool| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.procMount|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seccompProfile|struct| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seccompProfile.type|string| ||
-|certAgent.sidecars.<MAP_KEY>.securityContext.seccompProfile.localhostProfile|string| ||
 |certAgent.serviceType|string|ClusterIP|Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
 |certAgent.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
-|certAgent.extraPodLabels|map[string, string]| |Custom labels for the pod|
-|certAgent.extraPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
-|certAgent.extraPodAnnotations|map[string, string]| |Custom annotations for the pod|
-|certAgent.extraPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
-|certAgent.extraPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
-|certAgent.extraDeploymentLabels|map[string, string]| |Custom labels for the deployment|
-|certAgent.extraDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
-|certAgent.extraDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
-|certAgent.extraDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
-|certAgent.extraServiceLabels|map[string, string]| |Custom labels for the service|
-|certAgent.extraServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
-|certAgent.extraServiceAnnotations|map[string, string]| |Custom annotations for the service|
-|certAgent.extraServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
+|certAgent.DeploymentOverrides|invalid| |Provide arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)|
+|certAgent.ServiceOverrides|invalid| |Provide arbitrary overrides for the component's [service template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).|

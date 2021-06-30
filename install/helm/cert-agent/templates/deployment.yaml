@@ -10,10 +10,6 @@
 {{/* Define variables in function scope */}}
 {{- $certAgent := $.Values.certAgent}}
 {{- $certAgentImage := $certAgent.image }}
-{{- $certAgentExtraPodLabels := $certAgent.extraPodLabels }}
-{{- $certAgentExtraPodAnnotations := $certAgent.extraPodAnnotations }}
-{{- $certAgentExtraDeploymentLabels := $certAgent.extraDeploymentLabels }}
-{{- $certAgentExtraDeploymentAnnotations := $certAgent.extraDeploymentAnnotations }}
 
 # Deployment manifest for cert-agent
 
@@ -22,39 +18,24 @@ kind: Deployment
 metadata:
   labels:
     app: cert-agent
-    {{- range $key, $value := $certAgentExtraDeploymentLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: cert-agent
-    {{- range $key, $value := $certAgentExtraDeploymentAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: cert-agent
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
       app: cert-agent
-      {{- range $key, $value := $certAgentExtraPodLabels }}
-      {{ $key }}: {{ $value }}
-      {{- end }}
   template:
     metadata:
       labels:
         app: cert-agent
-        {{- range $key, $value := $certAgentExtraPodLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
       annotations:
         app.kubernetes.io/name: cert-agent
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
         sidecar.istio.io/inject: "false"
-        {{- range $key, $value := $certAgentExtraPodAnnotations }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
     spec:
       serviceAccountName: cert-agent
       containers:
@@ -77,10 +58,6 @@ spec:
             cpu: 500m
             memory: 256Mi
 {{- end}}
-{{- if $certAgent.securityContext }}
-        securityContext:
-{{ toYaml $certAgent.securityContext | indent 10 }}
-{{- else }}
         securityContext:
           runAsNonRoot: true
           runAsUser: 10101
@@ -89,7 +66,6 @@ spec:
           capabilities:
             drop:
             - ALL
-{{- end }}
       {{- if $certAgentImage.pullSecret }}
       imagePullSecrets:
         - name: {{ $certAgentImage.pullSecret }}
@@ -102,7 +78,8 @@ spec:
 {{- if $certAgent.deploymentOverrides }}
 {{- $certAgentDeploymentOverrides = $certAgent.deploymentOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $certAgentDeploymentOverrides "cert-agent.deploymentSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $certAgentDeploymentOverrides "cert-agent.deploymentSpec") }}
 
 ---
 
@@ -117,28 +94,16 @@ metadata:
 
 {{- define "cert-agent.serviceSpec"}}
 
-
-# Service for cert-agent
----
 # Service for cert-agent
 {{/* Define variables in function scope */}}
 {{- $certAgent := $.Values.certAgent}}
-{{- $certAgentExtraServiceLabels := $certAgent.extraServiceLabels }}
-{{- $certAgentExtraServiceAnnotations := $certAgent.extraServiceAnnotations }}
-
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: cert-agent
-    {{- range $key, $value := $certAgentExtraServiceLabels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   annotations:
     app.kubernetes.io/name: cert-agent
-    {{- range $key, $value := $certAgentExtraServiceAnnotations }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
   name: cert-agent
   namespace: {{ $.Release.Namespace }}
 spec:
@@ -157,6 +122,7 @@ spec:
 {{- if $certAgent.serviceOverrides }}
 {{- $certAgentServiceOverrides = $certAgent.serviceOverrides  }}
 {{- end }}
-{{- include "skv2.utils.merge" (list . $certAgentServiceOverrides "cert-agent.serviceSpec") }}
+---
+{{ include "skv2.utils.merge" (list . $certAgentServiceOverrides "cert-agent.serviceSpec") }}
 
 

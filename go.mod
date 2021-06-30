@@ -84,8 +84,7 @@ require (
 	github.com/solo-io/go-utils v0.21.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	// TODO bump to release
-	github.com/solo-io/skv2 v0.18.1-0.20210630180120-d337e6098bd1
+	github.com/solo-io/skv2 v0.18.1
 	github.com/solo-io/solo-apis v1.6.30
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
