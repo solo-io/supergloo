@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/keepalive.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/applied_policies.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/access_policy.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -235,7 +236,7 @@ message DestinationStatus {
 
     // The set of TrafficPolicies that have been applied to this Destination.
     // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
-    repeated AppliedTrafficPolicy applied_traffic_policies = 3  [(cue.opt).disable_openapi_validation = true];
+    repeated .networking.mesh.gloo.solo.io.AppliedTrafficPolicy applied_traffic_policies = 3 [(cue.opt).disable_openapi_validation = true];
 
     // The set of AccessPolicies that have been applied to this Destination.
     repeated AppliedAccessPolicy applied_access_policies = 4;
@@ -249,20 +250,6 @@ message DestinationStatus {
 
     // The set of TrafficPolicy traffic shifts that reference subsets on this Destination.
     repeated RequiredSubsets required_subsets = 7;
-
-    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination.
-    // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
-    message AppliedTrafficPolicy {
-
-        // Reference to the TrafficPolicy object.
-        .core.skv2.solo.io.ObjectRef ref = 1;
-
-        // The observed generation of the accepted TrafficPolicy.
-        int64 observedGeneration = 2;
-
-        // The spec of the last known valid TrafficPolicy.
-        .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
-    }
 
     // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy" >}})
     // that applies to this Destination.

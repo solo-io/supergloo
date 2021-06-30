@@ -4032,6 +4032,14 @@ spec:
           type: object
         status:
           properties:
+            appliedTrafficPolicies:
+              description: |-
+                The set of TrafficPolicies that have been applied to this Destination.
+                {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+              items:
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              type: array
             attachedVirtualGateways:
               description: List of each VirtualGateway which has selected this VirtualHost
               items:
@@ -5525,6 +5533,14 @@ spec:
                 Can be VirtualHosts or other RouteTables
               items:
                 properties:
+                  appliedTrafficPolicies:
+                    description: |-
+                      The set of TrafficPolicies that have been applied to this Destination.
+                      {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+                    items:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    type: array
                   name:
                     description: Name of resource selecting this RouteTable
                     type: string
