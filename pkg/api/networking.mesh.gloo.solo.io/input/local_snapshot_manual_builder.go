@@ -21,6 +21,9 @@ import (
 	observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
 
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -47,6 +50,8 @@ type InputLocalSnapshotManualBuilder struct {
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -71,6 +76,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		serviceDependencies: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet(),
 
 		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet(),
+
+		issuedCertificates: certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -97,6 +104,8 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.serviceDependencies,
 
 		i.accessLogRecords,
+
+		i.issuedCertificates,
 
 		i.secrets,
 
@@ -145,6 +154,10 @@ func (i *InputLocalSnapshotManualBuilder) AddServiceDependencies(serviceDependen
 }
 func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) *InputLocalSnapshotManualBuilder {
 	i.accessLogRecords.Insert(accessLogRecords...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) *InputLocalSnapshotManualBuilder {
+	i.issuedCertificates.Insert(issuedCertificates...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {

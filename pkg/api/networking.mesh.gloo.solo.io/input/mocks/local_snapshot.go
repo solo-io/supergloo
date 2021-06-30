@@ -10,12 +10,13 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
+	v1sets1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1beta1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	v1sets1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
-	v1sets2 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
-	v1sets3 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
+	v1sets2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
+	v1sets3 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
+	v1sets4 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -45,10 +46,10 @@ func (m *MockLocalSnapshot) EXPECT() *MockLocalSnapshotMockRecorder {
 }
 
 // AccessLogRecords mocks base method.
-func (m *MockLocalSnapshot) AccessLogRecords() v1sets2.AccessLogRecordSet {
+func (m *MockLocalSnapshot) AccessLogRecords() v1sets3.AccessLogRecordSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccessLogRecords")
-	ret0, _ := ret[0].(v1sets2.AccessLogRecordSet)
+	ret0, _ := ret[0].(v1sets3.AccessLogRecordSet)
 	return ret0
 }
 
@@ -59,10 +60,10 @@ func (mr *MockLocalSnapshotMockRecorder) AccessLogRecords() *gomock.Call {
 }
 
 // AccessPolicies mocks base method.
-func (m *MockLocalSnapshot) AccessPolicies() v1sets1.AccessPolicySet {
+func (m *MockLocalSnapshot) AccessPolicies() v1sets2.AccessPolicySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccessPolicies")
-	ret0, _ := ret[0].(v1sets1.AccessPolicySet)
+	ret0, _ := ret[0].(v1sets2.AccessPolicySet)
 	return ret0
 }
 
@@ -73,10 +74,10 @@ func (mr *MockLocalSnapshotMockRecorder) AccessPolicies() *gomock.Call {
 }
 
 // Destinations mocks base method.
-func (m *MockLocalSnapshot) Destinations() v1sets0.DestinationSet {
+func (m *MockLocalSnapshot) Destinations() v1sets1.DestinationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Destinations")
-	ret0, _ := ret[0].(v1sets0.DestinationSet)
+	ret0, _ := ret[0].(v1sets1.DestinationSet)
 	return ret0
 }
 
@@ -84,6 +85,20 @@ func (m *MockLocalSnapshot) Destinations() v1sets0.DestinationSet {
 func (mr *MockLocalSnapshotMockRecorder) Destinations() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destinations", reflect.TypeOf((*MockLocalSnapshot)(nil).Destinations))
+}
+
+// IssuedCertificates mocks base method.
+func (m *MockLocalSnapshot) IssuedCertificates() v1sets0.IssuedCertificateSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IssuedCertificates")
+	ret0, _ := ret[0].(v1sets0.IssuedCertificateSet)
+	return ret0
+}
+
+// IssuedCertificates indicates an expected call of IssuedCertificates.
+func (mr *MockLocalSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockLocalSnapshot)(nil).IssuedCertificates))
 }
 
 // KubernetesClusters mocks base method.
@@ -116,10 +131,10 @@ func (mr *MockLocalSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 }
 
 // Meshes mocks base method.
-func (m *MockLocalSnapshot) Meshes() v1sets0.MeshSet {
+func (m *MockLocalSnapshot) Meshes() v1sets1.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Meshes")
-	ret0, _ := ret[0].(v1sets0.MeshSet)
+	ret0, _ := ret[0].(v1sets1.MeshSet)
 	return ret0
 }
 
@@ -158,10 +173,10 @@ func (mr *MockLocalSnapshotMockRecorder) ServiceDependencies() *gomock.Call {
 }
 
 // Settings mocks base method.
-func (m *MockLocalSnapshot) Settings() v1sets3.SettingsSet {
+func (m *MockLocalSnapshot) Settings() v1sets4.SettingsSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Settings")
-	ret0, _ := ret[0].(v1sets3.SettingsSet)
+	ret0, _ := ret[0].(v1sets4.SettingsSet)
 	return ret0
 }
 
@@ -200,10 +215,10 @@ func (mr *MockLocalSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient,
 }
 
 // TrafficPolicies mocks base method.
-func (m *MockLocalSnapshot) TrafficPolicies() v1sets1.TrafficPolicySet {
+func (m *MockLocalSnapshot) TrafficPolicies() v1sets2.TrafficPolicySet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrafficPolicies")
-	ret0, _ := ret[0].(v1sets1.TrafficPolicySet)
+	ret0, _ := ret[0].(v1sets2.TrafficPolicySet)
 	return ret0
 }
 
@@ -228,10 +243,10 @@ func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
 }
 
 // VirtualMeshes mocks base method.
-func (m *MockLocalSnapshot) VirtualMeshes() v1sets1.VirtualMeshSet {
+func (m *MockLocalSnapshot) VirtualMeshes() v1sets2.VirtualMeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VirtualMeshes")
-	ret0, _ := ret[0].(v1sets1.VirtualMeshSet)
+	ret0, _ := ret[0].(v1sets2.VirtualMeshSet)
 	return ret0
 }
 
@@ -256,10 +271,10 @@ func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
 }
 
 // Workloads mocks base method.
-func (m *MockLocalSnapshot) Workloads() v1sets0.WorkloadSet {
+func (m *MockLocalSnapshot) Workloads() v1sets1.WorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Workloads")
-	ret0, _ := ret[0].(v1sets0.WorkloadSet)
+	ret0, _ := ret[0].(v1sets1.WorkloadSet)
 	return ret0
 }
 

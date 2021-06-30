@@ -38,6 +38,12 @@ var (
 			"Settings",
 		},
 		schema.GroupVersion{
+			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1",
+		}: {
+			"IssuedCertificate",
+		},
+		schema.GroupVersion{
 			Group:   "networking.enterprise." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1beta1",
 		}: {
