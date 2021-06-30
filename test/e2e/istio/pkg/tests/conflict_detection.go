@@ -165,21 +165,21 @@ func ConflictDetectionTest() {
 			}, "10s", "1s").ShouldNot(HaveOccurred())
 
 			// output VS should not exist on remote cluster
-			Eventually(func() error {
-				_, err := getVirtualService(remoteClient, &skv2corev1.ObjectRef{
+			Eventually(func() bool {
+				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return err
-			}, "5s", "1s").Should(WithTransform(func(err error) bool { return errors.IsNotFound(err) }, BeTrue()))
+				return errors.IsNotFound(err)
+			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 			// output VS should not exist on remote cluster
-			Consistently(func() error {
+			Consistently(func() bool {
 				_, err := getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return err
-			}, "5s", "1s").Should(WithTransform(func(err error) bool { return errors.IsNotFound(err) }, BeTrue()))
+				return errors.IsNotFound(err)
+			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 
 			// output VS should exist on mgmt cluster
 			Eventually(func() error {
