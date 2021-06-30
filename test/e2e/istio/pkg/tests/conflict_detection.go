@@ -171,7 +171,7 @@ func ConflictDetectionTest() {
 					Namespace: BookinfoNamespace,
 				})
 				return err
-			}, "5s", "1s").Should(MatchError(errors.IsNotFound))
+			}, "5s", "1s").Should(WithTransform(func(err error) bool { return errors.IsNotFound(err) }, BeTrue()))
 			// output VS should not exist on remote cluster
 			Consistently(func() error {
 				_, err := getVirtualService(remoteClient, &skv2corev1.ObjectRef{
@@ -179,7 +179,7 @@ func ConflictDetectionTest() {
 					Namespace: BookinfoNamespace,
 				})
 				return err
-			}, "5s", "1s").Should(MatchError(errors.IsNotFound))
+			}, "5s", "1s").Should(WithTransform(func(err error) bool { return errors.IsNotFound(err) }, BeTrue()))
 
 			// output VS should exist on mgmt cluster
 			Eventually(func() error {
