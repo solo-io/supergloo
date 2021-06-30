@@ -39,7 +39,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method.
-func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, destination *v1.Destination, sourceMeshInstallation *v1.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.DestinationRule {
+func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, destination *v1.Destination, sourceMeshInstallation *v1.MeshInstallation, reporter reporting.Reporter) *v1alpha3.DestinationRule {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, destination, sourceMeshInstallation, reporter)
 	ret0, _ := ret[0].(*v1alpha3.DestinationRule)

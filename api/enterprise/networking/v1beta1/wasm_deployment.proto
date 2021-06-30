@@ -7,7 +7,6 @@ import "google/protobuf/any.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
-
 import "networking/v1alpha3/envoy_filter.proto";
 
 // Deploys one or more WASM Envoy Filters to selected Sidecars and Gateways in a Mesh.
@@ -46,7 +45,7 @@ message WasmFilterSpec {
 
         // Select `http_uri_source` to deploy the filter from an HTTP/S URI accessible
         // to the workload proxy. Note that Gloo Mesh cannot verify
-        // whether the target workload proxy containers have HTTP accesss the given URI.
+        // whether the target workload proxy containers have HTTP access the given URI.
         // If filters do not load, please inspect the sidecar proxy logs.
         // TODO(ilackarms): see if we can somehow verify the filter exists in the proxy container and surface that on the WasmDeployment status
         // TODO(ilackarms): we may need to provide options for customizing the Cluster given to envoy along with the HTTP Fetch URI. currently Gloo Mesh will create a simple plaintext HTTP cluster from the Host/Port specified in the URI.

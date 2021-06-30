@@ -118,7 +118,11 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments
+  - ratelimiterserverconfigs
   - virtualdestinations
+  - virtualgateways
+  - virtualhosts
+  - routetables
   - servicedependencies
   verbs:
   - get
@@ -177,7 +181,11 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments/status
+  - ratelimiterserverconfigs/status
   - virtualdestinations/status
+  - virtualgateways/status
+  - virtualhosts/status
+  - routetables/status
   - servicedependencies/status
   verbs:
   - get

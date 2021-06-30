@@ -278,10 +278,10 @@ func FederationTest() {
 							Port:       9080,
 						},
 						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
-							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							Destinations: []*networkingv1.WeightedDestination{
 								{
-									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+									DestinationType: &networkingv1.WeightedDestination_KubeService{
+										KubeService: &networkingv1.WeightedDestination_KubeDestination{
 											Name:        "reviews",
 											Namespace:   BookinfoNamespace,
 											ClusterName: MgmtClusterName,
@@ -312,7 +312,7 @@ func FederationTest() {
 						Namespace:   BookinfoNamespace,
 						ClusterName: RemoteClusterName,
 					},
-					&discoveryv1.MeshSpec_MeshInstallation{
+					&discoveryv1.MeshInstallation{
 						Namespace: "istio-system",
 						Cluster:   MgmtClusterName,
 					},

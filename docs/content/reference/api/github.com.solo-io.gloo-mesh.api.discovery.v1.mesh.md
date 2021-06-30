@@ -18,6 +18,8 @@ title: "mesh.proto"
 
 
 ## Table of Contents
+  - [MeshInstallation](#discovery.mesh.gloo.solo.io.MeshInstallation)
+  - [MeshInstallation.PodLabelsEntry](#discovery.mesh.gloo.solo.io.MeshInstallation.PodLabelsEntry)
   - [MeshSpec](#discovery.mesh.gloo.solo.io.MeshSpec)
   - [MeshSpec.AgentInfo](#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo)
   - [MeshSpec.AwsAppMesh](#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh)
@@ -26,14 +28,47 @@ title: "mesh.proto"
   - [MeshSpec.Istio.IngressGatewayInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo)
   - [MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry)
   - [MeshSpec.LinkerdMesh](#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh)
-  - [MeshSpec.MeshInstallation](#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation)
-  - [MeshSpec.MeshInstallation.PodLabelsEntry](#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry)
   - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
   - [MeshStatus.AppliedVirtualDestination](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
 
 
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshInstallation"></a>
+
+### MeshInstallation
+Describes the Kubernetes cluster on which the control plane for this mesh is deployed. Only self-hosted control planes such as Istio, Linkerd, OSM, and ConsulConnect will have installation metadata.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| namespace | string |  | Namespace in which the control plane has been installed. |
+  | cluster | string |  | The Gloo Mesh cluster in which the control plane has been installed. |
+  | podLabels | [][discovery.mesh.gloo.solo.io.MeshInstallation.PodLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshInstallation.PodLabelsEntry" >}}) | repeated | The labels on the control plane pods (read from the deployment). |
+  | version | string |  | The version of the Mesh that has been installed, which is determined using the image tag on the mesh's primary control plane image (e.g. the istio-pilot image tag). |
+  | region | string |  | The region of the cluster in which the control plane has been installed, which is determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion) on any Kubernetes node associated with the cluster of this mesh. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshInstallation.PodLabelsEntry"></a>
+
+### MeshInstallation.PodLabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
+  
 
 
 
@@ -101,7 +136,7 @@ Describes a ConsulConnect deployment.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Describes the ConsulConnect control plane deployment. |
+| installation | [discovery.mesh.gloo.solo.io.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshInstallation" >}}) |  | Describes the ConsulConnect control plane deployment. |
   
 
 
@@ -116,7 +151,7 @@ Describes an Istio deployment.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Describes the Istio control plane deployment. |
+| installation | [discovery.mesh.gloo.solo.io.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshInstallation" >}}) |  | Describes the Istio control plane deployment. |
   | trustDomain | string |  | The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity). If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118). |
   | istiodServiceAccount | string |  | The istiod service account which determines identity for the Istio CA cert. |
   | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | DEPRECATED: external address data for an ingress gateway destination and workload live in the relevant Destination and Workload objects. Describes the ingress gateway. |
@@ -135,7 +170,9 @@ DEPRECATED: external address data for an ingress gateway destination and workloa
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload backing the gateway. [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`. |
+| name | string |  | TODO: remove name and namespace as ingress gw info now contains a ref The name of the Ingress Gateway Service |
+  | namespace | string |  | The namespace in which the ingress gateway is running. |
+  | workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload backing the gateway. [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`. |
   | externalAddress | string |  | DEPRECATED: in favor of dns_name or external_ip |
   | dnsName | string |  | Will be populated if the LoadBalancer Address is a DNS name |
   | ip | string |  | Will be populated if the LoadBalancer Address is an IP |
@@ -171,43 +208,8 @@ Describes a Linkerd deployment.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Describes the Linkerd control plane deployment. |
+| installation | [discovery.mesh.gloo.solo.io.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshInstallation" >}}) |  | Describes the Linkerd control plane deployment. |
   | clusterDomain | string |  | The cluster domain suffix this Linkerd mesh is configured with. See [this reference](https://linkerd.io/2/tasks/using-custom-domain/) for more info. |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation"></a>
-
-### MeshSpec.MeshInstallation
-Describes the Kubernetes cluster on which the control plane for this mesh is deployed. Only self-hosted control planes such as Istio, Linkerd, OSM, and ConsulConnect will have installation metadata.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| namespace | string |  | Namespace in which the control plane has been installed. |
-  | cluster | string |  | The Gloo Mesh cluster in which the control plane has been installed. |
-  | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | The labels on the control plane pods (read from the deployment). |
-  | version | string |  | The version of the Mesh that has been installed, which is determined using the image tag on the mesh's primary control plane image (e.g. the istio-pilot image tag). |
-  | region | string |  | The region of the cluster in which the control plane has been installed, which is determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion) on any Kubernetes node associated with the cluster of this mesh. |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry"></a>
-
-### MeshSpec.MeshInstallation.PodLabelsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
   
 
 
@@ -222,7 +224,7 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Describes the OSM control plane deployment. |
+| installation | [discovery.mesh.gloo.solo.io.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshInstallation" >}}) |  | Describes the OSM control plane deployment. |
   
 
 
@@ -238,8 +240,8 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
-  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
-  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this mesh. |
+  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this Mesh. |
+  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this Mesh. |
   
 
 

@@ -106,15 +106,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
-										Exact: "path",
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
+											Exact: "path",
+										},
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -146,15 +148,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
-										Exact: "path",
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
+											Exact: "path",
+										},
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -441,7 +445,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -465,7 +469,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -481,7 +485,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	It("should translate for a federated Destination", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
-		meshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
+		meshInstallation := &discoveryv1.MeshInstallation{
 			Namespace: "foobar",
 			Cluster:   "mgmt-cluster",
 		}
@@ -530,15 +534,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
-										Exact: "path",
+									Uri: &commonv1.StringMatch{
+										MatchType: &commonv1.StringMatch_Exact{
+											Exact: "path",
+										},
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -805,7 +811,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1060,7 +1066,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1134,9 +1140,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									},
 								},
 							},
-							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.HttpMatcher{
 								{
-									Headers: []*commonv1.HeaderMatcher{
+									Headers: []*networkingv1.HeaderMatcher{
 										{
 											Name:  "user-agent",
 											Value: "'.*Firefox.*'",
@@ -1219,7 +1225,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1242,7 +1248,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {

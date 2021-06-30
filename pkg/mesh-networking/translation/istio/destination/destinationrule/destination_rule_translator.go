@@ -4,12 +4,14 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/routeutils"
+
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -45,7 +47,7 @@ type Translator interface {
 		ctx context.Context,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
-		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+		sourceMeshInstallation *discoveryv1.MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
 }
@@ -81,7 +83,7 @@ func (t *translator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
-	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1.MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := destination.Spec.GetKubeService()
@@ -133,6 +135,9 @@ func (t *translator) Translate(
 		}
 	}
 
+	// possible todo - see function comment
+	addKeepaliveToDestinationRule(destination, sourceMeshInstallation, destinationRule)
+
 	if t.userDestinationRules == nil {
 		return destinationRule
 	}
@@ -181,7 +186,7 @@ func registerFieldFunc(
 func (t *translator) initializeDestinationRule(
 	destination *discoveryv1.Destination,
 	mtlsDefault *v1.TrafficPolicySpec_Policy_MTLS,
-	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1.MeshInstallation,
 ) (*networkingv1alpha3.DestinationRule, error) {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {
@@ -203,7 +208,7 @@ func (t *translator) initializeDestinationRule(
 		Spec: networkingv1alpha3spec.DestinationRule{
 			Host:          hostname,
 			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
-			Subsets:       trafficshift.MakeDestinationRuleSubsets(destination.Status.GetRequiredSubsets()),
+			Subsets:       routeutils.MakeDestinationRuleSubsets(destination.Status.GetRequiredSubsets()),
 		},
 	}
 
@@ -246,4 +251,37 @@ func conflictsWithUserDestinationRule(
 	})
 
 	return errs
+}
+
+// If this is a federated (AKA cross-cluster) destination, add keepalive values if they're present.
+// Possible Todo: refactor this code into a decorator if keepalive conflicts become possible.
+func addKeepaliveToDestinationRule(destination *discoveryv1.Destination, sourceMeshInstallation *discoveryv1.MeshInstallation, destinationRule *networkingv1alpha3.DestinationRule) {
+	keepalive := destination.Status.AppliedFederation.GetTcpKeepalive()
+	// If we also have a non-nil keepalive and this is a federated destination, then extract and apply the keepalive value
+	// to the resulting destination rule.
+	// If the destination is in a different mesh than the sourceMeshInstallation, then it's a federated destination.
+	if sourceMeshInstallation != nil && destination.Spec.GetKubeService().GetRef().GetClusterName() != sourceMeshInstallation.GetCluster() && keepalive != nil {
+		// ensure the entire chain of values in the resulting dest rule is instantiated.
+		trafficPolicy := destinationRule.Spec.GetTrafficPolicy()
+		if trafficPolicy == nil {
+			destinationRule.Spec.TrafficPolicy = &networkingv1alpha3spec.TrafficPolicy{}
+		}
+		connectionPool := destinationRule.Spec.GetTrafficPolicy().GetConnectionPool()
+		if connectionPool == nil {
+			destinationRule.Spec.TrafficPolicy.ConnectionPool = &networkingv1alpha3spec.ConnectionPoolSettings{}
+		}
+		tcp := destinationRule.Spec.GetTrafficPolicy().GetConnectionPool().GetTcp()
+		if tcp == nil {
+			destinationRule.Spec.TrafficPolicy.ConnectionPool.Tcp = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings{}
+		}
+
+		// Istio uses gogo duration structs. Since we don't use gogo in our protos, we have to convert durations during runtime.
+		gogoTime := gogoutils.DurationProtoToGogo(keepalive.GetTime())
+		gogoInterval := gogoutils.DurationProtoToGogo(keepalive.GetInterval())
+		destinationRule.Spec.TrafficPolicy.ConnectionPool.Tcp.TcpKeepalive = &networkingv1alpha3spec.ConnectionPoolSettings_TCPSettings_TcpKeepalive{
+			Probes:   keepalive.GetProbes(),
+			Time:     gogoTime,
+			Interval: gogoInterval,
+		}
+	}
 }
