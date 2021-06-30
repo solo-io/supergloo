@@ -234,7 +234,7 @@ func ConflictDetectionTest() {
 					Namespace: BookinfoNamespace,
 				})
 				return errors.IsNotFound(err)
-			}, "10s", "1s").Should(BeTrue())
+			}, "10s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 		})
 
 		By("cleaning up the user DestinationRule", func() {
