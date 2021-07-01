@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Run Gloo Mesh docker images as non root user.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/763
+    resolvesIssue: false
