@@ -101,7 +101,6 @@ func InitializeTests() bool {
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
 		_ = Describe("DiscoveryRegression", DiscoveryTest)
-		_ = Describe("Conflict Detection", ConflictDetectionTest)
 	)
 	return true
 }
