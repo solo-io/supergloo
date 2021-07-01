@@ -687,7 +687,6 @@ var _ = Describe("Applier", func() {
 			}
 
 			snap = input.NewInputLocalSnapshotManualBuilder("").
-				AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2, mesh3, mesh4})
 		)
 
@@ -699,6 +698,9 @@ var _ = Describe("Applier", func() {
 		})
 
 		It("applies default east west ingress gateways on a VirtualMesh with no federation", func() {
+
+			snap.AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4})
+
 			defaultVirtualMesh := &networkingv1.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "vm1",
@@ -750,6 +752,8 @@ var _ = Describe("Applier", func() {
 		})
 
 		It("selects east west ingress gateways on a VirtualMesh with east west ingress gateway selectors", func() {
+			snap.AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4})
+
 			virtualMeshWithSelector1 := &networkingv1.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "vm1",
@@ -954,7 +958,7 @@ var _ = Describe("Applier", func() {
 					},
 					Spec: discoveryv1.DestinationSpec{
 						Mesh: &skv2corev1.ObjectRef{
-							Name:      "mesh1",
+							Name:      "mesh2",
 							Namespace: "ns",
 						},
 						Type: &discoveryv1.DestinationSpec_KubeService_{
@@ -1046,12 +1050,48 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{virtualMeshWithBadSelector1, virtualMeshWithBadSelector2})
+			virtualMeshWithBadSelector3 := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm3",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						ezkube.MakeObjectRef(mesh3),
+					},
+					Federation: &networkingv1.VirtualMeshSpec_Federation{
+						EastWestIngressGatewaySelectors: []*commonv1.IngressGatewaySelector{
+							{
+								DestinationSelectors: []*commonv1.DestinationSelector{
+									{
+										KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+											Services: []*skv2corev1.ClusterObjectRef{
+												{
+													Name:        "nonexistent-svc",
+													Namespace:   "nonexistent-svc",
+													ClusterName: "svc-cluster",
+												},
+											},
+										},
+									},
+								},
+								GatewayTlsPortName: defaults.DefaultGatewayPortName,
+							},
+						},
+					},
+				},
+			}
+			mesh3.Status.AppliedVirtualMesh = &discoveryv1.MeshStatus_AppliedVirtualMesh{
+				Ref: &skv2corev1.ObjectRef{
+					Name:      "vm3",
+					Namespace: "ns",
+				},
+			}
+
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{virtualMeshWithBadSelector1, virtualMeshWithBadSelector2,
+				virtualMeshWithBadSelector3})
 
 			applier.Apply(context.TODO(), snap.Build(), nil)
-
-			Expect(len(mesh1.Status.EastWestIngressGateways)).To(Equal(0))
-			Expect(len(mesh2.Status.EastWestIngressGateways)).To(Equal(0))
 
 			Expect(len(virtualMeshWithBadSelector1.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector1.Status.Errors[0]).
@@ -1059,6 +1099,9 @@ var _ = Describe("Applier", func() {
 			Expect(len(virtualMeshWithBadSelector2.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector2.Status.Errors[0]).
 				To(ContainSubstring("Attempting to select ingress gateway destination: destination bad-destination-no-tls-port.ns. has no port named tls"))
+			Expect(len(virtualMeshWithBadSelector3.Status.Errors)).To(Equal(1))
+			Expect(virtualMeshWithBadSelector3.Status.Errors[0]).
+				To(ContainSubstring("Invalid Destination selector: Destination nonexistent-svc.nonexistent-svc.svc-cluster not found"))
 		})
 
 	})
