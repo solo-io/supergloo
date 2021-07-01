@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rotisserie/eris"
+
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -28,11 +30,6 @@ const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
 	defaultGatewayPort     = 15443
-)
-
-var (
-	// Defaults to {"istio": "ingressgateway"} based on https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73
-	defaultGatewayWorkloadLabels = map[string]string{"istio": "ingressgateway"}
 )
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -72,7 +69,7 @@ func (t *translator) Translate(
 	mesh *discoveryv1.Mesh,
 	virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 	outputs istio.Builder,
-	_ reporting.Reporter,
+	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
@@ -88,19 +85,13 @@ func (t *translator) Translate(
 	istioNamespace := istioMesh.Installation.Namespace
 	federatedHostnameSuffix := hostutils.GetFederatedHostnameSuffix(virtualMesh.Spec)
 
-	// create the east west ingress gateways
 	if len(mesh.Status.GetEastWestIngressGateways()) == 0 {
-		// fall back to old behavior
-		ingressGateway := istioMesh.IngressGateways[0]
-
-		// istio gateway names must be DNS-1123 labels
-		// hyphens are legal, dots are not, so we convert here
-		gwName := BuildGatewayName(virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace())
-		t.buildGatewayObject(gwName, istioNamespace, istioCluster,
-			ingressGateway.TlsContainerPort, federatedHostnameSuffix, ingressGateway.WorkloadLabels,
-			virtualMesh.GetRef(), outputs)
-
+		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.GetRef(),
+			eris.Errorf("No Destinations selected as ingress gateway for mesh %v. At least one must be selected.", sets.Key(mesh)))
+		return
 	}
+
+	// create the east west ingress gateways
 	for _, ewIngressGatewayInfo := range mesh.Status.GetEastWestIngressGateways() {
 		destination, err := in.Destinations().Find(ewIngressGatewayInfo.GetDestinationRef())
 		if err != nil {
@@ -121,7 +112,7 @@ func (t *translator) Translate(
 		}
 
 		// figure out the ingress gateway workload labels
-		ingressGatewayWorkloadLabels := defaultGatewayWorkloadLabels
+		ingressGatewayWorkloadLabels := defaults.DefaultGatewayWorkloadLabels
 		if len(destination.Spec.GetKubeService().GetWorkloadSelectorLabels()) != 0 {
 			ingressGatewayWorkloadLabels = destination.Spec.GetKubeService().GetWorkloadSelectorLabels()
 		}

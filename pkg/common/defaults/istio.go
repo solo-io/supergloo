@@ -4,10 +4,13 @@ package defaults
 // their ingress gateway is hardcoded in their own implementation to have this label
 // https://github.com/istio/istio/blob/4e27ddc64f6a12e622c4cd5c836f5d7edf94e971/istioctl/cmd/describe.go#L1138
 var DefaultGatewayWorkloadLabels = map[string]string{
-	"istio": "ingressgateway",
+	IstioGatewayLabelKey: IstioIngressGatewayLabelValue,
 }
 
 const (
+	// Defaults to {"istio": "ingressgateway"} based on https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73
+	IstioGatewayLabelKey          = "istio"
+	IstioIngressGatewayLabelValue = "ingressgateway"
 	// The name of the externally-reachable port on which the ingress gateway is listening for TLS connections.
 	DefaultGatewayPortName = "tls"
 )

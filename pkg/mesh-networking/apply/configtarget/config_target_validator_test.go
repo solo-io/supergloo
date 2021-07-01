@@ -7,7 +7,6 @@ import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
-	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
@@ -257,7 +256,7 @@ var _ = Describe("ConfigTargetValidator", func() {
 							Namespace:   "bar",
 							ClusterName: "cluster",
 						},
-						WorkloadSelectorLabels: map[string]string{"istio": "ingressgateway"},
+						WorkloadSelectorLabels: defaults.DefaultGatewayWorkloadLabels,
 						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port: 1234,
@@ -384,185 +383,6 @@ var _ = Describe("ConfigTargetValidator", func() {
 		Expect(vm2.Status.State).To(Equal(commonv1.ApprovalState_INVALID))
 		Expect(vm3.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
 		Expect(vm5.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
-	})
-
-	It("should validate each virtual mesh has a valid ingress gateway selector", func() {
-		meshes := discoveryv1sets.NewMeshSet(
-			&discoveryv1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh1",
-					Namespace: "namespace1",
-				},
-			},
-			&discoveryv1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh2",
-					Namespace: "namespace1",
-				},
-			},
-			&discoveryv1.Mesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh3",
-					Namespace: "namespace1",
-				},
-			},
-		)
-
-		destination1 := &discoveryv1.Destination{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "destination1",
-				Namespace: "namespace",
-			},
-			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1.DestinationSpec_KubeService{
-						Ref: &skv2corev1.ClusterObjectRef{
-							Name:        "foo",
-							Namespace:   "bar",
-							ClusterName: "cluster",
-						},
-						WorkloadSelectorLabels: map[string]string{"other": "workloadlabel"},
-						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-							{
-								Port: 1234,
-								Name: "other-port-name",
-							},
-						},
-					},
-				},
-				Mesh: &skv2corev1.ObjectRef{
-					Name:      "mesh1",
-					Namespace: "namespace1",
-				},
-			},
-		}
-		destination2 := &discoveryv1.Destination{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "destination2",
-				Namespace: "namespace1",
-			},
-			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1.DestinationSpec_KubeService{
-						Ref: &skv2corev1.ClusterObjectRef{
-							Name:        "foo",
-							Namespace:   "bar",
-							ClusterName: "cluster",
-						},
-						WorkloadSelectorLabels: defaults.DefaultGatewayWorkloadLabels,
-						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-							{
-								Port: 1234,
-								Name: defaults.DefaultGatewayPortName,
-							},
-						},
-					},
-				},
-				Mesh: &skv2corev1.ObjectRef{
-					Name:      "mesh2",
-					Namespace: "namespace1",
-				},
-			},
-		}
-		destination3 := destination2.DeepCopy()
-		destination3.Name = "destination3"
-		destination3.Spec.Mesh = &skv2corev1.ObjectRef{
-			Name:      "mesh3",
-			Namespace: "namespace1",
-		}
-		destinations := discoveryv1sets.NewDestinationSet(
-			destination1, destination2, destination3)
-
-		validator = configtarget.NewConfigTargetValidator(meshes, destinations)
-
-		vm1 := &v1.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "vm1",
-				Namespace: "namespace1",
-			},
-			Spec: v1.VirtualMeshSpec{
-				Meshes: []*skv2corev1.ObjectRef{
-					{
-						Name:      "mesh1",
-						Namespace: "namespace1",
-					},
-				},
-				Federation: &networkingv1.VirtualMeshSpec_Federation{
-					EastWestIngressGatewaySelectors: []*commonv1.IngressGatewaySelector{
-						&commonv1.IngressGatewaySelector{
-							DestinationSelectors: nil,
-							GatewayTlsPortName:   "other-port-name",
-							Meshes: []*skv2corev1.ObjectRef{
-								{
-									Name:      "mesh1",
-									Namespace: "namespace1",
-								},
-							},
-						},
-					},
-				},
-			},
-			Status: v1.VirtualMeshStatus{
-				State: commonv1.ApprovalState_ACCEPTED,
-			},
-		}
-		vm2 := &v1.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "vm2",
-				Namespace: "namespace1",
-			},
-			Spec: v1.VirtualMeshSpec{
-				Meshes: []*skv2corev1.ObjectRef{
-					{
-						Name:      "mesh2",
-						Namespace: "namespace1",
-					},
-					{
-						Name:      "mesh3",
-						Namespace: "namespace1",
-					},
-				},
-			},
-			Status: v1.VirtualMeshStatus{
-				State: commonv1.ApprovalState_ACCEPTED,
-			},
-		}
-		vm3 := &v1.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "vm2",
-				Namespace: "namespace1",
-			},
-			Spec: v1.VirtualMeshSpec{
-				Meshes: []*skv2corev1.ObjectRef{
-					{
-						Name:      "mesh3",
-						Namespace: "namespace1",
-					},
-					{
-						Name:      "mesh4",
-						Namespace: "namespace1",
-					},
-				},
-			},
-			Status: v1.VirtualMeshStatus{
-				State: commonv1.ApprovalState_ACCEPTED,
-			},
-		}
-		vm4 := &v1.VirtualMesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "vm3",
-				Namespace: "namespace1",
-			},
-			Status: v1.VirtualMeshStatus{
-				State: commonv1.ApprovalState_INVALID,
-			},
-		}
-		validator.ValidateVirtualMeshes(v1.VirtualMeshSlice{vm4, vm3, vm2, vm1})
-
-		Expect(vm1.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
-		Expect(vm2.Status.State).To(Equal(commonv1.ApprovalState_ACCEPTED))
-		Expect(vm3.Status.State).To(Equal(commonv1.ApprovalState_INVALID))
-		Expect(vm4.Status.State).To(Equal(commonv1.ApprovalState_INVALID))
 	})
 
 	It("should invalidate any policies that don't specify all fields in a reference-based selector", func() {
