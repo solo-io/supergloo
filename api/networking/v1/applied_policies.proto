@@ -8,7 +8,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination.
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the resource.
 // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 message AppliedTrafficPolicy {
 

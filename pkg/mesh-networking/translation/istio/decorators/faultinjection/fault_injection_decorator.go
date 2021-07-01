@@ -34,7 +34,7 @@ func (d *faultInjectionDecorator) DecoratorName() string {
 }
 
 func (d *faultInjectionDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	appliedPolicy *v1.AppliedTrafficPolicy,
 	_ *discoveryv1.Destination,
 	_ *discoveryv1.MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,

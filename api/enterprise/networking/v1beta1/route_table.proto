@@ -43,6 +43,10 @@ message RouteTableStatus {
 
     // List of child RouteTables that this RouteTable delegates to
     repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 5;
+
+    // The set of TrafficPolicies that have been applied to this Destination.
+    // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+    repeated .networking.mesh.gloo.solo.io.AppliedTrafficPolicy applied_traffic_policies = 6 [(cue.opt).disable_openapi_validation = true];
 }
 
 message SelectedBy {
@@ -55,10 +59,6 @@ message SelectedBy {
     // Type of resource selecting this RouteTable. Can be
     // VirtualGateway, VirtualHost, or RouteTable.
     string type = 3;
-
-    // The set of TrafficPolicies that have been applied to this Destination.
-    // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
-    repeated .networking.mesh.gloo.solo.io.AppliedTrafficPolicy applied_traffic_policies = 4 [(cue.opt).disable_openapi_validation = true];
 
     // TODO: Path selected upon?
 }

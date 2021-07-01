@@ -188,9 +188,9 @@ func (t *translator) Translate(
 // ensure that only a single VirtualService HTTPRoute gets created per TrafficPolicy request matcher
 // by first grouping TrafficPolicies by semantically equivalent request matchers
 func groupAppliedTpsByRequestMatcher(
-	appliedTps []*discoveryv1.DestinationStatus_AppliedTrafficPolicy,
-) [][]*discoveryv1.DestinationStatus_AppliedTrafficPolicy {
-	var allGroupedTps [][]*discoveryv1.DestinationStatus_AppliedTrafficPolicy
+	appliedTps []*v1.AppliedTrafficPolicy,
+) [][]*v1.AppliedTrafficPolicy {
+	var allGroupedTps [][]*v1.AppliedTrafficPolicy
 
 	for _, appliedTp := range appliedTps {
 		var grouped bool
@@ -204,7 +204,7 @@ func groupAppliedTpsByRequestMatcher(
 		}
 		// create new group
 		if !grouped {
-			allGroupedTps = append(allGroupedTps, []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{appliedTp})
+			allGroupedTps = append(allGroupedTps, []*v1.AppliedTrafficPolicy{appliedTp})
 		}
 	}
 

@@ -45,7 +45,7 @@ func (d *mirrorDecorator) DecoratorName() string {
 }
 
 func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	appliedPolicy *v1.AppliedTrafficPolicy,
 	destination *discoveryv1.Destination,
 	sourceMeshInstallation *discoveryv1.MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,

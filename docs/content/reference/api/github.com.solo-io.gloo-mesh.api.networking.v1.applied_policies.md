@@ -29,7 +29,7 @@ title: "applied_policies.proto"
 <a name="networking.mesh.gloo.solo.io.AppliedTrafficPolicy"></a>
 
 ### AppliedTrafficPolicy
-Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the Destination. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the resource. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 
 
 | Field | Type | Label | Description |

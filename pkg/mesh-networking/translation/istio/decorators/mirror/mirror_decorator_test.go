@@ -67,7 +67,7 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					Mirror: &v1.TrafficPolicySpec_Policy_Mirror{
@@ -141,7 +141,7 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					Mirror: &v1.TrafficPolicySpec_Policy_Mirror{
@@ -229,7 +229,7 @@ var _ = Describe("MirrorDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicyMissingPort := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicyMissingPort := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					Mirror: &v1.TrafficPolicySpec_Policy_Mirror{
@@ -246,7 +246,7 @@ var _ = Describe("MirrorDecorator", func() {
 				},
 			},
 		}
-		appliedPolicyNonexistentPort := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicyNonexistentPort := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					Mirror: &v1.TrafficPolicySpec_Policy_Mirror{
@@ -316,7 +316,7 @@ var _ = Describe("MirrorDecorator", func() {
 				},
 			},
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					Mirror: &v1.TrafficPolicySpec_Policy_Mirror{

@@ -9,6 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v10 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	decorators "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
 )
@@ -162,7 +163,7 @@ func (m *MockTrafficPolicyDestinationRuleDecorator) EXPECT() *MockTrafficPolicyD
 }
 
 // ApplyTrafficPolicyToDestinationRule mocks base method.
-func (m *MockTrafficPolicyDestinationRuleDecorator) ApplyTrafficPolicyToDestinationRule(appliedPolicy *v1.DestinationStatus_AppliedTrafficPolicy, service *v1.Destination, output *v1alpha3.DestinationRule, registerField decorators.RegisterField) error {
+func (m *MockTrafficPolicyDestinationRuleDecorator) ApplyTrafficPolicyToDestinationRule(appliedPolicy *v10.AppliedTrafficPolicy, service *v1.Destination, output *v1alpha3.DestinationRule, registerField decorators.RegisterField) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyTrafficPolicyToDestinationRule", appliedPolicy, service, output, registerField)
 	ret0, _ := ret[0].(error)
@@ -213,7 +214,7 @@ func (m *MockTrafficPolicyVirtualServiceDecorator) EXPECT() *MockTrafficPolicyVi
 }
 
 // ApplyTrafficPolicyToVirtualService mocks base method.
-func (m *MockTrafficPolicyVirtualServiceDecorator) ApplyTrafficPolicyToVirtualService(appliedPolicy *v1.DestinationStatus_AppliedTrafficPolicy, destination *v1.Destination, sourceMeshInstallation *v1.MeshInstallation, output *v1alpha3.HTTPRoute, registerField decorators.RegisterField) error {
+func (m *MockTrafficPolicyVirtualServiceDecorator) ApplyTrafficPolicyToVirtualService(appliedPolicy *v10.AppliedTrafficPolicy, destination *v1.Destination, sourceMeshInstallation *v1.MeshInstallation, output *v1alpha3.HTTPRoute, registerField decorators.RegisterField) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyTrafficPolicyToVirtualService", appliedPolicy, destination, sourceMeshInstallation, output, registerField)
 	ret0, _ := ret[0].(error)

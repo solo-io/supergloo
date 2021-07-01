@@ -3,6 +3,7 @@ package decorators
 import (
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -84,7 +85,7 @@ type TrafficPolicyDestinationRuleDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToDestinationRule(
-		appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+		appliedPolicy *networkingv1.AppliedTrafficPolicy,
 		service *discoveryv1.Destination,
 		output *networkingv1alpha3spec.DestinationRule,
 		registerField RegisterField,
@@ -102,7 +103,7 @@ type TrafficPolicyVirtualServiceDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToVirtualService(
-		appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+		appliedPolicy *networkingv1.AppliedTrafficPolicy,
 		destination *discoveryv1.Destination,
 		sourceMeshInstallation *discoveryv1.MeshInstallation,
 		output *networkingv1alpha3spec.HTTPRoute,
