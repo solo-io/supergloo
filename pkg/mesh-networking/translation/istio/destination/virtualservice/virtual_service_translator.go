@@ -33,7 +33,7 @@ import (
 
 //go:generate mockgen -source ./virtual_service_translator.go -destination mocks/virtual_service_translator.go
 
-// the VirtualService translator translates a Destination into a VirtualService.
+// Translator translates a Destination into a VirtualService.
 type Translator interface {
 	/*
 		Translate translates the appropriate VirtualService for the given Destination.
@@ -142,7 +142,7 @@ func (t *translator) Translate(
 
 		// set a default destination for the route (to the target Destination)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, destinationFQDN)
+		t.setDefaultDestinationAndPortMatchers(baseRoute, destinationFQDN)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -321,10 +321,16 @@ func initializeBaseRoute(trafficPolicy *v1.TrafficPolicySpec, sourceClusterName 
 	}
 }
 
-func (t *translator) setDefaultDestination(
+func (t *translator) setDefaultDestinationAndPortMatchers(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
 	destinationFQDN string,
 ) {
+	// need a default matcher for the destination, which
+	// gets populated later in duplicateRouteForEachPort()
+	if len(baseRoute.Match) == 0 {
+		baseRoute.Match = []*networkingv1alpha3spec.HTTPMatchRequest{{}}
+	}
+
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
 		return
@@ -344,10 +350,6 @@ func duplicateRouteForEachPort(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
 	ports []*discoveryv1.DestinationSpec_KubeService_KubeServicePort,
 ) []*networkingv1alpha3spec.HTTPRoute {
-	if len(ports) == 1 {
-		// no need to specify port for single-port service
-		return []*networkingv1alpha3spec.HTTPRoute{baseRoute}
-	}
 	var routesWithPort []*networkingv1alpha3spec.HTTPRoute
 	for _, port := range ports {
 		// create a separate set of matchers for each port on the destination service
