@@ -37,19 +37,66 @@ weight: 2
 |watchOutputTypes|bool|false|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|0|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |verbose|bool|false|If true, enables verbose/debug logging.|
-|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"metrics":9091},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the certAgent deployment.|
-|certAgent.image|struct|{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
+|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091},"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the certAgent deployment.|
+|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}}}||
+|certAgent.-[]|[]string|["--metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}","--verbose={{ $.Values.verbose }}"]||
+|certAgent.-[]|string| ||
+|certAgent.-[]|[]struct|null||
+|certAgent.-[]|struct| ||
+|certAgent.-[].name|string| ||
+|certAgent.-[].readOnly|bool| ||
+|certAgent.-[].mountPath|string| ||
+|certAgent.-[].subPath|string| ||
+|certAgent.-[].mountPropagation|string| ||
+|certAgent.-[].subPathExpr|string| ||
+|certAgent.image|struct|{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the container image|
 |certAgent.image.tag|string| |Tag for the container.|
 |certAgent.image.repository|string|cert-agent|Image name (repository).|
 |certAgent.image.registry|string|gcr.io/gloo-mesh|Image registry.|
 |certAgent.image.pullPolicy|string|IfNotPresent|Image pull policy.|
-|certAgent.image.pullSecret|string| |Image pull policy. |
-|certAgent.Resources|struct|{"requests":{"cpu":"50m","memory":"128Mi"}}|Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|certAgent.image.pullSecret|string| |Image pull secret.|
+|certAgent.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|certAgent.resources|struct|{"requests":{"cpu":"50m","memory":"128Mi"}}|Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|certAgent.resources.limits|map[string, struct]| ||
+|certAgent.resources.limits.<MAP_KEY>|struct| ||
+|certAgent.resources.limits.<MAP_KEY>|string| ||
+|certAgent.resources.requests|map[string, struct]| ||
+|certAgent.resources.requests.<MAP_KEY>|struct| ||
+|certAgent.resources.requests.<MAP_KEY>|string| ||
+|certAgent.resources.requests.cpu|struct|"50m"||
+|certAgent.resources.requests.cpu|string|DecimalSI||
+|certAgent.resources.requests.memory|struct|"128Mi"||
+|certAgent.resources.requests.memory|string|BinarySI||
+|certAgent.sidecars|map[string, struct]| |Configuration for the deployed containers.|
+|certAgent.sidecars.<MAP_KEY>|struct| |Configuration for the deployed containers.|
+|certAgent.sidecars.<MAP_KEY>.-[]|[]string| ||
+|certAgent.sidecars.<MAP_KEY>.-[]|string| ||
+|certAgent.sidecars.<MAP_KEY>.-[]|[]struct| ||
+|certAgent.sidecars.<MAP_KEY>.-[]|struct| ||
+|certAgent.sidecars.<MAP_KEY>.-[].name|string| ||
+|certAgent.sidecars.<MAP_KEY>.-[].readOnly|bool| ||
+|certAgent.sidecars.<MAP_KEY>.-[].mountPath|string| ||
+|certAgent.sidecars.<MAP_KEY>.-[].subPath|string| ||
+|certAgent.sidecars.<MAP_KEY>.-[].mountPropagation|string| ||
+|certAgent.sidecars.<MAP_KEY>.-[].subPathExpr|string| ||
+|certAgent.sidecars.<MAP_KEY>.image|struct| |Specify the container image|
+|certAgent.sidecars.<MAP_KEY>.image.tag|string| |Tag for the container.|
+|certAgent.sidecars.<MAP_KEY>.image.repository|string| |Image name (repository).|
+|certAgent.sidecars.<MAP_KEY>.image.registry|string| |Image registry.|
+|certAgent.sidecars.<MAP_KEY>.image.pullPolicy|string| |Image pull policy.|
+|certAgent.sidecars.<MAP_KEY>.image.pullSecret|string| |Image pull secret.|
+|certAgent.sidecars.<MAP_KEY>.Env[]|slice| |Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|certAgent.sidecars.<MAP_KEY>.resources|struct| |Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|certAgent.sidecars.<MAP_KEY>.resources.limits|map[string, struct]| ||
+|certAgent.sidecars.<MAP_KEY>.resources.limits.<MAP_KEY>|struct| ||
+|certAgent.sidecars.<MAP_KEY>.resources.limits.<MAP_KEY>|string| ||
+|certAgent.sidecars.<MAP_KEY>.resources.requests|map[string, struct]| ||
+|certAgent.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|struct| ||
+|certAgent.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|string| ||
 |certAgent.serviceType|string|ClusterIP|Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
 |certAgent.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
-|certAgent.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
 |certAgent.customPodLabels|map[string, string]| |Custom labels for the pod|
 |certAgent.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
 |certAgent.customPodAnnotations|map[string, string]| |Custom annotations for the pod|

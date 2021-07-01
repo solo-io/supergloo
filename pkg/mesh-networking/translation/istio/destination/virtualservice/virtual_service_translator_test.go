@@ -3,6 +3,9 @@ package virtualservice_test
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/ptypes/duration"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -1267,12 +1270,16 @@ var _ = Describe("VirtualServiceTranslator", func() {
 										},
 									},
 								},
+								Port: 8080,
 							},
 						},
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
 							{
 								Destination: &networkingv1alpha3spec.Destination{
 									Host: "local-hostname",
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 8080,
+									},
 								},
 							},
 						},
@@ -1281,15 +1288,190 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						},
 					},
 					{
+						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+							{
+								Port: 8080,
+							},
+						},
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
 							{
 								Destination: &networkingv1alpha3spec.Destination{
 									Host: "local-hostname",
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 8080,
+									},
 								},
 							},
 						},
 						Retries: &networkingv1alpha3spec.HTTPRetry{
 							Attempts: 1,
+						},
+					},
+				},
+			},
+		}
+
+		virtualService := virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
+		Expect(virtualService).To(Equal(expectedVirtualService))
+	})
+
+	It("should add HttpMatchRequest for each port", func() {
+		destination := &discoveryv1.Destination{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+							{
+								Port:     9000,
+								Name:     "http2",
+								Protocol: "http",
+							},
+							{
+								Port:     9443,
+								Name:     "http2",
+								Protocol: "https",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "backend-timeout",
+							Namespace: "gloo-mesh",
+						},
+						Spec: &networkingv1.TrafficPolicySpec{
+							DestinationSelector: []*commonv1.DestinationSelector{
+								{
+									KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
+										Labels: map[string]string{"app": "backend"},
+									},
+								},
+							},
+							Policy: &networkingv1.TrafficPolicySpec_Policy{RequestTimeout: &duration.Duration{Seconds: 1}},
+						},
+					},
+				},
+			},
+		}
+
+		virtualMesh := &networkingv1.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "virtual-mesh",
+				Namespace: "gloo-mesh",
+			},
+			Spec: networkingv1.VirtualMeshSpec{
+				Meshes: []*v1.ObjectRef{
+					{Name: "istiod-istio-system-cluster-0", Namespace: "gloo-mesh"},
+					{Name: "istiod-istio-system-cluster-1", Namespace: "gloo-mesh"},
+				},
+			},
+		}
+
+		in = input.NewInputLocalSnapshotManualBuilder("").
+			AddSettings(settingsv1.SettingsSlice{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      defaults.DefaultSettingsName,
+						Namespace: defaults.DefaultPodNamespace,
+					},
+					Spec: settingsv1.SettingsSpec{},
+				},
+			}).
+			AddVirtualMeshes(networkingv1.VirtualMeshSlice{virtualMesh}).
+			Build()
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
+			Return("local-hostname")
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
+				nil,
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				reqTimeout := destination.Status.AppliedTrafficPolicies[0].Spec.Policy.RequestTimeout
+				output.Timeout = &types.Duration{Seconds: reqTimeout.GetSeconds(), Nanos: reqTimeout.GetNanos()}
+				return nil
+			}).
+			Return(nil)
+
+		expectedVirtualService := &networkingv1alpha3.VirtualService{
+			ObjectMeta: metautils.TranslatedObjectMeta(
+				destination.Spec.GetKubeService().Ref,
+				destination.Annotations,
+			),
+			Spec: networkingv1alpha3spec.VirtualService{
+				Hosts: []string{"local-hostname"},
+				Http: []*networkingv1alpha3spec.HTTPRoute{
+					{
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host: "local-hostname",
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 9000,
+									},
+								},
+							},
+						},
+						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+							{
+								Port: 9000,
+							},
+						},
+						Timeout: &types.Duration{
+							Seconds: 1,
+						},
+					},
+					{
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host: "local-hostname",
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 9443,
+									},
+								},
+							},
+						},
+						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+							{
+								Port: 9443,
+							},
+						},
+						Timeout: &types.Duration{
+							Seconds: 1,
 						},
 					},
 				},
