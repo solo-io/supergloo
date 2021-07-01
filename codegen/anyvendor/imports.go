@@ -47,19 +47,6 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 		"validate/validate.proto",
 	}
 
-	// used for extauth server config
-	//anyVendorImports.External["github.com/gogo/googleapis"] = []string{
-	//	"google/rpc/status.proto",
-	//	"google/api/annotations.proto",
-	//	"google/api/http.proto",
-	//}
-
-	//anyVendorImports.External["github.com/googleapis/googleapis"] = []string{
-	//	"google/rpc/status.proto",
-	//	//"google/api/annotations.proto",
-	//	//"google/api/http.proto",
-	//}
-
 	// used for a proto option which disables openapi validation on fields
 	anyVendorImports.External["cuelang.org/go"] = []string{
 		"encoding/protobuf/cue/cue.proto",

@@ -8,6 +8,8 @@ import "github.com/solo-io/solo-apis/api/gloo/enterprise.gloo/v1/auth_config.pro
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
 
+import "encoding/protobuf/cue/cue.proto";
+
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
@@ -23,7 +25,7 @@ message ExtauthServerConfigSpec {
     repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
 
     // the configuration which will be deployed to the selected extauth limit servers.
-    .enterprise.gloo.solo.io.AuthConfigSpec extauth_config = 2;
+    .enterprise.gloo.solo.io.AuthConfigSpec extauth_config = 2 [(cue.opt).disable_openapi_validation = true];
 }
 
 // The current status of the `ExtauthConfig`.
