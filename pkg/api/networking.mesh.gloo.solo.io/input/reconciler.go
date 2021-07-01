@@ -61,7 +61,6 @@ import (
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
-// * RateLimitConfigs
 // * Settings
 // * Destinations
 // * Workloads
@@ -69,6 +68,7 @@ import (
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
+// * RateLimitConfigs
 // from the local cluster.
 
 type ReconcileOptions struct {
@@ -91,7 +91,7 @@ func RegisterInputReconciler(
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
 	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
-	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 ratelimit.solo.io/v1alpha1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
+	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1 ratelimit.solo.io/v1alpha1]
 
 	base := input.NewInputReconciler(
 		ctx,
@@ -164,11 +164,6 @@ func RegisterInputReconciler(
 		return nil, err
 	}
 
-	// initialize RateLimitConfigs reconcile loop for local cluster
-	if err := ratelimit_solo_io_v1alpha1_controllers.NewRateLimitConfigReconcileLoop("RateLimitConfig", mgr, options.Local.RateLimitConfigs).RunRateLimitConfigReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
 	// initialize Settings reconcile loop for local cluster
 	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
@@ -199,6 +194,11 @@ func RegisterInputReconciler(
 
 	// initialize KubernetesClusters reconcile loop for local cluster
 	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, options.Local.KubernetesClusters).RunKubernetesClusterReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize RateLimitConfigs reconcile loop for local cluster
+	if err := ratelimit_solo_io_v1alpha1_controllers.NewRateLimitConfigReconcileLoop("RateLimitConfig", mgr, options.Local.RateLimitConfigs).RunRateLimitConfigReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -413,9 +413,6 @@ type LocalReconcileOptions struct {
 	// Options for reconciling VirtualMeshes
 	VirtualMeshes reconcile.Options
 
-	// Options for reconciling RateLimitConfigs
-	RateLimitConfigs reconcile.Options
-
 	// Options for reconciling Settings
 	Settings reconcile.Options
 
@@ -434,6 +431,9 @@ type LocalReconcileOptions struct {
 
 	// Options for reconciling KubernetesClusters
 	KubernetesClusters reconcile.Options
+
+	// Options for reconciling RateLimitConfigs
+	RateLimitConfigs reconcile.Options
 
 	// optional predicates for filtering local events
 	Predicates []predicate.Predicate
@@ -560,19 +560,6 @@ func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Reques
 	return err
 }
 
-func (r *localInputReconciler) ReconcileRateLimitConfig(obj *ratelimit_solo_io_v1alpha1.RateLimitConfig) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileRateLimitConfigDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
 func (r *localInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
@@ -656,6 +643,19 @@ func (r *localInputReconciler) ReconcileKubernetesCluster(obj *multicluster_solo
 }
 
 func (r *localInputReconciler) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileRateLimitConfig(obj *ratelimit_solo_io_v1alpha1.RateLimitConfig) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileRateLimitConfigDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

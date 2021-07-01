@@ -10,7 +10,6 @@ import (
 	"github.com/solo-io/gloo-mesh/codegen/constants"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
-	"github.com/solo-io/solo-apis/codegen"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -45,8 +44,6 @@ var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1be
 	{Kind: "ServiceDependency"},
 })
 
-var GlooMeshRatelimitGroup = codegen.RateLimiterGroups()[0]
-
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1", []ResourceToGenerate{
 	{Kind: "AccessLogRecord"},
 })
@@ -59,7 +56,6 @@ var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceT
 var GlooMeshGroups = []model.Group{
 	GlooMeshEnterpriseNetworkingGroup,
 	GlooMeshNetworkingGroup,
-	GlooMeshRatelimitGroup,
 	GlooMeshSettingsGroup,
 	GlooMeshDiscoveryGroup,
 	GlooMeshEnterpriseObservabilityGroup,

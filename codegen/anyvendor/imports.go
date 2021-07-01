@@ -26,6 +26,7 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 	// used for rate limit server config
 	anyVendorImports.External["github.com/solo-io/solo-apis"] = []string{
 		"api/rate-limiter/v1alpha1/ratelimit.proto",
+		"crds/ratelimit.solo.io_v1alpha1_crds.yaml",
 	}
 
 	// used for a proto option which disables openapi validation on fields

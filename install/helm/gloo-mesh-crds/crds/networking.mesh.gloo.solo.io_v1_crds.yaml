@@ -543,6 +543,8 @@ spec:
                                         - genericKey
                                       - required:
                                         - headerValueMatch
+                                      - required:
+                                        - metadata
                                   - required:
                                     - sourceCluster
                                   - required:
@@ -555,6 +557,8 @@ spec:
                                     - genericKey
                                   - required:
                                     - headerValueMatch
+                                  - required:
+                                    - metadata
                                   properties:
                                     destinationCluster:
                                       description: Rate limit on destination cluster.
@@ -700,6 +704,60 @@ spec:
                                                 type: string
                                             type: object
                                           type: array
+                                      type: object
+                                    metadata:
+                                      description: Rate limit on metadata.
+                                      properties:
+                                        defaultValue:
+                                          description: |-
+                                            An optional value to use if *metadata_key* is empty. If not set and
+                                            no value is present under the metadata_key then no descriptor is generated.
+                                          type: string
+                                        descriptorKey:
+                                          description: Required. The key to use in
+                                            the descriptor entry.
+                                          type: string
+                                        metadataKey:
+                                          description: |-
+                                            Required. Metadata struct that defines the key and path to retrieve the string value. A match will
+                                            only happen if the value in the metadata is of type string.
+                                          properties:
+                                            key:
+                                              description: |-
+                                                Required. The key name of Metadata to retrieve the Struct from the metadata.
+                                                Typically, it represents a builtin subsystem or custom extension.
+                                              type: string
+                                            path:
+                                              description: |-
+                                                Must have at least one element. The path to retrieve the Value from the Struct. It can be a prefix or a full path,
+                                                e.g. ``[prop, xyz]`` for a struct or ``[prop, foo]`` for a string in the example,
+                                                which depends on the particular scenario.
+
+                                                Note: Due to that only the key type segment is supported, the path can not specify a list
+                                                unless the list is the last segment.
+                                              items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - key
+                                                - required:
+                                                  - key
+                                                properties:
+                                                  key:
+                                                    description: Required. If specified,
+                                                      use the key to retrieve the
+                                                      value in a Struct.
+                                                    type: string
+                                                type: object
+                                              type: array
+                                          type: object
+                                        source:
+                                          description: Source of metadata
+                                          enum:
+                                          - DYNAMIC
+                                          - ROUTE_ENTRY
+                                          type: string
                                       type: object
                                     remoteAddress:
                                       description: Rate limit on remote address.
@@ -743,6 +801,8 @@ spec:
                                         - genericKey
                                       - required:
                                         - headerValueMatch
+                                      - required:
+                                        - metadata
                                   - required:
                                     - sourceCluster
                                   - required:
@@ -755,6 +815,8 @@ spec:
                                     - genericKey
                                   - required:
                                     - headerValueMatch
+                                  - required:
+                                    - metadata
                                   properties:
                                     destinationCluster:
                                       description: Rate limit on destination cluster.
@@ -900,6 +962,60 @@ spec:
                                                 type: string
                                             type: object
                                           type: array
+                                      type: object
+                                    metadata:
+                                      description: Rate limit on metadata.
+                                      properties:
+                                        defaultValue:
+                                          description: |-
+                                            An optional value to use if *metadata_key* is empty. If not set and
+                                            no value is present under the metadata_key then no descriptor is generated.
+                                          type: string
+                                        descriptorKey:
+                                          description: Required. The key to use in
+                                            the descriptor entry.
+                                          type: string
+                                        metadataKey:
+                                          description: |-
+                                            Required. Metadata struct that defines the key and path to retrieve the string value. A match will
+                                            only happen if the value in the metadata is of type string.
+                                          properties:
+                                            key:
+                                              description: |-
+                                                Required. The key name of Metadata to retrieve the Struct from the metadata.
+                                                Typically, it represents a builtin subsystem or custom extension.
+                                              type: string
+                                            path:
+                                              description: |-
+                                                Must have at least one element. The path to retrieve the Value from the Struct. It can be a prefix or a full path,
+                                                e.g. ``[prop, xyz]`` for a struct or ``[prop, foo]`` for a string in the example,
+                                                which depends on the particular scenario.
+
+                                                Note: Due to that only the key type segment is supported, the path can not specify a list
+                                                unless the list is the last segment.
+                                              items:
+                                                oneOf:
+                                                - not:
+                                                    anyOf:
+                                                    - required:
+                                                      - key
+                                                - required:
+                                                  - key
+                                                properties:
+                                                  key:
+                                                    description: Required. If specified,
+                                                      use the key to retrieve the
+                                                      value in a Struct.
+                                                    type: string
+                                                type: object
+                                              type: array
+                                          type: object
+                                        source:
+                                          description: Source of metadata
+                                          enum:
+                                          - DYNAMIC
+                                          - ROUTE_ENTRY
+                                          type: string
                                       type: object
                                     remoteAddress:
                                       description: Rate limit on remote address.

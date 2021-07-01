@@ -12,9 +12,6 @@ import (
 	networking_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	networking_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
 
-	ratelimit_solo_io_v1alpha1 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
-	ratelimit_solo_io_v1alpha1_sets "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/sets"
-
 	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	settings_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 
@@ -29,6 +26,9 @@ import (
 
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+
+	ratelimit_solo_io_v1alpha1 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
+	ratelimit_solo_io_v1alpha1_sets "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/sets"
 )
 
 type InputLocalSnapshotManualBuilder struct {
@@ -45,8 +45,6 @@ type InputLocalSnapshotManualBuilder struct {
 	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
 	virtualMeshes   networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
 
-	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
-
 	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
 
 	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
@@ -58,6 +56,8 @@ type InputLocalSnapshotManualBuilder struct {
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+
+	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
 }
 
 func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
@@ -75,8 +75,6 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		accessPolicies:  networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet(),
 		virtualMeshes:   networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet(),
 
-		rateLimitConfigs: ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet(),
-
 		settings: settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet(),
 
 		destinations: discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet(),
@@ -88,6 +86,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		secrets: v1_sets.NewSecretSet(),
 
 		kubernetesClusters: multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet(),
+
+		rateLimitConfigs: ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet(),
 	}
 }
 
@@ -106,8 +106,6 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.accessPolicies,
 		i.virtualMeshes,
 
-		i.rateLimitConfigs,
-
 		i.settings,
 
 		i.destinations,
@@ -119,6 +117,8 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.secrets,
 
 		i.kubernetesClusters,
+
+		i.rateLimitConfigs,
 	)
 }
 func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) *InputLocalSnapshotManualBuilder {
@@ -157,10 +157,6 @@ func (i *InputLocalSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*netw
 	i.virtualMeshes.Insert(virtualMeshes...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddRateLimitConfigs(rateLimitConfigs []*ratelimit_solo_io_v1alpha1.RateLimitConfig) *InputLocalSnapshotManualBuilder {
-	i.rateLimitConfigs.Insert(rateLimitConfigs...)
-	return i
-}
 func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1.Settings) *InputLocalSnapshotManualBuilder {
 	i.settings.Insert(settings...)
 	return i
@@ -187,5 +183,9 @@ func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *Inpu
 }
 func (i *InputLocalSnapshotManualBuilder) AddKubernetesClusters(kubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputLocalSnapshotManualBuilder {
 	i.kubernetesClusters.Insert(kubernetesClusters...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddRateLimitConfigs(rateLimitConfigs []*ratelimit_solo_io_v1alpha1.RateLimitConfig) *InputLocalSnapshotManualBuilder {
+	i.rateLimitConfigs.Insert(rateLimitConfigs...)
 	return i
 }

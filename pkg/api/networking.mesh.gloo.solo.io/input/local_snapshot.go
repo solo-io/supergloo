@@ -12,7 +12,6 @@
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
-// * RateLimitConfigs
 // * Settings
 // * Destinations
 // * Workloads
@@ -20,6 +19,7 @@
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
+// * RateLimitConfigs
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -55,10 +55,6 @@ import (
 	networking_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	networking_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
 
-	ratelimit_solo_io_v1alpha1 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
-	ratelimit_solo_io_v1alpha1_types "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
-	ratelimit_solo_io_v1alpha1_sets "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/sets"
-
 	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	settings_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	settings_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
@@ -78,6 +74,10 @@ import (
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_types "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+
+	ratelimit_solo_io_v1alpha1 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
+	ratelimit_solo_io_v1alpha1_types "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
+	ratelimit_solo_io_v1alpha1_sets "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/sets"
 )
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
@@ -131,12 +131,6 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	},
 
 	schema.GroupVersionKind{
-		Group:   "ratelimit.solo.io",
-		Version: "v1alpha1",
-		Kind:    "RateLimitConfig",
-	},
-
-	schema.GroupVersionKind{
 		Group:   "settings.mesh.gloo.solo.io",
 		Version: "v1",
 		Kind:    "Settings",
@@ -175,6 +169,12 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1alpha1",
 		Kind:    "KubernetesCluster",
 	},
+
+	schema.GroupVersionKind{
+		Group:   "ratelimit.solo.io",
+		Version: "v1alpha1",
+		Kind:    "RateLimitConfig",
+	},
 }
 
 // the snapshot of input resources consumed by translation
@@ -200,9 +200,6 @@ type LocalSnapshot interface {
 	// return the set of input VirtualMeshes
 	VirtualMeshes() networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
 
-	// return the set of input RateLimitConfigs
-	RateLimitConfigs() ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
-
 	// return the set of input Settings
 	Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet
 
@@ -221,6 +218,9 @@ type LocalSnapshot interface {
 
 	// return the set of input KubernetesClusters
 	KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+
+	// return the set of input RateLimitConfigs
+	RateLimitConfigs() ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error
@@ -254,9 +254,6 @@ type LocalSyncStatusOptions struct {
 	// sync status of VirtualMesh objects
 	VirtualMesh bool
 
-	// sync status of RateLimitConfig objects
-	RateLimitConfig bool
-
 	// sync status of Settings objects
 	Settings bool
 
@@ -275,6 +272,9 @@ type LocalSyncStatusOptions struct {
 
 	// sync status of KubernetesCluster objects
 	KubernetesCluster bool
+
+	// sync status of RateLimitConfig objects
+	RateLimitConfig bool
 }
 
 type snapshotLocal struct {
@@ -291,8 +291,6 @@ type snapshotLocal struct {
 	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
 	virtualMeshes   networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
 
-	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
-
 	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
 
 	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
@@ -304,6 +302,8 @@ type snapshotLocal struct {
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+
+	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
 }
 
 func NewLocalSnapshot(
@@ -320,8 +320,6 @@ func NewLocalSnapshot(
 	accessPolicies networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet,
 	virtualMeshes networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet,
 
-	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet,
-
 	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
 
 	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
@@ -333,6 +331,8 @@ func NewLocalSnapshot(
 	secrets v1_sets.SecretSet,
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
+
+	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet,
 
 ) LocalSnapshot {
 	return &snapshotLocal{
@@ -347,7 +347,6 @@ func NewLocalSnapshot(
 		trafficPolicies:     trafficPolicies,
 		accessPolicies:      accessPolicies,
 		virtualMeshes:       virtualMeshes,
-		rateLimitConfigs:    rateLimitConfigs,
 		settings:            settings,
 		destinations:        destinations,
 		workloads:           workloads,
@@ -355,6 +354,7 @@ func NewLocalSnapshot(
 		accessLogRecords:    accessLogRecords,
 		secrets:             secrets,
 		kubernetesClusters:  kubernetesClusters,
+		rateLimitConfigs:    rateLimitConfigs,
 	}
 }
 
@@ -374,8 +374,6 @@ func NewLocalSnapshotFromGeneric(
 	accessPolicySet := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
 	virtualMeshSet := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
 
-	rateLimitConfigSet := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
-
 	settingsSet := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	destinationSet := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
@@ -387,6 +385,8 @@ func NewLocalSnapshotFromGeneric(
 	secretSet := v1_sets.NewSecretSet()
 
 	kubernetesClusterSet := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	rateLimitConfigSet := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
 
 	for _, snapshot := range genericSnapshot {
 
@@ -473,16 +473,6 @@ func NewLocalSnapshotFromGeneric(
 			virtualMeshSet.Insert(virtualMesh.(*networking_mesh_gloo_solo_io_v1_types.VirtualMesh))
 		}
 
-		rateLimitConfigs := snapshot[schema.GroupVersionKind{
-			Group:   "ratelimit.solo.io",
-			Version: "v1alpha1",
-			Kind:    "RateLimitConfig",
-		}]
-
-		for _, rateLimitConfig := range rateLimitConfigs {
-			rateLimitConfigSet.Insert(rateLimitConfig.(*ratelimit_solo_io_v1alpha1_types.RateLimitConfig))
-		}
-
 		settings := snapshot[schema.GroupVersionKind{
 			Group:   "settings.mesh.gloo.solo.io",
 			Version: "v1",
@@ -551,6 +541,16 @@ func NewLocalSnapshotFromGeneric(
 			kubernetesClusterSet.Insert(kubernetesCluster.(*multicluster_solo_io_v1alpha1_types.KubernetesCluster))
 		}
 
+		rateLimitConfigs := snapshot[schema.GroupVersionKind{
+			Group:   "ratelimit.solo.io",
+			Version: "v1alpha1",
+			Kind:    "RateLimitConfig",
+		}]
+
+		for _, rateLimitConfig := range rateLimitConfigs {
+			rateLimitConfigSet.Insert(rateLimitConfig.(*ratelimit_solo_io_v1alpha1_types.RateLimitConfig))
+		}
+
 	}
 	return NewLocalSnapshot(
 		name,
@@ -563,7 +563,6 @@ func NewLocalSnapshotFromGeneric(
 		trafficPolicySet,
 		accessPolicySet,
 		virtualMeshSet,
-		rateLimitConfigSet,
 		settingsSet,
 		destinationSet,
 		workloadSet,
@@ -571,6 +570,7 @@ func NewLocalSnapshotFromGeneric(
 		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
+		rateLimitConfigSet,
 	)
 }
 
@@ -610,10 +610,6 @@ func (s snapshotLocal) VirtualMeshes() networking_mesh_gloo_solo_io_v1_sets.Virt
 	return s.virtualMeshes
 }
 
-func (s snapshotLocal) RateLimitConfigs() ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet {
-	return s.rateLimitConfigs
-}
-
 func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet {
 	return s.settings
 }
@@ -640,6 +636,10 @@ func (s snapshotLocal) Secrets() v1_sets.SecretSet {
 
 func (s snapshotLocal) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet {
 	return s.kubernetesClusters
+}
+
+func (s snapshotLocal) RateLimitConfigs() ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet {
+	return s.rateLimitConfigs
 }
 
 func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error {
@@ -755,19 +755,6 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.RateLimitConfig {
-		for _, obj := range s.RateLimitConfigs().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if opts.Settings {
 		for _, obj := range s.Settings().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
@@ -833,6 +820,19 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.RateLimitConfig {
+		for _, obj := range s.RateLimitConfigs().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -914,14 +914,6 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
-	if opts.RateLimitConfig {
-		for _, obj := range s.RateLimitConfigs().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if opts.Settings {
 		for _, obj := range s.Settings().List() {
 			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
@@ -967,6 +959,14 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
+
+	if opts.RateLimitConfig {
+		for _, obj := range s.RateLimitConfigs().List() {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 	return errs
 }
 
@@ -982,7 +982,6 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
-	snapshotMap["rateLimitConfigs"] = s.rateLimitConfigs.List()
 	snapshotMap["settings"] = s.settings.List()
 	snapshotMap["destinations"] = s.destinations.List()
 	snapshotMap["workloads"] = s.workloads.List()
@@ -990,6 +989,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
+	snapshotMap["rateLimitConfigs"] = s.rateLimitConfigs.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -1021,9 +1021,6 @@ type LocalBuildOptions struct {
 	// List options for composing a snapshot from VirtualMeshes
 	VirtualMeshes ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from RateLimitConfigs
-	RateLimitConfigs ResourceLocalBuildOptions
-
 	// List options for composing a snapshot from Settings
 	Settings ResourceLocalBuildOptions
 
@@ -1042,6 +1039,9 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from KubernetesClusters
 	KubernetesClusters ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from RateLimitConfigs
+	RateLimitConfigs ResourceLocalBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -1084,8 +1084,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
 	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
 
-	rateLimitConfigs := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
-
 	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
@@ -1097,6 +1095,8 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	rateLimitConfigs := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
 
 	var errs error
 
@@ -1129,9 +1129,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertRateLimitConfigsFromCluster(ctx, cluster, rateLimitConfigs, opts.RateLimitConfigs); err != nil {
-			errs = multierror.Append(errs, err)
-		}
 		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -1153,6 +1150,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertRateLimitConfigsFromCluster(ctx, cluster, rateLimitConfigs, opts.RateLimitConfigs); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
 	}
 
@@ -1168,7 +1168,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
-		rateLimitConfigs,
 		settings,
 		destinations,
 		workloads,
@@ -1176,6 +1175,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
+		rateLimitConfigs,
 	)
 
 	return outputSnap, errs
@@ -1561,49 +1561,6 @@ func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Co
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertRateLimitConfigsFromCluster(ctx context.Context, cluster string, rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet, opts ResourceLocalBuildOptions) error {
-	rateLimitConfigClient, err := ratelimit_solo_io_v1alpha1.NewMulticlusterRateLimitConfigClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "ratelimit.solo.io",
-			Version: "v1alpha1",
-			Kind:    "RateLimitConfig",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	rateLimitConfigList, err := rateLimitConfigClient.ListRateLimitConfig(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range rateLimitConfigList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		rateLimitConfigs.Insert(item)
-	}
-
-	return nil
-}
-
 func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
 	settingsClient, err := settings_mesh_gloo_solo_io_v1.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -1903,6 +1860,49 @@ func (b *multiClusterLocalBuilder) insertKubernetesClustersFromCluster(ctx conte
 	return nil
 }
 
+func (b *multiClusterLocalBuilder) insertRateLimitConfigsFromCluster(ctx context.Context, cluster string, rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet, opts ResourceLocalBuildOptions) error {
+	rateLimitConfigClient, err := ratelimit_solo_io_v1alpha1.NewMulticlusterRateLimitConfigClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "ratelimit.solo.io",
+			Version: "v1alpha1",
+			Kind:    "RateLimitConfig",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	rateLimitConfigList, err := rateLimitConfigClient.ListRateLimitConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range rateLimitConfigList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		rateLimitConfigs.Insert(item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type singleClusterLocalBuilder struct {
 	mgr         manager.Manager
@@ -1941,8 +1941,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
 	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
 
-	rateLimitConfigs := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
-
 	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
@@ -1954,6 +1952,8 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	rateLimitConfigs := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
 
 	var errs error
 
@@ -1984,9 +1984,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertRateLimitConfigs(ctx, rateLimitConfigs, opts.RateLimitConfigs); err != nil {
-		errs = multierror.Append(errs, err)
-	}
 	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -2008,6 +2005,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertRateLimitConfigs(ctx, rateLimitConfigs, opts.RateLimitConfigs); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
 	outputSnap := NewLocalSnapshot(
 		name,
@@ -2021,7 +2021,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
-		rateLimitConfigs,
 		settings,
 		destinations,
 		workloads,
@@ -2029,6 +2028,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
+		rateLimitConfigs,
 	)
 
 	return outputSnap, errs
@@ -2333,40 +2333,6 @@ func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, vir
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertRateLimitConfigs(ctx context.Context, rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "ratelimit.solo.io",
-			Version: "v1alpha1",
-			Kind:    "RateLimitConfig",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	rateLimitConfigList, err := ratelimit_solo_io_v1alpha1.NewRateLimitConfigClient(b.mgr.GetClient()).ListRateLimitConfig(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range rateLimitConfigList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		rateLimitConfigs.Insert(item)
-	}
-
-	return nil
-}
-
 func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -2603,6 +2569,40 @@ func (b *singleClusterLocalBuilder) insertKubernetesClusters(ctx context.Context
 	return nil
 }
 
+func (b *singleClusterLocalBuilder) insertRateLimitConfigs(ctx context.Context, rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "ratelimit.solo.io",
+			Version: "v1alpha1",
+			Kind:    "RateLimitConfig",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	rateLimitConfigList, err := ratelimit_solo_io_v1alpha1.NewRateLimitConfigClient(b.mgr.GetClient()).ListRateLimitConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range rateLimitConfigList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		rateLimitConfigs.Insert(item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type inMemoryLocalBuilder struct {
 	getSnapshot func() (resource.ClusterSnapshot, error)
@@ -2634,8 +2634,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	accessPolicies := networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet()
 	virtualMeshes := networking_mesh_gloo_solo_io_v1_sets.NewVirtualMeshSet()
 
-	rateLimitConfigs := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
-
 	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	destinations := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
@@ -2647,6 +2645,8 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	rateLimitConfigs := ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet()
 
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
@@ -2677,9 +2677,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert VirtualMeshes
 		case *networking_mesh_gloo_solo_io_v1_types.VirtualMesh:
 			i.insertVirtualMesh(ctx, obj, virtualMeshes, opts)
-		// insert RateLimitConfigs
-		case *ratelimit_solo_io_v1alpha1_types.RateLimitConfig:
-			i.insertRateLimitConfig(ctx, obj, rateLimitConfigs, opts)
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1_types.Settings:
 			i.insertSettings(ctx, obj, settings, opts)
@@ -2701,6 +2698,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert KubernetesClusters
 		case *multicluster_solo_io_v1alpha1_types.KubernetesCluster:
 			i.insertKubernetesCluster(ctx, obj, kubernetesClusters, opts)
+		// insert RateLimitConfigs
+		case *ratelimit_solo_io_v1alpha1_types.RateLimitConfig:
+			i.insertRateLimitConfig(ctx, obj, rateLimitConfigs, opts)
 		}
 	})
 
@@ -2716,7 +2716,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
-		rateLimitConfigs,
 		settings,
 		destinations,
 		workloads,
@@ -2724,6 +2723,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
+		rateLimitConfigs,
 	), nil
 }
 
@@ -2990,36 +2990,6 @@ func (i *inMemoryLocalBuilder) insertVirtualMesh(
 	}
 }
 
-func (i *inMemoryLocalBuilder) insertRateLimitConfig(
-	ctx context.Context,
-	rateLimitConfig *ratelimit_solo_io_v1alpha1_types.RateLimitConfig,
-	rateLimitConfigSet ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.RateLimitConfigs.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = rateLimitConfig.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(rateLimitConfig.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		rateLimitConfigSet.Insert(rateLimitConfig)
-	}
-}
-
 func (i *inMemoryLocalBuilder) insertSettings(
 	ctx context.Context,
 	settings *settings_mesh_gloo_solo_io_v1_types.Settings,
@@ -3225,5 +3195,35 @@ func (i *inMemoryLocalBuilder) insertKubernetesCluster(
 
 	if !filteredOut {
 		kubernetesClusterSet.Insert(kubernetesCluster)
+	}
+}
+
+func (i *inMemoryLocalBuilder) insertRateLimitConfig(
+	ctx context.Context,
+	rateLimitConfig *ratelimit_solo_io_v1alpha1_types.RateLimitConfig,
+	rateLimitConfigSet ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet,
+	buildOpts LocalBuildOptions,
+) {
+
+	opts := buildOpts.RateLimitConfigs.ListOptions
+
+	listOpts := &client.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	filteredOut := false
+	if listOpts.Namespace != "" {
+		filteredOut = rateLimitConfig.Namespace != listOpts.Namespace
+	}
+	if listOpts.LabelSelector != nil {
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(rateLimitConfig.Labels))
+	}
+	if listOpts.FieldSelector != nil {
+		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
+	}
+
+	if !filteredOut {
+		rateLimitConfigSet.Insert(rateLimitConfig)
 	}
 }
