@@ -1416,7 +1416,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
-				sourceMeshInstallation *discoveryv1.MeshInstallation,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
