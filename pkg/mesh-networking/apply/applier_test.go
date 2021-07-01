@@ -1093,12 +1093,17 @@ var _ = Describe("Applier", func() {
 
 			applier.Apply(context.TODO(), snap.Build(), nil)
 
+			Expect(virtualMeshWithBadSelector1.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector1.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector1.Status.Errors[0]).
 				To(ContainSubstring("Attempting to select ingress gateway destination bad-destination-no-workload-labels.ns. with no workload labels"))
+
+			Expect(virtualMeshWithBadSelector2.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector2.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector2.Status.Errors[0]).
 				To(ContainSubstring("Attempting to select ingress gateway destination: destination bad-destination-no-tls-port.ns. has no port named tls"))
+
+			Expect(virtualMeshWithBadSelector3.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector3.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector3.Status.Errors[0]).
 				To(ContainSubstring("Invalid Destination selector: Destination nonexistent-svc.nonexistent-svc.svc-cluster not found"))
