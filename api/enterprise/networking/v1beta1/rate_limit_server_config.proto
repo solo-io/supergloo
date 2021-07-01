@@ -15,8 +15,6 @@ option (extproto.equal_all) = true;
 
 import "google/protobuf/struct.proto";
 
-// Copied from Gloo Edge solo-apis: https://github.com/solo-io/solo-apis/blob/master/api/rate-limiter/v1alpha1/ratelimit.proto
-
 // RateLimiterConfig contains the configuration for the Gloo Rate Limiter, the external rate-limiting server used by
 // mesh proxies to rate-limit HTTP requests. One or more rate limiter servers may be deployed in order to
 // rate limit traffic across East-West and North-South routes. The RateLimiterConfig allows users to map

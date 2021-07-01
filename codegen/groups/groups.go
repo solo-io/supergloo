@@ -38,6 +38,7 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
 	{Kind: "RateLimiterServerConfig"},
+	{Kind: "ExtauthServerConfig"},
 	{Kind: "VirtualDestination"},
 	{Kind: "VirtualGateway"},
 	{Kind: "VirtualHost"},

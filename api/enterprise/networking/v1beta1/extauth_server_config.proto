@@ -1,0 +1,46 @@
+syntax = "proto3";
+package networking.enterprise.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/solo-apis/api/gloo/enterprise.gloo/v1/auth_config.proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+import "google/protobuf/struct.proto";
+
+// ExtauthConfig contains the configuration for the Gloo Extauth server, the external extauth server used by
+// mesh proxies to authenticate HTTP requests. One or more extauth servers may be deployed in order to
+// authenticate traffic across East-West and North-South routes. The ExtauthConfig allows users to map
+// a single extauth configuration to multiple extauth server instances, deployed across managed clusters.
+message ExtauthServerConfigSpec {
+    // The per-server extauth config objects will be generated from the given config for each provided ref.
+    // Each extauth server must be configured to read its server configuration from one of these refs.
+    repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
+
+    // the configuration which will be deployed to the selected extauth limit servers.
+    .enterprise.gloo.solo.io.AuthConfigSpec extauth_config = 2;
+}
+
+// The current status of the `ExtauthConfig`.
+message ExtauthServerConfigStatus {
+
+    // The most recent generation observed in the the ExtauthServerConfig metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
+
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
+
+    // a list of extauth limit server workloads which have been configured with this ExtauthConfig
+    repeated .core.skv2.solo.io.ClusterObjectRef configured_servers = 4;
+
+}
