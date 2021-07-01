@@ -16,7 +16,6 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	istionetworkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -165,21 +164,21 @@ func ConflictDetectionTest() {
 			}, "10s", "1s").ShouldNot(HaveOccurred())
 
 			// output VS should not exist on remote cluster
-			Eventually(func() bool {
+			Eventually(func() error {
 				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return errors.IsNotFound(err)
-			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
+				return err
+			}, "5s", "1s").Should(MatchError(ContainSubstring("not found")))
 			// output VS should not exist on remote cluster
-			Consistently(func() bool {
+			Consistently(func() error {
 				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return errors.IsNotFound(err)
-			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
+				return err
+			}, "5s", "1s").Should(MatchError(ContainSubstring("not found")))
 
 			// output VS should exist on mgmt cluster
 			Eventually(func() error {
@@ -228,13 +227,13 @@ func ConflictDetectionTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// eventually the default translated DestinationRule should be deleted
-			Eventually(func() bool {
+			Eventually(func() error {
 				_, err = getDestinationRule(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return errors.IsNotFound(err)
-			}, "10s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
+				return err
+			}, "10s", "1s").Should(MatchError(ContainSubstring("not found")))
 		})
 
 		By("cleaning up the user DestinationRule", func() {
