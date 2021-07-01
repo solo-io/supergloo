@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Extend VirtualMesh API with TCP keepalive config for ingress gateways on all meshes in the VirtualMesh.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1678

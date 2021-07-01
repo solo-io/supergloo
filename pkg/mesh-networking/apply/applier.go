@@ -688,11 +688,14 @@ func getAppliedFederation(
 		return nil
 	}
 
+	federatedKeepalive := parentVirtualMesh.Spec.GetFederation().GetTcpKeepalive()
+
 	return &discoveryv1.DestinationStatus_AppliedFederation{
 		VirtualMeshRef:    ezkube.MakeObjectRef(parentVirtualMesh),
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       parentVirtualMesh.Spec.GetFederation().GetFlatNetwork(),
+		TcpKeepalive:      federatedKeepalive,
 	}
 }
 

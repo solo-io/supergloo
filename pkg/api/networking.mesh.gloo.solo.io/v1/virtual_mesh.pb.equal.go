@@ -433,6 +433,16 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetTcpKeepalive()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetTcpKeepalive()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetTcpKeepalive(), target.GetTcpKeepalive()) {
+			return false
+		}
+	}
+
 	switch m.Mode.(type) {
 
 	case *VirtualMeshSpec_Federation_Permissive:
