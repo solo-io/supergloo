@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -87,7 +86,7 @@ func (t *translator) Translate(
 
 	// translate one Gateway CR per ingress gateway Destination
 	for _, ingressGateway := range mesh.Status.GetAppliedEastWestIngressGateways() {
-		destination, err := in.Destinations().Find(ingressGateway.GetDestinationRef())
+		destination, err := in.Destinations().Find(ezkube.MakeObjectRef(ingressGateway.GetDestinationRef()))
 		if err != nil {
 			contextutils.LoggerFrom(t.ctx).DPanicf("internal error: applied east west ingress gateway Destination not found in snapshot")
 			continue

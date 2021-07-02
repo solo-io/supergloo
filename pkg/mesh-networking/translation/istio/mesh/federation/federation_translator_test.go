@@ -84,8 +84,9 @@ var _ = Describe("FederationTranslator", func() {
 
 		destination1 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "istio-system",
-				Name:      "istio-ingressgateway",
+				Namespace:   "istio-system",
+				Name:        "istio-ingressgateway",
+				ClusterName: clusterName,
 			},
 			Spec: discoveryv1.DestinationSpec{
 				Type: &discoveryv1.DestinationSpec_KubeService_{
@@ -102,8 +103,9 @@ var _ = Describe("FederationTranslator", func() {
 		}
 		destination2 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "istio-system",
-				Name:      "istio-ingressgateway2",
+				Namespace:   "istio-system",
+				Name:        "istio-ingressgateway2",
+				ClusterName: clusterName,
 			},
 			Spec: discoveryv1.DestinationSpec{
 				Type: &discoveryv1.DestinationSpec_KubeService_{

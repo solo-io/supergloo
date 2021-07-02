@@ -788,7 +788,7 @@ func getAppliedEastWestIngressGateways(
 		if !ezkube.RefsMatch(destination.Spec.GetMesh(), mesh) {
 			continue
 		}
-		for _, ingressGatewayServiceSelector := range virtualMesh.Spec.GetFederation().GetAppliedEastWestIngressGatewayselectors() {
+		for _, ingressGatewayServiceSelector := range virtualMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
 			// Check if this selector applies to this mesh
 			if !ingressGatewaySelectorMatchesMesh(ingressGatewayServiceSelector, mesh) {
 				continue
