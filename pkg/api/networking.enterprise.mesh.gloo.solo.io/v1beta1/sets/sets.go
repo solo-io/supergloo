@@ -433,6 +433,216 @@ func (s *rateLimiterServerConfigSet) Delta(newSet RateLimiterServerConfigSet) sk
 	return s.Generic().Delta(newSet.Generic())
 }
 
+type ExtauthServerConfigSet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig
+	// Return the Set as a map of key to resource.
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig
+	// Insert a resource into the set.
+	Insert(extauthServerConfig ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(extauthServerConfigSet ExtauthServerConfigSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(extauthServerConfig ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(extauthServerConfig ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set ExtauthServerConfigSet) ExtauthServerConfigSet
+	// Return the difference with the provided set
+	Difference(set ExtauthServerConfigSet) ExtauthServerConfigSet
+	// Return the intersection with the provided set
+	Intersection(set ExtauthServerConfigSet) ExtauthServerConfigSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another ExtauthServerConfigSet
+	Delta(newSet ExtauthServerConfigSet) sksets.ResourceDelta
+}
+
+func makeGenericExtauthServerConfigSet(extauthServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range extauthServerConfigList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type extauthServerConfigSet struct {
+	set sksets.ResourceSet
+}
+
+func NewExtauthServerConfigSet(extauthServerConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) ExtauthServerConfigSet {
+	return &extauthServerConfigSet{set: makeGenericExtauthServerConfigSet(extauthServerConfigList)}
+}
+
+func NewExtauthServerConfigSetFromList(extauthServerConfigList *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfigList) ExtauthServerConfigSet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig, 0, len(extauthServerConfigList.Items))
+	for idx := range extauthServerConfigList.Items {
+		list = append(list, &extauthServerConfigList.Items[idx])
+	}
+	return &extauthServerConfigSet{set: makeGenericExtauthServerConfigSet(list)}
+}
+
+func (s *extauthServerConfigSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	return s.Generic().Keys()
+}
+
+func (s *extauthServerConfigSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig))
+		})
+	}
+
+	objs := s.Generic().List(genericFilters...)
+	extauthServerConfigList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig, 0, len(objs))
+	for _, obj := range objs {
+		extauthServerConfigList = append(extauthServerConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig))
+	}
+	return extauthServerConfigList
+}
+
+func (s *extauthServerConfigSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig))
+		})
+	}
+
+	var extauthServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		extauthServerConfigList = append(extauthServerConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig))
+	}
+	return extauthServerConfigList
+}
+
+func (s *extauthServerConfigSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	}
+	return newMap
+}
+
+func (s *extauthServerConfigSet) Insert(
+	extauthServerConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig,
+) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
+	for _, obj := range extauthServerConfigList {
+		s.Generic().Insert(obj)
+	}
+}
+
+func (s *extauthServerConfigSet) Has(extauthServerConfig ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(extauthServerConfig)
+}
+
+func (s *extauthServerConfigSet) Equal(
+	extauthServerConfigSet ExtauthServerConfigSet,
+) bool {
+	if s == nil {
+		return extauthServerConfigSet == nil
+	}
+	return s.Generic().Equal(extauthServerConfigSet.Generic())
+}
+
+func (s *extauthServerConfigSet) Delete(ExtauthServerConfig ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(ExtauthServerConfig)
+}
+
+func (s *extauthServerConfigSet) Union(set ExtauthServerConfigSet) ExtauthServerConfigSet {
+	if s == nil {
+		return set
+	}
+	return NewExtauthServerConfigSet(append(s.List(), set.List()...)...)
+}
+
+func (s *extauthServerConfigSet) Difference(set ExtauthServerConfigSet) ExtauthServerConfigSet {
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &extauthServerConfigSet{set: newSet}
+}
+
+func (s *extauthServerConfigSet) Intersection(set ExtauthServerConfigSet) ExtauthServerConfigSet {
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var extauthServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig
+	for _, obj := range newSet.List() {
+		extauthServerConfigList = append(extauthServerConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig))
+	}
+	return NewExtauthServerConfigSet(extauthServerConfigList...)
+}
+
+func (s *extauthServerConfigSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find ExtauthServerConfig %v", sksets.Key(id))
+	}
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig), nil
+}
+
+func (s *extauthServerConfigSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
+}
+
+func (s *extauthServerConfigSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *extauthServerConfigSet) Delta(newSet ExtauthServerConfigSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
+}
+
 type VirtualDestinationSet interface {
 	// Get the set stored keys
 	Keys() sets.String

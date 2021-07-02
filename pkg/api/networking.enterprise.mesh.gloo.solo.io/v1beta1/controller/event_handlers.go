@@ -231,6 +231,113 @@ func (h genericRateLimiterServerConfigHandler) Generic(object client.Object) err
 	return h.handler.GenericRateLimiterServerConfig(obj)
 }
 
+// Handle events for the ExtauthServerConfig Resource
+// DEPRECATED: Prefer reconciler pattern.
+type ExtauthServerConfigEventHandler interface {
+	CreateExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+	UpdateExtauthServerConfig(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+	DeleteExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+	GenericExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+}
+
+type ExtauthServerConfigEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+}
+
+func (f *ExtauthServerConfigEventHandlerFuncs) CreateExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *ExtauthServerConfigEventHandlerFuncs) DeleteExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *ExtauthServerConfigEventHandlerFuncs) UpdateExtauthServerConfig(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *ExtauthServerConfigEventHandlerFuncs) GenericExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type ExtauthServerConfigEventWatcher interface {
+	AddEventHandler(ctx context.Context, h ExtauthServerConfigEventHandler, predicates ...predicate.Predicate) error
+}
+
+type extauthServerConfigEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewExtauthServerConfigEventWatcher(name string, mgr manager.Manager) ExtauthServerConfigEventWatcher {
+	return &extauthServerConfigEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig{}),
+	}
+}
+
+func (c *extauthServerConfigEventWatcher) AddEventHandler(ctx context.Context, h ExtauthServerConfigEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericExtauthServerConfigHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericExtauthServerConfigHandler implements a generic events.EventHandler
+type genericExtauthServerConfigHandler struct {
+	handler ExtauthServerConfigEventHandler
+}
+
+func (h genericExtauthServerConfigHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", object)
+	}
+	return h.handler.CreateExtauthServerConfig(obj)
+}
+
+func (h genericExtauthServerConfigHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", object)
+	}
+	return h.handler.DeleteExtauthServerConfig(obj)
+}
+
+func (h genericExtauthServerConfigHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", new)
+	}
+	return h.handler.UpdateExtauthServerConfig(objOld, objNew)
+}
+
+func (h genericExtauthServerConfigHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", object)
+	}
+	return h.handler.GenericExtauthServerConfig(obj)
+}
+
 // Handle events for the VirtualDestination Resource
 // DEPRECATED: Prefer reconciler pattern.
 type VirtualDestinationEventHandler interface {

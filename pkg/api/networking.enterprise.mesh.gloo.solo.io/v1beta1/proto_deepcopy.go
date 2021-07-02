@@ -32,6 +32,18 @@ func (in *RateLimiterServerConfigStatus) DeepCopyInto(out *RateLimiterServerConf
 	*out = *p
 }
 
+// DeepCopyInto for the ExtauthServerConfig.Spec
+func (in *ExtauthServerConfigSpec) DeepCopyInto(out *ExtauthServerConfigSpec) {
+	p := proto.Clone(in).(*ExtauthServerConfigSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the ExtauthServerConfig.Status
+func (in *ExtauthServerConfigStatus) DeepCopyInto(out *ExtauthServerConfigStatus) {
+	p := proto.Clone(in).(*ExtauthServerConfigStatus)
+	*out = *p
+}
+
 // DeepCopyInto for the VirtualDestination.Spec
 func (in *VirtualDestinationSpec) DeepCopyInto(out *VirtualDestinationSpec) {
 	p := proto.Clone(in).(*VirtualDestinationSpec)

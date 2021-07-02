@@ -44,6 +44,8 @@ type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	RateLimiterServerConfigs() RateLimiterServerConfigClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	ExtauthServerConfigs() ExtauthServerConfigClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualDestinations() VirtualDestinationClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualGateways() VirtualGatewayClient
@@ -85,6 +87,11 @@ func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) RateLimiterServerConfigs() RateLimiterServerConfigClient {
 	return NewRateLimiterServerConfigClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) ExtauthServerConfigs() ExtauthServerConfigClient {
+	return NewExtauthServerConfigClient(c.client)
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
@@ -394,6 +401,148 @@ func (m *multiclusterRateLimiterServerConfigClient) Cluster(cluster string) (Rat
 		return nil, err
 	}
 	return NewRateLimiterServerConfigClient(client), nil
+}
+
+// Reader knows how to read and list ExtauthServerConfigs.
+type ExtauthServerConfigReader interface {
+	// Get retrieves a ExtauthServerConfig for the given object key
+	GetExtauthServerConfig(ctx context.Context, key client.ObjectKey) (*ExtauthServerConfig, error)
+
+	// List retrieves list of ExtauthServerConfigs for a given namespace and list options.
+	ListExtauthServerConfig(ctx context.Context, opts ...client.ListOption) (*ExtauthServerConfigList, error)
+}
+
+// ExtauthServerConfigTransitionFunction instructs the ExtauthServerConfigWriter how to transition between an existing
+// ExtauthServerConfig object and a desired on an Upsert
+type ExtauthServerConfigTransitionFunction func(existing, desired *ExtauthServerConfig) error
+
+// Writer knows how to create, delete, and update ExtauthServerConfigs.
+type ExtauthServerConfigWriter interface {
+	// Create saves the ExtauthServerConfig object.
+	CreateExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, opts ...client.CreateOption) error
+
+	// Delete deletes the ExtauthServerConfig object.
+	DeleteExtauthServerConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given ExtauthServerConfig object.
+	UpdateExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, opts ...client.UpdateOption) error
+
+	// Patch patches the given ExtauthServerConfig object.
+	PatchExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all ExtauthServerConfig objects matching the given options.
+	DeleteAllOfExtauthServerConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the ExtauthServerConfig object.
+	UpsertExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, transitionFuncs ...ExtauthServerConfigTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a ExtauthServerConfig object.
+type ExtauthServerConfigStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given ExtauthServerConfig object.
+	UpdateExtauthServerConfigStatus(ctx context.Context, obj *ExtauthServerConfig, opts ...client.UpdateOption) error
+
+	// Patch patches the given ExtauthServerConfig object's subresource.
+	PatchExtauthServerConfigStatus(ctx context.Context, obj *ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on ExtauthServerConfigs.
+type ExtauthServerConfigClient interface {
+	ExtauthServerConfigReader
+	ExtauthServerConfigWriter
+	ExtauthServerConfigStatusWriter
+}
+
+type extauthServerConfigClient struct {
+	client client.Client
+}
+
+func NewExtauthServerConfigClient(client client.Client) *extauthServerConfigClient {
+	return &extauthServerConfigClient{client: client}
+}
+
+func (c *extauthServerConfigClient) GetExtauthServerConfig(ctx context.Context, key client.ObjectKey) (*ExtauthServerConfig, error) {
+	obj := &ExtauthServerConfig{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *extauthServerConfigClient) ListExtauthServerConfig(ctx context.Context, opts ...client.ListOption) (*ExtauthServerConfigList, error) {
+	list := &ExtauthServerConfigList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *extauthServerConfigClient) CreateExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *extauthServerConfigClient) DeleteExtauthServerConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &ExtauthServerConfig{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *extauthServerConfigClient) UpdateExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *extauthServerConfigClient) PatchExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *extauthServerConfigClient) DeleteAllOfExtauthServerConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &ExtauthServerConfig{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *extauthServerConfigClient) UpsertExtauthServerConfig(ctx context.Context, obj *ExtauthServerConfig, transitionFuncs ...ExtauthServerConfigTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*ExtauthServerConfig), desired.(*ExtauthServerConfig)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *extauthServerConfigClient) UpdateExtauthServerConfigStatus(ctx context.Context, obj *ExtauthServerConfig, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *extauthServerConfigClient) PatchExtauthServerConfigStatus(ctx context.Context, obj *ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides ExtauthServerConfigClients for multiple clusters.
+type MulticlusterExtauthServerConfigClient interface {
+	// Cluster returns a ExtauthServerConfigClient for the given cluster
+	Cluster(cluster string) (ExtauthServerConfigClient, error)
+}
+
+type multiclusterExtauthServerConfigClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterExtauthServerConfigClient(client multicluster.Client) MulticlusterExtauthServerConfigClient {
+	return &multiclusterExtauthServerConfigClient{client: client}
+}
+
+func (m *multiclusterExtauthServerConfigClient) Cluster(cluster string) (ExtauthServerConfigClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewExtauthServerConfigClient(client), nil
 }
 
 // Reader knows how to read and list VirtualDestinations.

@@ -245,6 +245,121 @@ func (mr *MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder) AddM
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterRateLimiterServerConfigReconciler", reflect.TypeOf((*MockMulticlusterRateLimiterServerConfigReconcileLoop)(nil).AddMulticlusterRateLimiterServerConfigReconciler), varargs...)
 }
 
+// MockMulticlusterExtauthServerConfigReconciler is a mock of MulticlusterExtauthServerConfigReconciler interface.
+type MockMulticlusterExtauthServerConfigReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterExtauthServerConfigReconcilerMockRecorder
+}
+
+// MockMulticlusterExtauthServerConfigReconcilerMockRecorder is the mock recorder for MockMulticlusterExtauthServerConfigReconciler.
+type MockMulticlusterExtauthServerConfigReconcilerMockRecorder struct {
+	mock *MockMulticlusterExtauthServerConfigReconciler
+}
+
+// NewMockMulticlusterExtauthServerConfigReconciler creates a new mock instance.
+func NewMockMulticlusterExtauthServerConfigReconciler(ctrl *gomock.Controller) *MockMulticlusterExtauthServerConfigReconciler {
+	mock := &MockMulticlusterExtauthServerConfigReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterExtauthServerConfigReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterExtauthServerConfigReconciler) EXPECT() *MockMulticlusterExtauthServerConfigReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileExtauthServerConfig mocks base method.
+func (m *MockMulticlusterExtauthServerConfigReconciler) ReconcileExtauthServerConfig(clusterName string, obj *v1beta1.ExtauthServerConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileExtauthServerConfig", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileExtauthServerConfig indicates an expected call of ReconcileExtauthServerConfig.
+func (mr *MockMulticlusterExtauthServerConfigReconcilerMockRecorder) ReconcileExtauthServerConfig(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileExtauthServerConfig", reflect.TypeOf((*MockMulticlusterExtauthServerConfigReconciler)(nil).ReconcileExtauthServerConfig), clusterName, obj)
+}
+
+// MockMulticlusterExtauthServerConfigDeletionReconciler is a mock of MulticlusterExtauthServerConfigDeletionReconciler interface.
+type MockMulticlusterExtauthServerConfigDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterExtauthServerConfigDeletionReconcilerMockRecorder
+}
+
+// MockMulticlusterExtauthServerConfigDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterExtauthServerConfigDeletionReconciler.
+type MockMulticlusterExtauthServerConfigDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterExtauthServerConfigDeletionReconciler
+}
+
+// NewMockMulticlusterExtauthServerConfigDeletionReconciler creates a new mock instance.
+func NewMockMulticlusterExtauthServerConfigDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterExtauthServerConfigDeletionReconciler {
+	mock := &MockMulticlusterExtauthServerConfigDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterExtauthServerConfigDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterExtauthServerConfigDeletionReconciler) EXPECT() *MockMulticlusterExtauthServerConfigDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileExtauthServerConfigDeletion mocks base method.
+func (m *MockMulticlusterExtauthServerConfigDeletionReconciler) ReconcileExtauthServerConfigDeletion(clusterName string, req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileExtauthServerConfigDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileExtauthServerConfigDeletion indicates an expected call of ReconcileExtauthServerConfigDeletion.
+func (mr *MockMulticlusterExtauthServerConfigDeletionReconcilerMockRecorder) ReconcileExtauthServerConfigDeletion(clusterName, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileExtauthServerConfigDeletion", reflect.TypeOf((*MockMulticlusterExtauthServerConfigDeletionReconciler)(nil).ReconcileExtauthServerConfigDeletion), clusterName, req)
+}
+
+// MockMulticlusterExtauthServerConfigReconcileLoop is a mock of MulticlusterExtauthServerConfigReconcileLoop interface.
+type MockMulticlusterExtauthServerConfigReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterExtauthServerConfigReconcileLoopMockRecorder
+}
+
+// MockMulticlusterExtauthServerConfigReconcileLoopMockRecorder is the mock recorder for MockMulticlusterExtauthServerConfigReconcileLoop.
+type MockMulticlusterExtauthServerConfigReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterExtauthServerConfigReconcileLoop
+}
+
+// NewMockMulticlusterExtauthServerConfigReconcileLoop creates a new mock instance.
+func NewMockMulticlusterExtauthServerConfigReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterExtauthServerConfigReconcileLoop {
+	mock := &MockMulticlusterExtauthServerConfigReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterExtauthServerConfigReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterExtauthServerConfigReconcileLoop) EXPECT() *MockMulticlusterExtauthServerConfigReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// AddMulticlusterExtauthServerConfigReconciler mocks base method.
+func (m *MockMulticlusterExtauthServerConfigReconcileLoop) AddMulticlusterExtauthServerConfigReconciler(ctx context.Context, rec controller.MulticlusterExtauthServerConfigReconciler, predicates ...predicate.Predicate) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMulticlusterExtauthServerConfigReconciler", varargs...)
+}
+
+// AddMulticlusterExtauthServerConfigReconciler indicates an expected call of AddMulticlusterExtauthServerConfigReconciler.
+func (mr *MockMulticlusterExtauthServerConfigReconcileLoopMockRecorder) AddMulticlusterExtauthServerConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterExtauthServerConfigReconciler", reflect.TypeOf((*MockMulticlusterExtauthServerConfigReconcileLoop)(nil).AddMulticlusterExtauthServerConfigReconciler), varargs...)
+}
+
 // MockMulticlusterVirtualDestinationReconciler is a mock of MulticlusterVirtualDestinationReconciler interface.
 type MockMulticlusterVirtualDestinationReconciler struct {
 	ctrl     *gomock.Controller

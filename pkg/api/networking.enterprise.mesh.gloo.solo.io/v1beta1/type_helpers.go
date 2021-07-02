@@ -9,6 +9,9 @@ type WasmDeploymentSlice []*WasmDeployment
 // RateLimiterServerConfigSlice represents a slice of *RateLimiterServerConfig
 type RateLimiterServerConfigSlice []*RateLimiterServerConfig
 
+// ExtauthServerConfigSlice represents a slice of *ExtauthServerConfig
+type ExtauthServerConfigSlice []*ExtauthServerConfig
+
 // VirtualDestinationSlice represents a slice of *VirtualDestination
 type VirtualDestinationSlice []*VirtualDestination
 

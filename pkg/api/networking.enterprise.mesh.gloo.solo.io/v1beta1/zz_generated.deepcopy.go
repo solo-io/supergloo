@@ -128,6 +128,66 @@ func (in *RateLimiterServerConfigList) DeepCopyObject() runtime.Object {
 	return nil
 }
 
+// Generated Deepcopy methods for ExtauthServerConfig
+
+func (in *ExtauthServerConfig) DeepCopyInto(out *ExtauthServerConfig) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
+
+	return
+}
+
+func (in *ExtauthServerConfig) DeepCopy() *ExtauthServerConfig {
+	if in == nil {
+		return nil
+	}
+	out := new(ExtauthServerConfig)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *ExtauthServerConfig) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *ExtauthServerConfigList) DeepCopyInto(out *ExtauthServerConfigList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]ExtauthServerConfig, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *ExtauthServerConfigList) DeepCopy() *ExtauthServerConfigList {
+	if in == nil {
+		return nil
+	}
+	out := new(ExtauthServerConfigList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *ExtauthServerConfigList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
 // Generated Deepcopy methods for VirtualDestination
 
 func (in *VirtualDestination) DeepCopyInto(out *VirtualDestination) {

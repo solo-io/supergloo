@@ -74,6 +74,20 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
+// ExtauthServerConfigs mocks base method.
+func (m *MockClientset) ExtauthServerConfigs() v1beta1.ExtauthServerConfigClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtauthServerConfigs")
+	ret0, _ := ret[0].(v1beta1.ExtauthServerConfigClient)
+	return ret0
+}
+
+// ExtauthServerConfigs indicates an expected call of ExtauthServerConfigs.
+func (mr *MockClientsetMockRecorder) ExtauthServerConfigs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtauthServerConfigs", reflect.TypeOf((*MockClientset)(nil).ExtauthServerConfigs))
+}
+
 // RateLimiterServerConfigs mocks base method.
 func (m *MockClientset) RateLimiterServerConfigs() v1beta1.RateLimiterServerConfigClient {
 	m.ctrl.T.Helper()
@@ -1178,6 +1192,510 @@ func (m *MockMulticlusterRateLimiterServerConfigClient) Cluster(cluster string) 
 func (mr *MockMulticlusterRateLimiterServerConfigClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterRateLimiterServerConfigClient)(nil).Cluster), cluster)
+}
+
+// MockExtauthServerConfigReader is a mock of ExtauthServerConfigReader interface.
+type MockExtauthServerConfigReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigReaderMockRecorder
+}
+
+// MockExtauthServerConfigReaderMockRecorder is the mock recorder for MockExtauthServerConfigReader.
+type MockExtauthServerConfigReaderMockRecorder struct {
+	mock *MockExtauthServerConfigReader
+}
+
+// NewMockExtauthServerConfigReader creates a new mock instance.
+func NewMockExtauthServerConfigReader(ctrl *gomock.Controller) *MockExtauthServerConfigReader {
+	mock := &MockExtauthServerConfigReader{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigReader) EXPECT() *MockExtauthServerConfigReaderMockRecorder {
+	return m.recorder
+}
+
+// GetExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigReader) GetExtauthServerConfig(ctx context.Context, key client.ObjectKey) (*v1beta1.ExtauthServerConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExtauthServerConfig", ctx, key)
+	ret0, _ := ret[0].(*v1beta1.ExtauthServerConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExtauthServerConfig indicates an expected call of GetExtauthServerConfig.
+func (mr *MockExtauthServerConfigReaderMockRecorder) GetExtauthServerConfig(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigReader)(nil).GetExtauthServerConfig), ctx, key)
+}
+
+// ListExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigReader) ListExtauthServerConfig(ctx context.Context, opts ...client.ListOption) (*v1beta1.ExtauthServerConfigList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(*v1beta1.ExtauthServerConfigList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListExtauthServerConfig indicates an expected call of ListExtauthServerConfig.
+func (mr *MockExtauthServerConfigReaderMockRecorder) ListExtauthServerConfig(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigReader)(nil).ListExtauthServerConfig), varargs...)
+}
+
+// MockExtauthServerConfigWriter is a mock of ExtauthServerConfigWriter interface.
+type MockExtauthServerConfigWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigWriterMockRecorder
+}
+
+// MockExtauthServerConfigWriterMockRecorder is the mock recorder for MockExtauthServerConfigWriter.
+type MockExtauthServerConfigWriterMockRecorder struct {
+	mock *MockExtauthServerConfigWriter
+}
+
+// NewMockExtauthServerConfigWriter creates a new mock instance.
+func NewMockExtauthServerConfigWriter(ctrl *gomock.Controller) *MockExtauthServerConfigWriter {
+	mock := &MockExtauthServerConfigWriter{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigWriter) EXPECT() *MockExtauthServerConfigWriterMockRecorder {
+	return m.recorder
+}
+
+// CreateExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigWriter) CreateExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateExtauthServerConfig indicates an expected call of CreateExtauthServerConfig.
+func (mr *MockExtauthServerConfigWriterMockRecorder) CreateExtauthServerConfig(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigWriter)(nil).CreateExtauthServerConfig), varargs...)
+}
+
+// DeleteAllOfExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigWriter) DeleteAllOfExtauthServerConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfExtauthServerConfig indicates an expected call of DeleteAllOfExtauthServerConfig.
+func (mr *MockExtauthServerConfigWriterMockRecorder) DeleteAllOfExtauthServerConfig(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigWriter)(nil).DeleteAllOfExtauthServerConfig), varargs...)
+}
+
+// DeleteExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigWriter) DeleteExtauthServerConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteExtauthServerConfig indicates an expected call of DeleteExtauthServerConfig.
+func (mr *MockExtauthServerConfigWriterMockRecorder) DeleteExtauthServerConfig(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigWriter)(nil).DeleteExtauthServerConfig), varargs...)
+}
+
+// PatchExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigWriter) PatchExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchExtauthServerConfig indicates an expected call of PatchExtauthServerConfig.
+func (mr *MockExtauthServerConfigWriterMockRecorder) PatchExtauthServerConfig(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigWriter)(nil).PatchExtauthServerConfig), varargs...)
+}
+
+// UpdateExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigWriter) UpdateExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateExtauthServerConfig indicates an expected call of UpdateExtauthServerConfig.
+func (mr *MockExtauthServerConfigWriterMockRecorder) UpdateExtauthServerConfig(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigWriter)(nil).UpdateExtauthServerConfig), varargs...)
+}
+
+// UpsertExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigWriter) UpsertExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, transitionFuncs ...v1beta1.ExtauthServerConfigTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertExtauthServerConfig indicates an expected call of UpsertExtauthServerConfig.
+func (mr *MockExtauthServerConfigWriterMockRecorder) UpsertExtauthServerConfig(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigWriter)(nil).UpsertExtauthServerConfig), varargs...)
+}
+
+// MockExtauthServerConfigStatusWriter is a mock of ExtauthServerConfigStatusWriter interface.
+type MockExtauthServerConfigStatusWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigStatusWriterMockRecorder
+}
+
+// MockExtauthServerConfigStatusWriterMockRecorder is the mock recorder for MockExtauthServerConfigStatusWriter.
+type MockExtauthServerConfigStatusWriterMockRecorder struct {
+	mock *MockExtauthServerConfigStatusWriter
+}
+
+// NewMockExtauthServerConfigStatusWriter creates a new mock instance.
+func NewMockExtauthServerConfigStatusWriter(ctrl *gomock.Controller) *MockExtauthServerConfigStatusWriter {
+	mock := &MockExtauthServerConfigStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigStatusWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigStatusWriter) EXPECT() *MockExtauthServerConfigStatusWriterMockRecorder {
+	return m.recorder
+}
+
+// PatchExtauthServerConfigStatus mocks base method.
+func (m *MockExtauthServerConfigStatusWriter) PatchExtauthServerConfigStatus(ctx context.Context, obj *v1beta1.ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchExtauthServerConfigStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchExtauthServerConfigStatus indicates an expected call of PatchExtauthServerConfigStatus.
+func (mr *MockExtauthServerConfigStatusWriterMockRecorder) PatchExtauthServerConfigStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchExtauthServerConfigStatus", reflect.TypeOf((*MockExtauthServerConfigStatusWriter)(nil).PatchExtauthServerConfigStatus), varargs...)
+}
+
+// UpdateExtauthServerConfigStatus mocks base method.
+func (m *MockExtauthServerConfigStatusWriter) UpdateExtauthServerConfigStatus(ctx context.Context, obj *v1beta1.ExtauthServerConfig, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateExtauthServerConfigStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateExtauthServerConfigStatus indicates an expected call of UpdateExtauthServerConfigStatus.
+func (mr *MockExtauthServerConfigStatusWriterMockRecorder) UpdateExtauthServerConfigStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExtauthServerConfigStatus", reflect.TypeOf((*MockExtauthServerConfigStatusWriter)(nil).UpdateExtauthServerConfigStatus), varargs...)
+}
+
+// MockExtauthServerConfigClient is a mock of ExtauthServerConfigClient interface.
+type MockExtauthServerConfigClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigClientMockRecorder
+}
+
+// MockExtauthServerConfigClientMockRecorder is the mock recorder for MockExtauthServerConfigClient.
+type MockExtauthServerConfigClientMockRecorder struct {
+	mock *MockExtauthServerConfigClient
+}
+
+// NewMockExtauthServerConfigClient creates a new mock instance.
+func NewMockExtauthServerConfigClient(ctrl *gomock.Controller) *MockExtauthServerConfigClient {
+	mock := &MockExtauthServerConfigClient{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigClient) EXPECT() *MockExtauthServerConfigClientMockRecorder {
+	return m.recorder
+}
+
+// CreateExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) CreateExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateExtauthServerConfig indicates an expected call of CreateExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) CreateExtauthServerConfig(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).CreateExtauthServerConfig), varargs...)
+}
+
+// DeleteAllOfExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) DeleteAllOfExtauthServerConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfExtauthServerConfig indicates an expected call of DeleteAllOfExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) DeleteAllOfExtauthServerConfig(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).DeleteAllOfExtauthServerConfig), varargs...)
+}
+
+// DeleteExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) DeleteExtauthServerConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteExtauthServerConfig indicates an expected call of DeleteExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) DeleteExtauthServerConfig(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).DeleteExtauthServerConfig), varargs...)
+}
+
+// GetExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) GetExtauthServerConfig(ctx context.Context, key client.ObjectKey) (*v1beta1.ExtauthServerConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExtauthServerConfig", ctx, key)
+	ret0, _ := ret[0].(*v1beta1.ExtauthServerConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExtauthServerConfig indicates an expected call of GetExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) GetExtauthServerConfig(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).GetExtauthServerConfig), ctx, key)
+}
+
+// ListExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) ListExtauthServerConfig(ctx context.Context, opts ...client.ListOption) (*v1beta1.ExtauthServerConfigList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(*v1beta1.ExtauthServerConfigList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListExtauthServerConfig indicates an expected call of ListExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) ListExtauthServerConfig(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).ListExtauthServerConfig), varargs...)
+}
+
+// PatchExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) PatchExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchExtauthServerConfig indicates an expected call of PatchExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) PatchExtauthServerConfig(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).PatchExtauthServerConfig), varargs...)
+}
+
+// PatchExtauthServerConfigStatus mocks base method.
+func (m *MockExtauthServerConfigClient) PatchExtauthServerConfigStatus(ctx context.Context, obj *v1beta1.ExtauthServerConfig, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchExtauthServerConfigStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchExtauthServerConfigStatus indicates an expected call of PatchExtauthServerConfigStatus.
+func (mr *MockExtauthServerConfigClientMockRecorder) PatchExtauthServerConfigStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchExtauthServerConfigStatus", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).PatchExtauthServerConfigStatus), varargs...)
+}
+
+// UpdateExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) UpdateExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateExtauthServerConfig indicates an expected call of UpdateExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) UpdateExtauthServerConfig(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).UpdateExtauthServerConfig), varargs...)
+}
+
+// UpdateExtauthServerConfigStatus mocks base method.
+func (m *MockExtauthServerConfigClient) UpdateExtauthServerConfigStatus(ctx context.Context, obj *v1beta1.ExtauthServerConfig, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateExtauthServerConfigStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateExtauthServerConfigStatus indicates an expected call of UpdateExtauthServerConfigStatus.
+func (mr *MockExtauthServerConfigClientMockRecorder) UpdateExtauthServerConfigStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExtauthServerConfigStatus", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).UpdateExtauthServerConfigStatus), varargs...)
+}
+
+// UpsertExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigClient) UpsertExtauthServerConfig(ctx context.Context, obj *v1beta1.ExtauthServerConfig, transitionFuncs ...v1beta1.ExtauthServerConfigTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertExtauthServerConfig", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertExtauthServerConfig indicates an expected call of UpsertExtauthServerConfig.
+func (mr *MockExtauthServerConfigClientMockRecorder) UpsertExtauthServerConfig(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigClient)(nil).UpsertExtauthServerConfig), varargs...)
+}
+
+// MockMulticlusterExtauthServerConfigClient is a mock of MulticlusterExtauthServerConfigClient interface.
+type MockMulticlusterExtauthServerConfigClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterExtauthServerConfigClientMockRecorder
+}
+
+// MockMulticlusterExtauthServerConfigClientMockRecorder is the mock recorder for MockMulticlusterExtauthServerConfigClient.
+type MockMulticlusterExtauthServerConfigClientMockRecorder struct {
+	mock *MockMulticlusterExtauthServerConfigClient
+}
+
+// NewMockMulticlusterExtauthServerConfigClient creates a new mock instance.
+func NewMockMulticlusterExtauthServerConfigClient(ctrl *gomock.Controller) *MockMulticlusterExtauthServerConfigClient {
+	mock := &MockMulticlusterExtauthServerConfigClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterExtauthServerConfigClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMulticlusterExtauthServerConfigClient) EXPECT() *MockMulticlusterExtauthServerConfigClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method.
+func (m *MockMulticlusterExtauthServerConfigClient) Cluster(cluster string) (v1beta1.ExtauthServerConfigClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1beta1.ExtauthServerConfigClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster.
+func (mr *MockMulticlusterExtauthServerConfigClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterExtauthServerConfigClient)(nil).Cluster), cluster)
 }
 
 // MockVirtualDestinationReader is a mock of VirtualDestinationReader interface.

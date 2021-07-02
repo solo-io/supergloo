@@ -499,6 +499,248 @@ func (mr *MockRateLimiterServerConfigSetMockRecorder) UnsortedList(filterResourc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRateLimiterServerConfigSet)(nil).UnsortedList), filterResource...)
 }
 
+// MockExtauthServerConfigSet is a mock of ExtauthServerConfigSet interface.
+type MockExtauthServerConfigSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigSetMockRecorder
+}
+
+// MockExtauthServerConfigSetMockRecorder is the mock recorder for MockExtauthServerConfigSet.
+type MockExtauthServerConfigSetMockRecorder struct {
+	mock *MockExtauthServerConfigSet
+}
+
+// NewMockExtauthServerConfigSet creates a new mock instance.
+func NewMockExtauthServerConfigSet(ctrl *gomock.Controller) *MockExtauthServerConfigSet {
+	mock := &MockExtauthServerConfigSet{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigSet) EXPECT() *MockExtauthServerConfigSetMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockExtauthServerConfigSet) Delete(extauthServerConfig ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", extauthServerConfig)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockExtauthServerConfigSetMockRecorder) Delete(extauthServerConfig interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Delete), extauthServerConfig)
+}
+
+// Delta mocks base method.
+func (m *MockExtauthServerConfigSet) Delta(newSet v1beta1sets.ExtauthServerConfigSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta.
+func (mr *MockExtauthServerConfigSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Delta), newSet)
+}
+
+// Difference mocks base method.
+func (m *MockExtauthServerConfigSet) Difference(set v1beta1sets.ExtauthServerConfigSet) v1beta1sets.ExtauthServerConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1beta1sets.ExtauthServerConfigSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockExtauthServerConfigSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Difference), set)
+}
+
+// Equal mocks base method.
+func (m *MockExtauthServerConfigSet) Equal(extauthServerConfigSet v1beta1sets.ExtauthServerConfigSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", extauthServerConfigSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockExtauthServerConfigSetMockRecorder) Equal(extauthServerConfigSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Equal), extauthServerConfigSet)
+}
+
+// Find mocks base method.
+func (m *MockExtauthServerConfigSet) Find(id ezkube.ResourceId) (*v1beta1.ExtauthServerConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1beta1.ExtauthServerConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockExtauthServerConfigSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Find), id)
+}
+
+// Generic mocks base method.
+func (m *MockExtauthServerConfigSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockExtauthServerConfigSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Generic))
+}
+
+// Has mocks base method.
+func (m *MockExtauthServerConfigSet) Has(extauthServerConfig ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", extauthServerConfig)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockExtauthServerConfigSetMockRecorder) Has(extauthServerConfig interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Has), extauthServerConfig)
+}
+
+// Insert mocks base method.
+func (m *MockExtauthServerConfigSet) Insert(extauthServerConfig ...*v1beta1.ExtauthServerConfig) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range extauthServerConfig {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockExtauthServerConfigSetMockRecorder) Insert(extauthServerConfig ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Insert), extauthServerConfig...)
+}
+
+// Intersection mocks base method.
+func (m *MockExtauthServerConfigSet) Intersection(set v1beta1sets.ExtauthServerConfigSet) v1beta1sets.ExtauthServerConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1beta1sets.ExtauthServerConfigSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockExtauthServerConfigSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Intersection), set)
+}
+
+// Keys mocks base method.
+func (m *MockExtauthServerConfigSet) Keys() sets0.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets0.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys.
+func (mr *MockExtauthServerConfigSetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Keys))
+}
+
+// Length mocks base method.
+func (m *MockExtauthServerConfigSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockExtauthServerConfigSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Length))
+}
+
+// List mocks base method.
+func (m *MockExtauthServerConfigSet) List(filterResource ...func(*v1beta1.ExtauthServerConfig) bool) []*v1beta1.ExtauthServerConfig {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.ExtauthServerConfig)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *MockExtauthServerConfigSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).List), filterResource...)
+}
+
+// Map mocks base method.
+func (m *MockExtauthServerConfigSet) Map() map[string]*v1beta1.ExtauthServerConfig {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1beta1.ExtauthServerConfig)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockExtauthServerConfigSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Map))
+}
+
+// Union mocks base method.
+func (m *MockExtauthServerConfigSet) Union(set v1beta1sets.ExtauthServerConfigSet) v1beta1sets.ExtauthServerConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1beta1sets.ExtauthServerConfigSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockExtauthServerConfigSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).Union), set)
+}
+
+// UnsortedList mocks base method.
+func (m *MockExtauthServerConfigSet) UnsortedList(filterResource ...func(*v1beta1.ExtauthServerConfig) bool) []*v1beta1.ExtauthServerConfig {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.ExtauthServerConfig)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList.
+func (mr *MockExtauthServerConfigSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockExtauthServerConfigSet)(nil).UnsortedList), filterResource...)
+}
+
 // MockVirtualDestinationSet is a mock of VirtualDestinationSet interface.
 type MockVirtualDestinationSet struct {
 	ctrl     *gomock.Controller

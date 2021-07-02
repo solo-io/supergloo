@@ -381,6 +381,189 @@ func (mr *MockRateLimiterServerConfigReconcileLoopMockRecorder) RunRateLimiterSe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunRateLimiterServerConfigReconciler", reflect.TypeOf((*MockRateLimiterServerConfigReconcileLoop)(nil).RunRateLimiterServerConfigReconciler), varargs...)
 }
 
+// MockExtauthServerConfigReconciler is a mock of ExtauthServerConfigReconciler interface.
+type MockExtauthServerConfigReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigReconcilerMockRecorder
+}
+
+// MockExtauthServerConfigReconcilerMockRecorder is the mock recorder for MockExtauthServerConfigReconciler.
+type MockExtauthServerConfigReconcilerMockRecorder struct {
+	mock *MockExtauthServerConfigReconciler
+}
+
+// NewMockExtauthServerConfigReconciler creates a new mock instance.
+func NewMockExtauthServerConfigReconciler(ctrl *gomock.Controller) *MockExtauthServerConfigReconciler {
+	mock := &MockExtauthServerConfigReconciler{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigReconciler) EXPECT() *MockExtauthServerConfigReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigReconciler) ReconcileExtauthServerConfig(obj *v1beta1.ExtauthServerConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileExtauthServerConfig", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileExtauthServerConfig indicates an expected call of ReconcileExtauthServerConfig.
+func (mr *MockExtauthServerConfigReconcilerMockRecorder) ReconcileExtauthServerConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigReconciler)(nil).ReconcileExtauthServerConfig), obj)
+}
+
+// MockExtauthServerConfigDeletionReconciler is a mock of ExtauthServerConfigDeletionReconciler interface.
+type MockExtauthServerConfigDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigDeletionReconcilerMockRecorder
+}
+
+// MockExtauthServerConfigDeletionReconcilerMockRecorder is the mock recorder for MockExtauthServerConfigDeletionReconciler.
+type MockExtauthServerConfigDeletionReconcilerMockRecorder struct {
+	mock *MockExtauthServerConfigDeletionReconciler
+}
+
+// NewMockExtauthServerConfigDeletionReconciler creates a new mock instance.
+func NewMockExtauthServerConfigDeletionReconciler(ctrl *gomock.Controller) *MockExtauthServerConfigDeletionReconciler {
+	mock := &MockExtauthServerConfigDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigDeletionReconciler) EXPECT() *MockExtauthServerConfigDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileExtauthServerConfigDeletion mocks base method.
+func (m *MockExtauthServerConfigDeletionReconciler) ReconcileExtauthServerConfigDeletion(req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileExtauthServerConfigDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileExtauthServerConfigDeletion indicates an expected call of ReconcileExtauthServerConfigDeletion.
+func (mr *MockExtauthServerConfigDeletionReconcilerMockRecorder) ReconcileExtauthServerConfigDeletion(req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileExtauthServerConfigDeletion", reflect.TypeOf((*MockExtauthServerConfigDeletionReconciler)(nil).ReconcileExtauthServerConfigDeletion), req)
+}
+
+// MockExtauthServerConfigFinalizer is a mock of ExtauthServerConfigFinalizer interface.
+type MockExtauthServerConfigFinalizer struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigFinalizerMockRecorder
+}
+
+// MockExtauthServerConfigFinalizerMockRecorder is the mock recorder for MockExtauthServerConfigFinalizer.
+type MockExtauthServerConfigFinalizerMockRecorder struct {
+	mock *MockExtauthServerConfigFinalizer
+}
+
+// NewMockExtauthServerConfigFinalizer creates a new mock instance.
+func NewMockExtauthServerConfigFinalizer(ctrl *gomock.Controller) *MockExtauthServerConfigFinalizer {
+	mock := &MockExtauthServerConfigFinalizer{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigFinalizerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigFinalizer) EXPECT() *MockExtauthServerConfigFinalizerMockRecorder {
+	return m.recorder
+}
+
+// ExtauthServerConfigFinalizerName mocks base method.
+func (m *MockExtauthServerConfigFinalizer) ExtauthServerConfigFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtauthServerConfigFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// ExtauthServerConfigFinalizerName indicates an expected call of ExtauthServerConfigFinalizerName.
+func (mr *MockExtauthServerConfigFinalizerMockRecorder) ExtauthServerConfigFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtauthServerConfigFinalizerName", reflect.TypeOf((*MockExtauthServerConfigFinalizer)(nil).ExtauthServerConfigFinalizerName))
+}
+
+// FinalizeExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigFinalizer) FinalizeExtauthServerConfig(obj *v1beta1.ExtauthServerConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeExtauthServerConfig", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeExtauthServerConfig indicates an expected call of FinalizeExtauthServerConfig.
+func (mr *MockExtauthServerConfigFinalizerMockRecorder) FinalizeExtauthServerConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigFinalizer)(nil).FinalizeExtauthServerConfig), obj)
+}
+
+// ReconcileExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigFinalizer) ReconcileExtauthServerConfig(obj *v1beta1.ExtauthServerConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileExtauthServerConfig", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileExtauthServerConfig indicates an expected call of ReconcileExtauthServerConfig.
+func (mr *MockExtauthServerConfigFinalizerMockRecorder) ReconcileExtauthServerConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigFinalizer)(nil).ReconcileExtauthServerConfig), obj)
+}
+
+// MockExtauthServerConfigReconcileLoop is a mock of ExtauthServerConfigReconcileLoop interface.
+type MockExtauthServerConfigReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigReconcileLoopMockRecorder
+}
+
+// MockExtauthServerConfigReconcileLoopMockRecorder is the mock recorder for MockExtauthServerConfigReconcileLoop.
+type MockExtauthServerConfigReconcileLoopMockRecorder struct {
+	mock *MockExtauthServerConfigReconcileLoop
+}
+
+// NewMockExtauthServerConfigReconcileLoop creates a new mock instance.
+func NewMockExtauthServerConfigReconcileLoop(ctrl *gomock.Controller) *MockExtauthServerConfigReconcileLoop {
+	mock := &MockExtauthServerConfigReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigReconcileLoop) EXPECT() *MockExtauthServerConfigReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// RunExtauthServerConfigReconciler mocks base method.
+func (m *MockExtauthServerConfigReconcileLoop) RunExtauthServerConfigReconciler(ctx context.Context, rec controller.ExtauthServerConfigReconciler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RunExtauthServerConfigReconciler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunExtauthServerConfigReconciler indicates an expected call of RunExtauthServerConfigReconciler.
+func (mr *MockExtauthServerConfigReconcileLoopMockRecorder) RunExtauthServerConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunExtauthServerConfigReconciler", reflect.TypeOf((*MockExtauthServerConfigReconcileLoop)(nil).RunExtauthServerConfigReconciler), varargs...)
+}
+
 // MockVirtualDestinationReconciler is a mock of VirtualDestinationReconciler interface.
 type MockVirtualDestinationReconciler struct {
 	ctrl     *gomock.Controller

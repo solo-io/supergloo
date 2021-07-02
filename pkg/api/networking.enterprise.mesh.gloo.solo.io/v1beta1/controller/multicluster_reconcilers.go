@@ -160,6 +160,77 @@ func (g genericRateLimiterServerConfigMulticlusterReconciler) Reconcile(cluster 
 	return g.reconciler.ReconcileRateLimiterServerConfig(cluster, obj)
 }
 
+// Reconcile Upsert events for the ExtauthServerConfig Resource across clusters.
+// implemented by the user
+type MulticlusterExtauthServerConfigReconciler interface {
+	ReconcileExtauthServerConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the ExtauthServerConfig Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterExtauthServerConfigDeletionReconciler interface {
+	ReconcileExtauthServerConfigDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterExtauthServerConfigReconcilerFuncs struct {
+	OnReconcileExtauthServerConfig         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) (reconcile.Result, error)
+	OnReconcileExtauthServerConfigDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterExtauthServerConfigReconcilerFuncs) ReconcileExtauthServerConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) (reconcile.Result, error) {
+	if f.OnReconcileExtauthServerConfig == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileExtauthServerConfig(clusterName, obj)
+}
+
+func (f *MulticlusterExtauthServerConfigReconcilerFuncs) ReconcileExtauthServerConfigDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileExtauthServerConfigDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileExtauthServerConfigDeletion(clusterName, req)
+}
+
+type MulticlusterExtauthServerConfigReconcileLoop interface {
+	// AddMulticlusterExtauthServerConfigReconciler adds a MulticlusterExtauthServerConfigReconciler to the MulticlusterExtauthServerConfigReconcileLoop.
+	AddMulticlusterExtauthServerConfigReconciler(ctx context.Context, rec MulticlusterExtauthServerConfigReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterExtauthServerConfigReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterExtauthServerConfigReconcileLoop) AddMulticlusterExtauthServerConfigReconciler(ctx context.Context, rec MulticlusterExtauthServerConfigReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericExtauthServerConfigMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterExtauthServerConfigReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterExtauthServerConfigReconcileLoop {
+	return &multiclusterExtauthServerConfigReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig{}, options)}
+}
+
+type genericExtauthServerConfigMulticlusterReconciler struct {
+	reconciler MulticlusterExtauthServerConfigReconciler
+}
+
+func (g genericExtauthServerConfigMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterExtauthServerConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileExtauthServerConfigDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericExtauthServerConfigMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileExtauthServerConfig(cluster, obj)
+}
+
 // Reconcile Upsert events for the VirtualDestination Resource across clusters.
 // implemented by the user
 type MulticlusterVirtualDestinationReconciler interface {

@@ -73,6 +73,34 @@ func RateLimiterServerConfigClientFromConfigFactoryProvider() RateLimiterServerC
 	}
 }
 
+// Provider for ExtauthServerConfigClient from Clientset
+func ExtauthServerConfigClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfigClient {
+	return clients.ExtauthServerConfigs()
+}
+
+// Provider for ExtauthServerConfig Client from Client
+func ExtauthServerConfigClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfigClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewExtauthServerConfigClient(client)
+}
+
+type ExtauthServerConfigClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfigClient
+
+func ExtauthServerConfigClientFactoryProvider() ExtauthServerConfigClientFactory {
+	return ExtauthServerConfigClientProvider
+}
+
+type ExtauthServerConfigClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfigClient, error)
+
+func ExtauthServerConfigClientFromConfigFactoryProvider() ExtauthServerConfigClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfigClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.ExtauthServerConfigs(), nil
+	}
+}
+
 // Provider for VirtualDestinationClient from Clientset
 func VirtualDestinationClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestinationClient {
 	return clients.VirtualDestinations()

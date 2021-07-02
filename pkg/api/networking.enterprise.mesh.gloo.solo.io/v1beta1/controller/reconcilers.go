@@ -251,6 +251,123 @@ func (r genericRateLimiterServerConfigFinalizer) Finalize(object ezkube.Object) 
 	return r.finalizingReconciler.FinalizeRateLimiterServerConfig(obj)
 }
 
+// Reconcile Upsert events for the ExtauthServerConfig Resource.
+// implemented by the user
+type ExtauthServerConfigReconciler interface {
+	ReconcileExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the ExtauthServerConfig Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type ExtauthServerConfigDeletionReconciler interface {
+	ReconcileExtauthServerConfigDeletion(req reconcile.Request) error
+}
+
+type ExtauthServerConfigReconcilerFuncs struct {
+	OnReconcileExtauthServerConfig         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) (reconcile.Result, error)
+	OnReconcileExtauthServerConfigDeletion func(req reconcile.Request) error
+}
+
+func (f *ExtauthServerConfigReconcilerFuncs) ReconcileExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) (reconcile.Result, error) {
+	if f.OnReconcileExtauthServerConfig == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileExtauthServerConfig(obj)
+}
+
+func (f *ExtauthServerConfigReconcilerFuncs) ReconcileExtauthServerConfigDeletion(req reconcile.Request) error {
+	if f.OnReconcileExtauthServerConfigDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileExtauthServerConfigDeletion(req)
+}
+
+// Reconcile and finalize the ExtauthServerConfig Resource
+// implemented by the user
+type ExtauthServerConfigFinalizer interface {
+	ExtauthServerConfigReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	ExtauthServerConfigFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeExtauthServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig) error
+}
+
+type ExtauthServerConfigReconcileLoop interface {
+	RunExtauthServerConfigReconciler(ctx context.Context, rec ExtauthServerConfigReconciler, predicates ...predicate.Predicate) error
+}
+
+type extauthServerConfigReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewExtauthServerConfigReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) ExtauthServerConfigReconcileLoop {
+	return &extauthServerConfigReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig{}, options),
+	}
+}
+
+func (c *extauthServerConfigReconcileLoop) RunExtauthServerConfigReconciler(ctx context.Context, reconciler ExtauthServerConfigReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericExtauthServerConfigReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(ExtauthServerConfigFinalizer); ok {
+		reconcilerWrapper = genericExtauthServerConfigFinalizer{
+			genericExtauthServerConfigReconciler: genericReconciler,
+			finalizingReconciler:                 finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericExtauthServerConfigHandler implements a generic reconcile.Reconciler
+type genericExtauthServerConfigReconciler struct {
+	reconciler ExtauthServerConfigReconciler
+}
+
+func (r genericExtauthServerConfigReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileExtauthServerConfig(obj)
+}
+
+func (r genericExtauthServerConfigReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(ExtauthServerConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileExtauthServerConfigDeletion(request)
+	}
+	return nil
+}
+
+// genericExtauthServerConfigFinalizer implements a generic reconcile.FinalizingReconciler
+type genericExtauthServerConfigFinalizer struct {
+	genericExtauthServerConfigReconciler
+	finalizingReconciler ExtauthServerConfigFinalizer
+}
+
+func (r genericExtauthServerConfigFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.ExtauthServerConfigFinalizerName()
+}
+
+func (r genericExtauthServerConfigFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.ExtauthServerConfig)
+	if !ok {
+		return errors.Errorf("internal error: ExtauthServerConfig handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeExtauthServerConfig(obj)
+}
+
 // Reconcile Upsert events for the VirtualDestination Resource.
 // implemented by the user
 type VirtualDestinationReconciler interface {

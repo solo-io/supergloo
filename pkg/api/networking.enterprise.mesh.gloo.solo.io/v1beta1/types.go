@@ -83,6 +83,41 @@ type RateLimiterServerConfigList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for ExtauthServerConfig
+var ExtauthServerConfigGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "ExtauthServerConfig",
+}
+
+// ExtauthServerConfig is the Schema for the extauthServerConfig API
+type ExtauthServerConfig struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   ExtauthServerConfigSpec   `json:"spec,omitempty"`
+	Status ExtauthServerConfigStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (ExtauthServerConfig) GVK() schema.GroupVersionKind {
+	return ExtauthServerConfigGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ExtauthServerConfigList contains a list of ExtauthServerConfig
+type ExtauthServerConfigList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []ExtauthServerConfig `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
 // GroupVersionKind for VirtualDestination
 var VirtualDestinationGVK = schema.GroupVersionKind{
 	Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -256,6 +291,7 @@ type ServiceDependencyList struct {
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
 	SchemeBuilder.Register(&RateLimiterServerConfig{}, &RateLimiterServerConfigList{})
+	SchemeBuilder.Register(&ExtauthServerConfig{}, &ExtauthServerConfigList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
 	SchemeBuilder.Register(&VirtualGateway{}, &VirtualGatewayList{})
 	SchemeBuilder.Register(&VirtualHost{}, &VirtualHostList{})

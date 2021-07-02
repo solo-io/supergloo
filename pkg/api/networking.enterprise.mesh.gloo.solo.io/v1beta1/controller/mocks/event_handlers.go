@@ -256,6 +256,127 @@ func (mr *MockRateLimiterServerConfigEventWatcherMockRecorder) AddEventHandler(c
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockRateLimiterServerConfigEventWatcher)(nil).AddEventHandler), varargs...)
 }
 
+// MockExtauthServerConfigEventHandler is a mock of ExtauthServerConfigEventHandler interface.
+type MockExtauthServerConfigEventHandler struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigEventHandlerMockRecorder
+}
+
+// MockExtauthServerConfigEventHandlerMockRecorder is the mock recorder for MockExtauthServerConfigEventHandler.
+type MockExtauthServerConfigEventHandlerMockRecorder struct {
+	mock *MockExtauthServerConfigEventHandler
+}
+
+// NewMockExtauthServerConfigEventHandler creates a new mock instance.
+func NewMockExtauthServerConfigEventHandler(ctrl *gomock.Controller) *MockExtauthServerConfigEventHandler {
+	mock := &MockExtauthServerConfigEventHandler{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigEventHandlerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigEventHandler) EXPECT() *MockExtauthServerConfigEventHandlerMockRecorder {
+	return m.recorder
+}
+
+// CreateExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigEventHandler) CreateExtauthServerConfig(obj *v1beta1.ExtauthServerConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateExtauthServerConfig", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateExtauthServerConfig indicates an expected call of CreateExtauthServerConfig.
+func (mr *MockExtauthServerConfigEventHandlerMockRecorder) CreateExtauthServerConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigEventHandler)(nil).CreateExtauthServerConfig), obj)
+}
+
+// DeleteExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigEventHandler) DeleteExtauthServerConfig(obj *v1beta1.ExtauthServerConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteExtauthServerConfig", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteExtauthServerConfig indicates an expected call of DeleteExtauthServerConfig.
+func (mr *MockExtauthServerConfigEventHandlerMockRecorder) DeleteExtauthServerConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigEventHandler)(nil).DeleteExtauthServerConfig), obj)
+}
+
+// GenericExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigEventHandler) GenericExtauthServerConfig(obj *v1beta1.ExtauthServerConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericExtauthServerConfig", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericExtauthServerConfig indicates an expected call of GenericExtauthServerConfig.
+func (mr *MockExtauthServerConfigEventHandlerMockRecorder) GenericExtauthServerConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigEventHandler)(nil).GenericExtauthServerConfig), obj)
+}
+
+// UpdateExtauthServerConfig mocks base method.
+func (m *MockExtauthServerConfigEventHandler) UpdateExtauthServerConfig(old, new *v1beta1.ExtauthServerConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateExtauthServerConfig", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateExtauthServerConfig indicates an expected call of UpdateExtauthServerConfig.
+func (mr *MockExtauthServerConfigEventHandlerMockRecorder) UpdateExtauthServerConfig(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExtauthServerConfig", reflect.TypeOf((*MockExtauthServerConfigEventHandler)(nil).UpdateExtauthServerConfig), old, new)
+}
+
+// MockExtauthServerConfigEventWatcher is a mock of ExtauthServerConfigEventWatcher interface.
+type MockExtauthServerConfigEventWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockExtauthServerConfigEventWatcherMockRecorder
+}
+
+// MockExtauthServerConfigEventWatcherMockRecorder is the mock recorder for MockExtauthServerConfigEventWatcher.
+type MockExtauthServerConfigEventWatcherMockRecorder struct {
+	mock *MockExtauthServerConfigEventWatcher
+}
+
+// NewMockExtauthServerConfigEventWatcher creates a new mock instance.
+func NewMockExtauthServerConfigEventWatcher(ctrl *gomock.Controller) *MockExtauthServerConfigEventWatcher {
+	mock := &MockExtauthServerConfigEventWatcher{ctrl: ctrl}
+	mock.recorder = &MockExtauthServerConfigEventWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockExtauthServerConfigEventWatcher) EXPECT() *MockExtauthServerConfigEventWatcherMockRecorder {
+	return m.recorder
+}
+
+// AddEventHandler mocks base method.
+func (m *MockExtauthServerConfigEventWatcher) AddEventHandler(ctx context.Context, h controller.ExtauthServerConfigEventHandler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, h}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddEventHandler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddEventHandler indicates an expected call of AddEventHandler.
+func (mr *MockExtauthServerConfigEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, h}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockExtauthServerConfigEventWatcher)(nil).AddEventHandler), varargs...)
+}
+
 // MockVirtualDestinationEventHandler is a mock of VirtualDestinationEventHandler interface.
 type MockVirtualDestinationEventHandler struct {
 	ctrl     *gomock.Controller
