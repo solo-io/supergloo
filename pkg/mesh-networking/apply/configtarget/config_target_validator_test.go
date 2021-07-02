@@ -55,7 +55,7 @@ var _ = Describe("ConfigTargetValidator", func() {
 							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port: 1234,
-									Name: defaults.DefaultGatewayPortName,
+									Name: defaults.IstioGatewayTlsPortName,
 								},
 							},
 						},
@@ -260,7 +260,7 @@ var _ = Describe("ConfigTargetValidator", func() {
 						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port: 1234,
-								Name: defaults.DefaultGatewayPortName,
+								Name: defaults.IstioGatewayTlsPortName,
 							},
 						},
 					},

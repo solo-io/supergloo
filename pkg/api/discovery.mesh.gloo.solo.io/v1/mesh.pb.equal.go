@@ -627,7 +627,7 @@ func (m *MeshStatus_IngressGateway) Equal(that interface{}) bool {
 		}
 	}
 
-	if strings.Compare(m.GetTlsPortName(), target.GetTlsPortName()) != 0 {
+	if m.GetTlsPort() != target.GetTlsPort() {
 		return false
 	}
 

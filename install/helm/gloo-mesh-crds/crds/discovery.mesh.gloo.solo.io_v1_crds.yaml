@@ -2138,9 +2138,12 @@ spec:
                         description: namespace of the resource being referenced
                         type: string
                     type: object
-                  tlsPortName:
-                    description: The name of the TLS port on the ingress gateway Destination.
-                    type: string
+                  tlsPort:
+                    description: The port on the ingress gateway Destination receiving
+                      TLS traffic.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
                 type: object
               type: array
             observedGeneration:

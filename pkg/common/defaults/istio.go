@@ -12,5 +12,5 @@ const (
 	IstioGatewayLabelKey          = "istio"
 	IstioIngressGatewayLabelValue = "ingressgateway"
 	// The name of the externally-reachable port on which the ingress gateway is listening for TLS connections.
-	DefaultGatewayPortName = "tls"
+	IstioGatewayTlsPortName = "tls"
 )

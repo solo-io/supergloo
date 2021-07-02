@@ -205,21 +205,6 @@ func refsContain(refs []*v1.ClusterObjectRef, targetRef *v1.ClusterObjectRef) bo
 	return false
 }
 
-func IngressGatewaySelectorMatchesMesh(ingressGatewayServiceSelector *commonv1.IngressGatewaySelector, mesh ezkube.ResourceId) bool {
-	var applies bool
-	if len(ingressGatewayServiceSelector.GetMeshes()) == 0 {
-		applies = true
-	} else {
-		for _, meshRef := range ingressGatewayServiceSelector.GetMeshes() {
-			if ezkube.RefsMatch(meshRef, mesh) {
-				applies = true
-				break
-			}
-		}
-	}
-	return applies
-}
-
 // used in enterprise
 func ValidateSelector(
 	selector *v1.ObjectSelector,

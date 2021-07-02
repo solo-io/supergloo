@@ -29,7 +29,6 @@ import (
 const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
-	defaultGatewayPort     = 15443
 )
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -91,44 +90,41 @@ func (t *translator) Translate(
 		return
 	}
 
-	// create the east west ingress gateways
-	for _, ewIngressGatewayInfo := range mesh.Status.GetEastWestIngressGateways() {
-		destination, err := in.Destinations().Find(ewIngressGatewayInfo.GetDestinationRef())
+	// translate one Gateway CR per ingress gateway Destination
+	for _, ingressGateway := range mesh.Status.GetEastWestIngressGateways() {
+		destination, err := in.Destinations().Find(ingressGateway.GetDestinationRef())
 		if err != nil {
-			continue // should log an error in the VirtualMesh status
+			contextutils.LoggerFrom(t.ctx).DPanicf("internal error: applied east west ingress gateway Destination not found in snapshot")
+			continue
 		}
 
-		// Figure out the ingress gateway tls port
-		ingressGatewayContainerTlsPort := uint32(defaultGatewayPort)
-		gatewayTlsPortName := defaults.DefaultGatewayPortName
-		if ewIngressGatewayInfo.GetTlsPortName() != "" {
-			gatewayTlsPortName = ewIngressGatewayInfo.GetTlsPortName()
-		}
-		for _, ports := range destination.Spec.GetKubeService().GetPorts() {
-			if ports.GetName() == gatewayTlsPortName {
-				ingressGatewayContainerTlsPort = ports.GetPort()
-				break
-			}
+		ingressGatewayTlsPort := ingressGateway.GetTlsPort()
+		if ingressGatewayTlsPort == 0 {
+			contextutils.LoggerFrom(t.ctx).DPanicf("ingress gateway port not found")
+			continue
 		}
 
-		// figure out the ingress gateway workload labels
-		ingressGatewayWorkloadLabels := defaults.DefaultGatewayWorkloadLabels
-		if len(destination.Spec.GetKubeService().GetWorkloadSelectorLabels()) != 0 {
-			ingressGatewayWorkloadLabels = destination.Spec.GetKubeService().GetWorkloadSelectorLabels()
-		}
-
-		// istio gateway names must be DNS-1123 labels
-		// hyphens are legal, dots are not, so we convert here
-		gwName := BuildGatewayName(destination.GetName(), destination.GetNamespace())
-		t.buildGatewayObject(gwName, istioNamespace, istioCluster,
-			ingressGatewayContainerTlsPort, federatedHostnameSuffix, ingressGatewayWorkloadLabels,
-			virtualMesh.GetRef(), outputs)
+		t.buildGateway(
+			BuildGatewayName(destination.GetName(), destination.GetNamespace()),
+			istioNamespace,
+			istioCluster,
+			ingressGatewayTlsPort,
+			federatedHostnameSuffix,
+			destination.Spec.GetKubeService().GetWorkloadSelectorLabels(),
+			virtualMesh.GetRef(),
+			outputs,
+		)
 	}
 }
 
-func (t *translator) buildGatewayObject(name, namespace, cluster string, ingressGatewayContainerTlsPort uint32,
-	federatedHostnameSuffix string, ingressGatewayWorkloadLabels map[string]string,
-	virtualMeshRef ezkube.ResourceId, outputs istio.Builder) {
+func (t *translator) buildGateway(
+	name, namespace, cluster string,
+	ingressGatewayTlsPort uint32,
+	federatedHostnameSuffix string,
+	ingressGatewayWorkloadLabels map[string]string,
+	virtualMeshRef ezkube.ResourceId,
+	outputs istio.Builder,
+) {
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -139,9 +135,9 @@ func (t *translator) buildGatewayObject(name, namespace, cluster string, ingress
 		Spec: networkingv1alpha3spec.Gateway{
 			Servers: []*networkingv1alpha3spec.Server{{
 				Port: &networkingv1alpha3spec.Port{
-					Number:   ingressGatewayContainerTlsPort,
+					Number:   ingressGatewayTlsPort,
 					Protocol: defaultGatewayProtocol,
-					Name:     defaults.DefaultGatewayPortName,
+					Name:     defaults.IstioGatewayTlsPortName,
 				},
 				Hosts: []string{"*." + federatedHostnameSuffix},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{

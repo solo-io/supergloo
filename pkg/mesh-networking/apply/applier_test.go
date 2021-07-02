@@ -189,7 +189,7 @@ var _ = Describe("Applier", func() {
 							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port: 1234,
-									Name: defaults.DefaultGatewayPortName,
+									Name: defaults.IstioGatewayTlsPortName,
 								},
 							},
 						},
@@ -212,7 +212,7 @@ var _ = Describe("Applier", func() {
 							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port: 1234,
-									Name: defaults.DefaultGatewayPortName,
+									Name: defaults.IstioGatewayTlsPortName,
 								},
 							},
 						},
@@ -611,21 +611,16 @@ var _ = Describe("Applier", func() {
 		})
 	})
 
-	Context("applied virtual mesh east west ingress gateway selectors", func() {
+	Context("applies east west ingress gateways for Meshes configured by VirtualMesh", func() {
 		var (
 			applier Applier
 
-			ingressDestinationRefForMesh = func(meshName string) *skv2corev1.ObjectRef {
-				return &skv2corev1.ObjectRef{
-					Name:      meshName,
-					Namespace: "ns",
-				}
-			}
-			ingressDestinationForMesh = func(meshName string) *discoveryv1.Destination {
+			ingressDestinationForMesh = func(svcName, meshName string, serviceType discoveryv1.DestinationSpec_KubeService_ServiceType) *discoveryv1.Destination {
 				return &discoveryv1.Destination{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      meshName,
-						Namespace: "ns",
+						Name:        svcName,
+						Namespace:   "ns",
+						ClusterName: "cluster-name",
 					},
 					Spec: discoveryv1.DestinationSpec{
 						Mesh: &skv2corev1.ObjectRef{
@@ -635,19 +630,22 @@ var _ = Describe("Applier", func() {
 						Type: &discoveryv1.DestinationSpec_KubeService_{
 							KubeService: &discoveryv1.DestinationSpec_KubeService{
 								Ref: &skv2corev1.ClusterObjectRef{
-									Name:        "svc-name",
+									Name:        svcName,
 									Namespace:   "svc-namespace",
 									ClusterName: "svc-cluster",
 								},
+								ServiceType:            serviceType,
 								WorkloadSelectorLabels: defaults.DefaultGatewayWorkloadLabels,
 								Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 									{
-										Port: 1234,
-										Name: defaults.DefaultGatewayPortName,
+										Port:     1234,
+										NodePort: 11234,
+										Name:     defaults.IstioGatewayTlsPortName,
 									},
 									{
-										Port: 5678,
-										Name: "non-default-port",
+										Port:     5678,
+										NodePort: 15678,
+										Name:     "non-default-port",
 									},
 								},
 							},
@@ -656,10 +654,11 @@ var _ = Describe("Applier", func() {
 				}
 			}
 
-			destination1 = ingressDestinationForMesh("mesh1")
-			destination2 = ingressDestinationForMesh("mesh2")
-			destination3 = ingressDestinationForMesh("mesh3")
-			destination4 = ingressDestinationForMesh("mesh4")
+			destination1 = ingressDestinationForMesh("svc-name1", "mesh1", discoveryv1.DestinationSpec_KubeService_NODE_PORT)
+			destination2 = ingressDestinationForMesh("svc-name2", "mesh2", discoveryv1.DestinationSpec_KubeService_NODE_PORT)
+			destination3 = ingressDestinationForMesh("svc-name3", "mesh3", discoveryv1.DestinationSpec_KubeService_LOAD_BALANCER)
+			destination4 = ingressDestinationForMesh("svc-name4", "mesh4", discoveryv1.DestinationSpec_KubeService_LOAD_BALANCER)
+			destination5 = ingressDestinationForMesh("svc-name5", "mesh4", discoveryv1.DestinationSpec_KubeService_LOAD_BALANCER)
 
 			mesh1 = &discoveryv1.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
@@ -697,7 +696,72 @@ var _ = Describe("Applier", func() {
 			applier = NewApplier(translator)
 		})
 
-		It("applies default east west ingress gateways on a VirtualMesh with no federation", func() {
+		It("when ingress selectors are omitted, should first fallback on deprecated Mesh ingress gateway info", func() {
+
+			mesh := &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh",
+					Namespace: "ns",
+				},
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{
+						Istio: &discoveryv1.MeshSpec_Istio{
+							Installation: &discoveryv1.MeshInstallation{
+								Namespace: "mesh-ns",
+								Cluster:   "cluster-name",
+								Version:   "latest",
+								PodLabels: map[string]string{"app": "istiod"},
+							},
+							IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
+								{
+									Name:            "ingress-svc",
+									Namespace:       "namespace",
+									ExternalTlsPort: 5678,
+								},
+							},
+						},
+					},
+				},
+			}
+
+			snap.AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4})
+			snap.AddMeshes(discoveryv1.MeshSlice{mesh})
+
+			defaultVirtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						ezkube.MakeObjectRef(mesh),
+					},
+				},
+			}
+
+			mesh.Status.AppliedVirtualMesh = &discoveryv1.MeshStatus_AppliedVirtualMesh{
+				Ref: &skv2corev1.ObjectRef{
+					Name:      "vm1",
+					Namespace: "ns",
+				},
+			}
+
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{defaultVirtualMesh})
+
+			applier.Apply(context.TODO(), snap.Build(), nil)
+
+			Expect(len(mesh.Status.EastWestIngressGateways)).To(Equal(1))
+
+			Expect(mesh.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
+				DestinationRef: &skv2corev1.ObjectRef{
+					Name:      "ingress-svc",
+					Namespace: "namespace",
+				},
+				TlsPort: 5678,
+			}))
+		})
+
+		It("when ingress selectors are omitted, should fallback on default east west ingress gateway selection", func() {
 
 			snap.AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4})
 
@@ -734,25 +798,25 @@ var _ = Describe("Applier", func() {
 			Expect(len(mesh4.Status.EastWestIngressGateways)).To(Equal(1))
 
 			Expect(mesh1.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh1"),
-				TlsPortName:    defaults.DefaultGatewayPortName,
+				DestinationRef: ezkube.MakeObjectRef(destination1),
+				TlsPort:        11234,
 			}))
 			Expect(mesh2.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh2"),
-				TlsPortName:    defaults.DefaultGatewayPortName,
+				DestinationRef: ezkube.MakeObjectRef(destination2),
+				TlsPort:        11234,
 			}))
 			Expect(mesh3.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh3"),
-				TlsPortName:    defaults.DefaultGatewayPortName,
+				DestinationRef: ezkube.MakeObjectRef(destination3),
+				TlsPort:        1234,
 			}))
 			Expect(mesh4.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh4"),
-				TlsPortName:    defaults.DefaultGatewayPortName,
+				DestinationRef: ezkube.MakeObjectRef(destination4),
+				TlsPort:        1234,
 			}))
 		})
 
 		It("selects east west ingress gateways on a VirtualMesh with east west ingress gateway selectors", func() {
-			snap.AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4})
+			snap.AddDestinations(discoveryv1.DestinationSlice{destination1, destination2, destination3, destination4, destination5})
 
 			virtualMeshWithSelector1 := &networkingv1.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
@@ -801,11 +865,7 @@ var _ = Describe("Applier", func() {
 									{
 										KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
 											Services: []*skv2corev1.ClusterObjectRef{
-												{
-													Name:        "svc-name",
-													Namespace:   "svc-namespace",
-													ClusterName: "svc-cluster",
-												},
+												ezkube.MakeClusterObjectRef(destination2.Spec.GetKubeService().Ref),
 											},
 										},
 									},
@@ -840,11 +900,7 @@ var _ = Describe("Applier", func() {
 									{
 										KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
 											Services: []*skv2corev1.ClusterObjectRef{
-												{
-													Name:        "svc-name",
-													Namespace:   "svc-namespace",
-													ClusterName: "svc-cluster",
-												},
+												ezkube.MakeClusterObjectRef(destination3.Spec.GetKubeService().Ref),
 											},
 										},
 									},
@@ -859,16 +915,29 @@ var _ = Describe("Applier", func() {
 									{
 										KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
 											Services: []*skv2corev1.ClusterObjectRef{
-												{
-													Name:        "svc-name",
-													Namespace:   "svc-namespace",
-													ClusterName: "svc-cluster",
-												},
+												ezkube.MakeClusterObjectRef(destination4.Spec.GetKubeService().GetRef()),
 											},
 										},
 									},
 								},
-								GatewayTlsPortName: defaults.DefaultGatewayPortName,
+								GatewayTlsPortName: defaults.IstioGatewayTlsPortName,
+								Meshes: []*skv2corev1.ObjectRef{
+									ezkube.MakeObjectRef(mesh4),
+								},
+							},
+							// should deduplicate "svc-name" and add "svc-name2"
+							{
+								DestinationSelectors: []*commonv1.DestinationSelector{
+									{
+										KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+											Services: []*skv2corev1.ClusterObjectRef{
+												ezkube.MakeClusterObjectRef(destination4.Spec.GetKubeService().GetRef()),
+												ezkube.MakeClusterObjectRef(destination5.Spec.GetKubeService().GetRef()),
+											},
+										},
+									},
+								},
+								GatewayTlsPortName: defaults.IstioGatewayTlsPortName,
 								Meshes: []*skv2corev1.ObjectRef{
 									ezkube.MakeObjectRef(mesh4),
 								},
@@ -877,44 +946,41 @@ var _ = Describe("Applier", func() {
 					},
 				},
 			}
-			mesh3.Status.AppliedVirtualMesh = &discoveryv1.MeshStatus_AppliedVirtualMesh{
-				Ref: &skv2corev1.ObjectRef{
-					Name:      "vm3",
-					Namespace: "ns",
-				},
-			}
-			mesh4.Status.AppliedVirtualMesh = &discoveryv1.MeshStatus_AppliedVirtualMesh{
-				Ref: &skv2corev1.ObjectRef{
-					Name:      "vm3",
-					Namespace: "ns",
-				},
-			}
 
-			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{virtualMeshWithSelector1, virtualMeshWithSelector2,
-				virtualMeshWithSelector3})
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{
+				virtualMeshWithSelector1,
+				virtualMeshWithSelector2,
+				virtualMeshWithSelector3,
+			})
 
 			applier.Apply(context.TODO(), snap.Build(), nil)
 
 			Expect(len(mesh1.Status.EastWestIngressGateways)).To(Equal(1))
 			Expect(len(mesh2.Status.EastWestIngressGateways)).To(Equal(1))
 			Expect(len(mesh3.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh4.Status.EastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh4.Status.EastWestIngressGateways)).To(Equal(2))
 
 			Expect(mesh1.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh1"),
-				TlsPortName:    defaults.DefaultGatewayPortName,
+				DestinationRef: ezkube.MakeObjectRef(destination1),
+				TlsPort:        11234,
 			}))
 			Expect(mesh2.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh2"),
-				TlsPortName:    "non-default-port",
+				DestinationRef: ezkube.MakeObjectRef(destination2),
+				TlsPort:        15678,
 			}))
 			Expect(mesh3.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh3"),
-				TlsPortName:    "non-default-port",
+				DestinationRef: ezkube.MakeObjectRef(destination3),
+				TlsPort:        5678,
 			}))
-			Expect(mesh4.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ingressDestinationRefForMesh("mesh4"),
-				TlsPortName:    defaults.DefaultGatewayPortName,
+			Expect(mesh4.Status.EastWestIngressGateways).To(ConsistOf([]*discoveryv1.MeshStatus_IngressGateway{
+				{
+					DestinationRef: ezkube.MakeObjectRef(destination4),
+					TlsPort:        1234,
+				},
+				{
+					DestinationRef: ezkube.MakeObjectRef(destination5),
+					TlsPort:        1234,
+				},
 			}))
 		})
 
@@ -940,7 +1006,7 @@ var _ = Describe("Applier", func() {
 								Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 									{
 										Port: 1234,
-										Name: defaults.DefaultGatewayPortName,
+										Name: defaults.IstioGatewayTlsPortName,
 									},
 									{
 										Port: 5678,
@@ -1037,7 +1103,7 @@ var _ = Describe("Applier", func() {
 										},
 									},
 								},
-								GatewayTlsPortName: defaults.DefaultGatewayPortName,
+								GatewayTlsPortName: defaults.IstioGatewayTlsPortName,
 							},
 						},
 					},
@@ -1075,7 +1141,7 @@ var _ = Describe("Applier", func() {
 										},
 									},
 								},
-								GatewayTlsPortName: defaults.DefaultGatewayPortName,
+								GatewayTlsPortName: defaults.IstioGatewayTlsPortName,
 							},
 						},
 					},
@@ -1096,17 +1162,17 @@ var _ = Describe("Applier", func() {
 			Expect(virtualMeshWithBadSelector1.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector1.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector1.Status.Errors[0]).
-				To(ContainSubstring("Attempting to select ingress gateway destination bad-destination-no-workload-labels.ns. with no workload labels"))
+				To(Equal("attempting to select ingress gateway destination bad-destination-no-workload-labels.ns. with no workload labels"))
 
 			Expect(virtualMeshWithBadSelector2.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector2.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector2.Status.Errors[0]).
-				To(ContainSubstring("Attempting to select ingress gateway destination: destination bad-destination-no-tls-port.ns. has no port named tls"))
+				To(Equal("selected ingress gateway destination has no port named: tls"))
 
 			Expect(virtualMeshWithBadSelector3.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector3.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector3.Status.Errors[0]).
-				To(ContainSubstring("Invalid Destination selector: Destination nonexistent-svc.nonexistent-svc.svc-cluster not found"))
+				To(Equal("Invalid Destination selector: Destination nonexistent-svc.nonexistent-svc.svc-cluster not found"))
 		})
 
 	})

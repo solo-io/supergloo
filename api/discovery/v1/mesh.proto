@@ -193,8 +193,8 @@ message MeshStatus {
         // The Destination on the mesh that acts as an ingress gateway for the mesh.
         .core.skv2.solo.io.ObjectRef destination_ref = 1;
 
-        // The name of the TLS port on the ingress gateway Destination.
-        string tls_port_name = 2;
+        // The port on the ingress gateway Destination receiving TLS traffic.
+        uint32 tls_port = 2;
     }
 
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.

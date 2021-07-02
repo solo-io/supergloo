@@ -293,7 +293,7 @@ Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/githu
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The Destination on the mesh that acts as an ingress gateway for the mesh. |
-  | tlsPortName | string |  | The name of the TLS port on the ingress gateway Destination. |
+  | tlsPort | uint32 |  | The port on the ingress gateway Destination receiving TLS traffic. |
   
 
 
