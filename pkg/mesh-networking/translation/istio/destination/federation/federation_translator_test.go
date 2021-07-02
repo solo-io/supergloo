@@ -68,14 +68,14 @@ var _ = Describe("FederationTranslator", func() {
 			Status: discoveryv1.MeshStatus{
 				AppliedEastWestIngressGateways: []*discoveryv1.MeshStatus_AppliedIngressGateway{
 					{
-						DestinationRef:    nil, // not used at this stage in translation
-						ExternalAddresses: []string{"mesh-gateway.dns.name"},
-						TlsPort:           8181,
+						DestinationRef:     nil, // not used at this stage in translation
+						ExternalAddresses:  []string{"mesh-gateway.dns.name"},
+						TlsDestinationPort: 8181,
 					},
 					{
-						DestinationRef:    nil, // not used at this stage in translation
-						ExternalAddresses: []string{"172.18.0.2"},
-						TlsPort:           8181,
+						DestinationRef:     nil, // not used at this stage in translation
+						ExternalAddresses:  []string{"172.18.0.2"},
+						TlsDestinationPort: 8181,
 					},
 				},
 			},

@@ -50,14 +50,16 @@ var _ = Describe("FederationTranslator", func() {
 							Name:      "istio-ingressgateway",
 							Namespace: "istio-system",
 						},
-						TlsPort: 1234,
+						TlsDestinationPort: 1234,
+						TlsContainerPort:   91234,
 					},
 					{
 						DestinationRef: &skv2corev1.ObjectRef{
 							Name:      "istio-ingressgateway2",
 							Namespace: "istio-system",
 						},
-						TlsPort: 5678,
+						TlsDestinationPort: 5678,
+						TlsContainerPort:   95678,
 					},
 				},
 			},
@@ -84,9 +86,8 @@ var _ = Describe("FederationTranslator", func() {
 
 		destination1 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace:   "istio-system",
-				Name:        "istio-ingressgateway",
-				ClusterName: clusterName,
+				Namespace: "istio-system",
+				Name:      "istio-ingressgateway",
 			},
 			Spec: discoveryv1.DestinationSpec{
 				Type: &discoveryv1.DestinationSpec_KubeService_{
@@ -103,9 +104,8 @@ var _ = Describe("FederationTranslator", func() {
 		}
 		destination2 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace:   "istio-system",
-				Name:        "istio-ingressgateway2",
-				ClusterName: clusterName,
+				Namespace: "istio-system",
+				Name:      "istio-ingressgateway2",
 			},
 			Spec: discoveryv1.DestinationSpec{
 				Type: &discoveryv1.DestinationSpec_KubeService_{
@@ -176,7 +176,7 @@ var _ = Describe("FederationTranslator", func() {
 					Servers: []*networkingv1alpha3spec.Server{
 						{
 							Port: &networkingv1alpha3spec.Port{
-								Number:   1234,
+								Number:   91234,
 								Protocol: "TLS",
 								Name:     "tls",
 							},
@@ -205,7 +205,7 @@ var _ = Describe("FederationTranslator", func() {
 					Servers: []*networkingv1alpha3spec.Server{
 						{
 							Port: &networkingv1alpha3spec.Port{
-								Number:   5678,
+								Number:   95678,
 								Protocol: "TLS",
 								Name:     "tls",
 							},
