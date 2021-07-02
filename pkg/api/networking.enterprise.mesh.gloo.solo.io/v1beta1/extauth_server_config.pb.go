@@ -17,7 +17,7 @@ import (
 	_ "github.com/golang/protobuf/ptypes/wrappers"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	v1alpha1 "github.com/solo-io/solo-apis/pkg/api/extauth.solo.io/v1alpha1/types"
+	v1alpha1 "github.com/solo-io/solo-apis/pkg/api/extauth.solo.io/v1alpha1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
