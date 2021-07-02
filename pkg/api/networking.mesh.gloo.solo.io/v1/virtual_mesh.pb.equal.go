@@ -391,17 +391,17 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetEastWestIngressGatewaySelectors()) != len(target.GetEastWestIngressGatewaySelectors()) {
+	if len(m.GetAppliedEastWestIngressGatewayselectors()) != len(target.GetAppliedEastWestIngressGatewayselectors()) {
 		return false
 	}
-	for idx, v := range m.GetEastWestIngressGatewaySelectors() {
+	for idx, v := range m.GetAppliedEastWestIngressGatewayselectors() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetEastWestIngressGatewaySelectors()[idx]) {
+			if !h.Equal(target.GetAppliedEastWestIngressGatewayselectors()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetEastWestIngressGatewaySelectors()[idx]) {
+			if !proto.Equal(v, target.GetAppliedEastWestIngressGatewayselectors()[idx]) {
 				return false
 			}
 		}

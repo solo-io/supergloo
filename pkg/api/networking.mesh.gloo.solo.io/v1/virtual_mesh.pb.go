@@ -595,7 +595,7 @@ func (*VirtualMeshSpec_Federation) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *VirtualMeshSpec_Federation) GetEastWestIngressGatewaySelectors() []*v12.IngressGatewaySelector {
+func (x *VirtualMeshSpec_Federation) GetAppliedEastWestIngressGatewayselectors() []*v12.IngressGatewaySelector {
 	if x != nil {
 		return x.EastWestIngressGatewaySelectors
 	}

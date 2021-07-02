@@ -1200,6 +1200,35 @@ spec:
           type: object
         status:
           properties:
+            appliedEastWestIngressGateways:
+              description: The Destination(s) acting as ingress gateways for east
+                west traffic.
+              items:
+                properties:
+                  destinationRef:
+                    description: The Destination on the mesh that acts as an ingress
+                      gateway for the mesh.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                  externalAddresses:
+                    description: The externally accessible IP addresses.
+                    items:
+                      type: string
+                    type: array
+                  tlsPort:
+                    description: The port on the ingress gateway Destination receiving
+                      TLS traffic.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
+                type: object
+              type: array
             appliedVirtualDestinations:
               description: The VirtualDestinations, if any, which apply to this Mesh.
               items:
@@ -2122,30 +2151,6 @@ spec:
                       type: object
                   type: object
               type: object
-            eastWestIngressGateways:
-              description: The Destination(s) acting as ingress gateways for east
-                west traffic.
-              items:
-                properties:
-                  destinationRef:
-                    description: The Destination on the mesh that acts as an ingress
-                      gateway for the mesh.
-                    properties:
-                      name:
-                        description: name of the resource being referenced
-                        type: string
-                      namespace:
-                        description: namespace of the resource being referenced
-                        type: string
-                    type: object
-                  tlsPort:
-                    description: The port on the ingress gateway Destination receiving
-                      TLS traffic.
-                    maximum: 4294967295
-                    minimum: 0
-                    type: integer
-                type: object
-              type: array
             observedGeneration:
               description: |-
                 The observed generation of the Mesh.

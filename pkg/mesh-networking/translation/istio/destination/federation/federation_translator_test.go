@@ -63,13 +63,21 @@ var _ = Describe("FederationTranslator", func() {
 						Cluster:   clusterName,
 						Version:   "1.8.1",
 					},
-					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-						ExternalAddress:  "mesh-gateway.dns.name",
-						ExternalTlsPort:  8181,
-						TlsContainerPort: 9191,
-						WorkloadLabels:   map[string]string{"gatewaylabels": "righthere"},
-					}},
 				}},
+			},
+			Status: discoveryv1.MeshStatus{
+				AppliedEastWestIngressGateways: []*discoveryv1.MeshStatus_AppliedIngressGateway{
+					{
+						DestinationRef:    nil, // not used at this stage in translation
+						ExternalAddresses: []string{"mesh-gateway.dns.name"},
+						TlsPort:           8181,
+					},
+					{
+						DestinationRef:    nil, // not used at this stage in translation
+						ExternalAddresses: []string{"172.18.0.2"},
+						TlsPort:           8181,
+					},
+				},
 			},
 		}
 
@@ -274,6 +282,20 @@ var _ = Describe("FederationTranslator", func() {
 					},
 					{
 						Address: "mesh-gateway.dns.name",
+						Ports: map[string]uint32{
+							"TCP": 8181,
+						},
+						Labels: map[string]string{"version": "v2"},
+					},
+					{
+						Address: "172.18.0.2",
+						Ports: map[string]uint32{
+							"TCP": 8181,
+						},
+						Labels: map[string]string{"version": "v1"},
+					},
+					{
+						Address: "172.18.0.2",
 						Ports: map[string]uint32{
 							"TCP": 8181,
 						},

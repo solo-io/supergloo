@@ -79,14 +79,14 @@ func (t *translator) Translate(
 	istioNamespace := istioMesh.Installation.Namespace
 	federatedHostnameSuffix := hostutils.GetFederatedHostnameSuffix(virtualMesh.Spec)
 
-	if len(mesh.Status.GetEastWestIngressGateways()) == 0 {
+	if len(mesh.Status.GetAppliedEastWestIngressGateways()) == 0 {
 		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.GetRef(),
 			eris.Errorf("no Destinations selected as ingress gateway for mesh %v. At least one must be selected.", sets.Key(mesh)))
 		return
 	}
 
 	// translate one Gateway CR per ingress gateway Destination
-	for _, ingressGateway := range mesh.Status.GetEastWestIngressGateways() {
+	for _, ingressGateway := range mesh.Status.GetAppliedEastWestIngressGateways() {
 		destination, err := in.Destinations().Find(ingressGateway.GetDestinationRef())
 		if err != nil {
 			contextutils.LoggerFrom(t.ctx).DPanicf("internal error: applied east west ingress gateway Destination not found in snapshot")

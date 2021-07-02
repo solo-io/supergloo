@@ -30,9 +30,9 @@ title: "mesh.proto"
   - [MeshSpec.LinkerdMesh](#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh)
   - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
+  - [MeshStatus.AppliedIngressGateway](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway)
   - [MeshStatus.AppliedVirtualDestination](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
-  - [MeshStatus.IngressGateway](#discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway)
 
 
 
@@ -243,7 +243,24 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this Mesh. |
   | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this Mesh. |
-  | eastWestIngressGateways | [][discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway" >}}) | repeated | The Destination(s) acting as ingress gateways for east west traffic. |
+  | appliedEastWestIngressGateways | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway" >}}) | repeated | The Destination(s) acting as ingress gateways for east west traffic. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway"></a>
+
+### MeshStatus.AppliedIngressGateway
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The Destination on the mesh that acts as an ingress gateway for the mesh. |
+  | externalAddresses | []string | repeated | The externally accessible IP addresses. |
+  | tlsPort | uint32 |  | The port on the ingress gateway Destination receiving TLS traffic. |
   
 
 
@@ -278,22 +295,6 @@ Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/githu
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the applied VirtualMesh object. |
   | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
   | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The spec of the last known valid VirtualMesh. |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.MeshStatus.IngressGateway"></a>
-
-### MeshStatus.IngressGateway
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The Destination on the mesh that acts as an ingress gateway for the mesh. |
-  | tlsPort | uint32 |  | The port on the ingress gateway Destination receiving TLS traffic. |
   
 
 

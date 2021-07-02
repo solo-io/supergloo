@@ -44,7 +44,7 @@ var _ = Describe("FederationTranslator", func() {
 				}},
 			},
 			Status: discoveryv1.MeshStatus{
-				EastWestIngressGateways: []*discoveryv1.MeshStatus_IngressGateway{
+				AppliedEastWestIngressGateways: []*discoveryv1.MeshStatus_AppliedIngressGateway{
 					{
 						DestinationRef: &skv2corev1.ObjectRef{
 							Name:      "istio-ingressgateway",

@@ -632,7 +632,7 @@ var _ = Describe("Applier", func() {
 								Ref: &skv2corev1.ClusterObjectRef{
 									Name:        svcName,
 									Namespace:   "svc-namespace",
-									ClusterName: "svc-cluster",
+									ClusterName: "cluster-name",
 								},
 								ServiceType:            serviceType,
 								WorkloadSelectorLabels: defaults.DefaultGatewayWorkloadLabels,
@@ -646,6 +646,18 @@ var _ = Describe("Applier", func() {
 										Port:     5678,
 										NodePort: 15678,
 										Name:     "non-default-port",
+									},
+								},
+								ExternalAddresses: []*discoveryv1.DestinationSpec_KubeService_ExternalAddress{
+									{
+										ExternalAddressType: &discoveryv1.DestinationSpec_KubeService_ExternalAddress_DnsName{
+											DnsName: "external-dns-name",
+										},
+									},
+									{
+										ExternalAddressType: &discoveryv1.DestinationSpec_KubeService_ExternalAddress_Ip{
+											Ip: "external-ip",
+										},
 									},
 								},
 							},
@@ -714,8 +726,8 @@ var _ = Describe("Applier", func() {
 							},
 							IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
 								{
-									Name:            "ingress-svc",
-									Namespace:       "namespace",
+									Name:            "svc-name1",
+									Namespace:       "svc-namespace",
 									ExternalTlsPort: 5678,
 								},
 							},
@@ -750,14 +762,12 @@ var _ = Describe("Applier", func() {
 
 			applier.Apply(context.TODO(), snap.Build(), nil)
 
-			Expect(len(mesh.Status.EastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 
-			Expect(mesh.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: &skv2corev1.ObjectRef{
-					Name:      "ingress-svc",
-					Namespace: "namespace",
-				},
-				TlsPort: 5678,
+			Expect(mesh.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination1),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           5678,
 			}))
 		})
 
@@ -792,26 +802,30 @@ var _ = Describe("Applier", func() {
 
 			applier.Apply(context.TODO(), snap.Build(), nil)
 
-			Expect(len(mesh1.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh2.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh3.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh4.Status.EastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh1.Status.AppliedEastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh2.Status.AppliedEastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh3.Status.AppliedEastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh4.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 
-			Expect(mesh1.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination1),
-				TlsPort:        11234,
+			Expect(mesh1.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination1),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           11234,
 			}))
-			Expect(mesh2.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination2),
-				TlsPort:        11234,
+			Expect(mesh2.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination2),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           11234,
 			}))
-			Expect(mesh3.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination3),
-				TlsPort:        1234,
+			Expect(mesh3.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination3),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           1234,
 			}))
-			Expect(mesh4.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination4),
-				TlsPort:        1234,
+			Expect(mesh4.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination4),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           1234,
 			}))
 		})
 
@@ -955,31 +969,36 @@ var _ = Describe("Applier", func() {
 
 			applier.Apply(context.TODO(), snap.Build(), nil)
 
-			Expect(len(mesh1.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh2.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh3.Status.EastWestIngressGateways)).To(Equal(1))
-			Expect(len(mesh4.Status.EastWestIngressGateways)).To(Equal(2))
+			Expect(len(mesh1.Status.AppliedEastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh2.Status.AppliedEastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh3.Status.AppliedEastWestIngressGateways)).To(Equal(1))
+			Expect(len(mesh4.Status.AppliedEastWestIngressGateways)).To(Equal(2))
 
-			Expect(mesh1.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination1),
-				TlsPort:        11234,
+			Expect(mesh1.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination1),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           11234,
 			}))
-			Expect(mesh2.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination2),
-				TlsPort:        15678,
+			Expect(mesh2.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination2),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           15678,
 			}))
-			Expect(mesh3.Status.EastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_IngressGateway{
-				DestinationRef: ezkube.MakeObjectRef(destination3),
-				TlsPort:        5678,
+			Expect(mesh3.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
+				DestinationRef:    ezkube.MakeObjectRef(destination3),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				TlsPort:           5678,
 			}))
-			Expect(mesh4.Status.EastWestIngressGateways).To(ConsistOf([]*discoveryv1.MeshStatus_IngressGateway{
+			Expect(mesh4.Status.AppliedEastWestIngressGateways).To(ConsistOf([]*discoveryv1.MeshStatus_AppliedIngressGateway{
 				{
-					DestinationRef: ezkube.MakeObjectRef(destination4),
-					TlsPort:        1234,
+					DestinationRef:    ezkube.MakeObjectRef(destination4),
+					ExternalAddresses: []string{"external-dns-name", "external-ip"},
+					TlsPort:           1234,
 				},
 				{
-					DestinationRef: ezkube.MakeObjectRef(destination5),
-					TlsPort:        1234,
+					DestinationRef:    ezkube.MakeObjectRef(destination5),
+					ExternalAddresses: []string{"external-dns-name", "external-ip"},
+					TlsPort:           1234,
 				},
 			}))
 		})

@@ -133,7 +133,7 @@ func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 	for _, mesh := range input.Meshes().List() {
 		mesh.Status.AppliedVirtualMesh = getAppliedVirtualMesh(input.VirtualMeshes().List(), mesh)
 		// getAppliedEastWestIngressGateways must be invoked after getAppliedVirtualMesh
-		mesh.Status.EastWestIngressGateways = getAppliedEastWestIngressGateways(input.VirtualMeshes(), mesh, input.Destinations())
+		mesh.Status.AppliedEastWestIngressGateways = getAppliedEastWestIngressGateways(input.VirtualMeshes(), mesh, input.Destinations())
 	}
 }
 
@@ -764,7 +764,7 @@ func getAppliedEastWestIngressGateways(
 	virtualMeshes networkingv1sets.VirtualMeshSet,
 	mesh *discoveryv1.Mesh,
 	destinations discoveryv1sets.DestinationSet,
-) []*discoveryv1.MeshStatus_IngressGateway {
+) []*discoveryv1.MeshStatus_AppliedIngressGateway {
 	// Check that this mesh belongs to a virtual mesh
 	if mesh.Status.GetAppliedVirtualMesh() == nil {
 		return nil
@@ -775,7 +775,7 @@ func getAppliedEastWestIngressGateways(
 		return nil
 	}
 
-	var selectedIngressGatewayList []*discoveryv1.MeshStatus_IngressGateway
+	var selectedIngressGatewayList []*discoveryv1.MeshStatus_AppliedIngressGateway
 	// Resolve all of the VM’s ingress gateway selectors to a list of (Destination, tls port) tuples that belong to the mesh
 	// note: if multiple ingress selectors select the same Destination with different tls port names, we will only consider the port number selected by the first encountered selector
 	for _, destination := range destinations.List() {
@@ -788,7 +788,7 @@ func getAppliedEastWestIngressGateways(
 		if !ezkube.RefsMatch(destination.Spec.GetMesh(), mesh) {
 			continue
 		}
-		for _, ingressGatewayServiceSelector := range virtualMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
+		for _, ingressGatewayServiceSelector := range virtualMesh.Spec.GetFederation().GetAppliedEastWestIngressGatewayselectors() {
 			// Check if this selector applies to this mesh
 			if !ingressGatewaySelectorMatchesMesh(ingressGatewayServiceSelector, mesh) {
 				continue
@@ -808,12 +808,13 @@ func getAppliedEastWestIngressGateways(
 
 			// add the ingress Destination
 			if tlsPortNumber := getExternalTlsPortNumberByName(kubeService, ingressGatewayServiceSelector.GetGatewayTlsPortName()); tlsPortNumber != 0 {
-				selectedIngressGatewayList = append(selectedIngressGatewayList, &discoveryv1.MeshStatus_IngressGateway{
+				selectedIngressGatewayList = append(selectedIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
 					DestinationRef: &v1.ObjectRef{
 						Name:      destination.GetName(),
 						Namespace: destination.GetNamespace(),
 					},
-					TlsPort: tlsPortNumber,
+					ExternalAddresses: getDestinationExternalAddresses(destination),
+					TlsPort:           tlsPortNumber,
 				})
 				break
 			} else {
@@ -862,17 +863,28 @@ func ingressGatewaySelectorMatchesMesh(
 func getDefaultEastWestIngressGateways(
 	mesh *discoveryv1.Mesh,
 	destinations discoveryv1sets.DestinationSet,
-) []*discoveryv1.MeshStatus_IngressGateway {
-	var defaultIngressGatewayList []*discoveryv1.MeshStatus_IngressGateway
+) []*discoveryv1.MeshStatus_AppliedIngressGateway {
+	destinationsSlice := destinations.List()
+
+	var defaultIngressGatewayList []*discoveryv1.MeshStatus_AppliedIngressGateway
 
 	// first respect deprecated Mesh.spec.IngressGateways field
 	for _, ingressGatewayDestination := range mesh.Spec.GetIstio().GetIngressGateways() {
-		defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_IngressGateway{
-			DestinationRef: &v1.ObjectRef{
-				Name:      ingressGatewayDestination.GetName(),
-				Namespace: ingressGatewayDestination.GetNamespace(),
-			},
-			TlsPort: ingressGatewayDestination.ExternalTlsPort,
+
+		destination, err := destinationutils.FindDestinationForKubeService(destinationsSlice, &v1.ClusterObjectRef{
+			Name:        ingressGatewayDestination.GetName(),
+			Namespace:   ingressGatewayDestination.GetNamespace(),
+			ClusterName: mesh.Spec.GetIstio().GetInstallation().GetCluster(),
+		})
+		if err != nil {
+			// should never happen
+			continue
+		}
+
+		defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
+			DestinationRef:    ezkube.MakeObjectRef(destination),
+			ExternalAddresses: getDestinationExternalAddresses(destination),
+			TlsPort:           ingressGatewayDestination.ExternalTlsPort,
 		})
 	}
 	if len(defaultIngressGatewayList) > 0 {
@@ -896,16 +908,31 @@ func getDefaultEastWestIngressGateways(
 		}
 
 		if tlsPortNumber := getExternalTlsPortNumberByName(kubeService, defaults.IstioGatewayTlsPortName); tlsPortNumber != 0 {
-			defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_IngressGateway{
+			defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
 				DestinationRef: &v1.ObjectRef{
 					Name:      destination.GetName(),
 					Namespace: destination.GetNamespace(),
 				},
-				TlsPort: tlsPortNumber,
+				ExternalAddresses: getDestinationExternalAddresses(destination),
+				TlsPort:           tlsPortNumber,
 			})
 		}
 	}
 	return defaultIngressGatewayList
+}
+
+func getDestinationExternalAddresses(destination *discoveryv1.Destination) []string {
+	var addresses []string
+	for _, externalAddress := range destination.Spec.GetKubeService().GetExternalAddresses() {
+		var address string
+		if externalAddress.GetDnsName() != "" {
+			address = externalAddress.GetDnsName()
+		} else if externalAddress.GetIp() != "" {
+			address = externalAddress.GetIp()
+		}
+		addresses = append(addresses, address)
+	}
+	return addresses
 }
 
 // return the externally addressable port with the given name

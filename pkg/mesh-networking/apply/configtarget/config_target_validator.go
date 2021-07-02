@@ -197,7 +197,7 @@ func (c *configTargetValidator) validateVirtualMeshIngressGatewaySelectors(virtu
 		if vMesh.Status.State != commonv1.ApprovalState_ACCEPTED {
 			continue
 		}
-		for _, ingressGatewayServiceSelector := range vMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
+		for _, ingressGatewayServiceSelector := range vMesh.Spec.GetFederation().GetAppliedEastWestIngressGatewayselectors() {
 			errs := c.validateDestinationReferences(ingressGatewayServiceSelector.GetDestinationSelectors())
 			if len(errs) != 0 {
 				vMesh.Status.State = commonv1.ApprovalState_INVALID
