@@ -219,15 +219,20 @@ func buildLink(filename, protoTypeFullName string) string {
 }
 
 func collectDescriptors(protoDir, outDir string, customImports ...string) (*gendoc.Template, error) {
-	descriptors, err := collector.NewCollector(
-		customImports,
-		[]string{protoDir},
-		nil,
-		[]string{},
-		outDir,
-		func(file string) bool {
-			return true
-		}).CollectDescriptorsFromRoot(protoDir, nil)
+
+	importsCollector := collector.NewCollector(customImports, []string{protoDir})
+
+	protocExecutor := &collector.DefaultProtocExecutor{
+		OutputDir:         outDir,
+		ShouldCompileFile: func(file string) bool { return true },
+		CustomGoArgs:      nil,
+		CustomPlugins:     []string{},
+	}
+
+	descriptorCollector := collector.NewProtoCompiler(importsCollector, protocExecutor)
+
+	descriptors, err := descriptorCollector.CompileDescriptorsFromRoot(protoDir, nil)
+
 	if err != nil {
 		return nil, err
 	}
