@@ -1351,7 +1351,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				},
 			},
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*networkingv1.AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "backend-timeout",
@@ -1421,7 +1421,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				gomock.Any(),
 			).DoAndReturn(
 			func(
-				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				appliedPolicy *networkingv1.AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
 				sourceMeshInstallation *discoveryv1.MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
