@@ -38,10 +38,6 @@ jobs:
             chmod +x ./kind
             sudo mv ./kind /usr/local/bin/
       - run:
-          name: install deps
-          command: |
-            make install-go-tools
-      - run:
           name: e2e istio 1.5 tests
           no_output_timeout: 30m
           command: |

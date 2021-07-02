@@ -27,9 +27,6 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Update deps
-      run: |
-        make install-go-tools
     - name: Gcloud Login
       uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
