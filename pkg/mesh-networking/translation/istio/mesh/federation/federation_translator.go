@@ -56,11 +56,6 @@ func NewTranslator(
 	return &translator{ctx: ctx}
 }
 
-type ingressGatewayInfo struct {
-	labels map[string]string
-	port   uint32
-}
-
 // translate the appropriate resources for the given Mesh.
 // A Gateway is needed to configure the ingress gateway workload to forward requests originating from external meshes.
 func (t *translator) Translate(
@@ -86,7 +81,7 @@ func (t *translator) Translate(
 
 	if len(mesh.Status.GetEastWestIngressGateways()) == 0 {
 		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.GetRef(),
-			eris.Errorf("No Destinations selected as ingress gateway for mesh %v. At least one must be selected.", sets.Key(mesh)))
+			eris.Errorf("no Destinations selected as ingress gateway for mesh %v. At least one must be selected.", sets.Key(mesh)))
 		return
 	}
 
@@ -104,7 +99,7 @@ func (t *translator) Translate(
 			continue
 		}
 
-		t.buildGateway(
+		gateway := t.buildGateway(
 			BuildGatewayName(destination.GetName(), destination.GetNamespace()),
 			istioNamespace,
 			istioCluster,
@@ -112,8 +107,9 @@ func (t *translator) Translate(
 			federatedHostnameSuffix,
 			destination.Spec.GetKubeService().GetWorkloadSelectorLabels(),
 			virtualMesh.GetRef(),
-			outputs,
 		)
+
+		outputs.AddGateways(gateway)
 	}
 }
 
@@ -123,8 +119,7 @@ func (t *translator) buildGateway(
 	federatedHostnameSuffix string,
 	ingressGatewayWorkloadLabels map[string]string,
 	virtualMeshRef ezkube.ResourceId,
-	outputs istio.Builder,
-) {
+) *networkingv1alpha3.Gateway {
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -150,7 +145,8 @@ func (t *translator) buildGateway(
 
 	// Append the virtual mesh as a parent to each output resource
 	metautils.AppendParent(t.ctx, gw, virtualMeshRef, networkingv1.VirtualMesh{}.GVK())
-	outputs.AddGateways(gw)
+
+	return gw
 }
 
 func BuildGatewayName(name, namespace string) string {

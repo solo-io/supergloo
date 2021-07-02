@@ -777,6 +777,7 @@ func getAppliedEastWestIngressGateways(
 
 	var selectedIngressGatewayList []*discoveryv1.MeshStatus_IngressGateway
 	// Resolve all of the VM’s ingress gateway selectors to a list of (Destination, tls port) tuples that belong to the mesh
+	// note: if multiple ingress selectors select the same Destination with different tls port names, we will only consider the port number selected by the first encountered selector
 	for _, destination := range destinations.List() {
 		// only consider kubernetes services
 		kubeService := destination.Spec.GetKubeService()

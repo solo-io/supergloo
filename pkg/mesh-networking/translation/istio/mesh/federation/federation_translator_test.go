@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -46,12 +45,19 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			Status: discoveryv1.MeshStatus{
 				EastWestIngressGateways: []*discoveryv1.MeshStatus_IngressGateway{
-					&discoveryv1.MeshStatus_IngressGateway{
+					{
 						DestinationRef: &skv2corev1.ObjectRef{
 							Name:      "istio-ingressgateway",
 							Namespace: "istio-system",
 						},
-						TlsPortName: "tls2",
+						TlsPort: 1234,
+					},
+					{
+						DestinationRef: &skv2corev1.ObjectRef{
+							Name:      "istio-ingressgateway2",
+							Namespace: "istio-system",
+						},
+						TlsPort: 5678,
 					},
 				},
 			},
@@ -76,7 +82,7 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
-		federatedMeshIngressGatewayDestination := &discoveryv1.Destination{
+		destination1 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "istio-system",
 				Name:      "istio-ingressgateway",
@@ -90,27 +96,24 @@ var _ = Describe("FederationTranslator", func() {
 							ClusterName: clusterName,
 						},
 						WorkloadSelectorLabels: map[string]string{"gatewaylabels": "righthere"},
-						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-							&discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-								Port:     80,
-								Name:     "http2",
-								Protocol: "TCP",
-								TargetPort: &discoveryv1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber{
-									TargetPortNumber: 8080,
-								},
-								NodePort: 30742,
-							},
-							&discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-								Port:     9191,
-								Name:     "tls2",
-								Protocol: "TCP",
-								TargetPort: &discoveryv1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber{
-									TargetPortNumber: 15443,
-								},
-								NodePort: 32001,
-							},
+					},
+				},
+			},
+		}
+		destination2 := &discoveryv1.Destination{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "istio-system",
+				Name:      "istio-ingressgateway2",
+			},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
+							Name:        "istio-ingressgateway2",
+							Namespace:   "istio-system",
+							ClusterName: clusterName,
 						},
-						ServiceType: discoveryv1.DestinationSpec_KubeService_NODE_PORT,
+						WorkloadSelectorLabels: map[string]string{"foo": "bar"},
 					},
 				},
 			},
@@ -127,27 +130,6 @@ var _ = Describe("FederationTranslator", func() {
 					clientMeshRef,
 				},
 				Federation: &v1.VirtualMeshSpec_Federation{
-					EastWestIngressGatewaySelectors: []*commonv1.IngressGatewaySelector{
-						&commonv1.IngressGatewaySelector{
-							Meshes: []*skv2corev1.ObjectRef{
-								ezkube.MakeObjectRef(mesh),
-							},
-							DestinationSelectors: []*commonv1.DestinationSelector{
-								{
-									KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
-										Services: []*skv2corev1.ClusterObjectRef{
-											{
-												Name:        "istio-ingressgateway",
-												Namespace:   "istio-system",
-												ClusterName: clusterName,
-											},
-										},
-									},
-								},
-							},
-							GatewayTlsPortName: "tls2",
-						},
-					},
 					HostnameSuffix: "soloio",
 				},
 			},
@@ -163,7 +145,7 @@ var _ = Describe("FederationTranslator", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
 			AddMeshes(discoveryv1.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
-			AddDestinations(discoveryv1.DestinationSlice{federatedMeshIngressGatewayDestination}).
+			AddDestinations(discoveryv1.DestinationSlice{destination1, destination2}).
 			Build()
 
 		t := NewTranslator(ctx)
@@ -176,39 +158,68 @@ var _ = Describe("FederationTranslator", func() {
 			outputs,
 			nil, // no reports expected
 		)
-		Expect(outputs.GetGateways().Length()).To(Equal(1))
-		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
-	})
-})
 
-var (
-	expectedGateway = &networkingv1alpha3.Gateway{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        "istio-ingressgateway-istio-system",
-			Namespace:   "namespace",
-			ClusterName: "cluster",
-			Labels:      metautils.TranslatedObjectLabels(),
-			Annotations: map[string]string{
-				metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-			},
-		},
-		Spec: networkingv1alpha3spec.Gateway{
-			Servers: []*networkingv1alpha3spec.Server{
-				{
-					Port: &networkingv1alpha3spec.Port{
-						Number:   9191,
-						Protocol: "TLS",
-						Name:     "tls",
-					},
-					Hosts: []string{
-						"*.soloio",
-					},
-					Tls: &networkingv1alpha3spec.ServerTLSSettings{
-						Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
+		expectedGateways := []*networkingv1alpha3.Gateway{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "istio-ingressgateway-istio-system",
+					Namespace:   "namespace",
+					ClusterName: "cluster",
+					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 					},
 				},
+				Spec: networkingv1alpha3spec.Gateway{
+					Servers: []*networkingv1alpha3spec.Server{
+						{
+							Port: &networkingv1alpha3spec.Port{
+								Number:   1234,
+								Protocol: "TLS",
+								Name:     "tls",
+							},
+							Hosts: []string{
+								"*.soloio",
+							},
+							Tls: &networkingv1alpha3spec.ServerTLSSettings{
+								Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
+							},
+						},
+					},
+					Selector: map[string]string{"gatewaylabels": "righthere"},
+				},
 			},
-			Selector: map[string]string{"gatewaylabels": "righthere"},
-		},
-	}
-)
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "istio-ingressgateway2-istio-system",
+					Namespace:   "namespace",
+					ClusterName: "cluster",
+					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
+				},
+				Spec: networkingv1alpha3spec.Gateway{
+					Servers: []*networkingv1alpha3spec.Server{
+						{
+							Port: &networkingv1alpha3spec.Port{
+								Number:   5678,
+								Protocol: "TLS",
+								Name:     "tls",
+							},
+							Hosts: []string{
+								"*.soloio",
+							},
+							Tls: &networkingv1alpha3spec.ServerTLSSettings{
+								Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
+							},
+						},
+					},
+					Selector: map[string]string{"foo": "bar"},
+				},
+			},
+		}
+
+		Expect(outputs.GetGateways().List()).To(ConsistOf(expectedGateways))
+	})
+})
