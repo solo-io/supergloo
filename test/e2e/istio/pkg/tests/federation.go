@@ -364,7 +364,7 @@ func FederationTest() {
 
 			// apply updated VM and check that remote traffic consistently succeeds
 			FederateClusters(defaultFederatedIngressGatewayVm, 2)
-			Consistently(CurlRemoteReviews).Should(ContainSubstring("200 OK"))
+			Consistently(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))).Should(ContainSubstring("200 OK"))
 		})
 
 		By("able to select a non-default ingress gateway destination explicitly", func() {
@@ -386,7 +386,7 @@ func FederationTest() {
 
 			// apply updated VM and check that remote traffic consistently succeeds
 			FederateClusters(nonDefaultFederatedIngressGatewayVm, 2)
-			Consistently(CurlRemoteReviews).Should(ContainSubstring("200 OK"))
+			Consistently(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))).Should(ContainSubstring("200 OK"))
 		})
 
 		// restore original test state
