@@ -50,6 +50,8 @@ These docs describe Gloo Mesh CRDs.
 
 ### networking.enterprise.mesh.gloo.solo.io
 
+  - [ExtauthServerConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.extauth_server_config#networking.enterprise.mesh.gloo.solo.io.ExtauthServerConfigSpec" >}})
+
   - [RateLimiterServerConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.rate_limit_server_config#networking.enterprise.mesh.gloo.solo.io.RateLimiterServerConfigSpec" >}})
 
   - [RouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec" >}})
