@@ -62,7 +62,7 @@ $(DEPSGOBIN)/mockgen:
 
 protoc-gen-go: $(DEPSGOBIN)/protoc-gen-go
 $(DEPSGOBIN)/protoc-gen-go:
-	go build -o $@ github.com/golang/protobuf/protoc-gen-go
+	go install github.com/golang/protobuf/protoc-gen-go@v1.4.0
 
 protoc-gen-jsonshim: $(DEPSGOBIN)/protoc-gen-jsonshim
 $(DEPSGOBIN)/protoc-gen-jsonshim:
