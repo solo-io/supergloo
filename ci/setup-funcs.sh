@@ -365,6 +365,7 @@ spec:
     - name: istio-ingressgateway2
       enabled: true
       label:
+        istio: ingressgateway2
         traffic: north-south
       k8s:
         env:
@@ -375,7 +376,7 @@ spec:
           type: NodePort
           selector:
             app: istio-ingressgateway
-            istio: ingressgateway
+            istio: ingressgateway2
             traffic: north-south
           ports:
             - port: 80
@@ -478,6 +479,7 @@ spec:
     - name: istio-ingressgateway2
       enabled: true
       label:
+        istio: ingressgateway2
         traffic: north-south
       k8s:
         env:
@@ -488,7 +490,7 @@ spec:
           type: NodePort
           selector:
             app: istio-ingressgateway
-            istio: ingressgateway
+            istio: ingressgateway2
             traffic: north-south
           ports:
             - port: 80
@@ -576,6 +578,7 @@ spec:
     - name: istio-ingressgateway2
       enabled: true
       label:
+        istio: ingressgateway2
         traffic: north-south
       k8s:
         env:
@@ -586,7 +589,7 @@ spec:
           type: NodePort
           selector:
             app: istio-ingressgateway
-            istio: ingressgateway
+            istio: ingressgateway2
             traffic: north-south
           ports:
             - port: 80

@@ -345,58 +345,51 @@ func FederationTest() {
 	})
 
 	It("can select a non-default ingress gateway for a mesh in the virtual mesh", func() {
-		dynamicClient, err := client.New(e2e.GetEnv().Management.Config, client.Options{})
-		Expect(err).NotTo(HaveOccurred())
-		vm, err := data.SelfSignedVirtualMesh(
-			dynamicClient,
-			"bookinfo-federation",
-			BookinfoNamespace,
-			[]*skv2corev1.ObjectRef{
-				MgmtMesh,
-				RemoteMesh,
-			},
-			false,
-		)
-		Expect(err).NotTo(HaveOccurred())
-
 		By("able to select the default ingress gateway destination explicitly", func() {
-			defaultFederatedIngressGatewayVm := vm.DeepCopy()
+			defaultFederatedIngressGatewayVm := VirtualMesh.DeepCopy()
 			defaultFederatedIngressGatewayVm.Spec.Federation.EastWestIngressGatewaySelectors = []*commonv1.IngressGatewaySelector{
 				{
 					DestinationSelectors: []*commonv1.DestinationSelector{
 						{
 							KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
-								Labels: map[string]string{"istio": "test-ingressgateway2"},
+								Labels: map[string]string{
+									"istio": "ingressgateway",
+								},
 							},
 						},
 					},
 					GatewayTlsPortName: "tls",
 				},
 			}
-			// wait 5 minutes for Gloo Mesh to initialize and federate traffic across clusters
-			FederateClusters(defaultFederatedIngressGatewayVm, 5)
+
+			// apply updated VM and check that remote traffic consistently succeeds
+			FederateClusters(defaultFederatedIngressGatewayVm, 2)
+			Consistently(CurlRemoteReviews).Should(ContainSubstring("200 OK"))
 		})
 
 		By("able to select a non-default ingress gateway destination explicitly", func() {
-			nonDefaultFederatedIngressGatewayVm := vm.DeepCopy()
+			nonDefaultFederatedIngressGatewayVm := VirtualMesh.DeepCopy()
 			nonDefaultFederatedIngressGatewayVm.Spec.Federation.EastWestIngressGatewaySelectors = []*commonv1.IngressGatewaySelector{
 				{
 					DestinationSelectors: []*commonv1.DestinationSelector{
 						{
 							KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
-								Labels: map[string]string{"istio": "test-ingressgateway2"},
+								Labels: map[string]string{
+									"traffic": "north-south",
+								},
 							},
 						},
 					},
 					GatewayTlsPortName: "tls",
 				},
 			}
-			// wait 5 minutes for Gloo Mesh to initialize and federate traffic across clusters
-			FederateClusters(nonDefaultFederatedIngressGatewayVm, 5)
 
+			// apply updated VM and check that remote traffic consistently succeeds
+			FederateClusters(nonDefaultFederatedIngressGatewayVm, 2)
+			Consistently(CurlRemoteReviews).Should(ContainSubstring("200 OK"))
 		})
 
-		// Clean up
-		FederateClusters(vm, 5)
+		// restore original test state
+		FederateClusters(VirtualMesh, 5)
 	})
 }
