@@ -3,7 +3,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/solo-apis/api/gloo/enterprise.gloo/v1/auth_config.proto";
+import "github.com/solo-io/solo-apis/api/extauth/v1alpha1/extauth.proto";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/duration.proto";
@@ -25,7 +25,7 @@ message ExtauthServerConfigSpec {
     repeated .core.skv2.solo.io.ObjectRef server_config_refs = 1;
 
     // the configuration which will be deployed to the selected extauth limit servers.
-    .enterprise.gloo.solo.io.AuthConfigSpec extauth_config = 2 [(cue.opt).disable_openapi_validation = true];
+    .extauth.api.solo.io.ExtAuthConfigSpec extauth_config = 2 [(cue.opt).disable_openapi_validation = true];
 }
 
 // The current status of the `ExtauthConfig`.

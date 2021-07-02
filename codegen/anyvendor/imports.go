@@ -26,26 +26,27 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 	// used for rate limit and extauth server config
 	anyVendorImports.External["github.com/solo-io/solo-apis"] = []string{
 		"api/rate-limiter/v1alpha1/ratelimit.proto",
-		"api/gloo/enterprise.gloo/v1/auth_config.proto",
+		"api/extauth/v1alpha1/extauth.proto",
+		//"api/gloo/enterprise.gloo/v1/auth_config.proto",
 	}
 
-	// used for extauth server config
-	anyVendorImports.External["github.com/solo-io/solo-kit"] = []string{
-		"api/v1/ref.proto",
-		"api/v1/solo-kit.proto",
-		"api/external/envoy/api/v2/discovery.proto",
-		"api/external/envoy/api/v2/core/base.proto",
-		"api/external/envoy/api/v2/core/http_uri.proto",
-		"api/external/envoy/type/percent.proto",
-		"api/external/google/rpc/status.proto",
-		"api/external/google/api/annotations.proto",
-		"api/external/google/api/http.proto",
-	}
+	//// used for extauth server config
+	//anyVendorImports.External["github.com/solo-io/solo-kit"] = []string{
+	//	"api/v1/ref.proto",
+	//	"api/v1/solo-kit.proto",
+	//	"api/external/envoy/api/v2/discovery.proto",
+	//	"api/external/envoy/api/v2/core/base.proto",
+	//	"api/external/envoy/api/v2/core/http_uri.proto",
+	//	"api/external/envoy/type/percent.proto",
+	//	"api/external/google/rpc/status.proto",
+	//	"api/external/google/api/annotations.proto",
+	//	"api/external/google/api/http.proto",
+	//}
 
 	// used for extauth server config
-	anyVendorImports.External["github.com/envoyproxy/protoc-gen-validate"] = []string{
-		"validate/validate.proto",
-	}
+	//anyVendorImports.External["github.com/envoyproxy/protoc-gen-validate"] = []string{
+	//	"validate/validate.proto",
+	//}
 
 	// used for a proto option which disables openapi validation on fields
 	anyVendorImports.External["cuelang.org/go"] = []string{
