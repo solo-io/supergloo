@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/rotisserie/eris"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
@@ -807,32 +808,19 @@ func getAppliedEastWestIngressGateways(
 			}
 
 			// add the ingress Destination
-			if tlsPortNumber := getExternalTlsPortNumberByName(kubeService, ingressGatewayServiceSelector.GetGatewayTlsPortName()); tlsPortNumber != 0 {
-				selectedIngressGatewayList = append(selectedIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
-					DestinationRef: &v1.ObjectRef{
-						Name:      destination.GetName(),
-						Namespace: destination.GetNamespace(),
-					},
-					ExternalAddresses: getDestinationExternalAddresses(destination),
-					TlsPort:           tlsPortNumber,
-				})
-				break
-			} else {
-				tlsPortName := ingressGatewayServiceSelector.GetGatewayTlsPortName()
-				if tlsPortName == "" {
-					tlsPortName = defaults.IstioGatewayTlsPortName
-				}
+			if appliedIngressGateway, err := buildAppliedIngressGateway(destination, ingressGatewayServiceSelector.GetGatewayTlsPortName()); err != nil {
 				virtualMesh.Status.State = commonv1.ApprovalState_INVALID
-				virtualMesh.Status.Errors = append(
-					virtualMesh.Status.Errors,
-					fmt.Sprintf("selected ingress gateway destination has no port named: %s", tlsPortName))
+				virtualMesh.Status.Errors = append(virtualMesh.Status.Errors, err.Error())
 				return nil
+			} else {
+				selectedIngressGatewayList = append(selectedIngressGatewayList, appliedIngressGateway)
+				break
 			}
 		}
 	}
 
 	if len(selectedIngressGatewayList) == 0 {
-		return getDefaultEastWestIngressGateways(mesh, destinations)
+		return getDefaultEastWestIngressGateways(mesh, destinations, virtualMesh)
 	}
 
 	return selectedIngressGatewayList
@@ -863,6 +851,7 @@ func ingressGatewaySelectorMatchesMesh(
 func getDefaultEastWestIngressGateways(
 	mesh *discoveryv1.Mesh,
 	destinations discoveryv1sets.DestinationSet,
+	virtualMesh *networkingv1.VirtualMesh,
 ) []*discoveryv1.MeshStatus_AppliedIngressGateway {
 	destinationsSlice := destinations.List()
 
@@ -882,9 +871,10 @@ func getDefaultEastWestIngressGateways(
 		}
 
 		defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
-			DestinationRef:    ezkube.MakeObjectRef(destination),
-			ExternalAddresses: getDestinationExternalAddresses(destination),
-			TlsPort:           ingressGatewayDestination.ExternalTlsPort,
+			DestinationRef:     ezkube.MakeObjectRef(destination),
+			ExternalAddresses:  getDestinationExternalAddresses(destination),
+			TlsDestinationPort: ingressGatewayDestination.ExternalTlsPort,
+			TlsContainerPort:   ingressGatewayDestination.TlsContainerPort,
 		})
 	}
 	if len(defaultIngressGatewayList) > 0 {
@@ -907,15 +897,13 @@ func getDefaultEastWestIngressGateways(
 			continue
 		}
 
-		if tlsPortNumber := getExternalTlsPortNumberByName(kubeService, defaults.IstioGatewayTlsPortName); tlsPortNumber != 0 {
-			defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef: &v1.ObjectRef{
-					Name:      destination.GetName(),
-					Namespace: destination.GetNamespace(),
-				},
-				ExternalAddresses: getDestinationExternalAddresses(destination),
-				TlsPort:           tlsPortNumber,
-			})
+		if appliedIngressGateway, err := buildAppliedIngressGateway(destination, defaults.IstioGatewayTlsPortName); err != nil {
+			virtualMesh.Status.State = commonv1.ApprovalState_INVALID
+			virtualMesh.Status.Errors = append(virtualMesh.Status.Errors, err.Error())
+			return nil
+		} else {
+			defaultIngressGatewayList = append(defaultIngressGatewayList, appliedIngressGateway)
+			break
 		}
 	}
 	return defaultIngressGatewayList
@@ -935,9 +923,33 @@ func getDestinationExternalAddresses(destination *discoveryv1.Destination) []str
 	return addresses
 }
 
+func buildAppliedIngressGateway(
+	destination *discoveryv1.Destination,
+	gatewayTlsPortName string,
+) (*discoveryv1.MeshStatus_AppliedIngressGateway, error) {
+	kubeService := destination.Spec.GetKubeService()
+
+	if destinationPort, containerPort := getExternalTlsPortNumberByName(kubeService, gatewayTlsPortName); destinationPort != 0 && containerPort != 0 {
+		return &discoveryv1.MeshStatus_AppliedIngressGateway{
+			DestinationRef: &v1.ObjectRef{
+				Name:      destination.GetName(),
+				Namespace: destination.GetNamespace(),
+			},
+			ExternalAddresses:  getDestinationExternalAddresses(destination),
+			TlsDestinationPort: destinationPort,
+			TlsContainerPort:   containerPort,
+		}, nil
+	} else {
+		return nil, eris.Errorf("ingress gateway destination port info could not be determined for tls port name: %s", gatewayTlsPortName)
+	}
+}
+
 // return the externally addressable port with the given name
 // if portName is empty, default to "tls"
-func getExternalTlsPortNumberByName(kubeService *discoveryv1.DestinationSpec_KubeService, portName string) uint32 {
+func getExternalTlsPortNumberByName(
+	kubeService *discoveryv1.DestinationSpec_KubeService,
+	portName string,
+) (destinationPort uint32, containerPort uint32) {
 	if portName == "" {
 		portName = defaults.IstioGatewayTlsPortName
 	}
@@ -947,19 +959,34 @@ func getExternalTlsPortNumberByName(kubeService *discoveryv1.DestinationSpec_Kub
 			continue
 		}
 
-		var portNumber uint32
-		switch kubeService.ServiceType {
-		case discoveryv1.DestinationSpec_KubeService_NODE_PORT:
-			portNumber = port.NodePort
-		case discoveryv1.DestinationSpec_KubeService_LOAD_BALANCER:
-			portNumber = port.Port
+		switch portType := port.GetTargetPort().(type) {
+		case *discoveryv1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber:
+			containerPort = portType.TargetPortNumber
+		case *discoveryv1.DestinationSpec_KubeService_KubeServicePort_TargetPortName:
+			// resolve port name to number using Workload
+			for _, epSubset := range kubeService.GetEndpointSubsets() {
+				// just use the first encountered container port
+				// TODO: account for target port names that point at multiple different container port numbers
+				if containerPort != 0 {
+					break
+				}
+				for _, epPort := range epSubset.GetPorts() {
+					if epPort.Name == portType.TargetPortName {
+						containerPort = epPort.Port
+						break
+					}
+				}
+			}
 		}
 
-		if portNumber != 0 {
-			return portNumber
+		switch kubeService.ServiceType {
+		case discoveryv1.DestinationSpec_KubeService_NODE_PORT:
+			destinationPort = port.NodePort
+		case discoveryv1.DestinationSpec_KubeService_LOAD_BALANCER:
+			destinationPort = port.Port
 		}
 	}
-	return 0
+	return destinationPort, containerPort
 }
 
 // return the Meshes that the Destination is federated to, ignoring the Destination's parent Mesh

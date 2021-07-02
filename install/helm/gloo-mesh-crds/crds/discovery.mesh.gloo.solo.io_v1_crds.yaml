@@ -1221,7 +1221,13 @@ spec:
                     items:
                       type: string
                     type: array
-                  tlsPort:
+                  tlsContainerPort:
+                    description: The port on the ingress gateway workload receiving
+                      TLS traffic.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
+                  tlsDestinationPort:
                     description: The port on the ingress gateway Destination receiving
                       TLS traffic.
                     maximum: 4294967295
