@@ -56,6 +56,8 @@ clear-vendor-any:
 	rm -rf vendor_any
 
 # Dependencies for code generation
+.PHONY: mockgen protoc-gen-go protoc-gen-ext protoc-gen-jsonshim protoc-plugins
+
 mockgen: $(DEPSGOBIN)/mockgen
 $(DEPSGOBIN)/mockgen:
 	go build -o $@ github.com/golang/mock/mockgen
@@ -73,7 +75,6 @@ $(DEPSGOBIN)/protoc-gen-ext:
 	go build -o $@ github.com/solo-io/protoc-gen-ext
 
 protoc-plugins: protoc-gen-go protoc-gen-ext protoc-gen-jsonshim
-
 
 # Call all generated code targets
 .PHONY: generated-code
