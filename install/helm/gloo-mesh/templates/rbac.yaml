@@ -97,14 +97,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - certificates.mesh.gloo.solo.io
-  resources:
-  - issuedcertificates
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - discovery.mesh.gloo.solo.io
   resources:
   - meshes
@@ -166,13 +158,6 @@ rules:
   - ""
   resources:
   - secrets/status
-  verbs:
-  - get
-  - update
-- apiGroups:
-  - certificates.mesh.gloo.solo.io
-  resources:
-  - issuedcertificates/status
   verbs:
   - get
   - update

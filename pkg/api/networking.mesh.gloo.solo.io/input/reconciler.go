@@ -65,7 +65,6 @@ import (
 // * Workloads
 // * Meshes
 // * AccessLogRecords
-// * IssuedCertificates
 // * Secrets
 // * KubernetesClusters
 // from the local cluster.
@@ -90,7 +89,7 @@ func RegisterInputReconciler(
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
 	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
-	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 certificates.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
+	// [networking.enterprise.mesh.gloo.solo.io/v1beta1 networking.mesh.gloo.solo.io/v1 settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
 
 	base := input.NewInputReconciler(
 		ctx,
@@ -187,11 +186,6 @@ func RegisterInputReconciler(
 
 	// initialize AccessLogRecords reconcile loop for local cluster
 	if err := observability_enterprise_mesh_gloo_solo_io_v1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
-	// initialize IssuedCertificates reconcile loop for local cluster
-	if err := certificates_mesh_gloo_solo_io_v1_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, options.Local.IssuedCertificates).RunIssuedCertificateReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -431,9 +425,6 @@ type LocalReconcileOptions struct {
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
 
-	// Options for reconciling IssuedCertificates
-	IssuedCertificates reconcile.Options
-
 	// Options for reconciling Secrets
 	Secrets reconcile.Options
 
@@ -635,19 +626,6 @@ func (r *localInputReconciler) ReconcileAccessLogRecord(obj *observability_enter
 }
 
 func (r *localInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileIssuedCertificate(obj *certificates_mesh_gloo_solo_io_v1.IssuedCertificate) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileIssuedCertificateDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

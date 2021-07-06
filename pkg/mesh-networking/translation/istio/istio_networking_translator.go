@@ -68,6 +68,7 @@ func (t *istioTranslator) Translate(
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
 		ctx,
+		userSupplied,
 		in.Secrets(),
 		in.Workloads(),
 	)

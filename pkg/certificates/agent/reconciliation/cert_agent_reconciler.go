@@ -146,7 +146,6 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		}
 
-		// TODO: Figure out if we want to reuse the certificate request object
 		certificateRequest := &certificatesv1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,

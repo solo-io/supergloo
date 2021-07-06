@@ -33,6 +33,7 @@ type DependencyFactory interface {
 	) destination.Translator
 	MakeMeshTranslator(
 		ctx context.Context,
+		userSupplied input.RemoteSnapshot,
 		secrets corev1sets.SecretSet,
 		workloads discoveryv1sets.WorkloadSet,
 	) mesh.Translator
@@ -58,11 +59,12 @@ func (d dependencyFactoryImpl) MakeDestinationTranslator(
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(
 	ctx context.Context,
+	userSupplied input.RemoteSnapshot,
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1sets.WorkloadSet,
 ) mesh.Translator {
 	federationTranslator := federation.NewTranslator(ctx)
-	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
+	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads, userSupplied.IssuedCertificates())
 	accessTranslator := access.NewTranslator(ctx)
 
 	return mesh.NewTranslator(

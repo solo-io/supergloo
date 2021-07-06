@@ -9,6 +9,7 @@ import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificatesv1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -88,20 +89,23 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx       context.Context
-	secrets   corev1sets.SecretSet
-	workloads discoveryv1sets.WorkloadSet
+	ctx                context.Context
+	secrets            corev1sets.SecretSet
+	workloads          discoveryv1sets.WorkloadSet
+	issuedCertificaSet certificatesv1sets.IssuedCertificateSet
 }
 
 func NewTranslator(
 	ctx context.Context,
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1sets.WorkloadSet,
+	issuedCertificaSet certificatesv1sets.IssuedCertificateSet,
 ) Translator {
 	return &translator{
-		ctx:       ctx,
-		secrets:   secrets,
-		workloads: workloads,
+		ctx:                ctx,
+		secrets:            secrets,
+		workloads:          workloads,
+		issuedCertificaSet: issuedCertificaSet,
 	}
 }
 
@@ -119,19 +123,26 @@ func (t *translator) Translate(
 		return
 	}
 
-	if !proto.Equal(appliedMeshCa.GetSharedTrust(), virtualMesh.GetSpec().GetMtlsConfig().GetShared()) {
-		// applied is different from VM spec, time to rotate
+	// Check for existing issuedCertificate
+	// if rotation {
 
-		// Check conditions to see what needs to be done.
-		if len(vmStatus.GetCertRotationConditions()) == 0 {
-			// No conditions yet, begin rotation
-			// Build issuedCert with current + next CA
-			// Phase: ADDING_NEW_ROOT
-		} else {
-			// Check previous rotation condition to see what to do.
+	// }
 
-		}
-	}
+	// mesh.Status.DeployedCa.
+
+	// if !proto.Equal(appliedMeshCa.GetSharedTrust(), virtualMesh.GetSpec().GetMtlsConfig().GetShared()) {
+	// 	// applied is different from VM spec, time to rotate
+
+	// 	// Check conditions to see what needs to be done.
+	// 	if len(vmStatus.GetCertRotationConditions()) == 0 {
+	// 		// No conditions yet, begin rotation
+	// 		// Build issuedCert with current + next CA
+	// 		// Phase: ADDING_NEW_ROOT
+	// 	} else {
+	// 		// Check previous rotation condition to see what to do.
+
+	// 	}
+	// }
 
 	if err := t.updateMtlsOutputs(mesh, virtualMesh, istioOutputs, localOutputs); err != nil {
 		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
@@ -156,11 +167,11 @@ func (t *translator) updateMtlsOutputs(
 	}
 
 	// No currently applied shared trust config
-	if mesh.Status.GetAppliedCa().GetAppliedSharedTrust() == nil {
-		mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
-			AppliedSharedTrust: mtlsConfig.GetShared(),
-		}
-	}
+	// if mesh.Status.GetAppliedCa().GetAppliedSharedTrust() == nil {
+	// 	mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
+	// 		AppliedSharedTrust: mtlsConfig.GetShared(),
+	// 	}
+	// }
 
 	switch trustModel := mtlsConfig.TrustModel.(type) {
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Shared:
@@ -176,18 +187,18 @@ func (t *translator) updateMtlsOutputs(
 			return err
 		}
 
-		rotationConditions := mesh.Status.GetAppliedCa().GetCertRotationConditions()
-		// Do not update the applied shared_trust if there is currently a rotation happening,
-		// and the rotation is not finished
-		if len(rotationConditions) > 0 &&
-			rotationConditions[len(rotationConditions)-1].State != certificatesv1.CertificateRotationState_FINISHED {
-		}
+		// rotationConditions := mesh.Status.GetAppliedCa().GetCertRotationConditions()
+		// // Do not update the applied shared_trust if there is currently a rotation happening,
+		// // and the rotation is not finished
+		// if len(rotationConditions) > 0 &&
+		// 	rotationConditions[len(rotationConditions)-1].State != certificatesv1.CertificateRotationState_FINISHED {
+		// }
 
-		// Shared trust has been succesffuly processed, add it to the applied_ca
-		mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
-			AppliedSharedTrust:     trustModel.Shared,
-			CertRotationConditions: mesh.Status.GetAppliedCa().GetCertRotationConditions(),
-		}
+		// // Shared trust has been succesffuly processed, add it to the applied_ca
+		// mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
+		// 	AppliedSharedTrust:     trustModel.Shared,
+		// 	CertRotationConditions: mesh.Status.GetAppliedCa().GetCertRotationConditions(),
+		// }
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Limited:
 		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}

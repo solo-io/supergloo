@@ -18,7 +18,6 @@
 // * Workloads
 // * Meshes
 // * AccessLogRecords
-// * IssuedCertificates
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -67,10 +66,6 @@ import (
 	observability_enterprise_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1"
 	observability_enterprise_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1/sets"
-
-	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	certificates_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
-	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -165,12 +160,6 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	},
 
 	schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "IssuedCertificate",
-	},
-
-	schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
 		Kind:    "Secret",
@@ -220,9 +209,6 @@ type LocalSnapshot interface {
 
 	// return the set of input AccessLogRecords
 	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
-
-	// return the set of input IssuedCertificates
-	IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -277,9 +263,6 @@ type LocalSyncStatusOptions struct {
 	// sync status of AccessLogRecord objects
 	AccessLogRecord bool
 
-	// sync status of IssuedCertificate objects
-	IssuedCertificate bool
-
 	// sync status of Secret objects
 	Secret bool
 
@@ -310,8 +293,6 @@ type snapshotLocal struct {
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
-
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -340,8 +321,6 @@ func NewLocalSnapshot(
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
-
 	secrets v1_sets.SecretSet,
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
@@ -365,7 +344,6 @@ func NewLocalSnapshot(
 		workloads:                workloads,
 		meshes:                   meshes,
 		accessLogRecords:         accessLogRecords,
-		issuedCertificates:       issuedCertificates,
 		secrets:                  secrets,
 		kubernetesClusters:       kubernetesClusters,
 	}
@@ -395,8 +373,6 @@ func NewLocalSnapshotFromGeneric(
 	meshSet := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
-
-	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
 
 	secretSet := v1_sets.NewSecretSet()
 
@@ -544,16 +520,6 @@ func NewLocalSnapshotFromGeneric(
 			accessLogRecordSet.Insert(accessLogRecord.(*observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord))
 		}
 
-		issuedCertificates := snapshot[schema.GroupVersionKind{
-			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "IssuedCertificate",
-		}]
-
-		for _, issuedCertificate := range issuedCertificates {
-			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate))
-		}
-
 		secrets := snapshot[schema.GroupVersionKind{
 			Group:   "",
 			Version: "v1",
@@ -592,7 +558,6 @@ func NewLocalSnapshotFromGeneric(
 		workloadSet,
 		meshSet,
 		accessLogRecordSet,
-		issuedCertificateSet,
 		secretSet,
 		kubernetesClusterSet,
 	)
@@ -656,10 +621,6 @@ func (s snapshotLocal) Meshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet {
 
 func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet {
 	return s.accessLogRecords
-}
-
-func (s snapshotLocal) IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
-	return s.issuedCertificates
 }
 
 func (s snapshotLocal) Secrets() v1_sets.SecretSet {
@@ -858,19 +819,6 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.IssuedCertificate {
-		for _, obj := range s.IssuedCertificates().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
@@ -999,14 +947,6 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
-	if opts.IssuedCertificate {
-		for _, obj := range s.IssuedCertificates().List() {
-			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
 			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
@@ -1035,7 +975,6 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["workloads"] = s.workloads.List()
 	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
-	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -1083,9 +1022,6 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from AccessLogRecords
 	AccessLogRecords ResourceLocalBuildOptions
-
-	// List options for composing a snapshot from IssuedCertificates
-	IssuedCertificates ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceLocalBuildOptions
@@ -1143,8 +1079,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
-
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -1198,9 +1132,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates); err != nil {
-			errs = multierror.Append(errs, err)
-		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -1228,7 +1159,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		workloads,
 		meshes,
 		accessLogRecords,
-		issuedCertificates,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1871,49 +1801,6 @@ func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceLocalBuildOptions) error {
-	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "IssuedCertificate",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range issuedCertificateList.Items {
-		item := item.DeepCopy()    // pike + own
-		item.ClusterName = cluster // set cluster for in-memory processing
-		issuedCertificates.Insert(item)
-	}
-
-	return nil
-}
-
 func (b *multiClusterLocalBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -2047,8 +1934,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
-
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -2100,9 +1985,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
-		errs = multierror.Append(errs, err)
-	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -2128,7 +2010,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		workloads,
 		meshes,
 		accessLogRecords,
-		issuedCertificates,
 		secrets,
 		kubernetesClusters,
 	)
@@ -2636,40 +2517,6 @@ func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, 
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1",
-			Kind:    "IssuedCertificate",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range issuedCertificateList.Items {
-		item := item.DeepCopy() // pike + own the item.
-		item.ClusterName = b.clusterName
-		issuedCertificates.Insert(item)
-	}
-
-	return nil
-}
-
 func (b *singleClusterLocalBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -2778,8 +2625,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
-
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -2831,9 +2676,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
 			i.insertAccessLogRecord(ctx, obj, accessLogRecords, opts)
-		// insert IssuedCertificates
-		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
-			i.insertIssuedCertificate(ctx, obj, issuedCertificates, opts)
 		// insert Secrets
 		case *v1_types.Secret:
 			i.insertSecret(ctx, obj, secrets, opts)
@@ -2861,7 +2703,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		workloads,
 		meshes,
 		accessLogRecords,
-		issuedCertificates,
 		secrets,
 		kubernetesClusters,
 	), nil
@@ -3304,36 +3145,6 @@ func (i *inMemoryLocalBuilder) insertAccessLogRecord(
 
 	if !filteredOut {
 		accessLogRecordSet.Insert(accessLogRecord)
-	}
-}
-
-func (i *inMemoryLocalBuilder) insertIssuedCertificate(
-	ctx context.Context,
-	issuedCertificate *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate,
-	issuedCertificateSet certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
-	buildOpts LocalBuildOptions,
-) {
-
-	opts := buildOpts.IssuedCertificates.ListOptions
-
-	listOpts := &client.ListOptions{}
-	for _, opt := range opts {
-		opt.ApplyToList(listOpts)
-	}
-
-	filteredOut := false
-	if listOpts.Namespace != "" {
-		filteredOut = issuedCertificate.Namespace != listOpts.Namespace
-	}
-	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(issuedCertificate.Labels))
-	}
-	if listOpts.FieldSelector != nil {
-		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
-	}
-
-	if !filteredOut {
-		issuedCertificateSet.Insert(issuedCertificate)
 	}
 }
 
