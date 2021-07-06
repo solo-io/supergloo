@@ -123,27 +123,6 @@ func (t *translator) Translate(
 		return
 	}
 
-	// Check for existing issuedCertificate
-	// if rotation {
-
-	// }
-
-	// mesh.Status.DeployedCa.
-
-	// if !proto.Equal(appliedMeshCa.GetSharedTrust(), virtualMesh.GetSpec().GetMtlsConfig().GetShared()) {
-	// 	// applied is different from VM spec, time to rotate
-
-	// 	// Check conditions to see what needs to be done.
-	// 	if len(vmStatus.GetCertRotationConditions()) == 0 {
-	// 		// No conditions yet, begin rotation
-	// 		// Build issuedCert with current + next CA
-	// 		// Phase: ADDING_NEW_ROOT
-	// 	} else {
-	// 		// Check previous rotation condition to see what to do.
-
-	// 	}
-	// }
-
 	if err := t.updateMtlsOutputs(mesh, virtualMesh, istioOutputs, localOutputs); err != nil {
 		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 	}
@@ -166,13 +145,6 @@ func (t *translator) updateMtlsOutputs(
 		return eris.Errorf("must specify trust model to use for issuing certificates")
 	}
 
-	// No currently applied shared trust config
-	// if mesh.Status.GetAppliedCa().GetAppliedSharedTrust() == nil {
-	// 	mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
-	// 		AppliedSharedTrust: mtlsConfig.GetShared(),
-	// 	}
-	// }
-
 	switch trustModel := mtlsConfig.TrustModel.(type) {
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Shared:
 
@@ -187,18 +159,6 @@ func (t *translator) updateMtlsOutputs(
 			return err
 		}
 
-		// rotationConditions := mesh.Status.GetAppliedCa().GetCertRotationConditions()
-		// // Do not update the applied shared_trust if there is currently a rotation happening,
-		// // and the rotation is not finished
-		// if len(rotationConditions) > 0 &&
-		// 	rotationConditions[len(rotationConditions)-1].State != certificatesv1.CertificateRotationState_FINISHED {
-		// }
-
-		// // Shared trust has been succesffuly processed, add it to the applied_ca
-		// mesh.Status.AppliedCa = &discoveryv1.MeshStatus_AppliedCA{
-		// 	AppliedSharedTrust:     trustModel.Shared,
-		// 	CertRotationConditions: mesh.Status.GetAppliedCa().GetCertRotationConditions(),
-		// }
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Limited:
 		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}
@@ -223,12 +183,30 @@ func (t *translator) configureSharedTrust(
 		return nil
 	}
 
+	issuedCertificateMeta := metav1.ObjectMeta{
+		Name: mesh.Name,
+		// write to the agent namespace
+		Namespace: agentInfo.AgentNamespace,
+		// write to the mesh cluster
+		ClusterName: mesh.Spec.GetIstio().GetInstallation().GetCluster(),
+		Labels:      metautils.TranslatedObjectLabels(),
+	}
+
+	// We do not care about the error here, we will check for nil later.
+	existingIssuedCert, _ := t.issuedCertificaSet.Find(&issuedCertificateMeta)
+
+	// We need to check the current state of the issuedCert for rotation purposes
+	// if existingIssuedCert != nil {
+	// 	existingIssuedCert.Status.
+	// }
+
 	// Construct the skeleton of the issuedCertificate
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
 		sharedTrust,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
+		issuedCertificateMeta,
 	)
 
 	switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
@@ -340,6 +318,7 @@ func (t *translator) constructIssuedCertificate(
 	sharedTrust *networkingv1.SharedTrust,
 	agentNamespace string,
 	autoRestartPods bool,
+	issuedCertificateMeta metav1.ObjectMeta,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
@@ -354,16 +333,6 @@ func (t *translator) constructIssuedCertificate(
 	istioNamespace := istioMesh.GetInstallation().GetNamespace()
 	if istioNamespace == "" {
 		istioNamespace = defaultIstioNamespace
-	}
-
-	clusterName := istioMesh.GetInstallation().GetCluster()
-	issuedCertificateMeta := metav1.ObjectMeta{
-		Name: mesh.Name,
-		// write to the agent namespace
-		Namespace: agentNamespace,
-		// write to the mesh cluster
-		ClusterName: clusterName,
-		Labels:      metautils.TranslatedObjectLabels(),
 	}
 
 	// get the pods that need to be bounced for this mesh

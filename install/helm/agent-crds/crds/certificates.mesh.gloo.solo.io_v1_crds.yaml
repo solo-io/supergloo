@@ -412,6 +412,50 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
+            signingCertificateSecret:
+              description: |-
+                DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret`
+                The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
+              properties:
+                name:
+                  description: name of the resource being referenced
+                  type: string
+                namespace:
+                  description: namespace of the resource being referenced
+                  type: string
+              type: object
+            state:
+              description: |-
+                The current state of rotation, this value signals to the cert issuer how to
+                construct the intermediary certs which the data-plane clusters receive
+              enum:
+              - NOT_APPLICABLE
+              - PENDING
+              - ADDING_NEW_ROOT
+              - PROPOGATING_NEW_INTERMEDIATE
+              - DELETING_OLD_ROOT
+              - VERIFYING
+              - VERIFIED
+              - FINISHED
+              - FAILED
+              type: string
+          type: object
+        status:
+          description: The IssuedCertificate status is written by the CertificateRequesting
+            agent.
+          properties:
+            error:
+              description: |-
+                Any error observed which prevented the CertificateRequest from being processed.
+                If the error is empty, the request has been processed successfully.
+              type: string
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the IssuedCertificate metadata.
+                If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
+                recent version of this IssuedCertificate.
+              format: int64
+              type: integer
             rotation:
               description: Rotation state. If nil no rotation is currently happening.
               oneOf:
@@ -734,35 +778,6 @@ spec:
                   - FAILED
                   type: string
               type: object
-            signingCertificateSecret:
-              description: |-
-                DEPRECATED: in favor of `gloo_mesh_ca.signing_certificate_secret`
-                The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster).
-              properties:
-                name:
-                  description: name of the resource being referenced
-                  type: string
-                namespace:
-                  description: namespace of the resource being referenced
-                  type: string
-              type: object
-          type: object
-        status:
-          description: The IssuedCertificate status is written by the CertificateRequesting
-            agent.
-          properties:
-            error:
-              description: |-
-                Any error observed which prevented the CertificateRequest from being processed.
-                If the error is empty, the request has been processed successfully.
-              type: string
-            observedGeneration:
-              description: |-
-                The most recent generation observed in the the IssuedCertificate metadata.
-                If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
-                recent version of this IssuedCertificate.
-              format: int64
-              type: integer
             state:
               description: The current state of the IssuedCertificate workflow, reported
                 by the agent.

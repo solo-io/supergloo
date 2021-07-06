@@ -213,6 +213,9 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 		// mark issued certificate as finished
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_FINISHED
+		// Set the applied_ca if:
+		// 1. The state is finished, and no rotation is happening
+		// 2. The state is finished, and rotation is in it's final stage
 	default:
 		return eris.Errorf("unknown issued certificate state: %v", issuedCertificate.Status.State)
 	}

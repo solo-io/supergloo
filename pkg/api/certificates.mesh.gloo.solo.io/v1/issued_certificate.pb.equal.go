@@ -101,14 +101,8 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	if h, ok := interface{}(m.GetRotation()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRotation()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetRotation(), target.GetRotation()) {
-			return false
-		}
+	if m.GetState() != target.GetState() {
+		return false
 	}
 
 	switch m.CertificateAuthority.(type) {
@@ -234,18 +228,28 @@ func (m *IssuedCertificateStatus) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetRotation()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRotation()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRotation(), target.GetRotation()) {
+			return false
+		}
+	}
+
 	return true
 }
 
 // Equal function
-func (m *IssuedCertificateSpec_Rotation) Equal(that interface{}) bool {
+func (m *IssuedCertificateStatus_Rotation) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*IssuedCertificateSpec_Rotation)
+	target, ok := that.(*IssuedCertificateStatus_Rotation)
 	if !ok {
-		that2, ok := that.(IssuedCertificateSpec_Rotation)
+		that2, ok := that.(IssuedCertificateStatus_Rotation)
 		if ok {
 			target = &that2
 		} else {
@@ -264,8 +268,8 @@ func (m *IssuedCertificateSpec_Rotation) Equal(that interface{}) bool {
 
 	switch m.DesiredCertificateAuthority.(type) {
 
-	case *IssuedCertificateSpec_Rotation_DesiredGlooMeshCa:
-		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateSpec_Rotation_DesiredGlooMeshCa); !ok {
+	case *IssuedCertificateStatus_Rotation_DesiredGlooMeshCa:
+		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateStatus_Rotation_DesiredGlooMeshCa); !ok {
 			return false
 		}
 
@@ -279,8 +283,8 @@ func (m *IssuedCertificateSpec_Rotation) Equal(that interface{}) bool {
 			}
 		}
 
-	case *IssuedCertificateSpec_Rotation_DesiredAgentCa:
-		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateSpec_Rotation_DesiredAgentCa); !ok {
+	case *IssuedCertificateStatus_Rotation_DesiredAgentCa:
+		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateStatus_Rotation_DesiredAgentCa); !ok {
 			return false
 		}
 
