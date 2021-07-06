@@ -169,17 +169,6 @@ kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
 NAME                                READY   STATUS    RESTARTS   AGE
 enterprise-agent-64fc8cc9c5-v7b97   1/1     Running   7          25m
 
-kubectl get secrets -n gloo-mesh --context $REMOTE_CONTEXT
-
-NAME                                     TYPE                                  DATA   AGE
-default-token-fcx9w                      kubernetes.io/service-account-token   3      18h
-enterprise-agent-token-55mvq             kubernetes.io/service-account-token   3      25m
-relay-client-tls-secret                  Opaque                                3      6m24s
-relay-identity-token-secret              Opaque                                1      29m
-relay-root-tls-secret                    Opaque                                1      18h
-sh.helm.release.v1.enterprise-agent.v1   helm.sh/release.v1                    1      25m
-```
-
 We can check the logs on the `enterprise-networking` pod on the management cluster for communication from the remote cluster.
 
 ```shell
