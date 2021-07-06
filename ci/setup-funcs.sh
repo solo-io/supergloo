@@ -362,33 +362,6 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: ${ingressPort1}
-    - name: istio-ingressgateway2
-      enabled: true
-      label:
-        istio: ingressgateway2
-        traffic: north-south
-      k8s:
-        env:
-          # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-        service:
-          type: NodePort
-          selector:
-            app: istio-ingressgateway
-            istio: ingressgateway2
-            traffic: north-south
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${ingressPort2}
   meshConfig:
     enableAutoMtls: true
     defaultConfig:
@@ -476,33 +449,6 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: ${ingressPort1}
-    - name: istio-ingressgateway2
-      enabled: true
-      label:
-        istio: ingressgateway2
-        traffic: north-south
-      k8s:
-        env:
-          # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-        service:
-          type: NodePort
-          selector:
-            app: istio-ingressgateway
-            istio: ingressgateway2
-            traffic: north-south
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${ingressPort2}
   values:
     global:
       pilotCertProvider: istiod
@@ -575,33 +521,6 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: ${ingressPort1}
-    - name: istio-ingressgateway2
-      enabled: true
-      label:
-        istio: ingressgateway2
-        traffic: north-south
-      k8s:
-        env:
-          # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-        service:
-          type: NodePort
-          selector:
-            app: istio-ingressgateway
-            istio: ingressgateway2
-            traffic: north-south
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${ingressPort2}
   values:
     global:
       pilotCertProvider: istiod

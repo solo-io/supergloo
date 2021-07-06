@@ -345,6 +345,7 @@ func FederationTest() {
 	})
 
 	It("can select a non-default ingress gateway for a mesh in the virtual mesh", func() {
+
 		By("able to select the default ingress gateway destination explicitly", func() {
 			defaultFederatedIngressGatewayVm := VirtualMesh.DeepCopy()
 			defaultFederatedIngressGatewayVm.Spec.Federation.EastWestIngressGatewaySelectors = []*commonv1.IngressGatewaySelector{
@@ -364,28 +365,6 @@ func FederationTest() {
 
 			// apply updated VM and check that remote traffic consistently succeeds
 			FederateClusters(defaultFederatedIngressGatewayVm, 2)
-			Consistently(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))).Should(ContainSubstring("200 OK"))
-		})
-
-		By("able to select a non-default ingress gateway destination explicitly", func() {
-			nonDefaultFederatedIngressGatewayVm := VirtualMesh.DeepCopy()
-			nonDefaultFederatedIngressGatewayVm.Spec.Federation.EastWestIngressGatewaySelectors = []*commonv1.IngressGatewaySelector{
-				{
-					DestinationSelectors: []*commonv1.DestinationSelector{
-						{
-							KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
-								Labels: map[string]string{
-									"traffic": "north-south",
-								},
-							},
-						},
-					},
-					GatewayTlsPortName: "tls",
-				},
-			}
-
-			// apply updated VM and check that remote traffic consistently succeeds
-			FederateClusters(nonDefaultFederatedIngressGatewayVm, 2)
 			Consistently(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))).Should(ContainSubstring("200 OK"))
 		})
 
