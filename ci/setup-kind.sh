@@ -35,10 +35,25 @@ if [ "$1" == "cleanup" ]; then
   exit 0
 fi
 
+# default mgmt/remote cluster ingress ports
 mgmtIngressPort1=32001
 ((mgmtIngressPort2=mgmtIngressPort1+10)) # 32011
 remoteIngressPort1=32000
 ((remoteIngressPort2=remoteIngressPort1+10)) # 32010
+
+# set mgmt/remote cluster ingress ports from environment variables if they exist
+if [ ! -z ${MGMT_INGRESS_PORT_1} ]; then
+    mgmtIngressPort1="${MGMT_INGRESS_PORT_1}"
+fi
+if [ ! -z ${MGMT_INGRESS_PORT_2} ]; then
+    mgmtIngressPort2="${MGMT_INGRESS_PORT_2}"
+fi
+if [ ! -z ${REMOTE_INGRESS_PORT_1} ]; then
+    remoteIngressPort1="${REMOTE_INGRESS_PORT_1}"
+fi
+if [ ! -z ${REMOTE_INGRESS_PORT_2} ]; then
+    remoteIngressPort2="${REMOTE_INGRESS_PORT_2}"
+fi
 
 if [ "$1" == "osm" ]; then
   # optionally install open service mesh
