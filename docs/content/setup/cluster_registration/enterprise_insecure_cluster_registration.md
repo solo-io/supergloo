@@ -25,18 +25,6 @@ helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --na
 
 In order to identify a cluster as being managed by Gloo Mesh Enterprise, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have properly configured a remote [relay]({{% versioned_link_path fromRoot="/concepts/relay" %}}) *agent* to talk to the local relay *server*. In this example, we will register our remote cluster with Gloo Mesh Enterprise running on the management cluster.
 
-### Register with Helm Insecurely
-
-#### Prerequisites
-
-First create the namespace in the remote cluster:
-
-```shell
-CLUSTER_NAME=cluster-2 # Update value as needed
-REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
-
-kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
-```
 ### Register with `meshctl`
 
 We can use the CLI tool `meshctl` to register our remote cluster. The command we use will be `meshctl cluster register enterprise`. This is specific to Gloo Mesh **Enterprise**, and different in nature than the `meshctl cluster register community` command.
@@ -71,7 +59,7 @@ The `meshctl` command accomplished the following activities:
 
 When registering a remote cluster using Helm, you will need to run through these tasks yourself. The next section details how to accomplish those tasks and install the relay agent with Helm.
 
-### Register with Helm
+### Register with Helm Insecurely
 You can also register a remote cluster using the Enterprise Agent Helm repository. The same information used for `meshctl` registration will be needed here as well. To install, you will need to create the `gloo-mesh` namespace.
 
 #### Prerequisites
