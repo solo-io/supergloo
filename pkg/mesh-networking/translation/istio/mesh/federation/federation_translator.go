@@ -85,21 +85,21 @@ func (t *translator) Translate(
 	}
 
 	// translate one Gateway CR per ingress gateway Destination
-	for _, ingressGateway := range mesh.Status.GetAppliedEastWestIngressGateways() {
-		destination, err := in.Destinations().Find(ezkube.MakeObjectRef(ingressGateway.GetDestinationRef()))
+	for _, appliedIngressGateway := range mesh.Status.GetAppliedEastWestIngressGateways() {
+		destination, err := in.Destinations().Find(ezkube.MakeObjectRef(appliedIngressGateway.GetDestinationRef()))
 		if err != nil {
 			contextutils.LoggerFrom(t.ctx).DPanicf("internal error: applied east west ingress gateway Destination not found in snapshot")
 			continue
 		}
 
-		ingressTlsContainerPort := ingressGateway.GetTlsContainerPort()
+		ingressTlsContainerPort := appliedIngressGateway.GetTlsContainerPort()
 		if ingressTlsContainerPort == 0 {
 			contextutils.LoggerFrom(t.ctx).DPanicf("ingress gateway tls container port not found")
 			continue
 		}
 
 		gateway := t.buildGateway(
-			BuildGatewayName(destination.GetName(), destination.GetNamespace()),
+			BuildGatewayName(appliedIngressGateway),
 			istioNamespace,
 			istioCluster,
 			ingressTlsContainerPort,
@@ -148,8 +148,9 @@ func (t *translator) buildGateway(
 	return gw
 }
 
-func BuildGatewayName(name, namespace string) string {
+func BuildGatewayName(appliedIngressGateway *discoveryv1.MeshStatus_AppliedIngressGateway) string {
+	ingressDestinationRef := appliedIngressGateway.GetDestinationRef()
 	return kubeutils.SanitizeNameV2(
-		fmt.Sprintf("%s-%s", name, namespace),
+		fmt.Sprintf("%s-%s", ingressDestinationRef.GetName(), ingressDestinationRef.GetNamespace()),
 	)
 }
