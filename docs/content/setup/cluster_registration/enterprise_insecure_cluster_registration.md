@@ -37,6 +37,53 @@ REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
 
 kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
 ```
+### Register with `meshctl`
+
+We can use the CLI tool `meshctl` to register our remote cluster. The command we use will be `meshctl cluster register enterprise`. This is specific to Gloo Mesh **Enterprise**, and different in nature than the `meshctl cluster register community` command.
+
+Registering with `meshctl` in insecure mode is very similar to the registration in secure mode [see here]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration/#register-with-meshctl" %}}). We just need to add the `--relay-server-insecure=true` flag to the command line.
+
+For example:
+
+```shell
+meshctl cluster register enterprise \
+  --remote-context=$REMOTE_CONTEXT \
+  --relay-server-address $RELAY_ADDRESS \
+  --relay-server-insecure=true \
+  $CLUSTER_NAME
+```
+
+You should see the following output:
+
+```
+Registering cluster
+💻 Installing relay agent in the remote cluster
+Finished installing chart 'enterprise-agent' as release gloo-mesh:enterprise-agent
+📃 Creating remote-cluster KubernetesCluster CRD in management cluster
+✅ Done registering cluster!
+```
+
+The `meshctl` command accomplished the following activities:
+
+* Created the `gloo-mesh` namespace
+* Installed the relay agent in the remote cluster
+* Created the KubernetesCluster CRD in the management cluster
+
+When registering a remote cluster using Helm, you will need to run through these tasks yourself. The next section details how to accomplish those tasks and install the relay agent with Helm.
+
+### Register with Helm
+You can also register a remote cluster using the Enterprise Agent Helm repository. The same information used for `meshctl` registration will be needed here as well. To install, you will need to create the `gloo-mesh` namespace.
+
+#### Prerequisites
+
+First create the namespace in the remote cluster:
+
+```shell
+CLUSTER_NAME=cluster-2 # Update value as needed
+REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
+
+kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
+```
 
 #### Install the Enterprise Agent
 
@@ -83,6 +130,14 @@ CLUSTER_NAME=cluster-2 # Update value as needed
 REMOTE_CONTEXT=kind-cluster-2 # Update value as needed
 ENTERPRISE_NETWORKING_VERSION=<current version> # Update based on meshctl version output
 ```
+
+{{% notice note %}} If you have `jq` installed, you can use this command to get the correct value for `ENTERPRISE_NETWORKING_VERSION`:
+
+```shell
+ENTERPRISE_NETWORKING_VERSION=$(meshctl version | jq '.server[].components[] | select(.componentName == "enterprise-networking") | .images[] | select(.name == "enterprise-networking") | .version')
+```
+
+ {{% /notice %}}
 
 And now we will deploy the relay agent in the remote cluster.
 
