@@ -1,11 +1,11 @@
 ---
-title: "Enterprise"
-menuTitle: Enterprise
+title: "Enterprise - Insecure"
+menuTitle: Enterprise - Insecure
 description: Registering a cluster insecurely with Gloo Mesh enterprise edition
 weight: 30
 ---
 
-{{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
+{{% notice note %}} Gloo Mesh Enterprise version v1.1.0-beta20 or above is required for this feature. {{% /notice %}}
 {{% notice warning %}} This guide configures Gloo Mesh Enterprise without secure communication. This is not advised for production usage. {{% /notice %}}
 
 This guide will walk you through the basics of registering clusters for management by Gloo Mesh Enterprise using Helm without any secure communication. This is not fit for production, but provides an easy setup, that would allow you to quickly evaluate Gloo Mesh before investing in securing the communication.
@@ -14,7 +14,7 @@ This guide will walk you through the basics of registering clusters for manageme
 
 ```shell
 MGMT_CONTEXT=kind-cluster-1 # Update value as needed
-
+kubectl create namespace gloo-mesh
 helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
   --set global.insecure=true \
   --set licenseKey=${GLOO_MESH_LICENSE_KEY}
