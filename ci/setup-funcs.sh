@@ -316,7 +316,6 @@ EOF
 function install_istio_1_7() {
   cluster=$1
   ingressPort1=$2
-  ingressPort2=$3
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -390,7 +389,6 @@ EOF
 function install_istio_1_8() {
   cluster=$1
   ingressPort1=$2
-  ingressPort2=$3
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -462,7 +460,6 @@ EOF
 function install_istio_1_9() {
   cluster=$1
   ingressPort1=$2
-  ingressPort2=$3
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -572,23 +569,22 @@ EOF
 
 function install_istio() {
   cluster=$1
-  ingressPort1=$2
-  ingressPort2=$3
+  ingressPort=$2
   K="kubectl --context=kind-${cluster}"
 
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $ingressPort1 $ingressPort2
-    install_istio_coredns $cluster $ingressPort1 $ingressPort2
+    install_istio_1_7 $cluster $ingressPort
+    install_istio_coredns $cluster $ingressPort
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $ingressPort1 $ingressPort2
+    install_istio_1_8 $cluster $ingressPort
   elif istioctl version | grep -E -- '1.9'
   then
-    install_istio_1_9 $cluster $ingressPort1 $ingressPort2
+    install_istio_1_9 $cluster $ingressPort
   elif istioctl version | grep -E -- '1.10'
   then
-    install_istio_1_9 $cluster $ingressPort1 $ingressPort2
+    install_istio_1_9 $cluster $ingressPort
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1

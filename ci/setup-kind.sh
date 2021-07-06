@@ -76,10 +76,10 @@ else
   # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
   # related: https://github.com/kubernetes-sigs/kind/issues/1596
   create_kind_cluster ${mgmtCluster} ${mgmtIngressPort1} ${mgmtIngressPort2}
-  install_istio ${mgmtCluster} ${mgmtIngressPort1} ${mgmtIngressPort2}
+  install_istio ${mgmtCluster} ${mgmtIngressPort1}
 
   create_kind_cluster ${remoteCluster} ${remoteIngressPort1} ${remoteIngressPort2}
-  install_istio ${remoteCluster} ${remoteIngressPort1} ${remoteIngressPort2}
+  install_istio ${remoteCluster} ${remoteIngressPort1}
 
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
     setup_flat_networking ${mgmtCluster} ${mgmtIngressPort1} ${remoteCluster} ${remoteIngressPort1}
