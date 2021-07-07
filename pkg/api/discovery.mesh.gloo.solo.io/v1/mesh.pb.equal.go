@@ -638,11 +638,11 @@ func (m *MeshStatus_AppliedIngressGateway) Equal(that interface{}) bool {
 
 	}
 
-	if m.GetTlsDestinationPort() != target.GetTlsDestinationPort() {
+	if m.GetDestinationPort() != target.GetDestinationPort() {
 		return false
 	}
 
-	if m.GetTlsContainerPort() != target.GetTlsContainerPort() {
+	if m.GetContainerPort() != target.GetContainerPort() {
 		return false
 	}
 

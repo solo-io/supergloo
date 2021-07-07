@@ -208,7 +208,7 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 	for _, appliedIngressGateway := range destinationMesh.Status.AppliedEastWestIngressGateways {
 
 		for portName := range workloadEntryPortMapping {
-			workloadEntryPortMapping[portName] = appliedIngressGateway.TlsDestinationPort
+			workloadEntryPortMapping[portName] = appliedIngressGateway.DestinationPort
 		}
 
 		for _, externalAddress := range appliedIngressGateway.ExternalAddresses {

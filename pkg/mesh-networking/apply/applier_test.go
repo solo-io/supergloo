@@ -782,10 +782,10 @@ var _ = Describe("Applier", func() {
 			Expect(len(mesh.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 
 			Expect(mesh.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination1),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 5678,
-				TlsContainerPort:   95678,
+				DestinationRef:    ezkube.MakeObjectRef(destination1),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   5678,
+				ContainerPort:     95678,
 			}))
 		})
 
@@ -826,28 +826,28 @@ var _ = Describe("Applier", func() {
 			Expect(len(mesh4.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 
 			Expect(mesh1.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination1),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 11234,
-				TlsContainerPort:   91234,
+				DestinationRef:    ezkube.MakeObjectRef(destination1),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   11234,
+				ContainerPort:     91234,
 			}))
 			Expect(mesh2.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination2),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 11234,
-				TlsContainerPort:   91234,
+				DestinationRef:    ezkube.MakeObjectRef(destination2),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   11234,
+				ContainerPort:     91234,
 			}))
 			Expect(mesh3.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination3),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 1234,
-				TlsContainerPort:   91234,
+				DestinationRef:    ezkube.MakeObjectRef(destination3),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   1234,
+				ContainerPort:     91234,
 			}))
 			Expect(mesh4.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination4),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 1234,
-				TlsContainerPort:   91234,
+				DestinationRef:    ezkube.MakeObjectRef(destination4),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   1234,
+				ContainerPort:     91234,
 			}))
 		})
 
@@ -997,35 +997,35 @@ var _ = Describe("Applier", func() {
 			Expect(len(mesh4.Status.AppliedEastWestIngressGateways)).To(Equal(2))
 
 			Expect(mesh1.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination1),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 11234,
-				TlsContainerPort:   91234,
+				DestinationRef:    ezkube.MakeObjectRef(destination1),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   11234,
+				ContainerPort:     91234,
 			}))
 			Expect(mesh2.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination2),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 15678,
-				TlsContainerPort:   95678,
+				DestinationRef:    ezkube.MakeObjectRef(destination2),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   15678,
+				ContainerPort:     95678,
 			}))
 			Expect(mesh3.Status.AppliedEastWestIngressGateways[0]).To(Equal(&discoveryv1.MeshStatus_AppliedIngressGateway{
-				DestinationRef:     ezkube.MakeObjectRef(destination3),
-				ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-				TlsDestinationPort: 5678,
-				TlsContainerPort:   95678,
+				DestinationRef:    ezkube.MakeObjectRef(destination3),
+				ExternalAddresses: []string{"external-dns-name", "external-ip"},
+				DestinationPort:   5678,
+				ContainerPort:     95678,
 			}))
 			Expect(mesh4.Status.AppliedEastWestIngressGateways).To(ConsistOf([]*discoveryv1.MeshStatus_AppliedIngressGateway{
 				{
-					DestinationRef:     ezkube.MakeObjectRef(destination4),
-					ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-					TlsDestinationPort: 1234,
-					TlsContainerPort:   91234,
+					DestinationRef:    ezkube.MakeObjectRef(destination4),
+					ExternalAddresses: []string{"external-dns-name", "external-ip"},
+					DestinationPort:   1234,
+					ContainerPort:     91234,
 				},
 				{
-					DestinationRef:     ezkube.MakeObjectRef(destination5),
-					ExternalAddresses:  []string{"external-dns-name", "external-ip"},
-					TlsDestinationPort: 1234,
-					TlsContainerPort:   91234,
+					DestinationRef:    ezkube.MakeObjectRef(destination5),
+					ExternalAddresses: []string{"external-dns-name", "external-ip"},
+					DestinationPort:   1234,
+					ContainerPort:     91234,
 				},
 			}))
 		})
@@ -1208,7 +1208,7 @@ var _ = Describe("Applier", func() {
 			Expect(virtualMeshWithBadSelector1.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector1.Status.Errors)).To(Equal(1))
 			Expect(virtualMeshWithBadSelector1.Status.Errors[0]).
-				To(Equal("attempting to select ingress gateway destination bad-destination-no-workload-labels.ns. with no workload labels"))
+				To(Equal("attempting to select ingress gateway destination bad-destination-no-workload-labels.ns. with no selector labels"))
 
 			Expect(virtualMeshWithBadSelector2.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector2.Status.Errors)).To(Equal(1))

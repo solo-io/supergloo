@@ -777,7 +777,7 @@ func getAppliedEastWestIngressGateways(
 	}
 
 	var selectedIngressGatewayList []*discoveryv1.MeshStatus_AppliedIngressGateway
-	// Resolve all of the VM’s ingress gateway selectors to a list of (Destination, tls port) tuples that belong to the mesh
+	// Resolve all of the VirtualMesh’s ingress gateway selectors to a list of (Destination, tls port) tuples that belong to the mesh
 	// note: if multiple ingress selectors select the same Destination with different tls port names, we will only consider the port number selected by the first encountered selector
 	for _, destination := range destinations.List() {
 		// only consider kubernetes services
@@ -802,7 +802,7 @@ func getAppliedEastWestIngressGateways(
 				virtualMesh.Status.State = commonv1.ApprovalState_INVALID
 				virtualMesh.Status.Errors = append(
 					virtualMesh.Status.Errors,
-					fmt.Sprintf("attempting to select ingress gateway destination %v with no workload labels", sets.Key(destination)),
+					fmt.Sprintf("attempting to select ingress gateway destination %v with no selector labels", sets.Key(destination)),
 				)
 				return nil
 			}
@@ -871,10 +871,10 @@ func getDefaultEastWestIngressGateways(
 		}
 
 		defaultIngressGatewayList = append(defaultIngressGatewayList, &discoveryv1.MeshStatus_AppliedIngressGateway{
-			DestinationRef:     ezkube.MakeObjectRef(destination),
-			ExternalAddresses:  getDestinationExternalAddresses(destination),
-			TlsDestinationPort: ingressGatewayDestination.ExternalTlsPort,
-			TlsContainerPort:   ingressGatewayDestination.TlsContainerPort,
+			DestinationRef:    ezkube.MakeObjectRef(destination),
+			ExternalAddresses: getDestinationExternalAddresses(destination),
+			DestinationPort:   ingressGatewayDestination.ExternalTlsPort,
+			ContainerPort:     ingressGatewayDestination.TlsContainerPort,
 		})
 	}
 	if len(defaultIngressGatewayList) > 0 {
@@ -935,9 +935,9 @@ func buildAppliedIngressGateway(
 				Name:      destination.GetName(),
 				Namespace: destination.GetNamespace(),
 			},
-			ExternalAddresses:  getDestinationExternalAddresses(destination),
-			TlsDestinationPort: destinationPort,
-			TlsContainerPort:   containerPort,
+			ExternalAddresses: getDestinationExternalAddresses(destination),
+			DestinationPort:   destinationPort,
+			ContainerPort:     containerPort,
 		}, nil
 	} else {
 		return nil, eris.Errorf("ingress gateway destination port info could not be determined for tls port name: %s", gatewayTlsPortName)

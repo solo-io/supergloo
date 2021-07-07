@@ -1205,6 +1205,18 @@ spec:
                 west traffic.
               items:
                 properties:
+                  containerPort:
+                    description: The port on the ingress gateway's backing Workload(s)
+                      designated for receiving cross cluster traffic.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
+                  destinationPort:
+                    description: The port on the ingress gateway Destination designated
+                      for receiving cross cluster traffic.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
                   destinationRef:
                     description: The Destination on the mesh that acts as an ingress
                       gateway for the mesh.
@@ -1217,22 +1229,11 @@ spec:
                         type: string
                     type: object
                   externalAddresses:
-                    description: The externally accessible IP addresses.
+                    description: The externally accessible address(es) for this ingress
+                      gateway Destination.
                     items:
                       type: string
                     type: array
-                  tlsContainerPort:
-                    description: The port on the ingress gateway workload receiving
-                      TLS traffic.
-                    maximum: 4294967295
-                    minimum: 0
-                    type: integer
-                  tlsDestinationPort:
-                    description: The port on the ingress gateway Destination receiving
-                      TLS traffic.
-                    maximum: 4294967295
-                    minimum: 0
-                    type: integer
                 type: object
               type: array
             appliedVirtualDestinations:

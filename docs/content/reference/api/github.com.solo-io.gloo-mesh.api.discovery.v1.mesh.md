@@ -259,9 +259,9 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The Destination on the mesh that acts as an ingress gateway for the mesh. |
-  | externalAddresses | []string | repeated | The externally accessible IP addresses. |
-  | tlsDestinationPort | uint32 |  | The port on the ingress gateway Destination receiving TLS traffic. |
-  | tlsContainerPort | uint32 |  | The port on the ingress gateway workload receiving TLS traffic. |
+  | externalAddresses | []string | repeated | The externally accessible address(es) for this ingress gateway Destination. |
+  | destinationPort | uint32 |  | The port on the ingress gateway Destination designated for receiving cross cluster traffic. |
+  | containerPort | uint32 |  | The port on the ingress gateway's backing Workload(s) designated for receiving cross cluster traffic. |
   
 
 

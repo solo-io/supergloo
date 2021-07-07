@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/skv2/pkg/ezkube"
-
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -18,6 +16,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -92,8 +91,8 @@ func (t *translator) Translate(
 			continue
 		}
 
-		ingressTlsContainerPort := appliedIngressGateway.GetTlsContainerPort()
-		if ingressTlsContainerPort == 0 {
+		ingressContainerPort := appliedIngressGateway.GetContainerPort()
+		if ingressContainerPort == 0 {
 			contextutils.LoggerFrom(t.ctx).DPanicf("ingress gateway tls container port not found")
 			continue
 		}
@@ -102,7 +101,7 @@ func (t *translator) Translate(
 			BuildGatewayName(appliedIngressGateway),
 			istioNamespace,
 			istioCluster,
-			ingressTlsContainerPort,
+			ingressContainerPort,
 			federatedHostnameSuffix,
 			destination.Spec.GetKubeService().GetWorkloadSelectorLabels(),
 			virtualMesh.GetRef(),
@@ -114,7 +113,7 @@ func (t *translator) Translate(
 
 func (t *translator) buildGateway(
 	name, namespace, cluster string,
-	ingressTlsContainerPort uint32,
+	ingressContainerPort uint32,
 	federatedHostnameSuffix string,
 	ingressGatewayWorkloadLabels map[string]string,
 	virtualMeshRef ezkube.ResourceId,
@@ -129,7 +128,7 @@ func (t *translator) buildGateway(
 		Spec: networkingv1alpha3spec.Gateway{
 			Servers: []*networkingv1alpha3spec.Server{{
 				Port: &networkingv1alpha3spec.Port{
-					Number:   ingressTlsContainerPort,
+					Number:   ingressContainerPort,
 					Protocol: defaultGatewayProtocol,
 					Name:     defaults.IstioGatewayTlsPortName,
 				},
