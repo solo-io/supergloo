@@ -101,7 +101,7 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	if m.GetState() != target.GetState() {
+	if m.GetRotationState() != target.GetRotationState() {
 		return false
 	}
 

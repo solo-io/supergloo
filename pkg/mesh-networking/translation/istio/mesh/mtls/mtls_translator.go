@@ -183,30 +183,12 @@ func (t *translator) configureSharedTrust(
 		return nil
 	}
 
-	issuedCertificateMeta := metav1.ObjectMeta{
-		Name: mesh.Name,
-		// write to the agent namespace
-		Namespace: agentInfo.AgentNamespace,
-		// write to the mesh cluster
-		ClusterName: mesh.Spec.GetIstio().GetInstallation().GetCluster(),
-		Labels:      metautils.TranslatedObjectLabels(),
-	}
-
-	// We do not care about the error here, we will check for nil later.
-	existingIssuedCert, _ := t.issuedCertificaSet.Find(&issuedCertificateMeta)
-
-	// We need to check the current state of the issuedCert for rotation purposes
-	// if existingIssuedCert != nil {
-	// 	existingIssuedCert.Status.
-	// }
-
 	// Construct the skeleton of the issuedCertificate
 	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
 		sharedTrust,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
-		issuedCertificateMeta,
 	)
 
 	switch typedCa := sharedTrust.GetCertificateAuthority().(type) {
@@ -318,7 +300,6 @@ func (t *translator) constructIssuedCertificate(
 	sharedTrust *networkingv1.SharedTrust,
 	agentNamespace string,
 	autoRestartPods bool,
-	issuedCertificateMeta metav1.ObjectMeta,
 ) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
@@ -333,6 +314,16 @@ func (t *translator) constructIssuedCertificate(
 	istioNamespace := istioMesh.GetInstallation().GetNamespace()
 	if istioNamespace == "" {
 		istioNamespace = defaultIstioNamespace
+	}
+
+	clusterName := istioMesh.GetInstallation().GetCluster()
+	issuedCertificateMeta := metav1.ObjectMeta{
+		Name: mesh.Name,
+		// write to the agent namespace
+		Namespace: agentNamespace,
+		// write to the mesh cluster
+		ClusterName: clusterName,
+		Labels:      metautils.TranslatedObjectLabels(),
 	}
 
 	// get the pods that need to be bounced for this mesh

@@ -72,7 +72,7 @@ message IssuedCertificateSpec {
 
     // The current state of rotation, this value signals to the cert issuer how to 
     // construct the intermediary certs which the data-plane clusters receive
-    CertificateRotationState state = 9;
+    CertificateRotationState rotation_state = 9;
 
 }
 
