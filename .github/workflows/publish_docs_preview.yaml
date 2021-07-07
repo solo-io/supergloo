@@ -41,7 +41,7 @@ jobs:
     - name: Generate versioned docs site
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        PREVIEW_DOCS: 1        # Changelog generation does not work when deploying preview site
+        PREVIEW_DOCS: 1
       run: make -C docs build-site
     - name: Deploy to Firebase
       uses: FirebaseExtended/action-hosting-deploy@v0
