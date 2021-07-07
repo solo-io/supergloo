@@ -2,6 +2,8 @@ package docsgen
 
 import (
 	"context"
+	changelogdocutils "github.com/solo-io/go-utils/changeloggenutils"
+	"github.com/solo-io/go-utils/githubutils"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -10,13 +12,12 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/pkg/errors"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/clidoc"
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 const (
@@ -45,31 +46,6 @@ weight: 6
 ---
 Included in the sections below are Changelog for both Gloo Mesh OSS and Gloo Mesh Enterprise.
 {{% children description="true" %}}
-`
-	changelogTypes = `
----
-title: Changelog Entry Types
-weight: 90
-description: Explanation of the entry types used in our changelogs
----
-You will find several different kinds of changelog entries:
-- **Dependency Bumps**
-A notice about a dependency in the project that had its version bumped in this release. Be sure to check for any
-"**Breaking Change**" entries accompanying a dependency bump. For example, a ` + "`gloo-mesh`" + `
-version bump in Gloo Mesh Enterprise may mean a change to a proto API.
-- **Breaking Changes**
-A notice of a non-backwards-compatible change to some API. This can include things like a changed
-proto format, a change to the Helm chart, and other breakages. Occasionally a breaking change
-may mean that the process to upgrade the product is slightly different; in that case, we will be sure
-to specify in the changelog how the break must be handled.
-- **Helm Changes**
-A notice of a change to our Helm chart. One of these entries does not by itself signify a breaking
-change to the Helm chart; you will find an accompanying "**Breaking Change**" entry in the release
-notes if that is the case.
-- **New Features**
-A description of a new feature that has been implemented in this release.
-- **Fixes**
-A description of a bug that was resolved in this release.
 `
 )
 
@@ -121,7 +97,7 @@ func Execute(opts Options) error {
 		}
 	}
 
-	client, err := getGitHubClient()
+	client, err := githubutils.GetClient(context.Background())
 	if err != nil {
 		return eris.Errorf("error initializing Github client: %v", err)
 	}
@@ -156,38 +132,58 @@ func generateChangelog(client *github.Client, root string, opts ChangelogOptions
 	if checkEnvVariable("SKIP_CHANGELOG_GENERATION") {
 		return nil
 	}
-	// flush directory for idempotence
-	changelogDir := filepath.Join(root, opts.OutputDir)
-	os.RemoveAll(changelogDir)
-	os.MkdirAll(changelogDir, 0755)
-	version, err := getGitVersion()
+	// Generate community changelog
+	generator := changelogdocutils.NewMinorReleaseGroupedChangelogGenerator(changelogdocutils.Options{
+		MainRepo: "gloo-mesh",
+		RepoOwner: "solo-io",
+	}, client)
+	out, err := generator.GenerateJSON(context.Background())
+	if err != nil {
+		return err
+	}
+	f, err := os.Create("content/static/content/community_changelog.json")
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(out)
+	if err != nil {
+		return eris.Wrap(err, "error writing changelog")
+	}
+	err = f.Close()
 	if err != nil {
 		return err
 	}
 
-	// Generate community changelog
-	if err := generateChangelogMd(
-		client, "gloo-mesh", "Gloo Mesh Community", filepath.Join(changelogDir, "community.md"), version, 7,
-	); err != nil {
+	// Generate changelog for gloo mesh enterprise
+	ghToken, err := githubutils.GetGithubToken()
+	if err != nil {
 		return err
 	}
-
-	// Generate changelog for other repos
-	for i, cfg := range opts.OtherRepos {
-		if err := generateChangelogMd(
-			client, cfg.Repo, cfg.Name, filepath.Join(changelogDir, cfg.Fname+".md"), "", 8+i,
-		); err != nil {
-			return err
-		}
+	depFn, err := changelogdocutils.GetOSDependencyFunc("solo-io", "gloo-mesh-enterprise", "gloo-mesh", ghToken)
+	if err != nil {
+		return eris.Wrap(err, "unable to generate dependency function between gloo-mesh-enterprise and gloo-mesh community")
+	}
+	mergedOpts := changelogdocutils.Options{
+		MainRepo: "gloo-mesh-enterprise",
+		DependentRepo: "gloo-mesh",
+		RepoOwner: "solo-io",
+	}
+	mergedGenerator := changelogdocutils.NewMergedReleaseGeneratorWithDepFn(mergedOpts, client, depFn)
+	out, err = mergedGenerator.GenerateJSON(context.Background())
+	if err != nil {
+		return eris.Wrap(err,"error generating merged enterprise and open source changelog")
 	}
 
-	// Write the reference
-	if err := ioutil.WriteFile(
-		filepath.Join(changelogDir, "changelog_types.md"), []byte(changelogTypes), 0644,
-	); err != nil {
+	f, err = os.Create("content/static/content/enterprise_changelog.json")
+	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filepath.Join(changelogDir, "_index.md"), []byte(changelogIndex), 0644)
+	_, err = f.WriteString(out)
+	if err != nil {
+		return eris.Wrap(err, "error writing changelog")
+	}
+	err = f.Close()
+	return err
 }
 
 func generateChangelogMd(client *github.Client, repo, name, path, cutoffVersion string, weight int) error {
@@ -236,21 +232,6 @@ func buildChangelogBody(client *github.Client, repo, cutoffVersion string) (stri
 }
 
 var ghClient *github.Client
-
-func getGitHubClient() (*github.Client, error) {
-	if ghClient != nil {
-		return ghClient, nil
-	}
-
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		return nil, errors.New("must set GITHUB_TOKEN environment variable")
-	}
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(context.Background(), ts)
-	ghClient = github.NewClient(tc)
-	return ghClient, nil
-}
 
 // getGitVersion finds the current version via the checked out git reference
 func getGitVersion() (string, error) {
