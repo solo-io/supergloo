@@ -29,10 +29,9 @@ const (
 	defaultGatewayProtocol = "TLS"
 )
 
-// the VirtualService translator translates a Mesh into a VirtualService.
+// the Mesh Federation translator translates a Gateway CR for enabling the Mesh to receive cross cluster traffic
 type Translator interface {
-	// Translate translates the appropriate VirtualService and DestinationRule for the given Mesh.
-	// returns nil if no VirtualService or DestinationRule is required for the Mesh (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
+	// Translate translates a Gateway for the given Mesh
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(

@@ -354,7 +354,7 @@ func FederationTest() {
 						{
 							KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
 								Labels: map[string]string{
-									"istio": "ingressgateway",
+									"traffic": "east-west",
 								},
 							},
 						},
