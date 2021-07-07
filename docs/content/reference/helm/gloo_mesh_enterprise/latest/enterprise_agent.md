@@ -7,6 +7,8 @@ weight: 2
 
 |Option|Type|Default Value|Description|
 |------|----|-----------|-------------|
+|global|struct|{"insecure":false}|global chart values which can be set from parent charts|
+|global.insecure|bool|false|Set to true to enable insecure communication between Gloo Mesh components|
 |defaultMetricsPort|uint32|9091|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |relay|struct|{"cluster":"","serverAddress":"","authority":"enterprise-networking.gloo-mesh","insecure":false,"clientCertSecret":{"name":"relay-client-tls-secret"},"rootTlsSecret":{"name":"relay-root-tls-secret"},"tokenSecret":{"name":"relay-identity-token-secret","namespace":"","key":"token"},"maxGrpcMessageSize":"4294967295"}|options for connecting relay|
 |relay.cluster|string| |cluster identifier for the relay agent|
@@ -33,30 +35,46 @@ weight: 2
 |istiodSidecar.istiodServiceAccount.name|string|istiod-service-account||
 |istiodSidecar.istiodServiceAccount.namespace|string|istio-system||
 |verbose|bool|false||
-|enterpriseAgent|struct|{"image":{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"serviceType":"ClusterIP","ports":{"grpc":9977,"http":9988},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the enterpriseAgent deployment.|
-|enterpriseAgent.image|struct|{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
+|enterpriseAgent|struct|{"image":{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"grpc":9977,"http":9988}}|Configuration for the enterpriseAgent deployment.|
+|enterpriseAgent|struct|{"image":{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}}}||
+|enterpriseAgent.image|struct|{"repository":"enterprise-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the container image|
 |enterpriseAgent.image.tag|string| |Tag for the container.|
 |enterpriseAgent.image.repository|string|enterprise-agent|Image name (repository).|
 |enterpriseAgent.image.registry|string|gcr.io/gloo-mesh|Image registry.|
 |enterpriseAgent.image.pullPolicy|string|IfNotPresent|Image pull policy.|
-|enterpriseAgent.image.pullSecret|string| |Image pull policy. |
-|enterpriseAgent.Resources|struct|{"requests":{"cpu":"50m","memory":"128Mi"}}|Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|enterpriseAgent.image.pullSecret|string| |Image pull secret.|
+|enterpriseAgent.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|enterpriseAgent.resources|struct|{"requests":{"cpu":"50m","memory":"128Mi"}}|Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|enterpriseAgent.resources.limits|map[string, struct]| ||
+|enterpriseAgent.resources.limits.<MAP_KEY>|struct| ||
+|enterpriseAgent.resources.limits.<MAP_KEY>|string| ||
+|enterpriseAgent.resources.requests|map[string, struct]| ||
+|enterpriseAgent.resources.requests.<MAP_KEY>|struct| ||
+|enterpriseAgent.resources.requests.<MAP_KEY>|string| ||
+|enterpriseAgent.resources.requests.cpu|struct|"50m"||
+|enterpriseAgent.resources.requests.cpu|string|DecimalSI||
+|enterpriseAgent.resources.requests.memory|struct|"128Mi"||
+|enterpriseAgent.resources.requests.memory|string|BinarySI||
+|enterpriseAgent.sidecars|map[string, struct]| |Configuration for the deployed containers.|
+|enterpriseAgent.sidecars.<MAP_KEY>|struct| |Configuration for the deployed containers.|
+|enterpriseAgent.sidecars.<MAP_KEY>.image|struct| |Specify the container image|
+|enterpriseAgent.sidecars.<MAP_KEY>.image.tag|string| |Tag for the container.|
+|enterpriseAgent.sidecars.<MAP_KEY>.image.repository|string| |Image name (repository).|
+|enterpriseAgent.sidecars.<MAP_KEY>.image.registry|string| |Image registry.|
+|enterpriseAgent.sidecars.<MAP_KEY>.image.pullPolicy|string| |Image pull policy.|
+|enterpriseAgent.sidecars.<MAP_KEY>.image.pullSecret|string| |Image pull secret.|
+|enterpriseAgent.sidecars.<MAP_KEY>.Env[]|slice| |Specify environment variables for the container. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
+|enterpriseAgent.sidecars.<MAP_KEY>.resources|struct| |Specify container resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|enterpriseAgent.sidecars.<MAP_KEY>.resources.limits|map[string, struct]| ||
+|enterpriseAgent.sidecars.<MAP_KEY>.resources.limits.<MAP_KEY>|struct| ||
+|enterpriseAgent.sidecars.<MAP_KEY>.resources.limits.<MAP_KEY>|string| ||
+|enterpriseAgent.sidecars.<MAP_KEY>.resources.requests|map[string, struct]| ||
+|enterpriseAgent.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|struct| ||
+|enterpriseAgent.sidecars.<MAP_KEY>.resources.requests.<MAP_KEY>|string| ||
 |enterpriseAgent.serviceType|string|ClusterIP|Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
 |enterpriseAgent.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |enterpriseAgent.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |enterpriseAgent.ports.grpc|uint32|9977|Specify service ports as a map from port name to port number.|
 |enterpriseAgent.ports.http|uint32|9988|Specify service ports as a map from port name to port number.|
-|enterpriseAgent.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
-|enterpriseAgent.customPodLabels|map[string, string]| |Custom labels for the pod|
-|enterpriseAgent.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
-|enterpriseAgent.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
-|enterpriseAgent.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
-|enterpriseAgent.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
-|enterpriseAgent.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
-|enterpriseAgent.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
-|enterpriseAgent.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
-|enterpriseAgent.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
-|enterpriseAgent.customServiceLabels|map[string, string]| |Custom labels for the service|
-|enterpriseAgent.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
-|enterpriseAgent.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
-|enterpriseAgent.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
+|enterpriseAgent.DeploymentOverrides|invalid| |Provide arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)|
+|enterpriseAgent.ServiceOverrides|invalid| |Provide arbitrary overrides for the component's [service template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).|
