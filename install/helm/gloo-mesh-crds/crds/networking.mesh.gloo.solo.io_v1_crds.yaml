@@ -353,14 +353,10 @@ spec:
                         - disable
                       - required:
                         - configRef
-                      - required:
-                        - customAuth
                   - required:
                     - disable
                   - required:
                     - configRef
-                  - required:
-                    - customAuth
                   properties:
                     configRef:
                       description: A reference to an AuthConfig. This is used to configure
@@ -371,30 +367,6 @@ spec:
                           type: string
                         namespace:
                           description: namespace of the resource being referenced
-                          type: string
-                      type: object
-                    customAuth:
-                      description: Use this field if you are running your own custom
-                        extauth server.
-                      properties:
-                        contextExtensions:
-                          additionalProperties:
-                            type: string
-                          description: |-
-                            When a request matches the route or traffic policy on which this configuration is defined,
-                            Gloo Mesh will add the given context_extensions to the request that is sent to the external authorization server.
-                            This allows the server to base the auth decision on metadata that you define on the source of the request.
-
-                            This attribute is analogous to Envoy's config.filter.http.ext_authz.v2.CheckSettings. See the official
-                            [Envoy documentation](https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/http/ext_authz/v2/ext_authz.proto.html?highlight=ext_authz#config-filter-http-ext-authz-v2-checksettings)
-                            for more details.
-                          type: object
-                        name:
-                          description: |-
-                            TODO(kdorosh) re-evaluate if this is needed for MVP
-                            [Enterprise-only]
-                            Only required in the case where multiple auth servers are configured in Settings
-                            This name must match a key in the named_extauth Settings.
                           type: string
                       type: object
                     disable:

@@ -14,13 +14,13 @@ message GatewayExtauth {
   // The upstream to ask about auth decisions
   //.core.skv2.solo.io.ObjectRef extauthz_server_ref = 1;
 
-  // TODO(kdorosh): this is hard-coded. make configurable, allow health checks / mTLS, use EnvoyFilter?
   // If this is set, communication to the upstream will be via HTTP and not GRPC.
-  //HttpService http_service = 2;
+  HttpService http_service = 2;
 
+  // TODO(kdorosh): add sanitize as follow up to MVP
   // If the auth server trusted id of the user, it will be set in this header.
   // Specifically this means that this header will be sanitized form the incoming request.
-  string user_id_header = 3;
+  // string user_id_header = 3;
 
   // Timeout for the ext auth service to respond. Defaults to 200ms
   google.protobuf.Duration request_timeout = 4;
@@ -70,39 +70,39 @@ message GatewayExtauth {
   string stat_prefix = 10;
 }
 
-//message HttpService {
-//  // Sets a prefix to the value of authorization request header *Path*.
-//  string path_prefix = 1;
-//
-//  message Request {
-//    // These headers will be copied from the incoming request to the request going
-//    // to the auth server. Note that in addition to the user's supplied matchers:
-//    //
-//    // 1. *Host*, *Method*, *Path* and *Content-Length* are automatically included to the list.
-//    //
-//    // 2. *Content-Length* will be set to 0 and the request to the authorization service will not have
-//    // a message body.
-//    repeated string allowed_headers = 1;
-//
-//    // These headers that will be included to the request to authorization service. Note that
-//    // client request of the same key will be overridden.
-//    map<string, string> headers_to_add = 2;
-//  }
-//  Request request = 2;
-//
-//  message Response {
-//    // When this is set, authorization response headers that have a will be added to the original client request and sent to the upstream.
-//    // Note that coexistent headers will be overridden.
-//    repeated string allowed_upstream_headers = 1;
-//
-//    // When this. is set, authorization response headers that will be added to the client's response when auth request is denied.
-//    // Note that when this list is *not* set, all the authorization response headers, except *Authority
-//    // (Host)* will be in the response to the client. When a header is included in this list, *Path*,
-//    // *Status*, *Content-Length*, *WWW-Authenticate* and *Location* are automatically added.
-//    repeated string allowed_client_headers = 2;
-//  }
-//  Response response = 3;
-//}
+message HttpService {
+  // Sets a prefix to the value of authorization request header *Path*.
+  string path_prefix = 1;
+
+  message Request {
+    // These headers will be copied from the incoming request to the request going
+    // to the auth server. Note that in addition to the user's supplied matchers:
+    //
+    // 1. *Host*, *Method*, *Path* and *Content-Length* are automatically included to the list.
+    //
+    // 2. *Content-Length* will be set to 0 and the request to the authorization service will not have
+    // a message body.
+    repeated string allowed_headers = 1;
+
+    // These headers that will be included to the request to authorization service. Note that
+    // client request of the same key will be overridden.
+    map<string, string> headers_to_add = 2;
+  }
+  Request request = 2;
+
+  message Response {
+    // When this is set, authorization response headers that have a will be added to the original client request and sent to the upstream.
+    // Note that coexistent headers will be overridden.
+    repeated string allowed_upstream_headers = 1;
+
+    // When this. is set, authorization response headers that will be added to the client's response when auth request is denied.
+    // Note that when this list is *not* set, all the authorization response headers, except *Authority
+    // (Host)* will be in the response to the client. When a header is included in this list, *Path*,
+    // *Status*, *Content-Length*, *WWW-Authenticate* and *Location* are automatically added.
+    repeated string allowed_client_headers = 2;
+  }
+  Response response = 3;
+}
 
 // Configuration for buffering the request data.
 message BufferSettings {
@@ -128,26 +128,28 @@ message RouteExtauth {
     bool disable = 1;
     // A reference to an AuthConfig. This is used to configure the Gloo Mesh Gateway extauth server.
     .core.skv2.solo.io.ObjectRef config_ref = 2;
+    // TODO(kdorosh): add CustomAuth as follow up to MVP?
     // Use this field if you are running your own custom extauth server.
-    CustomAuth custom_auth = 3;
+    // CustomAuth custom_auth = 3;
   }
 }
 
-// Gloo Mesh is not expected to configure the ext auth server in this case.
-// This is used with custom auth servers.
-message CustomAuth {
-  // When a request matches the route or traffic policy on which this configuration is defined,
-  // Gloo Mesh will add the given context_extensions to the request that is sent to the external authorization server.
-  // This allows the server to base the auth decision on metadata that you define on the source of the request.
-  //
-  // This attribute is analogous to Envoy's config.filter.http.ext_authz.v2.CheckSettings. See the official
-  // [Envoy documentation](https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/http/ext_authz/v2/ext_authz.proto.html?highlight=ext_authz#config-filter-http-ext-authz-v2-checksettings)
-  // for more details.
-  map<string, string> context_extensions = 1;
-
-  // TODO(kdorosh) re-evaluate if this is needed for MVP
-  // [Enterprise-only]
-  // Only required in the case where multiple auth servers are configured in Settings
-  // This name must match a key in the named_extauth Settings.
-  string name = 2;
-}
+// TODO(kdorosh): add CustomAuth as follow up to MVP?
+//// Gloo Mesh is not expected to configure the ext auth server in this case.
+//// This is used with custom auth servers.
+//message CustomAuth {
+//  // When a request matches the route or traffic policy on which this configuration is defined,
+//  // Gloo Mesh will add the given context_extensions to the request that is sent to the external authorization server.
+//  // This allows the server to base the auth decision on metadata that you define on the source of the request.
+//  //
+//  // This attribute is analogous to Envoy's config.filter.http.ext_authz.v2.CheckSettings. See the official
+//  // [Envoy documentation](https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/http/ext_authz/v2/ext_authz.proto.html?highlight=ext_authz#config-filter-http-ext-authz-v2-checksettings)
+//  // for more details.
+//  map<string, string> context_extensions = 1;
+//
+//  // TODO(kdorosh) re-evaluate if this is needed for MVP
+//  // [Enterprise-only]
+//  // Only required in the case where multiple auth servers are configured in Settings
+//  // This name must match a key in the named_extauth Settings.
+//  string name = 2;
+//}
