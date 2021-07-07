@@ -2,8 +2,6 @@ package docsgen
 
 import (
 	"context"
-	changelogdocutils "github.com/solo-io/go-utils/changeloggenutils"
-	"github.com/solo-io/go-utils/githubutils"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -11,6 +9,9 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+
+	changelogdocutils "github.com/solo-io/go-utils/changeloggenutils"
+	"github.com/solo-io/go-utils/githubutils"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/pkg/errors"
@@ -134,7 +135,7 @@ func generateChangelog(client *github.Client, root string, opts ChangelogOptions
 	}
 	// Generate community changelog
 	generator := changelogdocutils.NewMinorReleaseGroupedChangelogGenerator(changelogdocutils.Options{
-		MainRepo: "gloo-mesh",
+		MainRepo:  "gloo-mesh",
 		RepoOwner: "solo-io",
 	}, client)
 	out, err := generator.GenerateJSON(context.Background())
@@ -164,14 +165,14 @@ func generateChangelog(client *github.Client, root string, opts ChangelogOptions
 		return eris.Wrap(err, "unable to generate dependency function between gloo-mesh-enterprise and gloo-mesh community")
 	}
 	mergedOpts := changelogdocutils.Options{
-		MainRepo: "gloo-mesh-enterprise",
+		MainRepo:      "gloo-mesh-enterprise",
 		DependentRepo: "gloo-mesh",
-		RepoOwner: "solo-io",
+		RepoOwner:     "solo-io",
 	}
 	mergedGenerator := changelogdocutils.NewMergedReleaseGeneratorWithDepFn(mergedOpts, client, depFn)
 	out, err = mergedGenerator.GenerateJSON(context.Background())
 	if err != nil {
-		return eris.Wrap(err,"error generating merged enterprise and open source changelog")
+		return eris.Wrap(err, "error generating merged enterprise and open source changelog")
 	}
 
 	f, err = os.Create("content/static/content/enterprise_changelog.json")
