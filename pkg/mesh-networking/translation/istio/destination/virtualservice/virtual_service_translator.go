@@ -365,9 +365,14 @@ func duplicateRouteForEachPort(
 
 		for _, destination := range baseRoute.Route {
 			destination := destination.DeepCopy()
-			destination.Destination.Port = &networkingv1alpha3spec.PortSelector{
-				Number: port.GetPort(),
+
+			// don't overwrite ports that were derived from traffic shift
+			if destination.GetDestination().GetPort().GetNumber() == 0 {
+				destination.Destination.Port = &networkingv1alpha3spec.PortSelector{
+					Number: port.GetPort(),
+				}
 			}
+
 			destinationsWithPort = append(destinationsWithPort, destination)
 		}
 
