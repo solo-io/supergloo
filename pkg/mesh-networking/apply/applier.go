@@ -808,7 +808,7 @@ func getAppliedEastWestIngressGateways(
 			}
 
 			// add the ingress Destination
-			if appliedIngressGateway, err := buildAppliedIngressGateway(destination, ingressGatewayServiceSelector.GetGatewayTlsPortName()); err != nil {
+			if appliedIngressGateway, err := buildAppliedIngressGateway(destination, ingressGatewayServiceSelector.GetPortName()); err != nil {
 				virtualMesh.Status.State = commonv1.ApprovalState_INVALID
 				virtualMesh.Status.Errors = append(virtualMesh.Status.Errors, err.Error())
 				return nil

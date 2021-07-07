@@ -1361,11 +1361,6 @@ spec:
                                       type: object
                                   type: object
                                 type: array
-                              gatewayTlsPortName:
-                                description: Specify by name the TLS port on the ingress
-                                  gateway destination. If not specified, will default
-                                  to "tls".
-                                type: string
                               meshes:
                                 description: |-
                                   The Meshes for which the selected Destinations will be configured as ingress gateways. All referenced Meshes must exist in this VirtualMesh.
@@ -1381,6 +1376,11 @@ spec:
                                       type: string
                                   type: object
                                 type: array
+                              portName:
+                                description: Specify by name the TLS port on the ingress
+                                  gateway destination. If not specified, will default
+                                  to "tls".
+                                type: string
                             type: object
                           type: array
                         flatNetwork:

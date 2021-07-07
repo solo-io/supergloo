@@ -185,7 +185,7 @@ func (m *IngressGatewaySelector) Equal(that interface{}) bool {
 
 	}
 
-	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
+	if strings.Compare(m.GetPortName(), target.GetPortName()) != 0 {
 		return false
 	}
 

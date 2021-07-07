@@ -359,7 +359,7 @@ func FederationTest() {
 							},
 						},
 					},
-					GatewayTlsPortName: "tls",
+					PortName: "tls",
 				},
 			}
 

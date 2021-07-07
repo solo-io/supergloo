@@ -128,7 +128,7 @@ message IngressGatewaySelector {
     repeated DestinationSelector destination_selectors = 1;
 
     // Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls".
-    string gateway_tls_port_name = 2;
+    string port_name = 2;
 
     // The Meshes for which the selected Destinations will be configured as ingress gateways. All referenced Meshes must exist in this VirtualMesh.
     // If omitted, the selected Destinations will be configured as ingress gateways for all Meshes in the VirtualMesh.
