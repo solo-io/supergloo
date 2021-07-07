@@ -14,6 +14,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/string_match.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/extauth/extauth.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf/csrf.proto";
 
 import "extproto/ext.proto";
@@ -74,8 +75,11 @@ message TrafficPolicySpec {
         // Configure the Envoy based CSRF filter
         .csrf.networking.mesh.gloo.solo.io.CsrfPolicy csrf = 13;
 
-        // Config the Envoy based Ratelimit filter
+        // Configure the Envoy based Ratelimit filter
         .ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit rate_limit = 14;
+
+        // Configure the Envoy based Extauth filter
+        .extauth.networking.mesh.gloo.solo.io.RouteExtauth extauth = 15;
 
         // Specify retries for failed requests.
         message RetryPolicy {
