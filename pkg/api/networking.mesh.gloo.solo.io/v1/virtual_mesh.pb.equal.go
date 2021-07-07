@@ -328,6 +328,20 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetRotationVerificationMethod()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRotationVerificationMethod()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRotationVerificationMethod(), target.GetRotationVerificationMethod()) {
+			return false
+		}
+	}
+
+	if m.GetRotationMethod() != target.GetRotationMethod() {
+		return false
+	}
+
 	switch m.TrustModel.(type) {
 
 	case *VirtualMeshSpec_MTLSConfig_Shared:

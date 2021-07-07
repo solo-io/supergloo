@@ -72,6 +72,22 @@ enum CertificateRotationState {
   FAILED = 8;
 }
 
+message CertificateRotationVerificationMethod {
+  oneof method {
+    google.protobuf.Empty none = 1;
+  }
+}
+
+enum CertificateRotationMethod {
+  MULTI_ROOT = 0;
+
+  NONE = 1;
+
+  // TODO: Implement
+  CROSS_SIGNED = 2;
+
+}
+
 // CertificateRotationCondition represents a timesptamped snapshot of the certificate
 // rotation workflow. This is used to keep track of the steps which have been completed
 // thus far.
@@ -90,3 +106,4 @@ message CertificateRotationCondition {
   repeated string errors = 4;
 
 }
+

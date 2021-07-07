@@ -2119,6 +2119,28 @@ spec:
                     Workloads and Destinations in the grouped Meshes). *Currently
                     not available.*
                   type: object
+                rotationMethod:
+                  description: Type of rotation to use.
+                  enum:
+                  - MULTI_ROOT
+                  - NONE
+                  - CROSS_SIGNED
+                  type: string
+                rotationVerificationMethod:
+                  description: Type of rotation verification to use when rotating
+                    root certificates.
+                  oneOf:
+                  - not:
+                      anyOf:
+                      - required:
+                        - none
+                  - required:
+                    - none
+                  properties:
+                    none:
+                      maxProperties: 0
+                      type: object
+                  type: object
                 shared:
                   description: Shared trust (allow communication between any pair
                     of Workloads and Destinations in the grouped Meshes).

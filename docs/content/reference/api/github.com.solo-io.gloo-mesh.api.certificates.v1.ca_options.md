@@ -19,9 +19,11 @@ title: "ca_options.proto"
 
 ## Table of Contents
   - [CertificateRotationCondition](#certificates.mesh.gloo.solo.io.CertificateRotationCondition)
+  - [CertificateRotationVerificationMethod](#certificates.mesh.gloo.solo.io.CertificateRotationVerificationMethod)
   - [CommonCertOptions](#certificates.mesh.gloo.solo.io.CommonCertOptions)
   - [IntermediateCertificateAuthority](#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority)
 
+  - [CertificateRotationMethod](#certificates.mesh.gloo.solo.io.CertificateRotationMethod)
   - [CertificateRotationState](#certificates.mesh.gloo.solo.io.CertificateRotationState)
 
 
@@ -41,6 +43,21 @@ CertificateRotationCondition represents a timesptamped snapshot of the certifica
   | state | [certificates.mesh.gloo.solo.io.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationState" >}}) |  | The current state of the cert rotation |
   | message | string |  | A human readable message related to the current condition |
   | errors | []string | repeated | Any errors which occured during the current rotation stage |
+  
+
+
+
+
+
+<a name="certificates.mesh.gloo.solo.io.CertificateRotationVerificationMethod"></a>
+
+### CertificateRotationVerificationMethod
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| none | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  |  |
   
 
 
@@ -80,6 +97,19 @@ Specify parameters for configuring the root certificate authority for a VirtualM
 
 
  <!-- end messages -->
+
+
+<a name="certificates.mesh.gloo.solo.io.CertificateRotationMethod"></a>
+
+### CertificateRotationMethod
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| MULTI_ROOT | 0 |  |
+| NONE | 1 |  |
+| CROSS_SIGNED | 2 | TODO: Implement |
+
 
 
 <a name="certificates.mesh.gloo.solo.io.CertificateRotationState"></a>
