@@ -1322,7 +1322,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
-	It("should add HttpMatchRequest for each port", func() {
+	It("should add HttpMatchRequest with a matcher and route for each port, without overwriting intended route port", func() {
 		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
@@ -1411,6 +1411,16 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return([]decorators.Decorator{mockDecorator})
 
+		routeDestination := &networkingv1alpha3spec.HTTPRouteDestination{
+			Destination: &networkingv1alpha3spec.Destination{
+				Host: "traffic-shift-host",
+				// this port should not be overwritten
+				Port: &networkingv1alpha3spec.PortSelector{
+					Number: 1234,
+				},
+			},
+		}
+
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
@@ -1429,6 +1439,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			) error {
 				reqTimeout := destination.Status.AppliedTrafficPolicies[0].Spec.Policy.RequestTimeout
 				output.Timeout = &types.Duration{Seconds: reqTimeout.GetSeconds(), Nanos: reqTimeout.GetNanos()}
+				output.Route = []*networkingv1alpha3spec.HTTPRouteDestination{routeDestination}
 				return nil
 			}).
 			Return(nil)
@@ -1443,14 +1454,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				Http: []*networkingv1alpha3spec.HTTPRoute{
 					{
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
-							{
-								Destination: &networkingv1alpha3spec.Destination{
-									Host: "local-hostname",
-									Port: &networkingv1alpha3spec.PortSelector{
-										Number: 9000,
-									},
-								},
-							},
+							routeDestination,
 						},
 						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
 							{
@@ -1463,14 +1467,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 					{
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
-							{
-								Destination: &networkingv1alpha3spec.Destination{
-									Host: "local-hostname",
-									Port: &networkingv1alpha3spec.PortSelector{
-										Number: 9443,
-									},
-								},
-							},
+							routeDestination,
 						},
 						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
 							{
