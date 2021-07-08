@@ -8,4 +8,6 @@ RUN apk upgrade --update-cache \
 
 COPY gloo-mesh-linux-amd64 /usr/local/bin/gloo-mesh
 
+USER 10101
+
 ENTRYPOINT ["/usr/local/bin/gloo-mesh"]
