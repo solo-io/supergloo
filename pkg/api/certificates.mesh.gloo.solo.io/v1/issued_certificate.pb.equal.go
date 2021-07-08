@@ -228,79 +228,58 @@ func (m *IssuedCertificateStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetRotation()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRotation()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetRotation(), target.GetRotation()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *IssuedCertificateStatus_Rotation) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*IssuedCertificateStatus_Rotation)
-	if !ok {
-		that2, ok := that.(IssuedCertificateStatus_Rotation)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
+	if len(m.GetCertRotationConditions()) != len(target.GetCertRotationConditions()) {
 		return false
 	}
+	for idx, v := range m.GetCertRotationConditions() {
 
-	if m.GetState() != target.GetState() {
-		return false
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetCertRotationConditions()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetCertRotationConditions()[idx]) {
+				return false
+			}
+		}
+
 	}
 
-	switch m.DesiredCertificateAuthority.(type) {
+	switch m.AppliedCertificateAuthority.(type) {
 
-	case *IssuedCertificateStatus_Rotation_DesiredGlooMeshCa:
-		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateStatus_Rotation_DesiredGlooMeshCa); !ok {
+	case *IssuedCertificateStatus_AppliedGlooMeshCa:
+		if _, ok := target.AppliedCertificateAuthority.(*IssuedCertificateStatus_AppliedGlooMeshCa); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetDesiredGlooMeshCa()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetDesiredGlooMeshCa()) {
+		if h, ok := interface{}(m.GetAppliedGlooMeshCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedGlooMeshCa()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetDesiredGlooMeshCa(), target.GetDesiredGlooMeshCa()) {
+			if !proto.Equal(m.GetAppliedGlooMeshCa(), target.GetAppliedGlooMeshCa()) {
 				return false
 			}
 		}
 
-	case *IssuedCertificateStatus_Rotation_DesiredAgentCa:
-		if _, ok := target.DesiredCertificateAuthority.(*IssuedCertificateStatus_Rotation_DesiredAgentCa); !ok {
+	case *IssuedCertificateStatus_AppliedAgentCa:
+		if _, ok := target.AppliedCertificateAuthority.(*IssuedCertificateStatus_AppliedAgentCa); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetDesiredAgentCa()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetDesiredAgentCa()) {
+		if h, ok := interface{}(m.GetAppliedAgentCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedAgentCa()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetDesiredAgentCa(), target.GetDesiredAgentCa()) {
+			if !proto.Equal(m.GetAppliedAgentCa(), target.GetAppliedAgentCa()) {
 				return false
 			}
 		}
 
 	default:
 		// m is nil but target is not nil
-		if m.DesiredCertificateAuthority != target.DesiredCertificateAuthority {
+		if m.AppliedCertificateAuthority != target.AppliedCertificateAuthority {
 			return false
 		}
 	}

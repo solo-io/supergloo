@@ -122,14 +122,6 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_PENDING
 	}
 
-	// If rotation is empty, initialize it
-	if issuedCertificate.Status.Rotation == nil {
-		issuedCertificate.Status.Rotation = &certificatesv1.IssuedCertificateStatus_Rotation{}
-	}
-	// Always set the rotation status to the current rotation state
-	// This allows the networking translator to be aware of the current applied rotation state
-	issuedCertificate.Status.Rotation.State = issuedCertificate.Spec.RotationState
-
 	// reset & update status
 	issuedCertificate.Status.ObservedGeneration = issuedCertificate.Generation
 	issuedCertificate.Status.Error = ""
@@ -221,10 +213,6 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 		// mark issued certificate as finished
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_FINISHED
-		// Set the applied_ca if:
-		// 1. The state is finished, and no rotation is happening
-		// 2. The state is finished, and rotation is in it's final stage
-
 	default:
 		return eris.Errorf("unknown issued certificate state: %v", issuedCertificate.Status.State)
 	}

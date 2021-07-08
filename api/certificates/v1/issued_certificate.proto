@@ -122,25 +122,16 @@ message IssuedCertificateStatus {
         // Processing the certificate workflow failed.
         FAILED = 4;
     }
-    // A message recording the current cert rotation target.
-    message Rotation {
 
-        oneof desired_certificate_authority {
-            // Gloo Mesh CA options
-            RootCertificateAuthority desired_gloo_mesh_ca = 1;
-            // Agent CA options
-            IntermediateCertificateAuthority desired_agent_ca = 2;
-        }
-
-        // The current state of rotation, this value signals to the cert issuer how to 
-        // construct the intermediary certs which the data-plane clusters receive
-        CertificateRotationState state = 3;
-        
+    // The location of the certificate authority to sign this certificate
+    oneof applied_certificate_authority {
+        // Gloo Mesh CA options
+        RootCertificateAuthority applied_gloo_mesh_ca = 4;        
+        // Agent CA options
+        IntermediateCertificateAuthority applied_agent_ca = 5;
     }
 
-    // Rotation state. If nil no rotation is currently happening.
-    Rotation rotation = 4;
+    // List of rotation conditions which have been completed/carried out for this mesh
+    repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 6;
 
-
-    
 }

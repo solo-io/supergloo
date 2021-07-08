@@ -61,8 +61,8 @@ enum CertificateRotationState {
   // This can either be manual or in the future automated
   VERIFYING = 5;
 
-  // // The connectivity has been verified. 
-  // VERIFIED = 6;
+  // The connectivity has been verified. 
+  VERIFIED = 6;
 
   // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
   // been verified successfully.

@@ -12,6 +12,7 @@ import (
 	certificatesv1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
@@ -89,23 +90,28 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                context.Context
-	secrets            corev1sets.SecretSet
-	workloads          discoveryv1sets.WorkloadSet
-	issuedCertificaSet certificatesv1sets.IssuedCertificateSet
+	ctx           context.Context
+	secrets       corev1sets.SecretSet
+	workloads     discoveryv1sets.WorkloadSet
+	issuedCertSet certificatesv1sets.IssuedCertificateSet
 }
 
 func NewTranslator(
 	ctx context.Context,
+	remoteSnapshot input.RemoteSnapshot,
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1sets.WorkloadSet,
-	issuedCertificaSet certificatesv1sets.IssuedCertificateSet,
 ) Translator {
+	var issuedCertSet certificatesv1sets.IssuedCertificateSet
+	// remoteSnapshot can be nil from relay
+	if remoteSnapshot != nil {
+		issuedCertSet = remoteSnapshot.IssuedCertificates()
+	}
 	return &translator{
-		ctx:                ctx,
-		secrets:            secrets,
-		workloads:          workloads,
-		issuedCertificaSet: issuedCertificaSet,
+		ctx:           ctx,
+		secrets:       secrets,
+		workloads:     workloads,
+		issuedCertSet: issuedCertSet,
 	}
 }
 

@@ -20,7 +20,6 @@ title: "issued_certificate.proto"
 ## Table of Contents
   - [IssuedCertificateSpec](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec)
   - [IssuedCertificateStatus](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus)
-  - [IssuedCertificateStatus.Rotation](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.Rotation)
   - [RootCertificateAuthority](#certificates.mesh.gloo.solo.io.RootCertificateAuthority)
 
   - [IssuedCertificateStatus.State](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State)
@@ -64,24 +63,9 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 | observedGeneration | int64 |  | The most recent generation observed in the the IssuedCertificate metadata. If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most recent version of this IssuedCertificate. |
   | error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
   | state | [certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State" >}}) |  | The current state of the IssuedCertificate workflow, reported by the agent. |
-  | rotation | [certificates.mesh.gloo.solo.io.IssuedCertificateStatus.Rotation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.Rotation" >}}) |  | Rotation state. If nil no rotation is currently happening. |
-  
-
-
-
-
-
-<a name="certificates.mesh.gloo.solo.io.IssuedCertificateStatus.Rotation"></a>
-
-### IssuedCertificateStatus.Rotation
-A message recording the current cert rotation target.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| desiredGlooMeshCa | [certificates.mesh.gloo.solo.io.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.RootCertificateAuthority" >}}) |  | Gloo Mesh CA options |
-  | desiredAgentCa | [certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority" >}}) |  | Agent CA options |
-  | state | [certificates.mesh.gloo.solo.io.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationState" >}}) |  | The current state of rotation, this value signals to the cert issuer how to  construct the intermediary certs which the data-plane clusters receive |
+  | appliedGlooMeshCa | [certificates.mesh.gloo.solo.io.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.RootCertificateAuthority" >}}) |  | Gloo Mesh CA options |
+  | appliedAgentCa | [certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority" >}}) |  | Agent CA options |
+  | certRotationConditions | [][certificates.mesh.gloo.solo.io.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationCondition" >}}) | repeated | List of rotation conditions which have been completed/carried out for this mesh |
   
 
 

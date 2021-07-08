@@ -3,18 +3,15 @@ package internal
 import (
 	"context"
 
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-
-	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
-
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
@@ -64,7 +61,7 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	workloads discoveryv1sets.WorkloadSet,
 ) mesh.Translator {
 	federationTranslator := federation.NewTranslator(ctx)
-	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads, userSupplied.IssuedCertificates())
+	mtlsTranslator := mtls.NewTranslator(ctx, userSupplied, secrets, workloads)
 	accessTranslator := access.NewTranslator(ctx)
 
 	return mesh.NewTranslator(
