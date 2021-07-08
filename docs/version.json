@@ -1,7 +1,6 @@
 {
-  "latest": "1.0.10",
+  "latest": "main",
   "versions": [
-    "main",
-    "1.0.10"
+    "main"
   ]
 }
