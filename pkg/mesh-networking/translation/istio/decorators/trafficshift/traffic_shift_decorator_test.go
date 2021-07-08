@@ -160,7 +160,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
