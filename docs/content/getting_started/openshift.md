@@ -157,8 +157,8 @@ If installation was successful, you should see the following output after each c
 
 Istio sidecars make use of a user ID that is normally restricted by OpenShift. To allow enable this ID, we must elevate the permissions
 of the `istio-system` and `istio-operator` service accounts. Run the following commands for each set of clusters you're using, 
-replacing `<CONTEXT_NAME>` with the current cluster's name:
-[comment]: todo this doesn't quite line up with the commands in istio's docs. Do we really need all of these?
+replacing `<CONTEXT_NAME>` with the current cluster's name. In this example, you will need to run these commands on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
+
 ```shell script
 oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:istio-system
 oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:istio-operator
@@ -166,9 +166,6 @@ oc --context <CONTEXT_NAME> adm policy add-scc-to-group privileged system:servic
 oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:default
 ```
 
-In this example, you will need to run these commands on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
-
-[comment]: TODO: should we communicate that this is a temporary hack? How so?
 
 
 ### Istio in OpenShift Maintenence - NetworkAttachmentDefinition Upkeep
@@ -721,6 +718,17 @@ oc --context $REMOTE_CONTEXT1 delete namespace istio-system
 ```shell script
 istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
 oc --context $REMOTE_CONTEXT2 delete namespace istio-system
+```
+
+#### Revoke ID Permissions
+
+Once Istio has been removed, we can revoke the Istio namespace ID permissions we allowed earlier:
+
+```shell script
+oc --context <CONTEXT_NAME> adm policy remove-scc-from-group anyuid system:serviceaccounts:istio-system
+oc --context <CONTEXT_NAME> adm policy remove-scc-from-group anyuid system:serviceaccounts:istio-operator
+oc --context <CONTEXT_NAME> adm policy remove-scc-from-group privileged system:serviceaccounts:default
+oc --context <CONTEXT_NAME> adm policy remove-scc-from-group anyuid system:serviceaccounts:default
 ```
 
 #### Remove NetworkAttachmentDefinitions
