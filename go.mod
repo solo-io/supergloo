@@ -52,7 +52,7 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.5
-	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github/v32 v32.0.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.2.1
 	github.com/iancoleman/strcase v0.1.3
@@ -81,7 +81,7 @@ require (
 	github.com/solo-io/anyvendor v0.0.3
 	github.com/solo-io/external-apis v0.1.5
 	github.com/solo-io/go-list-licenses v0.1.3
-	github.com/solo-io/go-utils v0.21.4
+	github.com/solo-io/go-utils v0.21.9
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
 	github.com/solo-io/skv2 v0.18.1
@@ -93,7 +93,7 @@ require (
 	github.com/stoewer/go-strcase v1.2.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.16.0
-	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
+	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0

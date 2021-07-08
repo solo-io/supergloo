@@ -7,6 +7,8 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	enterprisenetworkingv1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
+	v1beta1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -15,6 +17,7 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("TrafficShiftDecorator", func() {
@@ -31,7 +34,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		output = &v1alpha3.HTTPRoute{}
 	})
 
-	It("should decorate mirror with selected port", func() {
+	It("should decorate traffic shift with selected port", func() {
 		destinations := v1sets.NewDestinationSet(
 			&discoveryv1.Destination{
 				Spec: discoveryv1.DestinationSpec{
@@ -123,7 +126,76 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		Expect(output.Route).To(Equal(expectedHTTPDestinations))
 	})
 
-	It("should decorate mirror for federated Destination with selected port", func() {
+	It("should decorate traffic shift for VirtualDestination", func() {
+		virtualDestinations := v1beta1sets.NewVirtualDestinationSet(&enterprisenetworkingv1beta1.VirtualDestination{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "virtual-destination",
+				Namespace: "virtual-destination-ns",
+			},
+			Spec: enterprisenetworkingv1beta1.VirtualDestinationSpec{
+				Hostname: "vdest.hostname",
+				Port: &enterprisenetworkingv1beta1.VirtualDestinationSpec_Port{
+					Number:   1000,
+					Protocol: "TCP",
+					TargetPort: &enterprisenetworkingv1beta1.VirtualDestinationSpec_Port_TargetNumber{
+						TargetNumber: 1000,
+					},
+				},
+			},
+		})
+
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, virtualDestinations)
+
+		originalService := &discoveryv1.Destination{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
+							ClusterName: "local-cluster",
+						},
+					},
+				},
+			},
+		}
+		registerField := func(fieldPtr, val interface{}) error {
+			return nil
+		}
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &networkingv1.TrafficPolicySpec{
+				Policy: &networkingv1.TrafficPolicySpec_Policy{
+					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*networkingv1.WeightedDestination{
+							{
+								DestinationType: &networkingv1.WeightedDestination_VirtualDestination_{
+									VirtualDestination: &networkingv1.WeightedDestination_VirtualDestination{
+										Name:      "virtual-destination",
+										Namespace: "virtual-destination-ns",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		expectedHTTPDestinations := []*v1alpha3.HTTPRouteDestination{
+			{
+				Destination: &v1alpha3.Destination{
+					Host: "vdest.hostname",
+					Port: &v1alpha3.PortSelector{
+						Number: 1000,
+					},
+				},
+			},
+		}
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
+
+		Expect(err).ToNot(HaveOccurred())
+		Expect(output.Route).To(Equal(expectedHTTPDestinations))
+	})
+
+	It("should decorate traffic shift for federated Destination with selected port", func() {
 		destinations := v1sets.NewDestinationSet(
 			&discoveryv1.Destination{
 				Spec: discoveryv1.DestinationSpec{
