@@ -12,14 +12,20 @@ This guide will walk you through the basics of registering clusters for manageme
 
 ## Install Gloo Mesh in Insecure mode
 
-```shell
+{{< tabs >}}
+{{< tab name="meshctl install" codelang="shell" >}}
 MGMT_CONTEXT=kind-cluster-1 # Update value as needed
-kubectl create namespace gloo-mesh
-helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
-  --set global.insecure=true \
-  --set licenseKey=${GLOO_MESH_LICENSE_KEY}
+meshctl install enterprise --kubecontext=${MGMT_CONTEXT} --license ${GLOO_MESH_LICENSE_KEY} --set global.insecure=true
+{{< /tab >}}
+{{< tab name="helm install" codelang="shell">}}
+MGMT_CONTEXT=kind-cluster-1 # Update value as needed
+kubectl create ns gloo-mesh
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise -n gloo-mesh \
+  --set rbac-webhook.enabled=true \
   --kube-context=${MGMT_CONTEXT} \
-```
+  --set license.key=${GLOO_MESH_LICENSE_KEY}
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Register A Cluster Insecurely
 
