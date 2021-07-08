@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Updated hugo theme and changelog generation to allow for newer changelog features.
