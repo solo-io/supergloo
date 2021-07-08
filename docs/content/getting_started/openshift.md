@@ -166,7 +166,7 @@ oc --context <CONTEXT_NAME> adm policy add-scc-to-group privileged system:servic
 oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:default
 ```
 
-In the case of this installation example, you will need to run these commands on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
+In this example, you will need to run these commands on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
 
 [comment]: TODO: should we communicate that this is a temporary hack? How so?
 
@@ -174,9 +174,9 @@ In the case of this installation example, you will need to run these commands on
 ### Istio in OpenShift Maintenence - NetworkAttachmentDefinition Upkeep
 
 Before Istio can safely create workloads in a given namespace, that namespace needs a NetworkAttachmentDefinition. 
-For each cluster and namespace you intend to have Istio mintor, run the following command, replacing `<CONTEXT_NAME>` and `<NAMESPACE>` with the appropriate values. 
+For each cluster and namespace you intend to have Istio minitor, run the following command, replacing `<CONTEXT_NAME>` and `<NAMESPACE>` with the appropriate values. 
 
-In the case of this installation example, you will need to run this command on the `default` cluster on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
+In this example, you will need to run this command on the `default` cluster on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
 
 ```shell script
 cat <<EOF | oc --context <CONTEXT_NAME> -n <NAMESPACE> create -f -
@@ -193,7 +193,7 @@ Keep in mind that if you expand your system to encompass new namespaces, you'll 
 ## Installing the Gloo Mesh management components
 
 
-The changes in installing Gloo Mesh Enterprise in OpenShift are all related to metrics. For that reason, the instructions for installing
+The OpenShift-specific changes for installing Gloo Mesh Enterprise are related to metrics. For that reason, the instructions for installing
  Gloo Mesh Enterprise in Openshift are grouped with other metrics topics [here]({{% versioned_link_path fromRoot="/guides/observability/metrics/#openshift-integration" %}}). Follow those steps to 
 install Gloo Mesh Enterprise in OpenShift.
 
@@ -722,6 +722,16 @@ oc --context $REMOTE_CONTEXT1 delete namespace istio-system
 istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
 oc --context $REMOTE_CONTEXT2 delete namespace istio-system
 ```
+
+#### Remove NetworkAttachmentDefinitions
+
+Once Istio has been removed, we can remove the NetworkAttachmentDefinitions it depended on. Run the following for each
+cluster/namespace that you had previously added a NetworkAttachmentDefinition to:
+
+```
+oc --context <CONTEXT_NAME> -n <NAMESPACE> delete network-attachment-definition istio-cni
+```
+
 
 ## Next Steps
 
