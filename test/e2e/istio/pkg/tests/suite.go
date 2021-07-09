@@ -75,7 +75,7 @@ func FederateClusters(vm *networkingv1.VirtualMesh, timeoutMinutes int) {
 	utils.AssertVirtualMeshStatuses(context.Background(), GetEnv().Management.VirtualMeshClient, BookinfoNamespace)
 
 	// check we can hit the remote service
-	// give 5 minutes because the workflow depends on restarting pods
+	// use provided timeoutMinutes because the workflow depends on restarting pods
 	// which can take several minutes
 	Eventually(
 		CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)),
