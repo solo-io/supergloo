@@ -99,7 +99,7 @@ similar to https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#Me
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | service | string |  | if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local' |
-  | port | uint32 |  | NOTE: if the port is customized in the external-auth subchart via the `.Values.extAuth.service.grpcPort` helm value then this value MUST be updated to match. if left empty, defaults to 8083. |
+  | port | uint32 |  | NOTE: if the port is customized in the ext-auth-service subchart via the `.Values.extAuth.service.grpcPort` helm value then this value MUST be updated to match. if left empty, defaults to 8083. |
   
 
 

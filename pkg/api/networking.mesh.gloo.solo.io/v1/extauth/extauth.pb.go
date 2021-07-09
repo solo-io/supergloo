@@ -512,7 +512,7 @@ type GatewayExtauth_EnvoyExternalAuthorizationProvider_InMeshProvider struct {
 
 	// if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local'
 	Service string `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
-	// NOTE: if the port is customized in the external-auth subchart via the `.Values.extAuth.service.grpcPort`
+	// NOTE: if the port is customized in the ext-auth-service subchart via the `.Values.extAuth.service.grpcPort`
 	// helm value then this value MUST be updated to match.
 	// if left empty, defaults to 8083.
 	Port uint32 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
