@@ -169,7 +169,7 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 	values := map[string]string{
 		"relay.serverAddress": opts.RelayServerAddress,
 		"relay.authority":     "enterprise-networking.gloo-mesh",
-		"relay.insecure":      strconv.FormatBool(opts.RelayServerInsecure),
+		"global.insecure":     strconv.FormatBool(opts.RelayServerInsecure),
 		"relay.cluster":       opts.ClusterName,
 	}
 	bootstrapTokenCreated := false
