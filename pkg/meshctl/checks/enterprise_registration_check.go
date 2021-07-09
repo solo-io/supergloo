@@ -10,18 +10,14 @@ import (
 	"github.com/olekukonko/tablewriter"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/rotisserie/eris"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	mgmtDeployName = "enterprise-networking"
 	// NOTE: these must correspond 1:1 with the metric names defined here:
 	// https://github.com/solo-io/skv2-enterprise/blob/master/relay/pkg/pull/pull_server.go#L23
 	// https://github.com/solo-io/skv2-enterprise/blob/master/relay/pkg/push/push_server.go#L31
@@ -31,24 +27,10 @@ const (
 )
 
 type enterpriseRegistrationCheck struct {
-	mgmtKubeConfig  string
-	mgmtKubeContext string
-	localPort       uint32
-	remotePort      uint32
 }
 
-func NewEnterpriseRegistrationCheck(
-	mgmtKubeConfig string,
-	mgmtKubeContext string,
-	localPort uint32,
-	remotePort uint32,
-) *enterpriseRegistrationCheck {
-	return &enterpriseRegistrationCheck{
-		mgmtKubeConfig:  mgmtKubeConfig,
-		mgmtKubeContext: mgmtKubeContext,
-		localPort:       localPort,
-		remotePort:      remotePort,
-	}
+func NewEnterpriseRegistrationCheck() *enterpriseRegistrationCheck {
+	return &enterpriseRegistrationCheck{}
 }
 
 func (d *enterpriseRegistrationCheck) GetDescription() string {
@@ -62,52 +44,31 @@ type connectionStatus struct {
 	agentsPushing int
 }
 
-func isEnterpriseVersion(ctx context.Context, c client.Client, installNamespace string) (bool, error) {
-	_, err := v1.NewDeploymentClient(c).GetDeployment(ctx, client.ObjectKey{
-		Namespace: installNamespace,
-		Name:      mgmtDeployName,
-	})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
-func (d *enterpriseRegistrationCheck) Run(ctx context.Context, c client.Client, installNamespace string) *Failure {
-	shouldRunCheck, err := isEnterpriseVersion(ctx, c, installNamespace)
-	if err != nil {
-		return &Failure{
-			Errors: []error{err},
-		}
-	}
-
-	if !shouldRunCheck {
-		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, enterprise not detected")
-		return nil
-	}
-	if d.remotePort == 0 {
+func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckContext) *Failure {
+	if checkCtx.Environment().MetricsPort == 0 {
 		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, remote port set to 0")
 		return nil
 	}
-
+	installNamespace := checkCtx.Environment().Namespace
 	// get registered clusters
-	registeredClusters, err := v1alpha1.NewKubernetesClusterClient(c).ListKubernetesCluster(ctx, client.InNamespace(installNamespace))
+	registeredClusters, err := v1alpha1.NewKubernetesClusterClient(checkCtx.Client()).ListKubernetesCluster(ctx, client.InNamespace(installNamespace))
 	if err != nil {
 		return &Failure{
 			Errors: []error{err},
 		}
 	}
+	failure := new(Failure)
+	if len(registeredClusters.Items) == 0 {
+		// TODO we probably should use a writing instead of fmt?
+		failure.AddHint("You don't have any registered clusters. you may want to create a KubernetesCluster CR.", nil)
+	}
 
 	// get connected clusters
-	connectedPullAgents, connectedPushAgents, err, hint := d.getConnectedAgents(ctx, installNamespace)
+	connectedPullAgents, connectedPushAgents, err, hint := d.getConnectedAgents(ctx, c, checkCtx.Environment())
 	if err != nil {
-		return &Failure{
-			Errors: []error{err},
-			Hint:   hint,
-		}
+		failure.AddHint(hint, nil)
+		failure.AddError(err)
+		return failure
 	}
 
 	clusterStatuses := calculateClusterStatuses(registeredClusters, connectedPullAgents, connectedPushAgents)
@@ -115,29 +76,21 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, c client.Client, 
 	printClusterStatuses(clusterStatuses)
 
 	// consider each cluster that is in a partially registered state to be an error
-	var errs []error
 	for _, status := range clusterStatuses {
 		switch {
 		// cluster registered, agents are not pulling or pushing
 		case status.registered && ((status.agentsPulling < 1) || (status.agentsPushing < 1)):
-			errs = append(errs, eris.Errorf("cluster %v registered but agent is not connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
-			hint += "check the logs of the agent on " + status.cluster + " and investigate whether/why the gRPC connection failed from the agent to the mgmt server. " +
-				"Additionally, if the pushing value zero and pulling is non-zero, that usually indicates a connected dashboard and an unconnected agent.\n"
+			failure.AddError(eris.Errorf("cluster %v registered but agent is not connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
+			failure.AddHint("check the logs of the agent on "+status.cluster+" and investigate whether/why the gRPC connection failed from the agent to the mgmt server. "+
+				"Additionally, if the pushing value zero and pulling is non-zero, that usually indicates a connected dashboard and an unconnected agent.", nil)
 		// cluster not registered, agents are pushing. Cannot use positive pull status as agent evidence, since it may also be a dashboard connection.
 		case !status.registered && status.agentsPushing > 0:
-			errs = append(errs, eris.Errorf("cluster %v is not currently registered but agent is connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
-			hint += "create a corresponding KubernetesCluster CR to register the " + status.cluster + ".\n"
+			failure.AddError(eris.Errorf("cluster %v is not currently registered but agent is connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
+			failure.AddHint("create a corresponding KubernetesCluster CR to register the "+status.cluster+".", nil)
 		}
 	}
 
-	if len(errs) == 0 {
-		return nil
-	}
-
-	return &Failure{
-		Errors: errs,
-		Hint:   hint,
-	}
+	return failure.OrNil()
 }
 
 func printClusterStatuses(clusterStatuses []connectionStatus) {
@@ -206,35 +159,24 @@ func calculateClusterStatuses(
 	return sortedStatuses
 }
 
-func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, mgmtDeployNamespace string) (map[string]int, map[string]int, error, string) {
-	portFwdContext, cancelPtFwd := context.WithCancel(ctx)
-	// start port forward to mgmt server stats port
-	localPort, err := utils.PortForwardFromDeployment(
-		portFwdContext,
-		d.mgmtKubeConfig,
-		d.mgmtKubeContext,
-		mgmtDeployName,
-		mgmtDeployNamespace,
-		fmt.Sprintf("%v", d.localPort),
-		fmt.Sprintf("%v", d.remotePort),
-	)
-	if err != nil {
-		return nil, nil, err, fmt.Sprintf("try verifying that `kubectl port-forward -n %v deployment/%v %v:%v` can be run successfully.", mgmtDeployNamespace, mgmtDeployName, d.localPort, d.remotePort)
-	}
-	// request metrics page from mgmt deployment
-	metricsUrl := fmt.Sprintf("http://localhost:%v/metrics", localPort)
-	resp, err := http.DefaultClient.Get(metricsUrl)
-	if err != nil {
-		return nil, nil, err, fmt.Sprintf("try verifying that the mgmt pods are listening on port %v", d.remotePort)
-	}
-	defer resp.Body.Close()
+func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, c client.Client, env Environment) (map[string]int, map[string]int, error, string) {
+	var parsedMetrics map[string]*dto.MetricFamily
+	err, hint := d.accessor.AccessMgmtServerAdminPort(ctx, c, env.Namespace, func(ctx context.Context, metricsUrl string) (error, string) {
+		resp, err := http.DefaultClient.Get(metricsUrl)
+		if err != nil {
+			return err, fmt.Sprintf("try verifying that the mgmt pods are listening on port %v", env.MgmtPort)
+		}
+		defer resp.Body.Close()
 
-	parsedMetrics, err := (&expfmt.TextParser{}).TextToMetricFamilies(resp.Body)
+		parsedMetrics, err = (&expfmt.TextParser{}).TextToMetricFamilies(resp.Body)
+		if err != nil {
+			return err, fmt.Sprintf("try verifying that the mgmt pods serving metrics at %v", metricsUrl)
+		}
+		return nil, ""
+	})
 	if err != nil {
-		return nil, nil, err, fmt.Sprintf("try verifying that the mgmt pods serving metrics at %v", metricsUrl)
+		return nil, nil, err, hint
 	}
-
-	cancelPtFwd()
 
 	connectedPullClientsMetric, ok := parsedMetrics[connectedPullClientsMetricName]
 	if !ok {

@@ -22,7 +22,8 @@ func (d *deploymentsCheck) GetDescription() string {
 	return "Gloo Mesh pods are running"
 }
 
-func (d *deploymentsCheck) Run(ctx context.Context, c client.Client, installNamespace string) *Failure {
+func (d *deploymentsCheck) Run(ctx context.Context, c client.Client, checkCtx CheckContext) *Failure {
+	installNamespace := checkCtx.Environment().Namespace
 	namespaceClient := corev1.NewNamespaceClient(c)
 	_, err := namespaceClient.GetNamespace(ctx, installNamespace)
 	if err != nil {
@@ -38,31 +39,31 @@ func (d *deploymentsCheck) Run(ctx context.Context, c client.Client, installName
 		}
 	}
 
-	return d.checkDeployments(deployments, installNamespace)
+	return d.checkDeployments(deployments, checkCtx.Environment())
 }
 
-func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList, installNamespace string) *Failure {
+func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList, env Environment) *Failure {
+	installNamespace := env.Namespace
+	failure := new(Failure)
 	if len(deployments.Items) < 1 {
-		return &Failure{
-			Errors: []error{eris.Errorf("no deployments found in namespace %s", installNamespace)},
-			Hint: fmt.Sprintf(
+		failure.AddError(eris.Errorf("no deployments found in namespace %s", installNamespace))
+		if !env.InCluster {
+			failure.AddHint(fmt.Sprintf(
 				`Gloo Mesh'd installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
-				defaults.DefaultPodNamespace),
+				defaults.DefaultPodNamespace), nil)
 		}
+		return failure
 	}
-	var errs []error
+
 	for _, deployment := range deployments.Items {
 		if deployment.Status.AvailableReplicas < 1 {
-			errs = append(errs, eris.Errorf(`deployment "%s" has no available pods`, deployment.Name))
+			failure.AddError(eris.Errorf(`deployment "%s" has no available pods`, deployment.Name))
 		}
 	}
-	if len(errs) > 0 {
-		return &Failure{
-			Errors: errs,
-			Hint:   d.buildHint(installNamespace),
-		}
+	if len(failure.Errors) > 0 {
+		failure.AddHint(d.buildHint(installNamespace), nil)
 	}
-	return nil
+	return failure.OrNil()
 }
 
 func (d *deploymentsCheck) buildHint(installNamespace string) string {
