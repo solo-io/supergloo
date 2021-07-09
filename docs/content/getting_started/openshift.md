@@ -28,6 +28,17 @@ Provision three OpenShift clusters with contexts stored in the following environ
 
 Lastly, ensure that you have a Gloo Mesh Enterprise license key stored in the environment variable `GLOO_MESH_LICENSE_KEY`.
 
+## Istio in OpenShift Setup - Service Account Privileges
+
+Istio sidecars make use of a user ID that is normally restricted by OpenShift. To allow enable this ID, we must elevate the permissions
+of the `istio-system` service accounts on both istio's namespace, and the namespace it will be watching. Run the following commands for each set of clusters you're using, 
+replacing `<CONTEXT_NAME>` with the current cluster's name. In this example, you will need to run these commands on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
+
+```shell script
+oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:istio-system
+oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:default
+```
+
 ## Installing Istio
 
 [Istio has its own documentation for Openshift installation](https://istio.io/latest/docs/setup/platform-setup/openshift/#additional-requirements-for-the-application-namespace). 
@@ -152,21 +163,6 @@ If installation was successful, you should see the following output after each c
 ✔ Ingress gateways installed
 ✔ Installation complete
 ```
-
-## Istio in OpenShift Setup - Service Account Privileges
-
-Istio sidecars make use of a user ID that is normally restricted by OpenShift. To allow enable this ID, we must elevate the permissions
-of the `istio-system` and `istio-operator` service accounts. Run the following commands for each set of clusters you're using, 
-replacing `<CONTEXT_NAME>` with the current cluster's name. In this example, you will need to run these commands on both `REMOTE_CONTEXT1` and `REMOTE_CONTEXT2`.
-
-```shell script
-oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:istio-system
-oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:istio-operator
-oc --context <CONTEXT_NAME> adm policy add-scc-to-group privileged system:serviceaccounts:default
-oc --context <CONTEXT_NAME> adm policy add-scc-to-group anyuid system:serviceaccounts:default
-```
-
-
 
 ### Istio in OpenShift Maintenence - NetworkAttachmentDefinition Upkeep
 
