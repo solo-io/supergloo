@@ -233,7 +233,7 @@ func buildKubeConfigList(kubeconfigs, kubecontexts []string, useFlags bool) map[
 			} else {
 				// return the single kubeconfig
 				for _, c := range kubecontexts {
-					combos[fmt.Sprintf("cluster-%s", clusterN)] = utils.MeshctlCluster{
+					combos[fmt.Sprintf("cluster-%d", clusterN)] = utils.MeshctlCluster{
 						KubeConfig:  kubeconfigs[0],
 						KubeContext: c,
 					}
@@ -245,7 +245,7 @@ func buildKubeConfigList(kubeconfigs, kubecontexts []string, useFlags bool) map[
 		// all kubeconfigs, no contexts (meaning use default context in each kubeconfig)
 		if len(kubecontexts) == 1 {
 			for _, k := range kubeconfigs {
-				combos[fmt.Sprintf("cluster-%s", clusterN)] = utils.MeshctlCluster{
+				combos[fmt.Sprintf("cluster-%d", clusterN)] = utils.MeshctlCluster{
 					KubeConfig:  k,
 					KubeContext: "",
 				}
@@ -254,7 +254,7 @@ func buildKubeConfigList(kubeconfigs, kubecontexts []string, useFlags bool) map[
 		} else {
 			// and equal list of kubeconfigs and contexts (use each corresponding context per kubeconfig)
 			for i, c := range kubecontexts {
-				combos[fmt.Sprintf("cluster-%s", clusterN)] = utils.MeshctlCluster{
+				combos[fmt.Sprintf("cluster-%d", clusterN)] = utils.MeshctlCluster{
 					KubeConfig:  kubeconfigs[i],
 					KubeContext: c,
 				}

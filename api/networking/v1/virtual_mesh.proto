@@ -70,7 +70,11 @@ message VirtualMeshSpec {
     // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
-        // Selectively federate Destinations to specific external Meshes.
+        // Selects the Destination(s) acting as ingress gateways for cross cluster traffic.
+        // The supplied IngressGatewaySelectors will be used to select ingress gateways for all Meshes in this VirtualMesh.
+        repeated .common.mesh.gloo.solo.io.IngressGatewaySelector east_west_ingress_gateway_selectors = 6;
+
+        // Selectively federate Destinations to specific external meshes.
         // If omitted, no Destinations will be federated.
         repeated FederationSelector selectors = 4;
 
