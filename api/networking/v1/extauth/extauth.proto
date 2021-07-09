@@ -8,11 +8,20 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-// Configure the Extauth Filter on a Gateway
+// Enterprise-Only: Configure the Extauth Filter on a Gateway
 message GatewayExtauth {
-  // TODO(kdorosh): this is hard-coded. make configurable, allow health checks / mTLS, use EnvoyFilter?
-  // The upstream to ask about auth decisions
-  //.core.skv2.solo.io.ObjectRef extauthz_server_ref = 1;
+  // The location of the envoy external authentication service to ask about auth decisions
+  EnvoyExternalAuthorizationProvider extauthz_provider = 1;
+
+  // similar to https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-ExtensionProvider-EnvoyExternalAuthorizationGrpcProvider
+  message EnvoyExternalAuthorizationProvider {
+    // if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local'
+    string service = 1;
+    // NOTE: if the port is customized in the external-auth subchart via the .Values.extAuth.service.grpcPort value
+    // then this value MUST be updated to match.
+    // if left empty, defaults to 8083.
+    uint32 port = 2;
+  }
 
   // If this is set, communication to the upstream will be via HTTP and not GRPC.
   HttpService http_service = 2;

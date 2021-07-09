@@ -20,6 +20,7 @@ title: "extauth.proto"
 ## Table of Contents
   - [BufferSettings](#extauth.networking.mesh.gloo.solo.io.BufferSettings)
   - [GatewayExtauth](#extauth.networking.mesh.gloo.solo.io.GatewayExtauth)
+  - [GatewayExtauth.EnvoyExternalAuthorizationProvider](#extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider)
   - [HttpService](#extauth.networking.mesh.gloo.solo.io.HttpService)
   - [HttpService.Request](#extauth.networking.mesh.gloo.solo.io.HttpService.Request)
   - [HttpService.Request.HeadersToAddEntry](#extauth.networking.mesh.gloo.solo.io.HttpService.Request.HeadersToAddEntry)
@@ -53,12 +54,13 @@ Configuration for buffering the request data.
 <a name="extauth.networking.mesh.gloo.solo.io.GatewayExtauth"></a>
 
 ### GatewayExtauth
-Configure the Extauth Filter on a Gateway<br>TODO(kdorosh): this is hard-coded. make configurable, allow health checks / mTLS, use EnvoyFilter? The upstream to ask about auth decisions .core.skv2.solo.io.ObjectRef extauthz_server_ref = 1;
+Enterprise-Only: Configure the Extauth Filter on a Gateway
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| httpService | [extauth.networking.mesh.gloo.solo.io.HttpService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.HttpService" >}}) |  | If this is set, communication to the upstream will be via HTTP and not GRPC. |
+| extauthzProvider | [extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider" >}}) |  | The location of the envoy external authentication service to ask about auth decisions |
+  | httpService | [extauth.networking.mesh.gloo.solo.io.HttpService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.HttpService" >}}) |  | If this is set, communication to the upstream will be via HTTP and not GRPC. |
   | requestTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Timeout for the ext auth service to respond. Defaults to 200ms |
   | failureModeAllow | bool |  | In case of a failure or timeout querying the auth server, normally a request is denied. if this is set to true, the request will be allowed. |
   | requestBody | [extauth.networking.mesh.gloo.solo.io.BufferSettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.BufferSettings" >}}) |  | Set this if you also want to send the body of the request, and not just the headers. |
@@ -66,6 +68,22 @@ Configure the Extauth Filter on a Gateway<br>TODO(kdorosh): this is hard-coded. 
   | statusOnError | uint32 |  | Sets the HTTP status that is returned to the client when there is a network error between the filter and the authorization server. The default status is HTTP 403 Forbidden. If set, this must be one of the following: - 100 - 200 201 202 203 204 205 206 207 208 226 - 300 301 302 303 304 305 307 308 - 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 421 422 423 424 426 428 429 431 - 500 501 502 503 504 505 506 507 508 510 511 |
   | transportApiVersion | [extauth.networking.mesh.gloo.solo.io.GatewayExtauth.ApiVersion]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.GatewayExtauth.ApiVersion" >}}) |  | Determines the API version for the `ext_authz` transport protocol that will be used by Envoy to communicate with the auth server. Defaults to `V3`. For more info, see the `transport_api_version` field [here](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz). |
   | statPrefix | string |  | Optional additional prefix to use when emitting statistics. This allows to distinguish emitted statistics between configured ext_authz filters in an HTTP filter chain. |
+  
+
+
+
+
+
+<a name="extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider"></a>
+
+### GatewayExtauth.EnvoyExternalAuthorizationProvider
+similar to https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-ExtensionProvider-EnvoyExternalAuthorizationGrpcProvider
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| service | string |  | if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local' |
+  | port | uint32 |  | NOTE: if the port is customized in the external-auth subchart via the .Values.extAuth.service.grpcPort value then this value MUST be updated to match. if left empty, defaults to 8083. |
   
 
 

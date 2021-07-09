@@ -1157,6 +1157,22 @@ spec:
                                   3. At least one *authorization response header* is added to the client request, or is used for
                                   altering another client request header.
                                 type: boolean
+                              extauthzProvider:
+                                description: The location of the envoy external authentication
+                                  service to ask about auth decisions
+                                properties:
+                                  port:
+                                    description: |-
+                                      NOTE: if the port is customized in the external-auth subchart via the .Values.extAuth.service.grpcPort value
+                                      then this value MUST be updated to match.
+                                      if left empty, defaults to 8083.
+                                    maximum: 4294967295
+                                    minimum: 0
+                                    type: integer
+                                  service:
+                                    description: if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local'
+                                    type: string
+                                type: object
                               failureModeAllow:
                                 description: |-
                                   In case of a failure or timeout querying the auth server, normally a request is denied.

@@ -46,6 +46,16 @@ func (m *GatewayExtauth) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetExtauthzProvider()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetExtauthzProvider()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetExtauthzProvider(), target.GetExtauthzProvider()) {
+			return false
+		}
+	}
+
 	if h, ok := interface{}(m.GetHttpService()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetHttpService()) {
 			return false
@@ -235,6 +245,38 @@ func (m *RouteExtauth) Equal(that interface{}) bool {
 		if m.Spec != target.Spec {
 			return false
 		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *GatewayExtauth_EnvoyExternalAuthorizationProvider) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GatewayExtauth_EnvoyExternalAuthorizationProvider)
+	if !ok {
+		that2, ok := that.(GatewayExtauth_EnvoyExternalAuthorizationProvider)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetService(), target.GetService()) != 0 {
+		return false
+	}
+
+	if m.GetPort() != target.GetPort() {
+		return false
 	}
 
 	return true
