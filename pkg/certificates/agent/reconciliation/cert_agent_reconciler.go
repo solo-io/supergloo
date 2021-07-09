@@ -145,6 +145,9 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		if err != nil {
 			return err
 		}
+		if len(csrBytes) == 0 {
+			return nil
+		}
 
 		certificateRequest := &certificatesv1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{

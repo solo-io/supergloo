@@ -132,6 +132,6 @@ message IssuedCertificateStatus {
     }
 
     // List of rotation conditions which have been completed/carried out for this mesh
-    repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 6;
+    repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition conditions = 6;
 
 }

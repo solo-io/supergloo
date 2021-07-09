@@ -55,7 +55,7 @@ type Translator interface {
 
 	// This function is called when the IssuedCertiticate is first created, it is meant to create the CSR
 	// and return the bytes directly
-	// If both return values are nil, it signals to the reconciler to ignore this resource.
+	// If both return values are nil, it signals to the reconciler not to update the CSR.
 	IssuedCertiticatePending(
 		ctx context.Context,
 		issuedCertificate *certificatesv1.IssuedCertificate,

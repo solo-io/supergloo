@@ -747,7 +747,7 @@ spec:
                       type: string
                   type: object
               type: object
-            certRotationConditions:
+            conditions:
               description: List of rotation conditions which have been completed/carried
                 out for this mesh
               items:
