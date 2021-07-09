@@ -124,7 +124,7 @@ type Route struct {
 	// Route options include configuration such as retries, rate limiting, and request/response transformation.
 	// RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
 	Options *v1.TrafficPolicySpec_Policy `protobuf:"bytes,7,opt,name=options,proto3" json:"options,omitempty"`
-	// Route level labels. Can be used by other resources (eg a TrafficPolicy) to
+	// Specify labels for this route, which are used by other resources (e.g. TrafficPolicy) to
 	// select specific routes within a given gateway object.
 	Labels map[string]string `protobuf:"bytes,10,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }

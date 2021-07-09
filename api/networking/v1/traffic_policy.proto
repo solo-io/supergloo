@@ -262,19 +262,19 @@ message TrafficPolicySpec {
     // If no route label matcher is specified, all routes on the
     // selected resources are matched.
     message RouteSelector {
-        // Select Virtual Hosts by Reference
+        // Select VirtualHosts by reference.
         repeated .core.skv2.solo.io.ObjectRef virtual_host_refs = 1;
 
-        // Select Virtual Hosts by label/namespace
+        // Select VirtualHosts by label and/or namespace.
         .core.skv2.solo.io.ObjectSelector virtual_host_selector = 2;
 
-        // Select Route Tables by Reference
+        // Select RouteTables by reference.
         repeated .core.skv2.solo.io.ObjectRef route_table_refs = 3;
 
-        // Select Route Tables by label/namespace
+        // Select RouteTables by label and/or namespace.
         .core.skv2.solo.io.ObjectSelector route_table_selector = 4;
 
-        // Map of route labels to match. All labels listed here must be
+        // Specify a set of labels for selecting Routes. All labels listed here must be
         // present on a route for that route to be considered matched.
         // If omitted, all routes on the selected VirtualHosts are selected.
         map<string, string> route_label_matcher = 5;

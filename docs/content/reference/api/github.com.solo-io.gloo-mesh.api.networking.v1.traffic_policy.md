@@ -306,11 +306,11 @@ Specify selected gateway traffic by specifying which gateway resources (virtualH
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| virtualHostRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Select Virtual Hosts by Reference |
-  | virtualHostSelector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | Select Virtual Hosts by label/namespace |
-  | routeTableRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Select Route Tables by Reference |
-  | routeTableSelector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | Select Route Tables by label/namespace |
-  | routeLabelMatcher | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry" >}}) | repeated | Map of route labels to match. All labels listed here must be present on a route for that route to be considered matched. If omitted, all routes on the selected VirtualHosts are selected. |
+| virtualHostRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Select VirtualHosts by reference. |
+  | virtualHostSelector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | Select VirtualHosts by label and/or namespace. |
+  | routeTableRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Select RouteTables by reference. |
+  | routeTableSelector | [core.skv2.solo.io.ObjectSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectSelector" >}}) |  | Select RouteTables by label and/or namespace. |
+  | routeLabelMatcher | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.RouteSelector.RouteLabelMatcherEntry" >}}) | repeated | Specify a set of labels for selecting Routes. All labels listed here must be present on a route for that route to be considered matched. If omitted, all routes on the selected VirtualHosts are selected. |
   
 
 

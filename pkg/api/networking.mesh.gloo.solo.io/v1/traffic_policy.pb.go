@@ -493,15 +493,15 @@ type TrafficPolicySpec_RouteSelector struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Select Virtual Hosts by Reference
+	// Select VirtualHosts by reference.
 	VirtualHostRefs []*v11.ObjectRef `protobuf:"bytes,1,rep,name=virtual_host_refs,json=virtualHostRefs,proto3" json:"virtual_host_refs,omitempty"`
-	// Select Virtual Hosts by label/namespace
+	// Select VirtualHosts by label and/or namespace.
 	VirtualHostSelector *v11.ObjectSelector `protobuf:"bytes,2,opt,name=virtual_host_selector,json=virtualHostSelector,proto3" json:"virtual_host_selector,omitempty"`
-	// Select Route Tables by Reference
+	// Select RouteTables by reference.
 	RouteTableRefs []*v11.ObjectRef `protobuf:"bytes,3,rep,name=route_table_refs,json=routeTableRefs,proto3" json:"route_table_refs,omitempty"`
-	// Select Route Tables by label/namespace
+	// Select RouteTables by label and/or namespace.
 	RouteTableSelector *v11.ObjectSelector `protobuf:"bytes,4,opt,name=route_table_selector,json=routeTableSelector,proto3" json:"route_table_selector,omitempty"`
-	// Map of route labels to match. All labels listed here must be
+	// Specify a set of labels for selecting Routes. All labels listed here must be
 	// present on a route for that route to be considered matched.
 	// If omitted, all routes on the selected VirtualHosts are selected.
 	RouteLabelMatcher map[string]string `protobuf:"bytes,5,rep,name=route_label_matcher,json=routeLabelMatcher,proto3" json:"route_label_matcher,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`

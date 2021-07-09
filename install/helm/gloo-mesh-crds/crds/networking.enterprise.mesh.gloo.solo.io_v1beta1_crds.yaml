@@ -2778,7 +2778,7 @@ spec:
                     additionalProperties:
                       type: string
                     description: |-
-                      Route level labels. Can be used by other resources (eg a TrafficPolicy) to
+                      Specify labels for this route, which are used by other resources (e.g. TrafficPolicy) to
                       select specific routes within a given gateway object.
                     type: object
                   matchers:
@@ -4261,7 +4261,7 @@ spec:
                     additionalProperties:
                       type: string
                     description: |-
-                      Route level labels. Can be used by other resources (eg a TrafficPolicy) to
+                      Specify labels for this route, which are used by other resources (e.g. TrafficPolicy) to
                       select specific routes within a given gateway object.
                     type: object
                   matchers:

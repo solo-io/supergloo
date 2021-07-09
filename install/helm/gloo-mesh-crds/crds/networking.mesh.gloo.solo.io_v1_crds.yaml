@@ -1142,12 +1142,12 @@ spec:
                     additionalProperties:
                       type: string
                     description: |-
-                      Map of route labels to match. All labels listed here must be
+                      Specify a set of labels for selecting Routes. All labels listed here must be
                       present on a route for that route to be considered matched.
                       If omitted, all routes on the selected VirtualHosts are selected.
                     type: object
                   routeTableRefs:
-                    description: Select Route Tables by Reference
+                    description: Select RouteTables by reference.
                     items:
                       properties:
                         name:
@@ -1159,7 +1159,7 @@ spec:
                       type: object
                     type: array
                   routeTableSelector:
-                    description: Select Route Tables by label/namespace
+                    description: Select RouteTables by label and/or namespace.
                     properties:
                       expressions:
                         description: |-
@@ -1209,7 +1209,7 @@ spec:
                         type: array
                     type: object
                   virtualHostRefs:
-                    description: Select Virtual Hosts by Reference
+                    description: Select VirtualHosts by reference.
                     items:
                       properties:
                         name:
@@ -1221,7 +1221,7 @@ spec:
                       type: object
                     type: array
                   virtualHostSelector:
-                    description: Select Virtual Hosts by label/namespace
+                    description: Select VirtualHosts by label and/or namespace.
                     properties:
                       expressions:
                         description: |-
