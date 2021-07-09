@@ -174,15 +174,10 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 	destinationMesh *discoveryv1.Mesh,
 ) (*networkingv1alpha3.ServiceEntry, error) {
 	kubeService := destination.Spec.GetKubeService()
-	istioMesh := destinationMesh.Spec.GetIstio()
 
-	if len(istioMesh.IngressGateways) < 1 {
-		return nil, eris.Errorf("istio mesh %v has no ingress gateway", sets.Key(destinationMesh))
+	if len(destinationMesh.Status.AppliedEastWestIngressGateways) < 1 {
+		return nil, eris.Errorf("istio mesh %v has no applied east west ingress gateways", sets.Key(destinationMesh))
 	}
-
-	// TODO: support multiple ingress gateways or selecting a specific gateway.
-	// Currently, we just default to using the first one in the list.
-	ingressGateway := istioMesh.IngressGateways[0]
 
 	serviceEntryIP, err := destinationutils.ConstructUniqueIpForKubeService(kubeService.GetRef())
 	if err != nil {
@@ -190,41 +185,43 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 		return nil, eris.Errorf("unexpected error: failed to generate service entry ip: %v", err)
 	}
 
-	remoteIngressTlsPort := make(map[string]uint32)
-	var ports []*networkingv1alpha3spec.Port
+	var sePorts []*networkingv1alpha3spec.Port
+	workloadEntryPortMapping := make(map[string]uint32)
 	for _, port := range kubeService.GetPorts() {
 		portName := port.Name
 		// fall back to protocol for port name if k8s port name is unpopulated
 		if portName == "" {
 			portName = port.Protocol
 		}
-		ports = append(ports, &networkingv1alpha3spec.Port{
+		sePorts = append(sePorts, &networkingv1alpha3spec.Port{
 			Number:   port.Port,
 			Protocol: ConvertKubePortProtocol(port),
 			Name:     portName,
 		})
-		remoteIngressTlsPort[portName] = ingressGateway.ExternalTlsPort
-	}
-
-	address := ingressGateway.GetDnsName()
-	if address == "" {
-		address = ingressGateway.GetIp()
-	}
-	if address == "" {
-		// remove when deprecated field is removed
-		address = ingressGateway.GetExternalAddress()
+		// to be filled in with applied ingress gateway tls port when building WorkloadEntries below
+		workloadEntryPortMapping[portName] = 0
 	}
 
 	var workloadEntries []*networkingv1alpha3spec.WorkloadEntry
-	// construct a WorkloadEntry for each endpoint (i.e. backing Workload) for the Destination
-	for _, endpointSubset := range kubeService.EndpointSubsets {
-		for _, endpoint := range endpointSubset.Endpoints {
-			workloadEntry := &networkingv1alpha3spec.WorkloadEntry{
-				Address: address,
-				Ports:   remoteIngressTlsPort,
-				Labels:  endpoint.Labels,
+
+	// construct a WorkloadEntry for each ingress gateway destination's external address, for each endpoint (i.e. backing Workload) on the Destination
+	for _, appliedIngressGateway := range destinationMesh.Status.AppliedEastWestIngressGateways {
+
+		for portName := range workloadEntryPortMapping {
+			workloadEntryPortMapping[portName] = appliedIngressGateway.DestinationPort
+		}
+
+		for _, externalAddress := range appliedIngressGateway.ExternalAddresses {
+			for _, endpointSubset := range kubeService.EndpointSubsets {
+				for _, endpoint := range endpointSubset.Endpoints {
+					workloadEntry := &networkingv1alpha3spec.WorkloadEntry{
+						Address: externalAddress,
+						Ports:   workloadEntryPortMapping,
+						Labels:  endpoint.Labels,
+					}
+					workloadEntries = append(workloadEntries, workloadEntry)
+				}
 			}
-			workloadEntries = append(workloadEntries, workloadEntry)
 		}
 	}
 
@@ -247,7 +244,7 @@ func (t *translator) translateRemoteServiceEntryTemplate(
 			Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
 			Resolution: resolution,
 			Endpoints:  workloadEntries,
-			Ports:      ports,
+			Ports:      sePorts,
 		},
 	}, nil
 }

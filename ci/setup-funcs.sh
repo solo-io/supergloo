@@ -13,19 +13,21 @@ function create_kind_cluster() {
   # https://github.com/solo-io/gloo-mesh/issues/700
   kindImage=kindest/node:v1.17.5
 
+  # gloo mesh cluster name
   cluster=$1
-  port=$2
+
+  # ingress ports
+  port1=$2
+  port2=$3
+
   # Set the network suffix based on the ingress port.
   # The ingress port params are either 32000, or 32001, so this will either be 1 or 2.
   # This number will the be used to construct the subnet.
   # For example: 10.96.${net}.0/24
   # This value will be used to cordon off, and later join the different pod subnets of the multiple clusters.
-  ((net=$port%32000+1))
+  ((net=$port1%32000+1))
 
-  # Set ingress port to be 10 higher than the passed port, ie 32010 or 32011
-  ((ingressPort=$2+10))
-
-  echo "creating cluster ${cluster} with ingress port ${port}"
+  echo "creating cluster ${cluster} with ingress port ${port1}"
 
   K="kubectl --context=kind-${cluster}"
 
@@ -50,11 +52,11 @@ nodes:
   extraPortMappings:
   - containerPort: 6443
     hostPort: ${net}000
-  - containerPort: ${port}
-    hostPort: ${port}
+  - containerPort: ${port1}
+    hostPort: ${port1}
     protocol: TCP
-  - containerPort: ${ingressPort}
-    hostPort: ${ingressPort}
+  - containerPort: ${port2}
+    hostPort: ${port2}
     protocol: TCP
   kubeadmConfigPatches:
   - |
@@ -313,7 +315,7 @@ EOF
 # Operator spec for istio 1.7.x
 function install_istio_1_7() {
   cluster=$1
-  port=$2
+  ingressPort=$2
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -335,12 +337,19 @@ spec:
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
+      label:
+        traffic: east-west
       k8s:
         env:
           # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
           - name: ISTIO_META_ROUTER_MODE
             value: "sni-dnat"
         service:
+          type: NodePort
+          selector:
+            app: istio-ingressgateway
+            istio: ingressgateway
+            traffic: east-west
           ports:
             - port: 80
               targetPort: 8080
@@ -348,14 +357,10 @@ spec:
             - port: 443
               targetPort: 8443
               name: https
-            - port: ${ingressPort}
-              nodePort: ${ingressPort}
-              targetPort: 8081
-              name: ingress-gateway-port
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: ${port}
+              nodePort: ${ingressPort}
   meshConfig:
     enableAutoMtls: true
     defaultConfig:
@@ -369,14 +374,6 @@ spec:
   values:
     prometheus:
       enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: ${port}
-            port: 15443
     global:
       pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
@@ -391,7 +388,7 @@ EOF
 # Operator spec for istio 1.8.x
 function install_istio_1_8() {
   cluster=$1
-  port=$2
+  ingressPort=$2
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -426,6 +423,8 @@ spec:
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
+      label:
+        traffic: east-west
       k8s:
         env:
           # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
@@ -433,6 +432,10 @@ spec:
             value: "sni-dnat"
         service:
           type: NodePort
+          selector:
+            app: istio-ingressgateway
+            istio: ingressgateway
+            traffic: east-west
           ports:
             - port: 80
               targetPort: 8080
@@ -440,14 +443,10 @@ spec:
             - port: 443
               targetPort: 8443
               name: https
-            - port: ${ingressPort}
-              nodePort: ${ingressPort}
-              targetPort: 8081
-              name: ingress-gateway-port
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: ${port}
+              nodePort: ${ingressPort}
   values:
     global:
       pilotCertProvider: istiod
@@ -460,7 +459,7 @@ EOF
 # Operator spec for istio 1.9.x
 function install_istio_1_9() {
   cluster=$1
-  port=$2
+  ingressPort=$2
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -495,6 +494,8 @@ spec:
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
+      label:
+        traffic: east-west
       k8s:
         env:
           # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
@@ -502,6 +503,10 @@ spec:
             value: "sni-dnat"
         service:
           type: NodePort
+          selector:
+            app: istio-ingressgateway
+            istio: ingressgateway
+            traffic: east-west
           ports:
             - port: 80
               targetPort: 8080
@@ -509,14 +514,10 @@ spec:
             - port: 443
               targetPort: 8443
               name: https
-            - port: ${ingressPort}
-              nodePort: ${ingressPort}
-              targetPort: 8081
-              name: ingress-gateway-port
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: ${port}
+              nodePort: ${ingressPort}
   values:
     global:
       pilotCertProvider: istiod
@@ -568,22 +569,22 @@ EOF
 
 function install_istio() {
   cluster=$1
-  port=$2
+  ingressPort=$2
   K="kubectl --context=kind-${cluster}"
 
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $port
-    install_istio_coredns $cluster $port
+    install_istio_1_7 $cluster $ingressPort
+    install_istio_coredns $cluster $ingressPort
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $port
+    install_istio_1_8 $cluster $ingressPort
   elif istioctl version | grep -E -- '1.9'
   then
-    install_istio_1_9 $cluster $port
+    install_istio_1_9 $cluster $ingressPort
   elif istioctl version | grep -E -- '1.10'
   then
-    install_istio_1_9 $cluster $port
+    install_istio_1_9 $cluster $ingressPort
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1

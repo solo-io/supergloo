@@ -1523,6 +1523,79 @@ spec:
               - required:
                 - permissive
               properties:
+                eastWestIngressGatewaySelectors:
+                  description: |-
+                    Selects the Destination(s) acting as ingress gateways for cross cluster traffic.
+                    The supplied IngressGatewaySelectors will be used to select ingress gateways for all Meshes in this VirtualMesh.
+                  items:
+                    properties:
+                      destinationSelectors:
+                        description: |-
+                          The set of Destinations that will be used as ingress gateways for external traffic entering the Mesh.
+                          If omitted, a mesh-specific default ingress gateway destination will be used.
+                          For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected.
+                        items:
+                          properties:
+                            kubeServiceMatcher:
+                              description: Match Kubernetes Services by their labels,
+                                namespaces, and/or clusters.
+                              properties:
+                                clusters:
+                                  description: |-
+                                    If specified, match Kubernetes Services if they exist in one of the specified clusters.
+                                               When used in a networking policy, omission matches any cluster.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                  items:
+                                    type: string
+                                  type: array
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: |-
+                                    If specified, a match requires all labels to exist on a Kubernetes Service.
+                                               When used in a networking policy, omission matches any labels.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                  type: object
+                                namespaces:
+                                  description: |-
+                                    If specified, match Kubernetes Services if they exist in one of the specified namespaces.
+                                               When used in a networking policy, omission matches any namespace.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            kubeServiceRefs:
+                              description: Match Kubernetes Services by direct reference.
+                              properties:
+                                services:
+                                  description: |-
+                                    Match Kubernetes Services by direct reference. All fields are required.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
+                                  items:
+                                    properties:
+                                      clusterName:
+                                        description: name of the cluster in which
+                                          the resource exists
+                                        type: string
+                                      name:
+                                        description: name of the resource being referenced
+                                        type: string
+                                      namespace:
+                                        description: namespace of the resource being
+                                          referenced
+                                        type: string
+                                    type: object
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                      portName:
+                        description: Specify by name the TLS port on the ingress gateway
+                          destination. If not specified, will default to "tls".
+                        type: string
+                    type: object
+                  type: array
                 flatNetwork:
                   description: |-
                     If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
@@ -1544,7 +1617,7 @@ spec:
                   type: object
                 selectors:
                   description: |-
-                    Selectively federate Destinations to specific external Meshes.
+                    Selectively federate Destinations to specific external meshes.
                     If omitted, no Destinations will be federated.
                   items:
                     properties:

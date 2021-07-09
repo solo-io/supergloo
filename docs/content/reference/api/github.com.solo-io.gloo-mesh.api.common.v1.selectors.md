@@ -25,6 +25,7 @@ title: "selectors.proto"
   - [IdentitySelector](#common.mesh.gloo.solo.io.IdentitySelector)
   - [IdentitySelector.KubeIdentityMatcher](#common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher)
   - [IdentitySelector.KubeServiceAccountRefs](#common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs)
+  - [IngressGatewaySelector](#common.mesh.gloo.solo.io.IngressGatewaySelector)
   - [WorkloadSelector](#common.mesh.gloo.solo.io.WorkloadSelector)
   - [WorkloadSelector.KubeWorkloadMatcher](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher)
   - [WorkloadSelector.KubeWorkloadMatcher.LabelsEntry](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry)
@@ -140,6 +141,22 @@ Select Destination identities using one or more platform-specific selectors.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | serviceAccounts | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match Kubernetes service accounts by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field. |
+  
+
+
+
+
+
+<a name="common.mesh.gloo.solo.io.IngressGatewaySelector"></a>
+
+### IngressGatewaySelector
+Select a set of Destinations with tls ports to use as ingress gateway services for the referenced Meshes.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be used as ingress gateways for external traffic entering the Mesh. If omitted, a mesh-specific default ingress gateway destination will be used. For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected. |
+  | portName | string |  | Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls". |
   
 
 
