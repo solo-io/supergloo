@@ -61,7 +61,7 @@ message GatewayExtauth {
   }
 
   // Determines the API version for the `ext_authz` transport protocol that will be used by Envoy
-  // to communicate with the auth server. Defaults to `V2`. For more info, see the `transport_api_version` field
+  // to communicate with the auth server. Defaults to `V3`. For more info, see the `transport_api_version` field
   // [here](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz).
   ApiVersion transport_api_version = 9;
 

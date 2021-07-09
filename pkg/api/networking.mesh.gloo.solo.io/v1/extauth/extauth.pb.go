@@ -110,7 +110,7 @@ type GatewayExtauth struct {
 	// - 500 501 502 503 504 505 506 507 508 510 511
 	StatusOnError uint32 `protobuf:"varint,8,opt,name=status_on_error,json=statusOnError,proto3" json:"status_on_error,omitempty"`
 	// Determines the API version for the `ext_authz` transport protocol that will be used by Envoy
-	// to communicate with the auth server. Defaults to `V2`. For more info, see the `transport_api_version` field
+	// to communicate with the auth server. Defaults to `V3`. For more info, see the `transport_api_version` field
 	// [here](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz).
 	TransportApiVersion GatewayExtauth_ApiVersion `protobuf:"varint,9,opt,name=transport_api_version,json=transportApiVersion,proto3,enum=extauth.networking.mesh.gloo.solo.io.GatewayExtauth_ApiVersion" json:"transport_api_version,omitempty"`
 	// Optional additional prefix to use when emitting statistics.
