@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Create API for cert-rotation using Gloo Mesh. This is an enterprise only API.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/580
+    resolvesIssue: false
