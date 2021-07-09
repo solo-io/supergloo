@@ -942,9 +942,6 @@ var _ = Describe("Applier", func() {
 									},
 								},
 								PortName: "non-default-port",
-								Meshes: []*skv2corev1.ObjectRef{
-									ezkube.MakeObjectRef(mesh3),
-								},
 							},
 							{
 								DestinationSelectors: []*commonv1.DestinationSelector{
@@ -957,9 +954,6 @@ var _ = Describe("Applier", func() {
 									},
 								},
 								PortName: defaults.IstioGatewayTlsPortName,
-								Meshes: []*skv2corev1.ObjectRef{
-									ezkube.MakeObjectRef(mesh4),
-								},
 							},
 							// should deduplicate "svc-name" and add "svc-name2"
 							{
@@ -974,9 +968,6 @@ var _ = Describe("Applier", func() {
 									},
 								},
 								PortName: defaults.IstioGatewayTlsPortName,
-								Meshes: []*skv2corev1.ObjectRef{
-									ezkube.MakeObjectRef(mesh4),
-								},
 							},
 						},
 					},

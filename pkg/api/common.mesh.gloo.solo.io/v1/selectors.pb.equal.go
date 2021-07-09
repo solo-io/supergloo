@@ -189,23 +189,6 @@ func (m *IngressGatewaySelector) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetMeshes()) != len(target.GetMeshes()) {
-		return false
-	}
-	for idx, v := range m.GetMeshes() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetMeshes()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetMeshes()[idx]) {
-				return false
-			}
-		}
-
-	}
-
 	return true
 }
 

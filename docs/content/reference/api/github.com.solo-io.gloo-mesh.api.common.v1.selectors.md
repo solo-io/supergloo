@@ -155,9 +155,8 @@ Select a set of Destinations with tls ports to use as ingress gateway services f
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be used as ingress gateway services for the external Meshes. If omitted, a mesh-specific default ingress gateway destination will be used. For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected. |
+| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | The set of Destinations that will be used as ingress gateways for external traffic entering the Mesh. If omitted, a mesh-specific default ingress gateway destination will be used. For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected. |
   | portName | string |  | Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls". |
-  | meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Meshes for which the selected Destinations will be configured as ingress gateways. All referenced Meshes must exist in this VirtualMesh. If omitted, the selected Destinations will be configured as ingress gateways for all Meshes in the VirtualMesh. |
   
 
 

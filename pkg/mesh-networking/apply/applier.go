@@ -790,10 +790,6 @@ func getAppliedEastWestIngressGateways(
 			continue
 		}
 		for _, ingressGatewayServiceSelector := range virtualMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
-			// Check if this selector applies to this mesh
-			if !ingressGatewaySelectorMatchesMesh(ingressGatewayServiceSelector, mesh) {
-				continue
-			}
 			if !selectorutils.SelectorMatchesDestination(ingressGatewayServiceSelector.GetDestinationSelectors(), destination) {
 				continue
 			}
@@ -824,25 +820,6 @@ func getAppliedEastWestIngressGateways(
 	}
 
 	return selectedIngressGatewayList
-}
-
-// return true if ingress gateway selector selects the given Mesh
-func ingressGatewaySelectorMatchesMesh(
-	ingressGatewayServiceSelector *commonv1.IngressGatewaySelector,
-	mesh ezkube.ResourceId,
-) bool {
-	var applies bool
-	if len(ingressGatewayServiceSelector.GetMeshes()) == 0 {
-		applies = true
-	} else {
-		for _, meshRef := range ingressGatewayServiceSelector.GetMeshes() {
-			if ezkube.RefsMatch(meshRef, mesh) {
-				applies = true
-				break
-			}
-		}
-	}
-	return applies
 }
 
 // If no ingress gateway destinations are selected by user, fall back on the following in order of precedence:

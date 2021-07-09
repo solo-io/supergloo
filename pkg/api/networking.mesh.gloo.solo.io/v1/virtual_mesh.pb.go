@@ -538,7 +538,8 @@ type VirtualMeshSpec_Federation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Selects the Destination(s) acting as ingress gateways for east west traffic across meshes in the same virtual mesh.
+	// Selects the Destination(s) acting as ingress gateways for cross cluster traffic.
+	// The supplied IngressGatewaySelectors will be used to select ingress gateways for all Meshes in this VirtualMesh.
 	EastWestIngressGatewaySelectors []*v12.IngressGatewaySelector `protobuf:"bytes,6,rep,name=east_west_ingress_gateway_selectors,json=eastWestIngressGatewaySelectors,proto3" json:"east_west_ingress_gateway_selectors,omitempty"`
 	// Selectively federate Destinations to specific external meshes.
 	// If omitted, no Destinations will be federated.
