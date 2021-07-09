@@ -13,14 +13,24 @@ message GatewayExtauth {
   // The location of the envoy external authentication service to ask about auth decisions
   EnvoyExternalAuthorizationProvider extauthz_provider = 1;
 
-  // similar to https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-ExtensionProvider-EnvoyExternalAuthorizationGrpcProvider
   message EnvoyExternalAuthorizationProvider {
-    // if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local'
-    string service = 1;
-    // NOTE: if the port is customized in the external-auth subchart via the .Values.extAuth.service.grpcPort value
-    // then this value MUST be updated to match.
-    // if left empty, defaults to 8083.
-    uint32 port = 2;
+
+    oneof provider_type {
+      // in the future we may want to allow users more control over the location of the extauth service;
+      // e.g. outside the mesh to avoid extra latency on the request path (at the expense of more configuration
+      // burden on the user).
+      InMeshProvider mesh_provider = 1;
+    }
+
+    // similar to https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-ExtensionProvider-EnvoyExternalAuthorizationGrpcProvider
+    message InMeshProvider {
+      // if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local'
+      string service = 1;
+      // NOTE: if the port is customized in the external-auth subchart via the `.Values.extAuth.service.grpcPort`
+      // helm value then this value MUST be updated to match.
+      // if left empty, defaults to 8083.
+      uint32 port = 2;
+    }
   }
 
   // If this is set, communication to the upstream will be via HTTP and not GRPC.

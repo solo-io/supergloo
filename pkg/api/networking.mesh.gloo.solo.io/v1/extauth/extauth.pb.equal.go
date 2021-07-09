@@ -271,6 +271,54 @@ func (m *GatewayExtauth_EnvoyExternalAuthorizationProvider) Equal(that interface
 		return false
 	}
 
+	switch m.ProviderType.(type) {
+
+	case *GatewayExtauth_EnvoyExternalAuthorizationProvider_MeshProvider:
+		if _, ok := target.ProviderType.(*GatewayExtauth_EnvoyExternalAuthorizationProvider_MeshProvider); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetMeshProvider()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetMeshProvider()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetMeshProvider(), target.GetMeshProvider()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.ProviderType != target.ProviderType {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *GatewayExtauth_EnvoyExternalAuthorizationProvider_InMeshProvider) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GatewayExtauth_EnvoyExternalAuthorizationProvider_InMeshProvider)
+	if !ok {
+		that2, ok := that.(GatewayExtauth_EnvoyExternalAuthorizationProvider_InMeshProvider)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
 	if strings.Compare(m.GetService(), target.GetService()) != 0 {
 		return false
 	}

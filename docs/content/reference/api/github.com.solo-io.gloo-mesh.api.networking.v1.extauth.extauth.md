@@ -21,6 +21,7 @@ title: "extauth.proto"
   - [BufferSettings](#extauth.networking.mesh.gloo.solo.io.BufferSettings)
   - [GatewayExtauth](#extauth.networking.mesh.gloo.solo.io.GatewayExtauth)
   - [GatewayExtauth.EnvoyExternalAuthorizationProvider](#extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider)
+  - [GatewayExtauth.EnvoyExternalAuthorizationProvider.InMeshProvider](#extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider.InMeshProvider)
   - [HttpService](#extauth.networking.mesh.gloo.solo.io.HttpService)
   - [HttpService.Request](#extauth.networking.mesh.gloo.solo.io.HttpService.Request)
   - [HttpService.Request.HeadersToAddEntry](#extauth.networking.mesh.gloo.solo.io.HttpService.Request.HeadersToAddEntry)
@@ -77,13 +78,28 @@ Enterprise-Only: Configure the Extauth Filter on a Gateway
 <a name="extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider"></a>
 
 ### GatewayExtauth.EnvoyExternalAuthorizationProvider
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| meshProvider | [extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider.InMeshProvider]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.extauth.extauth#extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider.InMeshProvider" >}}) |  | in the future we may want to allow users more control over the location of the extauth service; e.g. outside the mesh to avoid extra latency on the request path (at the expense of more configuration burden on the user). |
+  
+
+
+
+
+
+<a name="extauth.networking.mesh.gloo.solo.io.GatewayExtauth.EnvoyExternalAuthorizationProvider.InMeshProvider"></a>
+
+### GatewayExtauth.EnvoyExternalAuthorizationProvider.InMeshProvider
 similar to https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-ExtensionProvider-EnvoyExternalAuthorizationGrpcProvider
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | service | string |  | if left empty, defaults to 'ext-auth-service.$GATEWAY_NAMESPACE.svc.cluster.local' |
-  | port | uint32 |  | NOTE: if the port is customized in the external-auth subchart via the .Values.extAuth.service.grpcPort value then this value MUST be updated to match. if left empty, defaults to 8083. |
+  | port | uint32 |  | NOTE: if the port is customized in the external-auth subchart via the `.Values.extAuth.service.grpcPort` helm value then this value MUST be updated to match. if left empty, defaults to 8083. |
   
 
 
