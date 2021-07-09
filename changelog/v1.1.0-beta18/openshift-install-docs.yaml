@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1699
+    description: Add documentation for installing GME in an OpenShift environment.
