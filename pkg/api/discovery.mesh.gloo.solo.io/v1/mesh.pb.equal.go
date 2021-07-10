@@ -246,14 +246,21 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetDeployedCa()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetDeployedCa()) {
-			return false
+	if len(m.GetAppliedEastWestIngressGateways()) != len(target.GetAppliedEastWestIngressGateways()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedEastWestIngressGateways() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedEastWestIngressGateways()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedEastWestIngressGateways()[idx]) {
+				return false
+			}
 		}
-	} else {
-		if !proto.Equal(m.GetDeployedCa(), target.GetDeployedCa()) {
-			return false
-		}
+
 	}
 
 	return true
@@ -590,6 +597,59 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *MeshStatus_AppliedIngressGateway) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*MeshStatus_AppliedIngressGateway)
+	if !ok {
+		that2, ok := that.(MeshStatus_AppliedIngressGateway)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetDestinationRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDestinationRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDestinationRef(), target.GetDestinationRef()) {
+			return false
+		}
+	}
+
+	if len(m.GetExternalAddresses()) != len(target.GetExternalAddresses()) {
+		return false
+	}
+	for idx, v := range m.GetExternalAddresses() {
+
+		if strings.Compare(v, target.GetExternalAddresses()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if m.GetDestinationPort() != target.GetDestinationPort() {
+		return false
+	}
+
+	if m.GetContainerPort() != target.GetContainerPort() {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
 func (m *MeshStatus_AppliedVirtualMesh) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -679,57 +739,6 @@ func (m *MeshStatus_AppliedVirtualDestination) Equal(that interface{}) bool {
 
 		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
 			return false
-		}
-
-	}
-
-	return true
-}
-
-// Equal function
-func (m *MeshStatus_DeployedCA) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*MeshStatus_DeployedCA)
-	if !ok {
-		that2, ok := that.(MeshStatus_DeployedCA)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetSharedTrust()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSharedTrust()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSharedTrust(), target.GetSharedTrust()) {
-			return false
-		}
-	}
-
-	if len(m.GetCertRotationConditions()) != len(target.GetCertRotationConditions()) {
-		return false
-	}
-	for idx, v := range m.GetCertRotationConditions() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetCertRotationConditions()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetCertRotationConditions()[idx]) {
-				return false
-			}
 		}
 
 	}

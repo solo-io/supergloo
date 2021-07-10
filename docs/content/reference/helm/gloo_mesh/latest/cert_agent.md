@@ -37,18 +37,8 @@ weight: 2
 |watchOutputTypes|bool|false|If true, Gloo Mesh will watch service mesh config types output by Gloo Mesh, and resync upon changes.|
 |defaultMetricsPort|uint32|0|The port on which to serve internal Prometheus metrics for the Gloo Mesh application. Set to 0 to disable.|
 |verbose|bool|false|If true, enables verbose/debug logging.|
-|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091},"customPodAnnotations":{"sidecar.istio.io/inject":"\"false\""}}|Configuration for the certAgent deployment.|
+|certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}},"sidecars":{},"serviceType":"ClusterIP","ports":{"metrics":9091}}|Configuration for the certAgent deployment.|
 |certAgent|struct|{"image":{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"resources":{"requests":{"cpu":"50m","memory":"128Mi"}}}||
-|certAgent.-[]|[]string|["--metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}","--verbose={{ $.Values.verbose }}"]||
-|certAgent.-[]|string| ||
-|certAgent.-[]|[]struct|null||
-|certAgent.-[]|struct| ||
-|certAgent.-[].name|string| ||
-|certAgent.-[].readOnly|bool| ||
-|certAgent.-[].mountPath|string| ||
-|certAgent.-[].subPath|string| ||
-|certAgent.-[].mountPropagation|string| ||
-|certAgent.-[].subPathExpr|string| ||
 |certAgent.image|struct|{"repository":"cert-agent","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the container image|
 |certAgent.image.tag|string| |Tag for the container.|
 |certAgent.image.repository|string|cert-agent|Image name (repository).|
@@ -69,16 +59,6 @@ weight: 2
 |certAgent.resources.requests.memory|string|BinarySI||
 |certAgent.sidecars|map[string, struct]| |Configuration for the deployed containers.|
 |certAgent.sidecars.<MAP_KEY>|struct| |Configuration for the deployed containers.|
-|certAgent.sidecars.<MAP_KEY>.-[]|[]string| ||
-|certAgent.sidecars.<MAP_KEY>.-[]|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[]|[]struct| ||
-|certAgent.sidecars.<MAP_KEY>.-[]|struct| ||
-|certAgent.sidecars.<MAP_KEY>.-[].name|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].readOnly|bool| ||
-|certAgent.sidecars.<MAP_KEY>.-[].mountPath|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].subPath|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].mountPropagation|string| ||
-|certAgent.sidecars.<MAP_KEY>.-[].subPathExpr|string| ||
 |certAgent.sidecars.<MAP_KEY>.image|struct| |Specify the container image|
 |certAgent.sidecars.<MAP_KEY>.image.tag|string| |Tag for the container.|
 |certAgent.sidecars.<MAP_KEY>.image.repository|string| |Image name (repository).|
@@ -97,16 +77,5 @@ weight: 2
 |certAgent.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |certAgent.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
-|certAgent.customPodLabels|map[string, string]| |Custom labels for the pod|
-|certAgent.customPodLabels.<MAP_KEY>|string| |Custom labels for the pod|
-|certAgent.customPodAnnotations|map[string, string]| |Custom annotations for the pod|
-|certAgent.customPodAnnotations.<MAP_KEY>|string| |Custom annotations for the pod|
-|certAgent.customPodAnnotations.sidecar.istio.io/inject|string|"false"|Custom annotations for the pod|
-|certAgent.customDeploymentLabels|map[string, string]| |Custom labels for the deployment|
-|certAgent.customDeploymentLabels.<MAP_KEY>|string| |Custom labels for the deployment|
-|certAgent.customDeploymentAnnotations|map[string, string]| |Custom annotations for the deployment|
-|certAgent.customDeploymentAnnotations.<MAP_KEY>|string| |Custom annotations for the deployment|
-|certAgent.customServiceLabels|map[string, string]| |Custom labels for the service|
-|certAgent.customServiceLabels.<MAP_KEY>|string| |Custom labels for the service|
-|certAgent.customServiceAnnotations|map[string, string]| |Custom annotations for the service|
-|certAgent.customServiceAnnotations.<MAP_KEY>|string| |Custom annotations for the service|
+|certAgent.DeploymentOverrides|invalid| |Provide arbitrary overrides for the component's [deployment template](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/)|
+|certAgent.ServiceOverrides|invalid| |Provide arbitrary overrides for the component's [service template](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/).|

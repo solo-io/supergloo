@@ -187,6 +187,23 @@ message MeshStatus {
     // The VirtualDestinations, if any, which apply to this Mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
+    // The Destination(s) acting as ingress gateways for east west traffic.
+    repeated AppliedIngressGateway applied_east_west_ingress_gateways = 4;
+
+    message AppliedIngressGateway {
+        // The Destination on the mesh that acts as an ingress gateway for the mesh.
+        .core.skv2.solo.io.ObjectRef destination_ref = 1;
+
+        // The externally accessible address(es) for this ingress gateway Destination.
+        repeated string external_addresses = 2;
+
+        // The port on the ingress gateway Destination designated for receiving cross cluster traffic.
+        uint32 destination_port = 3;
+
+        // The port on the ingress gateway's backing Workload(s) designated for receiving cross cluster traffic.
+        uint32 container_port = 4;
+    }
+
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh" >}}) that applies to this Mesh.
     // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
@@ -213,19 +230,4 @@ message MeshStatus {
         // Any errors encountered while processing the VirtualDestination.
         repeated string errors = 3;
     }
-
-    message DeployedCA {
-
-        // Certificate which is currently deployed to the mesh
-        .networking.mesh.gloo.solo.io.SharedTrust shared_trust = 1;
-
-        
-        // Reserve for limited trust when it's implemented
-        reserved 2;
-
-        // List of rotation conditions which have been completed/carried out for this mesh
-        repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition cert_rotation_conditions = 3;
-    }
-
-    DeployedCA deployed_ca = 4;
 }

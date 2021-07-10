@@ -556,7 +556,10 @@ type VirtualMeshSpec_Federation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Selectively federate Destinations to specific external Meshes.
+	// Selects the Destination(s) acting as ingress gateways for cross cluster traffic.
+	// The supplied IngressGatewaySelectors will be used to select ingress gateways for all Meshes in this VirtualMesh.
+	EastWestIngressGatewaySelectors []*v12.IngressGatewaySelector `protobuf:"bytes,6,rep,name=east_west_ingress_gateway_selectors,json=eastWestIngressGatewaySelectors,proto3" json:"east_west_ingress_gateway_selectors,omitempty"`
+	// Selectively federate Destinations to specific external meshes.
 	// If omitted, no Destinations will be federated.
 	Selectors []*VirtualMeshSpec_Federation_FederationSelector `protobuf:"bytes,4,rep,name=selectors,proto3" json:"selectors,omitempty"`
 	// DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
@@ -609,6 +612,13 @@ func (x *VirtualMeshSpec_Federation) ProtoReflect() protoreflect.Message {
 // Deprecated: Use VirtualMeshSpec_Federation.ProtoReflect.Descriptor instead.
 func (*VirtualMeshSpec_Federation) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDescGZIP(), []int{0, 1}
+}
+
+func (x *VirtualMeshSpec_Federation) GetEastWestIngressGatewaySelectors() []*v12.IngressGatewaySelector {
+	if x != nil {
+		return x.EastWestIngressGatewaySelectors
+	}
+	return nil
 }
 
 func (x *VirtualMeshSpec_Federation) GetSelectors() []*VirtualMeshSpec_Federation_FederationSelector {
@@ -809,7 +819,7 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDe
 	0x70, 0x74, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
 	0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x77, 0x72, 0x61, 0x70, 0x70,
 	0x65, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x12, 0x65, 0x78, 0x74, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2f, 0x65, 0x78, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa9, 0x0b,
+	0x6f, 0x74, 0x6f, 0x2f, 0x65, 0x78, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa9, 0x0c,
 	0x0a, 0x0f, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x65, 0x73, 0x68, 0x53, 0x70, 0x65,
 	0x63, 0x12, 0x34, 0x0a, 0x06, 0x6d, 0x65, 0x73, 0x68, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
 	0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f,
@@ -864,7 +874,15 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_rawDe
 	0x64, 0x52, 0x0e, 0x72, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x65, 0x74, 0x68, 0x6f,
 	0x64, 0x1a, 0x0e, 0x0a, 0x0c, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x65, 0x64, 0x54, 0x72, 0x75, 0x73,
 	0x74, 0x42, 0x0d, 0x0a, 0x0b, 0x74, 0x72, 0x75, 0x73, 0x74, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x1a, 0x83, 0x04, 0x0a, 0x0a, 0x46, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x1a, 0x83, 0x05, 0x0a, 0x0a, 0x46, 0x65, 0x64, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x7e, 0x0a, 0x23, 0x65, 0x61, 0x73, 0x74, 0x5f, 0x77, 0x65, 0x73, 0x74, 0x5f, 0x69, 0x6e, 0x67,
+	0x72, 0x65, 0x73, 0x73, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x5f, 0x73, 0x65, 0x6c,
+	0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
+	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x49, 0x6e, 0x67, 0x72, 0x65, 0x73, 0x73, 0x47,
+	0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x1f,
+	0x65, 0x61, 0x73, 0x74, 0x57, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x67, 0x72, 0x65, 0x73, 0x73, 0x47,
+	0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x12,
 	0x69, 0x0a, 0x09, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x18, 0x04, 0x20, 0x03,
 	0x28, 0x0b, 0x32, 0x4b, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e,
 	0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
@@ -1013,10 +1031,11 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_goTyp
 	(v12.ApprovalState)(0),                            // 14: common.mesh.gloo.solo.io.ApprovalState
 	(*v11.CertificateRotationVerificationMethod)(nil), // 15: certificates.mesh.gloo.solo.io.CertificateRotationVerificationMethod
 	(v11.CertificateRotationMethod)(0),                // 16: certificates.mesh.gloo.solo.io.CertificateRotationMethod
-	(*empty.Empty)(nil),                               // 17: google.protobuf.Empty
-	(*v12.TCPKeepalive)(nil),                          // 18: common.mesh.gloo.solo.io.TCPKeepalive
-	(*v12.DestinationSelector)(nil),                   // 19: common.mesh.gloo.solo.io.DestinationSelector
-	(*ApprovalStatus)(nil),                            // 20: networking.mesh.gloo.solo.io.ApprovalStatus
+	(*v12.IngressGatewaySelector)(nil),                // 17: common.mesh.gloo.solo.io.IngressGatewaySelector
+	(*empty.Empty)(nil),                               // 18: google.protobuf.Empty
+	(*v12.TCPKeepalive)(nil),                          // 19: common.mesh.gloo.solo.io.TCPKeepalive
+	(*v12.DestinationSelector)(nil),                   // 20: common.mesh.gloo.solo.io.DestinationSelector
+	(*ApprovalStatus)(nil),                            // 21: networking.mesh.gloo.solo.io.ApprovalStatus
 }
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_depIdxs = []int32{
 	11, // 0: networking.mesh.gloo.solo.io.VirtualMeshSpec.meshes:type_name -> core.skv2.solo.io.ObjectRef
@@ -1035,18 +1054,19 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_depId
 	7,  // 13: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.limited:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust
 	15, // 14: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.rotation_verification_method:type_name -> certificates.mesh.gloo.solo.io.CertificateRotationVerificationMethod
 	16, // 15: networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.rotation_method:type_name -> certificates.mesh.gloo.solo.io.CertificateRotationMethod
-	8,  // 16: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.selectors:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector
-	17, // 17: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.permissive:type_name -> google.protobuf.Empty
-	18, // 18: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.tcp_keepalive:type_name -> common.mesh.gloo.solo.io.TCPKeepalive
-	19, // 19: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.destination_selectors:type_name -> common.mesh.gloo.solo.io.DestinationSelector
-	11, // 20: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.meshes:type_name -> core.skv2.solo.io.ObjectRef
-	20, // 21: networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
-	20, // 22: networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	17, // 16: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.east_west_ingress_gateway_selectors:type_name -> common.mesh.gloo.solo.io.IngressGatewaySelector
+	8,  // 17: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.selectors:type_name -> networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector
+	18, // 18: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.permissive:type_name -> google.protobuf.Empty
+	19, // 19: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.tcp_keepalive:type_name -> common.mesh.gloo.solo.io.TCPKeepalive
+	20, // 20: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.destination_selectors:type_name -> common.mesh.gloo.solo.io.DestinationSelector
+	11, // 21: networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation.FederationSelector.meshes:type_name -> core.skv2.solo.io.ObjectRef
+	21, // 22: networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
+	21, // 23: networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
+	24, // [24:24] is the sub-list for method output_type
+	24, // [24:24] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_networking_v1_virtual_mesh_proto_init() }
