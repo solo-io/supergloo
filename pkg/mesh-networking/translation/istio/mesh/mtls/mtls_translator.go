@@ -143,18 +143,14 @@ func (t *translator) updateMtlsOutputs(
 
 	switch trustModel := mtlsConfig.TrustModel.(type) {
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Shared:
-
-		if err := t.configureSharedTrust(
+		return t.configureSharedTrust(
 			mesh,
 			trustModel.Shared,
 			virtualMesh.Ref,
 			istioOutputs,
 			localOutputs,
 			mtlsConfig.AutoRestartPods,
-		); err != nil {
-			return err
-		}
-
+		)
 	case *networkingv1.VirtualMeshSpec_MTLSConfig_Limited:
 		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}
