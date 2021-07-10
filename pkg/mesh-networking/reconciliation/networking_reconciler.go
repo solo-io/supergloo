@@ -229,7 +229,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			Verifier: r.remoteResourceVerifier,
 		}
 		userSupplied, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
-			IssuedCertificates:    resourceBuildOptions,
+			// IssuedCertificates:    resourceBuildOptions,
 			PodBounceDirectives:   resourceBuildOptions,
 			XdsConfigs:            resourceBuildOptions,
 			DestinationRules:      resourceBuildOptions,

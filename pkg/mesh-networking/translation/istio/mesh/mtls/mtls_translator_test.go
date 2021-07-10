@@ -77,7 +77,7 @@ var _ = Describe("MtlsTranslator", func() {
 	})
 
 	It("will skip if non-istio mesh", func() {
-		translator := mtls.NewTranslator(ctx, nil, nil, nil)
+		translator := mtls.NewTranslator(ctx, nil, nil)
 		mesh := &discoveryv1.Mesh{}
 		vm := &discoveryv1.MeshStatus_AppliedVirtualMesh{}
 		translator.Translate(mesh, vm, mockIstioBuilder, mockLocalBuilder, mockReporter)
@@ -157,7 +157,7 @@ var _ = Describe("MtlsTranslator", func() {
 
 		mockIstioBuilder.EXPECT().AddPodBounceDirectives(nil)
 
-		translator := mtls.NewTranslator(ctx, v1sets.NewSecretSet(), nil, nil)
+		translator := mtls.NewTranslator(ctx, v1sets.NewSecretSet(), nil)
 
 		translator.Translate(istioMesh, vm, mockIstioBuilder, mockLocalBuilder, mockReporter)
 	})
@@ -292,7 +292,6 @@ var _ = Describe("MtlsTranslator", func() {
 			ctx,
 			v1sets.NewSecretSet(generatedSecret),
 			discoveryv1sets.NewWorkloadSet(),
-			nil,
 		)
 
 		translator.Translate(istioMesh, vm, mockIstioBuilder, mockLocalBuilder, mockReporter)
@@ -409,7 +408,7 @@ var _ = Describe("MtlsTranslator", func() {
 				Expect(pbd).To(Equal(podBounceDirective))
 			})
 
-		translator := mtls.NewTranslator(ctx, nil, discoveryv1sets.NewWorkloadSet(kubeWorkload), nil)
+		translator := mtls.NewTranslator(ctx, nil, discoveryv1sets.NewWorkloadSet(kubeWorkload))
 
 		translator.Translate(istioMesh, vm, mockIstioBuilder, mockLocalBuilder, mockReporter)
 	})

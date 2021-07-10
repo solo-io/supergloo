@@ -5,7 +5,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_istio_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
@@ -105,20 +104,10 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 				},
 			}).Build()
 
-		userSupplied := input.NewInputRemoteSnapshotManualBuilder("test").
-			AddIssuedCertificates([]*certificatesv1.IssuedCertificate{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "issued-cert-1",
-					},
-				},
-			}).
-			Build()
-
 		contextMatcher := gomock.Any()
 		mockDependencyFactory.
 			EXPECT().
-			MakeDestinationTranslator(contextMatcher, userSupplied, in.KubernetesClusters(), in.Destinations()).
+			MakeDestinationTranslator(contextMatcher, nil, in.KubernetesClusters(), in.Destinations()).
 			Return(mockDestinationTranslator)
 
 		for _, destination := range in.Destinations().List() {
@@ -129,7 +118,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshTranslator(ctxWithValue, userSupplied, in.Secrets(), in.Workloads()).
+			MakeMeshTranslator(ctxWithValue, in.Secrets(), in.Workloads()).
 			Return(mockMeshTranslator)
 		for _, mesh := range in.Meshes().List() {
 			mockMeshTranslator.
@@ -139,6 +128,6 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockIstioExtender.EXPECT().PatchOutputs(contextMatcher, in, mockIstioOutputs)
 
-		translator.Translate(ctx, in, userSupplied, mockIstioOutputs, mockLocalOutputs, mockReporter)
+		translator.Translate(ctx, in, nil, mockIstioOutputs, mockLocalOutputs, mockReporter)
 	})
 })

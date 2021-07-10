@@ -66,11 +66,12 @@ func (mr *MockTranslatorMockRecorder) IssuedCertificateIssued(ctx, issuedCertifi
 }
 
 // IssuedCertificateRequested mocks base method.
-func (m *MockTranslator) IssuedCertificateRequested(ctx context.Context, issuedCertificate *v1.IssuedCertificate, certificateRequest *v1.CertificateRequest, inputs input.Snapshot, outputs certagent.Builder) error {
+func (m *MockTranslator) IssuedCertificateRequested(ctx context.Context, issuedCertificate *v1.IssuedCertificate, certificateRequest *v1.CertificateRequest, inputs input.Snapshot, outputs certagent.Builder) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificateRequested", ctx, issuedCertificate, certificateRequest, inputs, outputs)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // IssuedCertificateRequested indicates an expected call of IssuedCertificateRequested.

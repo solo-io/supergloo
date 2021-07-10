@@ -171,14 +171,18 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		}
 
-		if err := r.translator.IssuedCertificateRequested(
+		wait, err := r.translator.IssuedCertificateRequested(
 			r.ctx,
 			issuedCertificate,
 			certificateRequest,
 			inputSnap,
 			outputs,
-		); err != nil {
+		)
+		if err != nil {
 			return err
+		} else if wait {
+			// If the requested translator signals us to wait, we need to hang on
+			return nil
 		}
 
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_ISSUED
