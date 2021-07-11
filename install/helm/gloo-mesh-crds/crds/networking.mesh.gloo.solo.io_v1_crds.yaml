@@ -2207,10 +2207,23 @@ spec:
                       anyOf:
                       - required:
                         - none
+                      - required:
+                        - manual
                   - required:
                     - none
+                  - required:
+                    - manual
                   properties:
+                    manual:
+                      description: |-
+                        Verification must be completed manually. This involves using our certificate verification
+                        endpoint when the certificates are in a VERIFYING state
+                      maxProperties: 0
+                      type: object
                     none:
+                      description: |-
+                        Verification not enabled. NOTE: This setting is only recommended for testing.
+                        When enabled rotation will continue from step to step without any kind of verification.
                       maxProperties: 0
                       type: object
                   type: object

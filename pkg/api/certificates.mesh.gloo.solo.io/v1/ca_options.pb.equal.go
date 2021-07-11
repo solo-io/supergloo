@@ -151,6 +151,21 @@ func (m *CertificateRotationVerificationMethod) Equal(that interface{}) bool {
 			}
 		}
 
+	case *CertificateRotationVerificationMethod_Manual:
+		if _, ok := target.Method.(*CertificateRotationVerificationMethod_Manual); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetManual()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetManual()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetManual(), target.GetManual()) {
+				return false
+			}
+		}
+
 	default:
 		// m is nil but target is not nil
 		if m.Method != target.Method {

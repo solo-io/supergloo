@@ -57,7 +57,8 @@ CertificateRotationCondition represents a timesptamped snapshot of the certifica
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| none | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  |  |
+| none | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Verification not enabled. NOTE: This setting is only recommended for testing. When enabled rotation will continue from step to step without any kind of verification. |
+  | manual | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Verification must be completed manually. This involves using our certificate verification  endpoint when the certificates are in a VERIFYING state |
   
 
 
