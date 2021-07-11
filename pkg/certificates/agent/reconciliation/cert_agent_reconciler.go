@@ -120,6 +120,14 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_PENDING
+		// Also need to reset PBD status
+		if issuedCertificate.Spec.PodBounceDirective != nil {
+			podBounceDirective, err := inputSnap.PodBounceDirectives().Find(issuedCertificate.Spec.PodBounceDirective)
+			if err != nil {
+				return eris.Wrap(err, "failed to find specified pod bounce directive")
+			}
+			podBounceDirective.Status = certificatesv1.PodBounceDirectiveStatus{}
+		}
 	}
 
 	// reset & update status
