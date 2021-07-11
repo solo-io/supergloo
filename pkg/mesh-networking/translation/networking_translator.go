@@ -21,6 +21,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+//go:generate mockgen -source ./networking_translator.go -destination mocks/networking_translator.go
+
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
 type Translator interface {
 	// errors reflect an internal translation error and should never happen
