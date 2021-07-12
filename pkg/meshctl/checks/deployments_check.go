@@ -63,7 +63,7 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 	if len(failure.Errors) > 0 {
 		failure.AddHint(d.buildHint(installNamespace), "")
 	}
-	return failure.OrNil()
+	return failure
 }
 
 func (d *deploymentsCheck) buildHint(installNamespace string) string {

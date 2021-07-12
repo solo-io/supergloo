@@ -50,6 +50,7 @@ func RunChecks(ctx context.Context, checkCtx CheckContext, c Component, st Stage
 		fmt.Printf(strings.Repeat("-", len(category.Name)+3) + "\n")
 		for _, check := range category.Checks {
 			failure := check.Run(ctx, checkCtx)
+			failure = failure.OrNil()
 			printResult(failure, check.GetDescription())
 		}
 		fmt.Println()

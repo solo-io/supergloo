@@ -63,6 +63,9 @@ func (f *Failure) AddError(err ...error) *Failure {
 }
 
 func (f *Failure) OrNil() *Failure {
+	if f == nil {
+		return nil
+	}
 	if len(f.Errors) == 0 {
 		return nil
 	}

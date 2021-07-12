@@ -97,7 +97,7 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckCon
 		}
 	}
 
-	return failure.OrNil()
+	return failure
 }
 
 func printClusterStatuses(clusterStatuses []connectionStatus) {

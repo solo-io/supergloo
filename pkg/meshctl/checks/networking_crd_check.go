@@ -50,7 +50,7 @@ func (c *networkingCrdCheck) Run(ctx context.Context, checkCtx CheckContext) *Fa
 	if len(failure.Errors) > 0 {
 		failure.AddHint(c.buildHint(), "")
 	}
-	return failure.OrNil()
+	return failure
 }
 
 func (c *networkingCrdCheck) checkTrafficPolicies(tpList *networkingv1.TrafficPolicyList) []error {
