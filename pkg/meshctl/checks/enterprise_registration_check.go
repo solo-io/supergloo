@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 
@@ -179,7 +180,8 @@ func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, ch
 	}
 
 	var parsedMetrics map[string]*dto.MetricFamily
-	err, hint := checkCtx.AccessAdminPort(ctx, mgmtDeployName, func(ctx context.Context, metricsUrl string) (error, string) {
+	err, hint := checkCtx.AccessAdminPort(ctx, mgmtDeployName, func(ctx context.Context, adminUrl *url.URL) (error, string) {
+		metricsUrl := adminUrl.ResolveReference(&url.URL{Path: "/metrics"}).String()
 		resp, err := http.DefaultClient.Get(metricsUrl)
 		if err != nil {
 			return err, fmt.Sprintf("try verifying that the mgmt pods are listening on port %v", checkCtx.Environment().AdminPort)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
@@ -83,7 +84,7 @@ func NewOutOfClusterCheckContext(cli client.Client, ns, mgmtKubeConfig, mgmtKube
 
 }
 
-func (c *InClusterCheckContext) AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, addr string) (error, string)) (error, string) {
+func (c *InClusterCheckContext) AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, adminUrl *url.URL) (error, string)) (error, string) {
 
 	// note: the metrics port is not exposed on the service (it should not be, so this is fine).
 	// so we need to find the ip of the deployed pod:
@@ -121,11 +122,15 @@ func (c *InClusterCheckContext) AccessAdminPort(ctx context.Context, deployment 
 	if pod.Status.PodIP == "" {
 		return errors.New("no pod ip"), "gloo-mesh pod doesn't have an IP address. This is usually temporary. please wait or check your gloo-mesh installation?"
 	}
-	return op(ctx, fmt.Sprintf("http://%v:%v/metrics", pod.Status.PodIP, c.Env.AdminPort))
+	adminUrl := &url.URL{
+		Scheme: "http",
+		Host:   fmt.Sprintf("%v:%v", pod.Status.PodIP, c.Env.AdminPort),
+	}
+
+	return op(ctx, adminUrl)
 }
 
-func (c *OutOfClusterCheckContext) AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, addr string) (error, string)) (error, string) {
-
+func (c *OutOfClusterCheckContext) AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, adminUrl *url.URL) (error, string)) (error, string) {
 	portFwdContext, cancelPtFwd := context.WithCancel(ctx)
 	defer cancelPtFwd()
 
@@ -143,6 +148,10 @@ func (c *OutOfClusterCheckContext) AccessAdminPort(ctx context.Context, deployme
 		return err, fmt.Sprintf("try verifying that `kubectl port-forward -n %v deployment/%v %v:%v` can be run successfully.", c.Env.Namespace, deployment, c.localPort, c.remotePort)
 	}
 	// request metrics page from mgmt deployment
-	metricsUrl := fmt.Sprintf("http://localhost:%v/metrics", localPort)
-	return op(portFwdContext, metricsUrl)
+	adminUrl := &url.URL{
+		Scheme: "http",
+		Host:   fmt.Sprintf("localhost:%v", localPort),
+	}
+
+	return op(portFwdContext, adminUrl)
 }

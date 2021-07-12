@@ -33,7 +33,7 @@ type Environment struct {
 type CheckContext interface {
 	Environment() Environment
 	Client() client.Client
-	AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, addr string) (error, string)) (error, string)
+	AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, adminUrl *url.URL) (error, string)) (error, string)
 }
 
 type Check interface {
