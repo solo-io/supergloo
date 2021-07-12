@@ -30,10 +30,11 @@ type Environment struct {
 	InCluster bool
 }
 
+type OperateOnAdminPort = func(ctx context.Context, adminUrl *url.URL) (error, string)
 type CheckContext interface {
 	Environment() Environment
 	Client() client.Client
-	AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, adminUrl *url.URL) (error, string)) (error, string)
+	AccessAdminPort(ctx context.Context, deployment string, op OperateOnAdminPort) (error, string)
 }
 
 type Check interface {
