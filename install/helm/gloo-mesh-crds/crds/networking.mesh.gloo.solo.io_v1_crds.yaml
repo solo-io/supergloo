@@ -2398,6 +2398,37 @@ spec:
           type: object
         status:
           properties:
+            conditions:
+              description: List of rotation conditions which have been completed/carried
+                out for this Virtual Mesh
+              items:
+                properties:
+                  errors:
+                    description: Any errors which occured during the current rotation
+                      stage
+                    items:
+                      type: string
+                    type: array
+                  message:
+                    description: A human readable message related to the current condition
+                    type: string
+                  state:
+                    description: The current state of the cert rotation
+                    enum:
+                    - NOT_APPLICABLE
+                    - ADDING_NEW_ROOT
+                    - PROPOGATING_NEW_INTERMEDIATE
+                    - DELETING_OLD_ROOT
+                    - VERIFYING
+                    - VERIFIED
+                    - FINISHED
+                    - FAILED
+                    type: string
+                  timestamp:
+                    description: The time at which this condition was recorded
+                    type: string
+                type: object
+              type: array
             destinations:
               additionalProperties:
                 properties:

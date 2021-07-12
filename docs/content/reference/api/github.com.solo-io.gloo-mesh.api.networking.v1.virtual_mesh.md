@@ -165,6 +165,7 @@ Limited trust is a trust model which does not require trusting Meshes to share t
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
   | destinations | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry" >}}) | repeated | The status of the VirtualMesh for each Destination to which it has been applied. A VirtualMesh may be Accepted for some Destinations and rejected for others. |
+  | conditions | [][certificates.mesh.gloo.solo.io.CertificateRotationCondition]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationCondition" >}}) | repeated | List of rotation conditions which have been completed/carried out for this Virtual Mesh |
   
 
 

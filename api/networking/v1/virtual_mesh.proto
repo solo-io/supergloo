@@ -192,4 +192,7 @@ message VirtualMeshStatus {
     // The status of the VirtualMesh for each Destination to which it has been applied.
     // A VirtualMesh may be Accepted for some Destinations and rejected for others.
     map<string, ApprovalStatus> destinations = 5;
+
+    // List of rotation conditions which have been completed/carried out for this Virtual Mesh
+    repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition conditions = 6;
 }

@@ -131,7 +131,7 @@ message IssuedCertificateStatus {
         IntermediateCertificateAuthority applied_agent_ca = 5;
     }
 
-    // List of rotation conditions which have been completed/carried out for this mesh
-    repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition conditions = 6;
+    // // List of rotation conditions which have been completed/carried out for this mesh
+    // repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition conditions = 6;
 
 }

@@ -418,7 +418,6 @@ spec:
                 construct the intermediary certs which the data-plane clusters receive
               enum:
               - NOT_APPLICABLE
-              - PENDING
               - ADDING_NEW_ROOT
               - PROPOGATING_NEW_INTERMEDIATE
               - DELETING_OLD_ROOT
@@ -747,38 +746,6 @@ spec:
                       type: string
                   type: object
               type: object
-            conditions:
-              description: List of rotation conditions which have been completed/carried
-                out for this mesh
-              items:
-                properties:
-                  errors:
-                    description: Any errors which occured during the current rotation
-                      stage
-                    items:
-                      type: string
-                    type: array
-                  message:
-                    description: A human readable message related to the current condition
-                    type: string
-                  state:
-                    description: The current state of the cert rotation
-                    enum:
-                    - NOT_APPLICABLE
-                    - PENDING
-                    - ADDING_NEW_ROOT
-                    - PROPOGATING_NEW_INTERMEDIATE
-                    - DELETING_OLD_ROOT
-                    - VERIFYING
-                    - VERIFIED
-                    - FINISHED
-                    - FAILED
-                    type: string
-                  timestamp:
-                    description: The time at which this condition was recorded
-                    type: string
-                type: object
-              type: array
             error:
               description: |-
                 Any error observed which prevented the CertificateRequest from being processed.
