@@ -179,7 +179,7 @@ var _ = Describe("CertAgentReconciler", func() {
 
 			mockTranslator.EXPECT().
 				IssuedCertificateRequested(gomock.Any(), issuedCert, csr, inputSnap, mockOutput).
-				Return(nil)
+				Return(false, nil)
 
 			err := reconciler.reconcileIssuedCertificate(issuedCert, inputSnap, mockOutput)
 			Expect(err).NotTo(HaveOccurred())
