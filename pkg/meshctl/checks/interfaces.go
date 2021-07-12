@@ -9,7 +9,7 @@ import (
 
 type Stage string
 
-var (
+const (
 	PreInstall  Stage = "pre-install"
 	PostInstall       = "post-install"
 	PreUpgrade        = "pre-upgrade"
@@ -19,21 +19,21 @@ var (
 
 type Component string
 
-var (
+const (
 	Server Component = "server"
 	Agent            = "agent"
 )
 
 type Environment struct {
-	MetricsPort uint32
-	Namespace   string
-	InCluster   bool
+	AdminPort uint32
+	Namespace string
+	InCluster bool
 }
 
 type CheckContext interface {
 	Environment() Environment
 	Client() client.Client
-	AccessMgmtServerAdminPort(ctx context.Context, op func(ctx context.Context, addr string) (error, string)) (error, string)
+	AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, addr string) (error, string)) (error, string)
 }
 
 type Check interface {
@@ -69,9 +69,19 @@ func (f *Failure) OrNil() *Failure {
 	return f
 }
 
-func (f *Failure) AddHint(h string, d *url.URL) *Failure {
-	if h != "" || d != nil {
-		f.Hints = append(f.Hints, Hint{Hint: h, DocsLink: d})
+func (f *Failure) AddHint(h string, d string) *Failure {
+	if h != "" {
+		var u *url.URL
+		if d != "" {
+			var err error
+			u, err = url.Parse(d)
+			if err != nil {
+				// this should never happen
+				// but we also don't care that much if it does
+				// so we just ignore the error.
+			}
+		}
+		f.Hints = append(f.Hints, Hint{Hint: h, DocsLink: u})
 	}
 	return f
 }

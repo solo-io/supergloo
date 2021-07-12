@@ -9,7 +9,6 @@ import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type networkingCrdCheck struct{}
@@ -22,7 +21,8 @@ func (c *networkingCrdCheck) GetDescription() string {
 	return "Gloo Mesh networking configuration resources are in a valid state"
 }
 
-func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ CheckContext) *Failure {
+func (c *networkingCrdCheck) Run(ctx context.Context, checkCtx CheckContext) *Failure {
+	client := checkCtx.Client()
 	failure := new(Failure)
 	tpList, err := networkingv1.NewTrafficPolicyClient(client).ListTrafficPolicy(ctx)
 	if err != nil {
@@ -48,7 +48,7 @@ func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ Ch
 	}
 
 	if len(failure.Errors) > 0 {
-		failure.AddHint(c.buildHint(), nil)
+		failure.AddHint(c.buildHint(), "")
 	}
 	return failure.OrNil()
 }

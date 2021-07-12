@@ -17,10 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	mgmtDeployName = "enterprise-networking"
-)
-
 type CommonContext struct {
 	Env Environment
 	Cli client.Client
@@ -62,9 +58,9 @@ func NewInClusterCheckContext() (CheckContext, error) {
 		CommonContext: CommonContext{
 			Cli: kubeClient,
 			Env: Environment{
-				MetricsPort: defaults.MetricsPort,
-				Namespace:   ns,
-				InCluster:   true,
+				AdminPort: defaults.MetricsPort,
+				Namespace: ns,
+				InCluster: true,
 			}},
 	}, nil
 }
@@ -79,21 +75,21 @@ func NewOutOfClusterCheckContext(cli client.Client, ns, mgmtKubeConfig, mgmtKube
 		CommonContext: CommonContext{
 			Cli: cli,
 			Env: Environment{
-				MetricsPort: remotePort,
-				Namespace:   ns,
-				InCluster:   false,
+				AdminPort: remotePort,
+				Namespace: ns,
+				InCluster: false,
 			}},
 	}
 
 }
 
-func (c *InClusterCheckContext) AccessMgmtServerAdminPort(ctx context.Context, op func(ctx context.Context, addr string) (error, string)) (error, string) {
+func (c *InClusterCheckContext) AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, addr string) (error, string)) (error, string) {
 
-	// note: the metrics port is not exposed on the service (as it should be).
+	// note: the metrics port is not exposed on the service (it should not be, so this is fine).
 	// so we need to find the ip of the deployed pod:
 	d, err := v1.NewDeploymentClient(c.Cli).GetDeployment(ctx, client.ObjectKey{
 		Namespace: c.Env.Namespace,
-		Name:      mgmtDeployName,
+		Name:      deployment,
 	})
 	if err != nil {
 		if kerrors.IsNotFound(err) {
@@ -125,19 +121,10 @@ func (c *InClusterCheckContext) AccessMgmtServerAdminPort(ctx context.Context, o
 	if pod.Status.PodIP == "" {
 		return errors.New("no pod ip"), "gloo-mesh pod doesn't have an IP address. This is usually temporary. please wait or check your gloo-mesh installation?"
 	}
-	return op(ctx, fmt.Sprintf("http://%v:%v/metrics", pod.Status.PodIP, c.Env.MetricsPort))
+	return op(ctx, fmt.Sprintf("http://%v:%v/metrics", pod.Status.PodIP, c.Env.AdminPort))
 }
 
-func (c *OutOfClusterCheckContext) AccessMgmtServerAdminPort(ctx context.Context, op func(ctx context.Context, addr string) (error, string)) (error, string) {
-	shouldRunCheck, err := isEnterpriseVersion(ctx, c.Cli, c.Env.Namespace)
-	if err != nil {
-		return err, ""
-	}
-
-	if !shouldRunCheck {
-		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, enterprise not detected")
-		return nil, ""
-	}
+func (c *OutOfClusterCheckContext) AccessAdminPort(ctx context.Context, deployment string, op func(ctx context.Context, addr string) (error, string)) (error, string) {
 
 	portFwdContext, cancelPtFwd := context.WithCancel(ctx)
 	defer cancelPtFwd()
@@ -147,29 +134,15 @@ func (c *OutOfClusterCheckContext) AccessMgmtServerAdminPort(ctx context.Context
 		portFwdContext,
 		c.mgmtKubeConfig,
 		c.mgmtKubeContext,
-		mgmtDeployName,
+		deployment,
 		c.Env.Namespace,
 		fmt.Sprintf("%v", c.localPort),
 		fmt.Sprintf("%v", c.remotePort),
 	)
 	if err != nil {
-		return err, fmt.Sprintf("try verifying that `kubectl port-forward -n %v deployment/%v %v:%v` can be run successfully.", c.Env.Namespace, mgmtDeployName, c.localPort, c.remotePort)
+		return err, fmt.Sprintf("try verifying that `kubectl port-forward -n %v deployment/%v %v:%v` can be run successfully.", c.Env.Namespace, deployment, c.localPort, c.remotePort)
 	}
 	// request metrics page from mgmt deployment
 	metricsUrl := fmt.Sprintf("http://localhost:%v/metrics", localPort)
 	return op(portFwdContext, metricsUrl)
-}
-
-func isEnterpriseVersion(ctx context.Context, c client.Client, installNamespace string) (bool, error) {
-	_, err := v1.NewDeploymentClient(c).GetDeployment(ctx, client.ObjectKey{
-		Namespace: installNamespace,
-		Name:      mgmtDeployName,
-	})
-	if err != nil {
-		if kerrors.IsNotFound(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
 }

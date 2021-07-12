@@ -47,6 +47,6 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 
 func runChecks(ctx context.Context, client client.Client, opts *options) error {
 	checkCtx := checks.NewOutOfClusterCheckContext(client, opts.namespace, opts.kubeconfig, opts.kubecontext, opts.localPort, opts.remotePort)
-	checks.RunChecks(ctx, checkCtx)
+	checks.RunChecks(ctx, checkCtx, checks.Server, checks.PostInstall)
 	return nil
 }

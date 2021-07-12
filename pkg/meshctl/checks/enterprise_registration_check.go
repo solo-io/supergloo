@@ -10,11 +10,18 @@ import (
 	"github.com/olekukonko/tablewriter"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/rotisserie/eris"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+const (
+	mgmtDeployName = "enterprise-networking"
+	clusterRegDoc  = "https://docs.solo.io/gloo-mesh/latest/setup/cluster_registration/enterprise_cluster_registration/"
 )
 
 const (
@@ -45,7 +52,7 @@ type connectionStatus struct {
 }
 
 func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckContext) *Failure {
-	if checkCtx.Environment().MetricsPort == 0 {
+	if checkCtx.Environment().AdminPort == 0 {
 		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, remote port set to 0")
 		return nil
 	}
@@ -60,13 +67,13 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckCon
 	failure := new(Failure)
 	if len(registeredClusters.Items) == 0 {
 		// TODO we probably should use a writing instead of fmt?
-		failure.AddHint("You don't have any registered clusters. you may want to create a KubernetesCluster CR.", nil)
+		failure.AddHint("You don't have any registered clusters. you may want to create a KubernetesCluster CR.", clusterRegDoc)
 	}
 
 	// get connected clusters
-	connectedPullAgents, connectedPushAgents, err, hint := d.getConnectedAgents(ctx, c, checkCtx.Environment())
+	connectedPullAgents, connectedPushAgents, err, hint := d.getConnectedAgents(ctx, checkCtx)
 	if err != nil {
-		failure.AddHint(hint, nil)
+		failure.AddHint(hint, clusterRegDoc)
 		failure.AddError(err)
 		return failure
 	}
@@ -82,11 +89,11 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckCon
 		case status.registered && ((status.agentsPulling < 1) || (status.agentsPushing < 1)):
 			failure.AddError(eris.Errorf("cluster %v registered but agent is not connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
 			failure.AddHint("check the logs of the agent on "+status.cluster+" and investigate whether/why the gRPC connection failed from the agent to the mgmt server. "+
-				"Additionally, if the pushing value zero and pulling is non-zero, that usually indicates a connected dashboard and an unconnected agent.", nil)
+				"Additionally, if the pushing value zero and pulling is non-zero, that usually indicates a connected dashboard and an unconnected agent.", clusterRegDoc)
 		// cluster not registered, agents are pushing. Cannot use positive pull status as agent evidence, since it may also be a dashboard connection.
 		case !status.registered && status.agentsPushing > 0:
 			failure.AddError(eris.Errorf("cluster %v is not currently registered but agent is connected (pull: %v, push: %v)", status.cluster, status.agentsPulling, status.agentsPushing))
-			failure.AddHint("create a corresponding KubernetesCluster CR to register the "+status.cluster+".", nil)
+			failure.AddHint("create a corresponding KubernetesCluster CR to register the "+status.cluster+".", clusterRegDoc)
 		}
 	}
 
@@ -159,12 +166,23 @@ func calculateClusterStatuses(
 	return sortedStatuses
 }
 
-func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, c client.Client, env Environment) (map[string]int, map[string]int, error, string) {
+func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, checkCtx CheckContext) (map[string]int, map[string]int, error, string) {
+
+	shouldRunCheck, err := isEnterpriseVersion(ctx, checkCtx.Client(), checkCtx.Environment().Namespace)
+	if err != nil {
+		return nil, nil, err, ""
+	}
+
+	if !shouldRunCheck {
+		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, enterprise not detected")
+		return nil, nil, nil, ""
+	}
+
 	var parsedMetrics map[string]*dto.MetricFamily
-	err, hint := d.accessor.AccessMgmtServerAdminPort(ctx, c, env.Namespace, func(ctx context.Context, metricsUrl string) (error, string) {
+	err, hint := checkCtx.AccessAdminPort(ctx, mgmtDeployName, func(ctx context.Context, metricsUrl string) (error, string) {
 		resp, err := http.DefaultClient.Get(metricsUrl)
 		if err != nil {
-			return err, fmt.Sprintf("try verifying that the mgmt pods are listening on port %v", env.MgmtPort)
+			return err, fmt.Sprintf("try verifying that the mgmt pods are listening on port %v", checkCtx.Environment().AdminPort)
 		}
 		defer resp.Body.Close()
 
@@ -180,7 +198,7 @@ func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, c 
 
 	connectedPullClientsMetric, ok := parsedMetrics[connectedPullClientsMetricName]
 	if !ok {
-		return nil, nil, eris.Errorf("expected metric %v not present.", connectedPullClientsMetricName), "try verifying that at least one agent has connected to the management plane."
+		return nil, nil, eris.Errorf("expected metric %v not present.", connectedPullClientsMetricName), "Try verifying that at least one agent has connected to the management plane."
 	}
 
 	// map of cluster to connection status;
@@ -193,7 +211,7 @@ func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, c 
 
 	connectedPushClientsMetric, ok := parsedMetrics[connectedPushClientsMetricName]
 	if !ok {
-		return nil, nil, eris.Errorf("expected metric %v not present", connectedPushClientsMetricName), "try verifying that at least one agent has connected to the management plane."
+		return nil, nil, eris.Errorf("expected metric %v not present", connectedPushClientsMetricName), "Try verifying that at least one agent has connected to the management plane."
 	}
 
 	pushClientsConnected, err, reason := getClientClustersConnected(connectedPushClientsMetric)
@@ -220,4 +238,18 @@ func getClientClustersConnected(clientConnectionMetrics *dto.MetricFamily) (map[
 		clustersConnected[cluster] = int(metric.GetGauge().GetValue())
 	}
 	return clustersConnected, nil, ""
+}
+
+func isEnterpriseVersion(ctx context.Context, c client.Client, installNamespace string) (bool, error) {
+	_, err := v1.NewDeploymentClient(c).GetDeployment(ctx, client.ObjectKey{
+		Namespace: installNamespace,
+		Name:      mgmtDeployName,
+	})
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }

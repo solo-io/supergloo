@@ -11,7 +11,16 @@ var (
 	redXChar      = "❌"
 )
 
-func constructChecks() []Category {
+type mapKey struct {
+	Stage     Stage
+	Component Component
+}
+
+func toKey(Component Component, Stage Stage) mapKey {
+	return mapKey{Stage: Stage, Component: Component}
+}
+
+func constructChecks() map[mapKey][]Category {
 	managementPlane := Category{
 		Name: "Gloo Mesh",
 		Checks: []Check{
@@ -27,14 +36,16 @@ func constructChecks() []Category {
 		},
 	}
 
-	return []Category{
-		managementPlane,
-		configuration,
+	return map[mapKey][]Category{
+		toKey(Server, PostInstall): {
+			managementPlane,
+			configuration,
+		},
 	}
 }
 
-func RunChecks(ctx context.Context, checkCtx CheckContext) error {
-	for _, category := range constructChecks() {
+func RunChecks(ctx context.Context, checkCtx CheckContext, c Component, st Stage) error {
+	for _, category := range constructChecks()[toKey(c, st)] {
 		fmt.Println(category.Name)
 		fmt.Printf(strings.Repeat("-", len(category.Name)+3) + "\n")
 		for _, check := range category.Checks {

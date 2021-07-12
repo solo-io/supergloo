@@ -22,16 +22,16 @@ func (d *deploymentsCheck) GetDescription() string {
 	return "Gloo Mesh pods are running"
 }
 
-func (d *deploymentsCheck) Run(ctx context.Context, c client.Client, checkCtx CheckContext) *Failure {
+func (d *deploymentsCheck) Run(ctx context.Context, checkCtx CheckContext) *Failure {
 	installNamespace := checkCtx.Environment().Namespace
-	namespaceClient := corev1.NewNamespaceClient(c)
+	namespaceClient := corev1.NewNamespaceClient(checkCtx.Client())
 	_, err := namespaceClient.GetNamespace(ctx, installNamespace)
 	if err != nil {
 		return &Failure{
 			Errors: []error{eris.Wrapf(err, "specified namespace %s doesn't exist", installNamespace)},
 		}
 	}
-	deploymentClient := appsv1.NewDeploymentClient(c)
+	deploymentClient := appsv1.NewDeploymentClient(checkCtx.Client())
 	deployments, err := deploymentClient.ListDeployment(ctx, client.InNamespace(installNamespace))
 	if err != nil {
 		return &Failure{
@@ -50,7 +50,7 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 		if !env.InCluster {
 			failure.AddHint(fmt.Sprintf(
 				`Gloo Mesh'd installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
-				defaults.DefaultPodNamespace), nil)
+				defaults.DefaultPodNamespace), "")
 		}
 		return failure
 	}
@@ -61,7 +61,7 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 		}
 	}
 	if len(failure.Errors) > 0 {
-		failure.AddHint(d.buildHint(installNamespace), nil)
+		failure.AddHint(d.buildHint(installNamespace), "")
 	}
 	return failure.OrNil()
 }
