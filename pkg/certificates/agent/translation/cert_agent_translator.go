@@ -55,7 +55,6 @@ type Translator interface {
 
 	// This function is called when the IssuedCertiticate is first created, it is meant to create the CSR
 	// and return the bytes directly
-	// If both return values are nil, it signals to the reconciler not to update the CSR.
 	IssuedCertiticatePending(
 		ctx context.Context,
 		issuedCertificate *certificatesv1.IssuedCertificate,
@@ -135,15 +134,11 @@ func (c *certAgentTranslator) IssuedCertiticatePending(
 	}
 
 	// create certificate request for private key
-	csrBytes, err := utils.GenerateCertificateSigningRequest(
+	return utils.GenerateCertificateSigningRequest(
 		issuedCertificate.Spec.Hosts,
 		issuedCertificate.Spec.Org,
 		privateKey,
 	)
-	if err != nil {
-		return nil, err
-	}
-	return csrBytes, err
 }
 
 func (c *certAgentTranslator) IssuedCertificateRequested(
