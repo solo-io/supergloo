@@ -112,3 +112,7 @@ require (
 	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 	sigs.k8s.io/controller-runtime v0.9.0-alpha.1.0.20210412152200-442d3cad1e99
 )
+
+replace github.com/solo-io/skv2 => ../skv2
+
+replace github.com/solo-io/external-apis => ../external-apis

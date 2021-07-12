@@ -59,7 +59,8 @@ func (v *applier) Apply(ctx context.Context, input input.LocalSnapshot, userSupp
 	applyPoliciesToConfigTargets(input)
 
 	// perform a dry run of translation to find any errors
-	_, err := v.translator.Translate(ctx, input, userSupplied, reporter)
+	// Deep copy the input snapshot so that we start the 2nd run with a clean slate
+	_, err := v.translator.Translate(ctx, input.Clone(), userSupplied, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)
@@ -99,6 +100,8 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 			ObservedGeneration: virtualMesh.Generation,
 			Meshes:             map[string]*networkingv1.ApprovalStatus{},
 			Destinations:       map[string]*networkingv1.ApprovalStatus{},
+			// Need to retain previous conditions
+			Conditions: virtualMesh.Status.Conditions,
 		}
 	}
 }

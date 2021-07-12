@@ -131,7 +131,9 @@ message IssuedCertificateStatus {
         IntermediateCertificateAuthority applied_agent_ca = 5;
     }
 
-    // // List of rotation conditions which have been completed/carried out for this mesh
-    // repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition conditions = 6;
+
+    // The rotation state as recorded by the issued cert agent. This is read by the networking
+    // reconciler to ensure it is looking at the correct iteration of the object.
+    CertificateRotationState observed_rotation_state = 9;
 
 }

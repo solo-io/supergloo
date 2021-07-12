@@ -228,6 +228,10 @@ func (m *IssuedCertificateStatus) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetObservedRotationState() != target.GetObservedRotationState() {
+		return false
+	}
+
 	switch m.AppliedCertificateAuthority.(type) {
 
 	case *IssuedCertificateStatus_AppliedGlooMeshCa:

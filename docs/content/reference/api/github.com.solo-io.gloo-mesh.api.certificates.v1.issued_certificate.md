@@ -65,6 +65,7 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
   | state | [certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State" >}}) |  | The current state of the IssuedCertificate workflow, reported by the agent. |
   | appliedGlooMeshCa | [certificates.mesh.gloo.solo.io.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.issued_certificate#certificates.mesh.gloo.solo.io.RootCertificateAuthority" >}}) |  | Gloo Mesh CA options |
   | appliedAgentCa | [certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority" >}}) |  | Agent CA options |
+  | observedRotationState | [certificates.mesh.gloo.solo.io.CertificateRotationState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.v1.ca_options#certificates.mesh.gloo.solo.io.CertificateRotationState" >}}) |  | The rotation state as recorded by the issued cert agent. This is read by the networking reconciler to ensure it is looking at the correct iteration of the object. |
   
 
 

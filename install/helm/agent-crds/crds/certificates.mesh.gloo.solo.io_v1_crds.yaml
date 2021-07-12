@@ -758,6 +758,20 @@ spec:
                 recent version of this IssuedCertificate.
               format: int64
               type: integer
+            observedRotationState:
+              description: |-
+                The rotation state as recorded by the issued cert agent. This is read by the networking
+                reconciler to ensure it is looking at the correct iteration of the object.
+              enum:
+              - NOT_APPLICABLE
+              - ADDING_NEW_ROOT
+              - PROPOGATING_NEW_INTERMEDIATE
+              - DELETING_OLD_ROOT
+              - VERIFYING
+              - VERIFIED
+              - FINISHED
+              - FAILED
+              type: string
             state:
               description: The current state of the IssuedCertificate workflow, reported
                 by the agent.
