@@ -315,7 +315,9 @@ EOF
 # Operator spec for istio 1.7.x
 function install_istio_1_7() {
   cluster=$1
-  ingressPort=$2
+  eastWestIngressPort=$2
+  northSouthIngressPort=$3
+
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -354,13 +356,14 @@ spec:
             - port: 80
               targetPort: 8080
               name: http2
+              nodePort: ${northSouthIngressPort}
             - port: 443
               targetPort: 8443
               name: https
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: ${ingressPort}
+              nodePort: ${eastWestIngressPort}
   meshConfig:
     enableAutoMtls: true
     defaultConfig:
@@ -388,7 +391,9 @@ EOF
 # Operator spec for istio 1.8.x
 function install_istio_1_8() {
   cluster=$1
-  ingressPort=$2
+  eastWestIngressPort=$2
+  northSouthIngressPort=$3
+
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -440,13 +445,14 @@ spec:
             - port: 80
               targetPort: 8080
               name: http2
+              nodePort: ${northSouthIngressPort}
             - port: 443
               targetPort: 8443
               name: https
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: ${ingressPort}
+              nodePort: ${eastWestIngressPort}
   values:
     global:
       pilotCertProvider: istiod
@@ -459,7 +465,9 @@ EOF
 # Operator spec for istio 1.9.x
 function install_istio_1_9() {
   cluster=$1
-  ingressPort=$2
+  eastWestIngressPort=$2
+  northSouthIngressPort=$3
+
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -511,13 +519,14 @@ spec:
             - port: 80
               targetPort: 8080
               name: http2
+              nodePort: ${northSouthIngressPort}
             - port: 443
               targetPort: 8443
               name: https
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: ${ingressPort}
+              nodePort: ${eastWestIngressPort}
   values:
     global:
       pilotCertProvider: istiod
@@ -569,22 +578,23 @@ EOF
 
 function install_istio() {
   cluster=$1
-  ingressPort=$2
+  eastWestIngressPort=$2
+  northSouthIngressPort=$3
   K="kubectl --context=kind-${cluster}"
 
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $ingressPort
-    install_istio_coredns $cluster $ingressPort
+    install_istio_1_7 $cluster $eastWestIngressPort $northSouthIngressPort
+    install_istio_coredns $cluster $eastWestIngressPort $northSouthIngressPort
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $ingressPort
+    install_istio_1_8 $cluster $eastWestIngressPort $northSouthIngressPort
   elif istioctl version | grep -E -- '1.9'
   then
-    install_istio_1_9 $cluster $ingressPort
+    install_istio_1_9 $cluster $eastWestIngressPort $northSouthIngressPort
   elif istioctl version | grep -E -- '1.10'
   then
-    install_istio_1_9 $cluster $ingressPort
+    install_istio_1_9 $cluster $eastWestIngressPort $northSouthIngressPort
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1
