@@ -198,7 +198,7 @@ func getIngressGateway(
 	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
 		Namespace:      svc.Namespace,
 		Name:           svc.Name,
-		WorkloadLabels: workloadLabels,
+		WorkloadLabels: svc.Spec.Selector,
 	}
 
 	switch svc.Spec.Type {

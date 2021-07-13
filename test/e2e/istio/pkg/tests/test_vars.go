@@ -73,11 +73,11 @@ var (
 	}
 
 	CurlIngressMgmt = func(hostname, path, body, method string) (string, error) {
-		return CurlLocal(hostname, path, body, method, "32011")
+		return CurlLocal(hostname, path, body, method, "15443")
 	}
 
 	CurlIngressRemote = func(hostname, path, body, method string) (string, error) {
-		return CurlLocal(hostname, path, body, method, "32010")
+		return CurlLocal(hostname, path, body, method, "15443")
 	}
 
 	CurlLocal = func(hostname, path, body, method, port string) (string, error) {
