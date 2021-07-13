@@ -105,7 +105,7 @@ func (t *translator) Translate(
 	// translate ServiceEntry template
 	remoteServiceEntryTemplate, err := t.translateRemoteServiceEntryTemplate(destination, destinationMesh)
 	if err != nil {
-		contextutils.LoggerFrom(t.ctx).Errorf("Encountered error while translating ServiceEntry template for Destination %v", ezkube.MakeObjectRef(destination))
+		contextutils.LoggerFrom(t.ctx).Errorf("Encountered error while translating ServiceEntry template for Destination %v: %v", ezkube.MakeObjectRef(destination), err)
 		return nil, nil, nil
 	}
 
