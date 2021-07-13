@@ -6,6 +6,8 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/golang/mock/gomock"
+	"github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/types"
 )
 
 // Use this in a gomock EXPECT call e.g.
@@ -41,4 +43,27 @@ func (p *gomockPublicFieldMatcher) Got(got interface{}) string {
 		return strings.Join(items, "\n")
 	}
 	return fmt.Sprintf("%+v", got)
+}
+
+func MatchPublicFields(obj interface{}) types.GomegaMatcher {
+	return &publicFieldMatcherImpl{
+		obj: obj,
+	}
+}
+
+type publicFieldMatcherImpl struct {
+	obj interface{}
+}
+
+func (p *publicFieldMatcherImpl) Match(actual interface{}) (success bool, err error) {
+	diff := deep.Equal(p.obj, actual)
+	return len(diff) == 0, nil
+}
+
+func (p *publicFieldMatcherImpl) FailureMessage(actual interface{}) (message string) {
+	return format.Message(actual, "To be identical to", p.obj)
+}
+
+func (p *publicFieldMatcherImpl) NegatedFailureMessage(actual interface{}) (message string) {
+	return format.Message(actual, "Not to be identical to", p.obj)
 }

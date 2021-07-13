@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -16,12 +17,14 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/test/matchers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 )
 
 var _ = Describe("Applier", func() {
+
 	Context("applied traffic policies", func() {
 		var (
 			destination = &discoveryv1.Destination{
@@ -129,6 +132,43 @@ var _ = Describe("Applier", func() {
 			Expect(destination.Status.LocalFqdn).To(Equal("svc-name.svc-namespace.svc.cluster.local"))
 		})
 	})
+
+	Context("VirtualMesh status", func() {
+
+		It("retains the conditions on a Virtual Mesh", func() {
+
+			virtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm",
+					Namespace: "test",
+				},
+				Status: networkingv1.VirtualMeshStatus{
+					Conditions: []*certificatesv1.CertificateRotationCondition{
+						{
+							State: certificatesv1.CertificateRotationState_FAILED,
+						},
+						{
+							State: certificatesv1.CertificateRotationState_ADDING_NEW_ROOT,
+						},
+					},
+				},
+			}
+
+			snap := input.NewInputLocalSnapshotManualBuilder("").
+				AddVirtualMeshes([]*networkingv1.VirtualMesh{virtualMesh}).
+				Build()
+
+			vmExpectCopy := virtualMesh.DeepCopy()
+			vmExpectCopy.Status.State = commonv1.ApprovalState_ACCEPTED
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
+				// no report = accept
+			}}
+			applier := NewApplier(translator)
+			applier.Apply(context.TODO(), snap, nil)
+			Expect(&vmExpectCopy.Status).To(matchers.MatchProto(&virtualMesh.Status))
+		})
+	})
+
 	Context("invalid traffic policies", func() {
 		var (
 			destination = &discoveryv1.Destination{
