@@ -106,7 +106,7 @@ jobs:
           RUN_E2E: "1"
           ISTIOCTL_BINARY: ${{ matrix.istioctl-binary }}
         run: |
-          make print-version manifest-gen
+          make print-version
 
           go install github.com/onsi/ginkgo/ginkgo
 
