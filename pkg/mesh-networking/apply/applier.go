@@ -30,7 +30,12 @@ import (
 // Note that the Applier also updates the statuses of objects contained in the input Snapshot.
 // The Input Snapshot's SyncStatuses method should usually be called after running the Applier.
 type Applier interface {
-	Apply(ctx context.Context, input input.LocalSnapshot, userSupplied input.RemoteSnapshot)
+	Apply(
+		ctx context.Context,
+		input input.LocalSnapshot,
+		userSupplied input.RemoteSnapshot,
+		generated input.RemoteSnapshot,
+	)
 }
 
 type applier struct {
@@ -46,7 +51,12 @@ func NewApplier(
 	}
 }
 
-func (v *applier) Apply(ctx context.Context, input input.LocalSnapshot, userSupplied input.RemoteSnapshot) {
+func (v *applier) Apply(
+	ctx context.Context,
+	input input.LocalSnapshot,
+	userSupplied input.RemoteSnapshot,
+	generated input.RemoteSnapshot,
+) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
 
@@ -60,7 +70,7 @@ func (v *applier) Apply(ctx context.Context, input input.LocalSnapshot, userSupp
 
 	// perform a dry run of translation to find any errors
 	// Deep copy the input snapshot so that we start the 2nd run with a clean slate
-	_, err := v.translator.Translate(ctx, input.Clone(), userSupplied, reporter)
+	_, err := v.translator.Translate(ctx, input.Clone(), userSupplied, generated, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)
