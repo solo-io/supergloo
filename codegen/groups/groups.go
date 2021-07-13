@@ -26,7 +26,7 @@ var GlooMeshSettingsGroup = makeGroup("settings", "v1", []ResourceToGenerate{
 var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1", []ResourceToGenerate{
 	{Kind: "Destination", ShortNames: []string{"dest", "dests"}},
 	{Kind: "Workload", ShortNames: []string{"wkld", "wklds"}},
-	{Kind: "Mesh", ShortNames: []string{"m"}},
+	{Kind: "Mesh"},
 })
 
 var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate{

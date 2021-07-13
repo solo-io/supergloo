@@ -925,8 +925,6 @@ spec:
     kind: Mesh
     listKind: MeshList
     plural: meshes
-    shortNames:
-    - m
     singular: mesh
   preserveUnknownFields: false
   scope: Namespaced
