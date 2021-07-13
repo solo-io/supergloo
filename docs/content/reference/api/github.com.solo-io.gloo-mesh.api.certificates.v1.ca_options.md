@@ -126,8 +126,9 @@ State of Certificate Rotation Possible states in which a CertificateRotation can
 | DELETING_OLD_ROOT | 3 | The CertificateRotation is underway again. Removing the old-root from all data-plane clusters |
 | VERIFYING | 4 | Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified. This can either be manual or in the future automated |
 | VERIFIED | 5 | The connectivity has been verified. |
-| FINISHED | 6 | The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has been verified successfully. |
-| FAILED | 7 | Processing the certificate rotation workflow failed. |
+| ROLLING_BACK | 6 | The connectivity has been deemed to not be functioning properly, rolling back to the last known good state. |
+| FINISHED | 7 | The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has been verified successfully. |
+| FAILED | 8 | Processing the certificate rotation workflow failed. |
 
 
  <!-- end enums -->

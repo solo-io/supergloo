@@ -61,12 +61,16 @@ enum CertificateRotationState {
   // The connectivity has been verified. 
   VERIFIED = 5;
 
+  // The connectivity has been deemed to not be functioning properly, rolling back to the last
+  // known good state.
+  ROLLING_BACK = 6;
+
   // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
   // been verified successfully.
-  FINISHED = 6;
+  FINISHED = 7;
 
   // Processing the certificate rotation workflow failed.
-  FAILED = 7;
+  FAILED = 8;
 }
 
 message CertificateRotationVerificationMethod {

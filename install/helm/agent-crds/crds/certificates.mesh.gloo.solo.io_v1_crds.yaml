@@ -423,6 +423,7 @@ spec:
               - DELETING_OLD_ROOT
               - VERIFYING
               - VERIFIED
+              - ROLLING_BACK
               - FINISHED
               - FAILED
               type: string
@@ -769,6 +770,7 @@ spec:
               - DELETING_OLD_ROOT
               - VERIFYING
               - VERIFIED
+              - ROLLING_BACK
               - FINISHED
               - FAILED
               type: string
