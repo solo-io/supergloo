@@ -13,6 +13,9 @@ spec:
     kind: TrafficPolicy
     listKind: TrafficPolicyList
     plural: trafficpolicies
+    shortNames:
+    - tp
+    - tps
     singular: trafficpolicy
   preserveUnknownFields: false
   scope: Namespaced
@@ -1252,6 +1255,9 @@ spec:
     kind: AccessPolicy
     listKind: AccessPolicyList
     plural: accesspolicies
+    shortNames:
+    - ap
+    - aps
     singular: accesspolicy
   preserveUnknownFields: false
   scope: Namespaced
@@ -1500,6 +1506,9 @@ spec:
     kind: VirtualMesh
     listKind: VirtualMeshList
     plural: virtualmeshes
+    shortNames:
+    - vm
+    - vms
     singular: virtualmesh
   preserveUnknownFields: false
   scope: Namespaced
