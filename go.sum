@@ -703,6 +703,7 @@ github.com/googleapis/gnostic v0.5.1/go.mod h1:6U4PtQXGIEt/Z3h5MAT7FNofLnw9vXk2c
 github.com/gookit/color v1.2.5/go.mod h1:AhIE+pS6D4Ql0SQWbBeXPHw7gY0/sjHoA4s/n1KB7xg=
 github.com/goph/emperror v0.17.1 h1:6lOybhIvG/BB6VGoWfdv30FVZeZFBBZ9VvgzGXLVkyY=
 github.com/goph/emperror v0.17.1/go.mod h1:+ZbQ+fUNO/6FNiUo0ujtMjhgad9Xa6fQL9KhH4LNHic=
+github.com/gophercloud/gophercloud v0.2.0/go.mod h1:vxM41WHh5uqHVBMZHzuwNOHh8XEoIEcSTewFxm1c5g8=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/handlers v0.0.0-20150720190736-60c7bfde3e33/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/OAirnOIQ=
@@ -1319,6 +1320,8 @@ github.com/solo-io/anyvendor v0.0.3 h1:vtN3LbxFuIByjqF12hd3RnMiVZhv2EkF9ci3NV8Nc
 github.com/solo-io/anyvendor v0.0.3/go.mod h1:xHZ0KMrsG620iI4VnRDJGJ1gk8bR79HG/tlTWfY15UA=
 github.com/solo-io/cue v0.4.1-0.20210622213027-95a50cebaffb h1:XOzWBmeDaXAL7EUHp7niQJKo9f2UwnVKdaVuvr+PwpI=
 github.com/solo-io/cue v0.4.1-0.20210622213027-95a50cebaffb/go.mod h1:tz/edkPi+T37AZcb5GlPY+WJkL6KiDlDVupKwL3vvjs=
+github.com/solo-io/external-apis v0.1.6-0.20210713162254-fdfb0fce1698 h1:iAq4sjsJt7XrNpQR8RkNbVur06CtMhIe8J9Djw9DHNI=
+github.com/solo-io/external-apis v0.1.6-0.20210713162254-fdfb0fce1698/go.mod h1:rzyuYEanRLvRfKK9GG/Mb/H//0A8DNvhxrEP+iTToTY=
 github.com/solo-io/go-list-licenses v0.0.4/go.mod h1:x6LSp/NrYgVXwNum7ZOiaAYTpg6B3F6TrWYfcdHVroA=
 github.com/solo-io/go-list-licenses v0.1.3 h1:jMbYURUSu5G47p7ijcQFkx+xLYlmd0RKqHmi+nlUywg=
 github.com/solo-io/go-list-licenses v0.1.3/go.mod h1:x6LSp/NrYgVXwNum7ZOiaAYTpg6B3F6TrWYfcdHVroA=
@@ -1335,6 +1338,9 @@ github.com/solo-io/protoc-gen-ext v0.0.12/go.mod h1:/U/jMDtVI7R6N323sfaUXK9Mmo54
 github.com/solo-io/protoc-gen-ext v0.0.13/go.mod h1:/U/jMDtVI7R6N323sfaUXK9Mmo54D7SY3pP7JtI/kMo=
 github.com/solo-io/protoc-gen-ext v0.0.15 h1:OVPo1essSt2hx5crEfnRxYlA5mwsGvrIWynNQDR/4xo=
 github.com/solo-io/protoc-gen-ext v0.0.15/go.mod h1:ch1ZUyVtN45zxAVwpuZUW+F1IR7aG0rCVAp2JrWKDCc=
+github.com/solo-io/skv2 v0.14.1/go.mod h1:m1a3AUh8D+49AO6kwD0yUnOJGSzekiPq/6TUoXueeuk=
+github.com/solo-io/skv2 v0.18.3 h1:rSdn/zXMGEubGFDmX+xPaAE9hgJfi5uCjMQy0IXrR1g=
+github.com/solo-io/skv2 v0.18.3/go.mod h1:yTLh572dJGj9gQJ0GpzGEIHntdINzq8rD79jrKeBz2g=
 github.com/solo-io/solo-apis v1.6.30 h1:jcm7oovunfYcUIgsNgqTMkX/HXQ6e0hmcenSWXwZVR0=
 github.com/solo-io/solo-apis v1.6.30/go.mod h1:4y0+gYZPdlNDPQ09waJs25QjTjht03dkmGUi28AgIrU=
 github.com/solo-io/solo-kit v0.16.0 h1:76nw9KQwgbgBwuocJ4xSdp81K49SqHn9WmE59VeI7VY=
@@ -1499,6 +1505,7 @@ golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnf
 golang.org/x/crypto v0.0.0-20181029021203-45a5f77698d3/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
+golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
@@ -1668,6 +1675,7 @@ golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b/go.mod h1:STP8DvDyc/dI5b8T5h
 golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20181206074257-70b957f3b65e/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190129075346-302c3dd5f1cc/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20190209173611-3b5209105503/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190312061237-fead79001313/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

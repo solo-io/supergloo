@@ -79,12 +79,12 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.3
-	github.com/solo-io/external-apis v0.1.5
+	github.com/solo-io/external-apis v0.1.6-0.20210713162254-fdfb0fce1698
 	github.com/solo-io/go-list-licenses v0.1.3
 	github.com/solo-io/go-utils v0.21.9
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.18.1
+	github.com/solo-io/skv2 v0.18.3
 	github.com/solo-io/solo-apis v1.6.30
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
@@ -112,7 +112,3 @@ require (
 	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 	sigs.k8s.io/controller-runtime v0.9.0-alpha.1.0.20210412152200-442d3cad1e99
 )
-
-replace github.com/solo-io/skv2 => ../skv2
-
-replace github.com/solo-io/external-apis => ../external-apis
