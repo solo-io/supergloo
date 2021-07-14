@@ -5,10 +5,12 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
+
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf/csrf.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/extauth/extauth.proto";
-import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_host.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/transformation/transformation.proto";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";

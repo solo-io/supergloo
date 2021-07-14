@@ -1,0 +1,116 @@
+syntax = "proto3";
+package transformation.networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/transformation";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+import "github.com/solo-io/gloo-mesh/api/networking/v1/request_matchers.proto";
+
+// GatewayTransformation enables use of the Transformation feature on Gateway.
+message GatewayTransformations {
+    // Apply transformations to all traffic served by this Gateway (HTTP only).
+    // Optional. If strict filter management is enabled on the gateway, a GatewayTransformation must be provided even if no
+    // global transformations are defined in order to enable the transformation filter on that gateway.
+    RouteTransformations global = 1;
+}
+
+// A RouteTransformation defines a text transformations for the content of an HTTP Request and/or Response on a matched route.
+// Transformation takes the existing HTTP Headers (and, optionally, Body) and transforms them into a new set of headers (and body).
+// Transformations can be used on outbound Request data as well as inbound Response data.
+// Various types of transformations can be performed depending on the format of the input and output data types.
+// Currently, Inja (for JSON-to-JSON transformations) and XSLT (for JSON-to-XML and XML-to-XML transformations) are currently supported.
+// Transformations can optionally define a set of request/response HTTP match criteria. The first matched transformation in a list will
+// be applied to the HTTP request/response.
+message RouteTransformations {
+
+    // Transformations to apply on the outbound HTTP request before it arrives at the routing Destination.
+    // Only the first matched transformation will be applied to the request.
+    repeated RequestTransformation request = 1;
+
+    // Transformations to apply on the inbound HTTP request before it returns to the HTTP client (traffic source).
+    // Only the first matched transformation will be applied to the response.
+    repeated ResponseTransformation response = 2;
+}
+
+// match and transform the contents of an HTTP Request
+message RequestTransformation {
+    // Specify criteria that HTTP requests must satisfy for the RequestTransformation to apply
+    // Omit to apply to any HTTP request.
+    repeated .networking.mesh.gloo.solo.io.HttpMatcher matchers = 1;
+
+    // the text transformation to apply to to the matched request
+    TextTransformation transformation = 2;
+
+    // If the request was transformed such that it would match a different route within the same Gateway,
+    // recalculate the routing destination (select a new route) based on the transformed content of the request.
+    bool recalculate_routing_destination = 3;
+
+    // Apply this transformation before Auth and Rate Limit checks are performed on the request.
+    // This can be used to modify the request headers before they are captured by the ExtAuth & Rate Limiter services.
+    bool apply_before_auth = 4;
+
+}
+
+// match and transform the contents of an HTTP Response
+message ResponseTransformation {
+
+    // Match elements of the Response in order to apply a response transformation.
+    // If no response matchers are specified, the transformation will always be applied.
+    repeated ResponseMatcher matchers = 1;
+
+    // the text transformation to apply to to the matched response
+    TextTransformation transformation = 2;
+
+    // specifies a set of criteria for matching an HTTP response
+    message ResponseMatcher {
+        // Specify a set of response headers which must match in entirety (all headers must match).
+        repeated .networking.mesh.gloo.solo.io.HeaderMatcher headers = 1;
+
+        // Response code detail to match on. To see the response code details for your usecase,
+        // you can use the envoy access log %RESPONSE_CODE_DETAILS% formatter to log it.
+        string response_code_details = 2;
+    }
+
+}
+
+// Transform the HTTP Headers/Body of a request / response using one of the supported mechanisms
+message TextTransformation {
+
+    // each transformation can leverage one several available mechanisms for transforming HTTP data
+    oneof transformation_type {
+        // transform HTTP body and headers using Inja templates.
+        // TODO(ilackarms): not implemented
+        // InjaTemplateTransformation inja_template = 1;
+
+        // transform HTTP body using XSLT styling language.
+        XsltTransformation xslt_transformation = 2;
+    }
+}
+
+// transform HTTP body and headers using Inja templates.
+message InjaTemplateTransformation {
+    // TODO: implement
+}
+
+// transform HTTP body using XSLT styling language.
+message XsltTransformation {
+
+    // XSLT transformation template which you want to transform requests/responses with.
+    // Invalid XSLT transformation templates will result will result in an invalid route.
+    string xslt = 1;
+
+    // Changes the content-type header of the HTTP request/response to what is set here.
+    // This is useful in situations where an XSLT transformation is used to transform XML to JSON and the content-type
+    // should be changed from `application/xml` to `application/json`.
+    // If left empty, the content-type header remains unmodified by default.
+    string set_content_type = 2;
+
+    // This should be set to true if the content being transformed is not XML.
+    // For example, if the content being transformed is from JSON to XML, this should be set to true.
+    // XSLT transformations can only take valid XML as input to be transformed. If the body is not a valid XML
+    // (e.g. using JSON as input in a JSON-to-XML transformation), setting `non_xml_transform` to true will allow the
+    // XSLT to accept the non-XML input without throwing an error by passing the input as XML CDATA.
+    // defaults to false.
+    bool non_xml_transform = 3;
+}

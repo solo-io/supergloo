@@ -15,6 +15,7 @@ import "github.com/solo-io/gloo-mesh/api/common/v1/string_match.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/weighed_destination.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/csrf/csrf.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/transformation/transformation.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -76,6 +77,9 @@ message TrafficPolicySpec {
 
         // Config the Envoy based Ratelimit filter
         .ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit rate_limit = 14;
+
+        // Configure transformations of HTTP header / body content on request or response data.
+        .transformation.networking.mesh.gloo.solo.io.RouteTransformations transformations = 15;
 
         // Specify retries for failed requests.
         message RetryPolicy {
@@ -217,12 +221,6 @@ message TrafficPolicySpec {
                     ISTIO_MUTUAL = 2;
                 };
             }
-        }
-
-        // Transform filter config.
-        message Transform {
-            // TODO: implement
-            string todo = 1;
         }
 
         // DLP filter config.
