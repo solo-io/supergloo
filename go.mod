@@ -79,12 +79,12 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.3
-	github.com/solo-io/external-apis v0.1.5
+	github.com/solo-io/external-apis v0.1.6
 	github.com/solo-io/go-list-licenses v0.1.3
 	github.com/solo-io/go-utils v0.21.9
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.18.1
+	github.com/solo-io/skv2 v0.18.3
 	github.com/solo-io/solo-apis v1.6.30
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1

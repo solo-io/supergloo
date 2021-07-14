@@ -38,6 +38,20 @@ func (m *MockAccessLogRecordSet) EXPECT() *MockAccessLogRecordSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockAccessLogRecordSet) Clone() v1sets.AccessLogRecordSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.AccessLogRecordSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockAccessLogRecordSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockAccessLogRecordSet) Delete(accessLogRecord ezkube.ResourceId) {
 	m.ctrl.T.Helper()

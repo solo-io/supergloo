@@ -7,10 +7,6 @@
 
 {{- define "cert-agent.deploymentSpec"}}
 
-{{/* Define variables in function scope */}}
-{{- $certAgent := $.Values.certAgent}}
-{{- $certAgentImage := $certAgent.image }}
-
 # Deployment manifest for cert-agent
 
 apiVersion: apps/v1
@@ -39,7 +35,11 @@ spec:
     spec:
       serviceAccountName: cert-agent
       containers:
-      - image: {{ $certAgentImage.registry }}/{{ $certAgentImage.repository }}:{{ $certAgentImage.tag }}
+{{- $certAgent := $.Values.certAgent }}
+{{- $certAgentImage := $certAgent.image }}
+      - name: cert-agent
+        image: {{ $certAgentImage.registry }}/{{ $certAgentImage.repository }}:{{ $certAgentImage.tag }}
+        imagePullPolicy: {{ $certAgentImage.pullPolicy }}
         args:
         - --metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}
         - --verbose={{ $.Values.verbose }}
@@ -47,13 +47,10 @@ spec:
         env:
 {{ toYaml $certAgent.env | indent 10 }}
 {{- end }}
-        imagePullPolicy: {{ $certAgentImage.pullPolicy }}
-        name: cert-agent
-{{- if $certAgent.resources }}
         resources:
+{{- if $certAgent.resources }}
 {{ toYaml $certAgent.resources | indent 10}}
 {{- else}}
-        resources:
           requests:
             cpu: 500m
             memory: 256Mi

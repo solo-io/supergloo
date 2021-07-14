@@ -44,6 +44,8 @@ type TrafficPolicySet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another TrafficPolicySet
 	Delta(newSet TrafficPolicySet) sksets.ResourceDelta
+	// Create a deep copy of the current TrafficPolicySet
+	Clone() TrafficPolicySet
 }
 
 func makeGenericTrafficPolicySet(trafficPolicyList []*networking_mesh_gloo_solo_io_v1.TrafficPolicy) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *trafficPolicySet) Delta(newSet TrafficPolicySet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *trafficPolicySet) Clone() TrafficPolicySet {
+	if s == nil {
+		return nil
+	}
+	return &trafficPolicySet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type AccessPolicySet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type AccessPolicySet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another AccessPolicySet
 	Delta(newSet AccessPolicySet) sksets.ResourceDelta
+	// Create a deep copy of the current AccessPolicySet
+	Clone() AccessPolicySet
 }
 
 func makeGenericAccessPolicySet(accessPolicyList []*networking_mesh_gloo_solo_io_v1.AccessPolicy) sksets.ResourceSet {
@@ -433,6 +444,13 @@ func (s *accessPolicySet) Delta(newSet AccessPolicySet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *accessPolicySet) Clone() AccessPolicySet {
+	if s == nil {
+		return nil
+	}
+	return &accessPolicySet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type VirtualMeshSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -464,6 +482,8 @@ type VirtualMeshSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another VirtualMeshSet
 	Delta(newSet VirtualMeshSet) sksets.ResourceDelta
+	// Create a deep copy of the current VirtualMeshSet
+	Clone() VirtualMeshSet
 }
 
 func makeGenericVirtualMeshSet(virtualMeshList []*networking_mesh_gloo_solo_io_v1.VirtualMesh) sksets.ResourceSet {
@@ -641,4 +661,11 @@ func (s *virtualMeshSet) Delta(newSet VirtualMeshSet) sksets.ResourceDelta {
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *virtualMeshSet) Clone() VirtualMeshSet {
+	if s == nil {
+		return nil
+	}
+	return &virtualMeshSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
