@@ -29,15 +29,13 @@ setChartVariables
 agentCrdsChart=${AGENT_CRDS_CHART}
 agentChart=${AGENT_CHART}
 agentImage=${AGENT_IMAGE}
+glooMeshImage=${GLOOMESH_IMAGE}
 gloomeshChart=${GLOOMESH_CHART}
 
-# load GlooMesh discovery and networking images
-grep "image:" "${DEFAULT_MANIFEST}" \
-  | awk '{print $3}' \
-  | while read -r image; do
-  kind load docker-image --name "${cluster}" "${image}"
-done
-# load cert-agent image
+# Load GlooMesh discovery and networking images
+# they use the same container/binary
+kind load docker-image --name "${cluster}" "${glooMeshImage}"
+# Load cert-agent image
 kind load docker-image --name "${cluster}" "${agentImage}"
 
 ## install to kube

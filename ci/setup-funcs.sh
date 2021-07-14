@@ -666,7 +666,10 @@ function setChartVariables() {
   export AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
   export AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
   export GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
+  export GLOOMESH_IMAGE_REGISTRY=$(cat ${GLOOMESH_VALUES} | grep "registry: " | awk '{print $2}' | head -1)
+  export GLOOMESH_IMAGE_REPOSITORY=$(cat ${GLOOMESH_VALUES} | grep "repository: " | awk '{print $2}' | head -1)
   export GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+  export GLOOMESH_IMAGE=${GLOOMESH_IMAGE_REGISTRY}/${GLOOMESH_IMAGE_REPOSITORY}:${GLOOMESH_IMAGE_TAG}
   export GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
 
   export AGENT_CRDS_CHART_YAML=${INSTALL_DIR}/helm/agent-crds/Chart.yaml

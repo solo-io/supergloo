@@ -38,6 +38,20 @@ func (m *MockXdsConfigSet) EXPECT() *MockXdsConfigSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockXdsConfigSet) Clone() v1beta1sets.XdsConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.XdsConfigSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockXdsConfigSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockXdsConfigSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockXdsConfigSet) Delete(xdsConfig ezkube.ResourceId) {
 	m.ctrl.T.Helper()

@@ -44,6 +44,8 @@ type XdsConfigSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another XdsConfigSet
 	Delta(newSet XdsConfigSet) sksets.ResourceDelta
+	// Create a deep copy of the current XdsConfigSet
+	Clone() XdsConfigSet
 }
 
 func makeGenericXdsConfigSet(xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) sksets.ResourceSet {
@@ -221,4 +223,11 @@ func (s *xdsConfigSet) Delta(newSet XdsConfigSet) sksets.ResourceDelta {
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *xdsConfigSet) Clone() XdsConfigSet {
+	if s == nil {
+		return nil
+	}
+	return &xdsConfigSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
