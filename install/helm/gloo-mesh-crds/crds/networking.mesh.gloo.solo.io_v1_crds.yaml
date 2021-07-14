@@ -344,6 +344,35 @@ spec:
                         This is intended to be used when ``filter_enabled`` is false and will be ignored otherwise.
                       type: boolean
                   type: object
+                extauth:
+                  description: Configure the Envoy based Extauth filter
+                  oneOf:
+                  - not:
+                      anyOf:
+                      - required:
+                        - disable
+                      - required:
+                        - configRef
+                  - required:
+                    - disable
+                  - required:
+                    - configRef
+                  properties:
+                    configRef:
+                      description: A reference to an AuthConfig. This is used to configure
+                        the Gloo Mesh Gateway extauth server.
+                      properties:
+                        name:
+                          description: name of the resource being referenced
+                          type: string
+                        namespace:
+                          description: namespace of the resource being referenced
+                          type: string
+                      type: object
+                    disable:
+                      description: Set to true to disable auth on the route.
+                      type: boolean
+                  type: object
                 faultInjection:
                   description: Inject faulty responses.
                   oneOf:
@@ -489,7 +518,7 @@ spec:
                       type: integer
                   type: object
                 rateLimit:
-                  description: Config the Envoy based Ratelimit filter
+                  description: Configure the Envoy based Ratelimit filter
                   oneOf:
                   - not:
                       anyOf:
