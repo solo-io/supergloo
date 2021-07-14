@@ -336,7 +336,7 @@ spec:
   components:
     # Istio Gateway feature
     ingressGateways:
-    - name: istio-ingressgateway-ew
+    - name: istio-ingressgateway
       enabled: true
       label:
         traffic: east-west
@@ -421,7 +421,7 @@ spec:
   components:
     # Istio Gateway feature
     ingressGateways:
-    - name: istio-ingressgateway-ew
+    - name: istio-ingressgateway
       enabled: true
       label:
         traffic: east-west
