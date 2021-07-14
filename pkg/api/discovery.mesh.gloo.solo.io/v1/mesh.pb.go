@@ -726,7 +726,7 @@ type MeshSpec_Istio_IngressGatewayInfo struct {
 	Name string `protobuf:"bytes,8,opt,name=name,proto3" json:"name,omitempty"`
 	// The namespace in which the ingress gateway is running.
 	Namespace string `protobuf:"bytes,7,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// Labels matching the workload backing the gateway.
+	// The ingress service selector labels for the gateway.
 	// [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
 	WorkloadLabels map[string]string `protobuf:"bytes,1,rep,name=workload_labels,json=workloadLabels,proto3" json:"workload_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// DEPRECATED: in favor of dns_name or external_ip
