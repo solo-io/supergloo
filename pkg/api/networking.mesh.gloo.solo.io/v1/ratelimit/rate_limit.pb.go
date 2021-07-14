@@ -107,6 +107,9 @@ func (x *GatewayRateLimit) GetRateLimitBeforeAuth() bool {
 	return false
 }
 
+// The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows different limits for
+// both authorized and anonymous users (Basic) and the ratelimit Actions directly (Advanced).
+// The corresponding server config should be set in the RateLimitConfig.
 type RateLimitClient struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -316,9 +319,9 @@ func (*RateLimitClient_BasicRateLimit) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 0}
 }
 
-// Use this field if you want to inline the Envoy rate limits for this VirtualHost.
+// Use this field if you want to inline the Envoy rate limits.
 // Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to
-// specify the server configuration via the appropriate field in the Gloo Mesh `GatewayRateLimit` resource on the gateway.
+// specify the server configuration via the appropriate field in the Gloo Mesh `RateLimitConfig` resource.
 // If you are running a custom rate limit server you need to configure it yourself.
 type RateLimitClient_AdvancedRateLimit struct {
 	state         protoimpl.MessageState

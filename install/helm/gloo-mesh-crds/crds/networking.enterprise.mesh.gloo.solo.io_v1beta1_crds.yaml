@@ -248,11 +248,13 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
+          description: RateLimitClientConfig contains the client configuration for
+            the Gloo Rate Limiter
           properties:
             rateLimits:
               description: |-
-                Actions specify how the client (Envoy) will compose the descriptors that
-                will be sent to the server to make a rate limiting decision.
+                The RateLimitClient specifies the ratelimit Actions which the client (Envoy) will use to
+                compose the descriptors that will be sent to the server to make a rate limiting decision.
               items:
                 oneOf:
                 - not:

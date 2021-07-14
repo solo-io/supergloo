@@ -9,10 +9,11 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 
+// RateLimitClientConfig contains the client configuration for the Gloo Rate Limiter
 message RateLimitClientConfigSpec {
 
-  // Actions specify how the client (Envoy) will compose the descriptors that
-  // will be sent to the server to make a rate limiting decision.
+  // The RateLimitClient specifies the ratelimit Actions which the client (Envoy) will use to
+  // compose the descriptors that will be sent to the server to make a rate limiting decision.
   repeated .ratelimit.networking.mesh.gloo.solo.io.RateLimitClient rate_limits = 1;
 
 }

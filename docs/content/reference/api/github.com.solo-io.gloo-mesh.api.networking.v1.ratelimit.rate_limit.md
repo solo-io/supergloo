@@ -51,7 +51,7 @@ Configure the Rate-Limit Filter on a Gateway
 <a name="ratelimit.networking.mesh.gloo.solo.io.RateLimitClient"></a>
 
 ### RateLimitClient
-
+The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows different limits for both authorized and anonymous users (Basic) and the ratelimit Actions directly (Advanced). The corresponding server config should be set in the RateLimitConfig.
 
 
 | Field | Type | Label | Description |
@@ -67,7 +67,7 @@ Configure the Rate-Limit Filter on a Gateway
 <a name="ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit"></a>
 
 ### RateLimitClient.AdvancedRateLimit
-Use this field if you want to inline the Envoy rate limits for this VirtualHost. Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to specify the server configuration via the appropriate field in the Gloo Mesh `GatewayRateLimit` resource on the gateway. If you are running a custom rate limit server you need to configure it yourself.
+Use this field if you want to inline the Envoy rate limits. Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to specify the server configuration via the appropriate field in the Gloo Mesh `RateLimitConfig` resource. If you are running a custom rate limit server you need to configure it yourself.
 
 
 | Field | Type | Label | Description |

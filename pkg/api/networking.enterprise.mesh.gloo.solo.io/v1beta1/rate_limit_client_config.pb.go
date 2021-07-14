@@ -29,13 +29,14 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+// RateLimitClientConfig contains the client configuration for the Gloo Rate Limiter
 type RateLimitClientConfigSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Actions specify how the client (Envoy) will compose the descriptors that
-	// will be sent to the server to make a rate limiting decision.
+	// The RateLimitClient specifies the ratelimit Actions which the client (Envoy) will use to
+	// compose the descriptors that will be sent to the server to make a rate limiting decision.
 	RateLimits []*ratelimit.RateLimitClient `protobuf:"bytes,1,rep,name=rate_limits,json=rateLimits,proto3" json:"rate_limits,omitempty"`
 }
 
