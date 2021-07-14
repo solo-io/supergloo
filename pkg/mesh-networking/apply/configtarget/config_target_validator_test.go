@@ -8,6 +8,7 @@ import (
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +51,18 @@ var _ = Describe("ConfigTargetValidator", func() {
 								Namespace:   "bar",
 								ClusterName: "cluster",
 							},
+							WorkloadSelectorLabels: map[string]string{"istio": "ingressgateway"},
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+								{
+									Port: 1234,
+									Name: defaults.IstioGatewayTlsPortName,
+								},
+							},
 						},
+					},
+					Mesh: &skv2corev1.ObjectRef{
+						Name:      "foo",
+						Namespace: "bar",
 					},
 				},
 			})
@@ -231,7 +243,50 @@ var _ = Describe("ConfigTargetValidator", func() {
 			},
 		)
 
-		validator = configtarget.NewConfigTargetValidator(meshes, nil)
+		destination1 := &discoveryv1.Destination{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "destination",
+				Namespace: "namespace",
+			},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
+							Name:        "foo",
+							Namespace:   "bar",
+							ClusterName: "cluster",
+						},
+						WorkloadSelectorLabels: defaults.DefaultGatewayWorkloadLabels,
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+							{
+								Port: 1234,
+								Name: defaults.IstioGatewayTlsPortName,
+							},
+						},
+					},
+				},
+				Mesh: &skv2corev1.ObjectRef{
+					Name:      "mesh1",
+					Namespace: "namespace1",
+				},
+			},
+		}
+		destination2 := destination1.DeepCopy()
+		destination2.Name = "destination2"
+		destination2.Spec.Mesh = &skv2corev1.ObjectRef{
+			Name:      "mesh2",
+			Namespace: "namespace1",
+		}
+		destination3 := destination1.DeepCopy()
+		destination3.Name = "destination3"
+		destination3.Spec.Mesh = &skv2corev1.ObjectRef{
+			Name:      "mesh3",
+			Namespace: "namespace1",
+		}
+		destinations := discoveryv1sets.NewDestinationSet(
+			destination1, destination2, destination3)
+
+		validator = configtarget.NewConfigTargetValidator(meshes, destinations)
 
 		vm1 := &v1.VirtualMesh{
 			ObjectMeta: metav1.ObjectMeta{

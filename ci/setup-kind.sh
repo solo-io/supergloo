@@ -35,10 +35,30 @@ if [ "$1" == "cleanup" ]; then
   exit 0
 fi
 
+# default mgmt/remote cluster ingress ports
+mgmtIngressPort1=32001
+((mgmtIngressPort2=mgmtIngressPort1+10)) # 32011
+remoteIngressPort1=32000
+((remoteIngressPort2=remoteIngressPort1+10)) # 32010
+
+# set mgmt/remote cluster ingress ports from environment variables if they exist
+if [ ! -z ${MGMT_INGRESS_PORT_1} ]; then
+    mgmtIngressPort1="${MGMT_INGRESS_PORT_1}"
+fi
+if [ ! -z ${MGMT_INGRESS_PORT_2} ]; then
+    mgmtIngressPort2="${MGMT_INGRESS_PORT_2}"
+fi
+if [ ! -z ${REMOTE_INGRESS_PORT_1} ]; then
+    remoteIngressPort1="${REMOTE_INGRESS_PORT_1}"
+fi
+if [ ! -z ${REMOTE_INGRESS_PORT_2} ]; then
+    remoteIngressPort2="${REMOTE_INGRESS_PORT_2}"
+fi
+
 if [ "$1" == "osm" ]; then
   # optionally install open service mesh
-  create_kind_cluster ${mgmtCluster} 32001
-  install_osm ${mgmtCluster} 32001
+  create_kind_cluster ${mgmtCluster} ${mgmtIngressPort1} ${mgmtIngressPort2}
+  install_osm ${mgmtCluster} ${mgmtIngressPort1}
 
   echo successfully set up clusters.
 
@@ -55,14 +75,14 @@ else
 
   # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
   # related: https://github.com/kubernetes-sigs/kind/issues/1596
-  create_kind_cluster ${mgmtCluster} 32001
-  install_istio ${mgmtCluster} 32001
+  create_kind_cluster ${mgmtCluster} ${mgmtIngressPort1} ${mgmtIngressPort2}
+  install_istio ${mgmtCluster} ${mgmtIngressPort1}
 
-  create_kind_cluster ${remoteCluster} 32000
-  install_istio ${remoteCluster} 32000
+  create_kind_cluster ${remoteCluster} ${remoteIngressPort1} ${remoteIngressPort2}
+  install_istio ${remoteCluster} ${remoteIngressPort1}
 
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
-    setup_flat_networking ${mgmtCluster} 32001 ${remoteCluster} 32000
+    setup_flat_networking ${mgmtCluster} ${mgmtIngressPort1} ${remoteCluster} ${remoteIngressPort1}
   fi
 
   # create istio-injectable namespace
