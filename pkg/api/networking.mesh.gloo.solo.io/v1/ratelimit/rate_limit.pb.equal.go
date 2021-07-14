@@ -98,6 +98,16 @@ func (m *RouteRateLimit) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetRatelimitConfigRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRatelimitConfigRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRatelimitConfigRef(), target.GetRatelimitConfigRef()) {
+			return false
+		}
+	}
+
 	switch m.RateLimitConfigType.(type) {
 
 	case *RouteRateLimit_Basic:
@@ -176,26 +186,6 @@ func (m *RouteRateLimit_BasicRateLimit) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetAuthorizedLimits()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetAuthorizedLimits()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetAuthorizedLimits(), target.GetAuthorizedLimits()) {
-			return false
-		}
-	}
-
-	if h, ok := interface{}(m.GetAnonymousLimits()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetAnonymousLimits()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetAnonymousLimits(), target.GetAnonymousLimits()) {
-			return false
-		}
-	}
-
 	return true
 }
 
@@ -235,38 +225,6 @@ func (m *RouteRateLimit_AdvancedRateLimit) Equal(that interface{}) bool {
 			}
 		}
 
-	}
-
-	return true
-}
-
-// Equal function
-func (m *RouteRateLimit_BasicRateLimit_RateLimitRatio) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*RouteRateLimit_BasicRateLimit_RateLimitRatio)
-	if !ok {
-		that2, ok := that.(RouteRateLimit_BasicRateLimit_RateLimitRatio)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if m.GetUnit() != target.GetUnit() {
-		return false
-	}
-
-	if m.GetRequestsPerUnit() != target.GetRequestsPerUnit() {
-		return false
 	}
 
 	return true

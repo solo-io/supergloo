@@ -510,7 +510,8 @@ spec:
                   properties:
                     advanced:
                       description: |-
-                        Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
+                        TODO: remove AdvancedRateLimit which configures server settings in the route config
+                        Partial config for Gloo Mesh rate-limiting based on Envoy's rate-limit service;
                         supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
                         Configure rate-limit *actions* here, which define how request characteristics get translated into
                         descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
@@ -519,6 +520,7 @@ spec:
                       properties:
                         actions:
                           description: |-
+                            TODO: remove client side actions from route level config
                             Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
                             would be throttled, the entire request returns a 429 (gets throttled)
                           items:
@@ -1045,39 +1047,6 @@ spec:
                     basic:
                       description: Config for rate-limiting using simplified (gloo-specific)
                         API
-                      properties:
-                        anonymousLimits:
-                          description: limits for unauthorized users
-                          properties:
-                            requestsPerUnit:
-                              maximum: 4294967295
-                              minimum: 0
-                              type: integer
-                            unit:
-                              enum:
-                              - UNKNOWN
-                              - SECOND
-                              - MINUTE
-                              - HOUR
-                              - DAY
-                              type: string
-                          type: object
-                        authorizedLimits:
-                          description: limits for authorized users
-                          properties:
-                            requestsPerUnit:
-                              maximum: 4294967295
-                              minimum: 0
-                              type: integer
-                            unit:
-                              enum:
-                              - UNKNOWN
-                              - SECOND
-                              - MINUTE
-                              - HOUR
-                              - DAY
-                              type: string
-                          type: object
                       type: object
                     configRefs:
                       description: |-
@@ -1095,6 +1064,16 @@ spec:
                                 type: string
                             type: object
                           type: array
+                      type: object
+                    ratelimitConfigRef:
+                      description: ref to RateLimitConfig
+                      properties:
+                        name:
+                          description: name of the resource being referenced
+                          type: string
+                        namespace:
+                          description: namespace of the resource being referenced
+                          type: string
                       type: object
                   type: object
                 requestTimeout:

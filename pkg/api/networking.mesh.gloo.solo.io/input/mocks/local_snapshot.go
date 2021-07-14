@@ -18,7 +18,6 @@ import (
 	v1sets3 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
-	v1alpha1sets0 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/sets"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -128,20 +127,6 @@ func (m *MockLocalSnapshot) Meshes() v1sets0.MeshSet {
 func (mr *MockLocalSnapshotMockRecorder) Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockLocalSnapshot)(nil).Meshes))
-}
-
-// RateLimitConfigs mocks base method.
-func (m *MockLocalSnapshot) RateLimitConfigs() v1alpha1sets0.RateLimitConfigSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RateLimitConfigs")
-	ret0, _ := ret[0].(v1alpha1sets0.RateLimitConfigSet)
-	return ret0
-}
-
-// RateLimitConfigs indicates an expected call of RateLimitConfigs.
-func (mr *MockLocalSnapshotMockRecorder) RateLimitConfigs() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RateLimitConfigs", reflect.TypeOf((*MockLocalSnapshot)(nil).RateLimitConfigs))
 }
 
 // RouteTables mocks base method.

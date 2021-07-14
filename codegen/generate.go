@@ -18,8 +18,6 @@ import (
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
-
-	soloapi_codegen "github.com/solo-io/solo-apis/codegen"
 )
 
 func main() {
@@ -81,7 +79,7 @@ var (
 		"":                                 groups.AllGeneratedGroups,
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
-		"github.com/solo-io/solo-apis":     soloapi_codegen.RateLimiterGroups(),
+		//"github.com/solo-io/solo-apis":     soloapi_codegen.RateLimiterGroups(),
 	}
 
 	project = gloomeshmodel.Project{

@@ -26,9 +26,6 @@ import (
 
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
-
-	ratelimit_solo_io_v1alpha1 "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1"
-	ratelimit_solo_io_v1alpha1_sets "github.com/solo-io/solo-apis/pkg/api/ratelimit.solo.io/v1alpha1/sets"
 )
 
 type InputLocalSnapshotManualBuilder struct {
@@ -56,8 +53,6 @@ type InputLocalSnapshotManualBuilder struct {
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
-
-	rateLimitConfigs ratelimit_solo_io_v1alpha1_sets.RateLimitConfigSet
 }
 
 func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
@@ -86,8 +81,6 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		secrets: v1_sets.NewSecretSet(),
 
 		kubernetesClusters: multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet(),
-
-		rateLimitConfigs: ratelimit_solo_io_v1alpha1_sets.NewRateLimitConfigSet(),
 	}
 }
 
@@ -117,8 +110,6 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.secrets,
 
 		i.kubernetesClusters,
-
-		i.rateLimitConfigs,
 	)
 }
 func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) *InputLocalSnapshotManualBuilder {
@@ -183,9 +174,5 @@ func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *Inpu
 }
 func (i *InputLocalSnapshotManualBuilder) AddKubernetesClusters(kubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputLocalSnapshotManualBuilder {
 	i.kubernetesClusters.Insert(kubernetesClusters...)
-	return i
-}
-func (i *InputLocalSnapshotManualBuilder) AddRateLimitConfigs(rateLimitConfigs []*ratelimit_solo_io_v1alpha1.RateLimitConfig) *InputLocalSnapshotManualBuilder {
-	i.rateLimitConfigs.Insert(rateLimitConfigs...)
 	return i
 }

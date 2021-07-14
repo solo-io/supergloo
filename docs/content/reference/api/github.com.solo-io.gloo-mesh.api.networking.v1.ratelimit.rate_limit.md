@@ -23,9 +23,7 @@ title: "rate_limit.proto"
   - [RouteRateLimit.AdvancedRateLimit](#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit)
   - [RouteRateLimit.AdvancedRateLimit.RateLimitActions](#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions)
   - [RouteRateLimit.BasicRateLimit](#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit)
-  - [RouteRateLimit.BasicRateLimit.RateLimitRatio](#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio)
 
-  - [RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit](#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit)
 
 
 
@@ -58,9 +56,10 @@ Rate limit configuration for a Route or TrafficPolicy. Configures rate limits fo
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| basic | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit" >}}) |  | Config for rate-limiting using simplified (gloo-specific) API |
-  | advanced | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit" >}}) |  | Partial config for GlooE rate-limiting based on Envoy's rate-limit service; supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration) Configure rate-limit *actions* here, which define how request characteristics get translated into descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and their associated limits on the Gloo settings. Only one of `ratelimit` or `rate_limit_configs` can be set. |
-  | configRefs | [core.skv2.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRefList" >}}) |  | References to RateLimitConfig resources. This is used to configure the GlooE rate limit server. Only one of `ratelimit` or `rate_limit_configs` can be set. |
+| ratelimitConfigRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | ref to RateLimitConfig |
+  | basic | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit" >}}) |  | Config for rate-limiting using simplified (gloo-specific) API |
+  | advanced | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit" >}}) |  | TODO: remove AdvancedRateLimit which configures server settings in the route config Partial config for Gloo Mesh rate-limiting based on Envoy's rate-limit service; supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration) Configure rate-limit *actions* here, which define how request characteristics get translated into descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and their associated limits on the Gloo settings. Only one of `ratelimit` or `rate_limit_configs` can be set. |
+  | configRefs | [core.skv2.solo.io.ObjectRefList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRefList" >}}) |  | References to RateLimitConfig resources. This is used to configure the GlooE rate limit server. Only one of `ratelimit` or `rate_limit_configs` can be set.<br>TODO: ask where this came from? client config? |
   
 
 
@@ -75,7 +74,7 @@ Use this field if you want to inline the Envoy rate limits for this VirtualHost.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| actions | [][ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions" >}}) | repeated | Define individual rate limits here. Each rate limit will be evaluated, if any rate limit would be throttled, the entire request returns a 429 (gets throttled) |
+| actions | [][ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions" >}}) | repeated | TODO: remove client side actions from route level config Define individual rate limits here. Each rate limit will be evaluated, if any rate limit would be throttled, the entire request returns a 429 (gets throttled) |
   
 
 
@@ -101,50 +100,13 @@ Each action and setAction in the lists maps part of the request (or its context)
 <a name="ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit"></a>
 
 ### RouteRateLimit.BasicRateLimit
-Basic rate-limiting API
+Basic rate-limiting API<br>// limits for authorized users        RateLimitRatio authorized_limits = 1;        // limits for unauthorized users        RateLimitRatio anonymous_limits = 2;<br>        // A `RateLimitRatio` specifies the actual ratio of requests that will be permitted when there is a match.        message RateLimitRatio {<br>           enum Unit {                UNKNOWN = 0;                SECOND = 1;                MINUTE = 2;                HOUR = 3;                DAY = 4;            }<br>           Unit unit = 1;<br>           uint32 requests_per_unit = 2;        }
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| authorizedLimits | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio" >}}) |  | limits for authorized users |
-  | anonymousLimits | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio" >}}) |  | limits for unauthorized users |
-  
-
-
-
-
-
-<a name="ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio"></a>
-
-### RouteRateLimit.BasicRateLimit.RateLimitRatio
-A `RateLimitRatio` specifies the actual ratio of requests that will be permitted when there is a match.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| unit | [ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit" >}}) |  |  |
-  | requestsPerUnit | uint32 |  |  |
-  
 
 
 
 
  <!-- end messages -->
-
-
-<a name="ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit"></a>
-
-### RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| UNKNOWN | 0 |  |
-| SECOND | 1 |  |
-| MINUTE | 2 |  |
-| HOUR | 3 |  |
-| DAY | 4 |  |
-
 
  <!-- end enums -->
 

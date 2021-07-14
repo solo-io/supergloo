@@ -48,12 +48,12 @@ var (
 			"RouteTable",
 			"ServiceDependency",
 		},
-		schema.GroupVersion{
-			Group:   "ratelimit.solo.io",
-			Version: "v1alpha1",
-		}: {
-			"RateLimitConfig",
-		},
+		//schema.GroupVersion{
+		//	Group:   "ratelimit.solo.io",
+		//	Version: "v1alpha1",
+		//}: {
+		//	"RateLimitConfig",
+		//},
 		schema.GroupVersion{
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1",

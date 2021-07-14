@@ -31,12 +31,16 @@ message GatewayRateLimit {
 // Rate limit configuration for a Route or TrafficPolicy. Configures rate limits for individual HTTP routes
 message RouteRateLimit {
 
+    // ref to RateLimitConfig
+    .core.skv2.solo.io.ObjectRef ratelimit_config_ref = 4;
+
     oneof rate_limit_config_type {
 
         // Config for rate-limiting using simplified (gloo-specific) API
         BasicRateLimit basic = 1;
 
-        // Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
+        // TODO: remove AdvancedRateLimit which configures server settings in the route config
+        // Partial config for Gloo Mesh rate-limiting based on Envoy's rate-limit service;
         // supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
         // Configure rate-limit *actions* here, which define how request characteristics get translated into
         // descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
@@ -47,31 +51,32 @@ message RouteRateLimit {
         // References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
         // Only one of `ratelimit` or `rate_limit_configs` can be set.
         .core.skv2.solo.io.ObjectRefList config_refs = 3;
+        // TODO: ask where this came from? client config?
     }
 
     // Basic rate-limiting API
     message BasicRateLimit {
-        // limits for authorized users
-        RateLimitRatio authorized_limits = 1;
-        // limits for unauthorized users
-        RateLimitRatio anonymous_limits = 2;
-
-
-        // A `RateLimitRatio` specifies the actual ratio of requests that will be permitted when there is a match.
-        message RateLimitRatio {
-
-            enum Unit {
-                UNKNOWN = 0;
-                SECOND = 1;
-                MINUTE = 2;
-                HOUR = 3;
-                DAY = 4;
-            }
-
-            Unit unit = 1;
-
-            uint32 requests_per_unit = 2;
-        }
+//        // limits for authorized users
+//        RateLimitRatio authorized_limits = 1;
+//        // limits for unauthorized users
+//        RateLimitRatio anonymous_limits = 2;
+//
+//
+//        // A `RateLimitRatio` specifies the actual ratio of requests that will be permitted when there is a match.
+//        message RateLimitRatio {
+//
+//            enum Unit {
+//                UNKNOWN = 0;
+//                SECOND = 1;
+//                MINUTE = 2;
+//                HOUR = 3;
+//                DAY = 4;
+//            }
+//
+//            Unit unit = 1;
+//
+//            uint32 requests_per_unit = 2;
+//        }
     }
 
     // Use this field if you want to inline the Envoy rate limits for this VirtualHost.
@@ -80,6 +85,7 @@ message RouteRateLimit {
     // If you are running a custom rate limit server you need to configure it yourself.
     message AdvancedRateLimit {
 
+        // TODO: remove client side actions from route level config
         // Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
         // would be throttled, the entire request returns a 429 (gets throttled)
         repeated RateLimitActions actions = 1;

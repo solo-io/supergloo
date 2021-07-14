@@ -146,14 +146,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ratelimit.solo.io
-  resources:
-  - ratelimitconfigs
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - settings.mesh.gloo.solo.io
   resources:
   - settings
@@ -209,13 +201,6 @@ rules:
   - observability.enterprise.mesh.gloo.solo.io
   resources:
   - accesslogrecords/status
-  verbs:
-  - get
-  - update
-- apiGroups:
-  - ratelimit.solo.io
-  resources:
-  - ratelimitconfigs/status
   verbs:
   - get
   - update
