@@ -136,6 +136,9 @@ type DiscoveryInputSnapshot interface {
 	StatefulSets() apps_v1_sets.StatefulSetSet
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+
+	// Clone the snapshot
+	Clone() DiscoveryInputSnapshot
 }
 
 // options for syncing input object statuses
@@ -398,6 +401,23 @@ func (s snapshotDiscoveryInput) MarshalJSON() ([]byte, error) {
 	snapshotMap["daemonSets"] = s.daemonSets.List()
 	snapshotMap["statefulSets"] = s.statefulSets.List()
 	return json.Marshal(snapshotMap)
+}
+
+func (s snapshotDiscoveryInput) Clone() DiscoveryInputSnapshot {
+	return &snapshotDiscoveryInput{
+		name: s.name,
+
+		meshes:       s.meshes.Clone(),
+		configMaps:   s.configMaps.Clone(),
+		services:     s.services.Clone(),
+		pods:         s.pods.Clone(),
+		endpoints:    s.endpoints.Clone(),
+		nodes:        s.nodes.Clone(),
+		deployments:  s.deployments.Clone(),
+		replicaSets:  s.replicaSets.Clone(),
+		daemonSets:   s.daemonSets.Clone(),
+		statefulSets: s.statefulSets.Clone(),
+	}
 }
 
 // builds the input snapshot from API Clients.

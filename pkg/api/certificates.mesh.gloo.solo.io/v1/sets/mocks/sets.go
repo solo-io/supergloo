@@ -38,6 +38,20 @@ func (m *MockIssuedCertificateSet) EXPECT() *MockIssuedCertificateSetMockRecorde
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockIssuedCertificateSet) Clone() v1sets.IssuedCertificateSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.IssuedCertificateSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockIssuedCertificateSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockIssuedCertificateSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockIssuedCertificateSet) Delete(issuedCertificate ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -280,6 +294,20 @@ func (m *MockCertificateRequestSet) EXPECT() *MockCertificateRequestSetMockRecor
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockCertificateRequestSet) Clone() v1sets.CertificateRequestSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.CertificateRequestSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockCertificateRequestSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockCertificateRequestSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockCertificateRequestSet) Delete(certificateRequest ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -520,6 +548,20 @@ func NewMockPodBounceDirectiveSet(ctrl *gomock.Controller) *MockPodBounceDirecti
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodBounceDirectiveSet) EXPECT() *MockPodBounceDirectiveSetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockPodBounceDirectiveSet) Clone() v1sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockPodBounceDirectiveSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Clone))
 }
 
 // Delete mocks base method.

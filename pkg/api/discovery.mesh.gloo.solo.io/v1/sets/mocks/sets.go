@@ -38,6 +38,20 @@ func (m *MockDestinationSet) EXPECT() *MockDestinationSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockDestinationSet) Clone() v1sets.DestinationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.DestinationSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockDestinationSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockDestinationSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockDestinationSet) Delete(destination ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -280,6 +294,20 @@ func (m *MockWorkloadSet) EXPECT() *MockWorkloadSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockWorkloadSet) Clone() v1sets.WorkloadSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.WorkloadSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockWorkloadSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockWorkloadSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockWorkloadSet) Delete(workload ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -520,6 +548,20 @@ func NewMockMeshSet(ctrl *gomock.Controller) *MockMeshSet {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshSet) EXPECT() *MockMeshSetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockMeshSet) Clone() v1sets.MeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.MeshSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockMeshSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockMeshSet)(nil).Clone))
 }
 
 // Delete mocks base method.

@@ -72,6 +72,20 @@ func (mr *MockLocalSnapshotMockRecorder) AccessPolicies() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessPolicies", reflect.TypeOf((*MockLocalSnapshot)(nil).AccessPolicies))
 }
 
+// Clone mocks base method.
+func (m *MockLocalSnapshot) Clone() input.LocalSnapshot {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(input.LocalSnapshot)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockLocalSnapshotMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockLocalSnapshot)(nil).Clone))
+}
+
 // Destinations mocks base method.
 func (m *MockLocalSnapshot) Destinations() v1sets0.DestinationSet {
 	m.ctrl.T.Helper()

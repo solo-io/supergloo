@@ -59,6 +59,9 @@ type SettingsSnapshot interface {
 	SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+
+	// Clone the snapshot
+	Clone() SettingsSnapshot
 }
 
 // options for syncing input object statuses
@@ -153,6 +156,14 @@ func (s snapshotSettings) MarshalJSON() ([]byte, error) {
 
 	snapshotMap["settings"] = s.settings.List()
 	return json.Marshal(snapshotMap)
+}
+
+func (s snapshotSettings) Clone() SettingsSnapshot {
+	return &snapshotSettings{
+		name: s.name,
+
+		settings: s.settings.Clone(),
+	}
 }
 
 // builds the input snapshot from API Clients.

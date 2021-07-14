@@ -44,6 +44,8 @@ type WasmDeploymentSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another WasmDeploymentSet
 	Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
+	// Create a deep copy of the current WasmDeploymentSet
+	Clone() WasmDeploymentSet
 }
 
 func makeGenericWasmDeploymentSet(wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *wasmDeploymentSet) Clone() WasmDeploymentSet {
+	if s == nil {
+		return nil
+	}
+	return &wasmDeploymentSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type RateLimiterServerConfigSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type RateLimiterServerConfigSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RateLimiterServerConfigSet
 	Delta(newSet RateLimiterServerConfigSet) sksets.ResourceDelta
+	// Create a deep copy of the current RateLimiterServerConfigSet
+	Clone() RateLimiterServerConfigSet
 }
 
 func makeGenericRateLimiterServerConfigSet(rateLimiterServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) sksets.ResourceSet {
@@ -433,6 +444,13 @@ func (s *rateLimiterServerConfigSet) Delta(newSet RateLimiterServerConfigSet) sk
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *rateLimiterServerConfigSet) Clone() RateLimiterServerConfigSet {
+	if s == nil {
+		return nil
+	}
+	return &rateLimiterServerConfigSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type VirtualDestinationSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -464,6 +482,8 @@ type VirtualDestinationSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another VirtualDestinationSet
 	Delta(newSet VirtualDestinationSet) sksets.ResourceDelta
+	// Create a deep copy of the current VirtualDestinationSet
+	Clone() VirtualDestinationSet
 }
 
 func makeGenericVirtualDestinationSet(virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) sksets.ResourceSet {
@@ -643,6 +663,13 @@ func (s *virtualDestinationSet) Delta(newSet VirtualDestinationSet) sksets.Resou
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *virtualDestinationSet) Clone() VirtualDestinationSet {
+	if s == nil {
+		return nil
+	}
+	return &virtualDestinationSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type VirtualGatewaySet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -674,6 +701,8 @@ type VirtualGatewaySet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another VirtualGatewaySet
 	Delta(newSet VirtualGatewaySet) sksets.ResourceDelta
+	// Create a deep copy of the current VirtualGatewaySet
+	Clone() VirtualGatewaySet
 }
 
 func makeGenericVirtualGatewaySet(virtualGatewayList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualGateway) sksets.ResourceSet {
@@ -853,6 +882,13 @@ func (s *virtualGatewaySet) Delta(newSet VirtualGatewaySet) sksets.ResourceDelta
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *virtualGatewaySet) Clone() VirtualGatewaySet {
+	if s == nil {
+		return nil
+	}
+	return &virtualGatewaySet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type VirtualHostSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -884,6 +920,8 @@ type VirtualHostSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another VirtualHostSet
 	Delta(newSet VirtualHostSet) sksets.ResourceDelta
+	// Create a deep copy of the current VirtualHostSet
+	Clone() VirtualHostSet
 }
 
 func makeGenericVirtualHostSet(virtualHostList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualHost) sksets.ResourceSet {
@@ -1063,6 +1101,13 @@ func (s *virtualHostSet) Delta(newSet VirtualHostSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *virtualHostSet) Clone() VirtualHostSet {
+	if s == nil {
+		return nil
+	}
+	return &virtualHostSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type RouteTableSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -1094,6 +1139,8 @@ type RouteTableSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RouteTableSet
 	Delta(newSet RouteTableSet) sksets.ResourceDelta
+	// Create a deep copy of the current RouteTableSet
+	Clone() RouteTableSet
 }
 
 func makeGenericRouteTableSet(routeTableList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) sksets.ResourceSet {
@@ -1273,6 +1320,13 @@ func (s *routeTableSet) Delta(newSet RouteTableSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *routeTableSet) Clone() RouteTableSet {
+	if s == nil {
+		return nil
+	}
+	return &routeTableSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type ServiceDependencySet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -1304,6 +1358,8 @@ type ServiceDependencySet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another ServiceDependencySet
 	Delta(newSet ServiceDependencySet) sksets.ResourceDelta
+	// Create a deep copy of the current ServiceDependencySet
+	Clone() ServiceDependencySet
 }
 
 func makeGenericServiceDependencySet(serviceDependencyList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.ServiceDependency) sksets.ResourceSet {
@@ -1481,4 +1537,11 @@ func (s *serviceDependencySet) Delta(newSet ServiceDependencySet) sksets.Resourc
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *serviceDependencySet) Clone() ServiceDependencySet {
+	if s == nil {
+		return nil
+	}
+	return &serviceDependencySet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
