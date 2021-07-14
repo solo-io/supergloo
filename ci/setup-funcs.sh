@@ -325,7 +325,7 @@ function install_istio_1_7() {
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: ingress-gateway
+  name: example-istiooperator
   namespace: istio-system
 spec:
   hub: gcr.io/istio-release
@@ -397,7 +397,7 @@ function install_istio_1_8() {
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: ingress-gateway
+  name: example-istiooperator
   namespace: istio-system
 spec:
   hub: gcr.io/istio-release
