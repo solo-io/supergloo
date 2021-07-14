@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add short names to gloo-mesh CRDs.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/836
