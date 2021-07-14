@@ -52,11 +52,38 @@ type connectionStatus struct {
 	agentsPushing int
 }
 
+func isEnterpriseVersion(ctx context.Context, c client.Client, installNamespace string) (bool, error) {
+	_, err := v1.NewDeploymentClient(c).GetDeployment(ctx, client.ObjectKey{
+		Namespace: installNamespace,
+		Name:      mgmtDeployName,
+	})
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckContext) *Failure {
+	shouldRunCheck, err := isEnterpriseVersion(ctx, checkCtx.Client(), checkCtx.Environment().Namespace)
+	if err != nil {
+		return &Failure{
+			Errors: []error{err},
+		}
+	}
+
+	if !shouldRunCheck {
+		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, enterprise not detected")
+		return nil
+	}
+
 	if checkCtx.Environment().AdminPort == 0 {
 		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, remote port set to 0")
 		return nil
 	}
+
 	installNamespace := checkCtx.Environment().Namespace
 	// get registered clusters
 	registeredClusters, err := v1alpha1.NewKubernetesClusterClient(checkCtx.Client()).ListKubernetesCluster(ctx, client.InNamespace(installNamespace))
@@ -67,7 +94,6 @@ func (d *enterpriseRegistrationCheck) Run(ctx context.Context, checkCtx CheckCon
 	}
 	failure := new(Failure)
 	if len(registeredClusters.Items) == 0 {
-		// TODO we probably should use a writing instead of fmt?
 		failure.AddHint("You don't have any registered clusters. you may want to create a KubernetesCluster CR.", clusterRegDoc)
 	}
 
@@ -169,16 +195,6 @@ func calculateClusterStatuses(
 
 func (d *enterpriseRegistrationCheck) getConnectedAgents(ctx context.Context, checkCtx CheckContext) (map[string]int, map[string]int, error, string) {
 
-	shouldRunCheck, err := isEnterpriseVersion(ctx, checkCtx.Client(), checkCtx.Environment().Namespace)
-	if err != nil {
-		return nil, nil, err, ""
-	}
-
-	if !shouldRunCheck {
-		contextutils.LoggerFrom(ctx).Debugf("skipping relay connectivity check, enterprise not detected")
-		return nil, nil, nil, ""
-	}
-
 	var parsedMetrics map[string]*dto.MetricFamily
 	err, hint := checkCtx.AccessAdminPort(ctx, mgmtDeployName, func(ctx context.Context, adminUrl *url.URL) (error, string) {
 		metricsUrl := adminUrl.ResolveReference(&url.URL{Path: "/metrics"}).String()
@@ -240,18 +256,4 @@ func getClientClustersConnected(clientConnectionMetrics *dto.MetricFamily) (map[
 		clustersConnected[cluster] = int(metric.GetGauge().GetValue())
 	}
 	return clustersConnected, nil, ""
-}
-
-func isEnterpriseVersion(ctx context.Context, c client.Client, installNamespace string) (bool, error) {
-	_, err := v1.NewDeploymentClient(c).GetDeployment(ctx, client.ObjectKey{
-		Namespace: installNamespace,
-		Name:      mgmtDeployName,
-	})
-	if err != nil {
-		if kerrors.IsNotFound(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
 }

@@ -49,7 +49,7 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 		failure.AddError(eris.Errorf("no deployments found in namespace %s", installNamespace))
 		if !env.InCluster {
 			failure.AddHint(fmt.Sprintf(
-				`Gloo Mesh'd installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
+				`Gloo Mesh installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
 				defaults.DefaultPodNamespace), "")
 		}
 		return failure
