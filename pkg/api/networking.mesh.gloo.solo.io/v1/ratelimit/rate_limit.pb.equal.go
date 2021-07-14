@@ -186,6 +186,14 @@ func (m *RouteRateLimit_BasicRateLimit) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetAuthorizedLimits() != target.GetAuthorizedLimits() {
+		return false
+	}
+
+	if m.GetAnonymousLimits() != target.GetAnonymousLimits() {
+		return false
+	}
+
 	return true
 }
 

@@ -2459,6 +2459,13 @@ spec:
                         basic:
                           description: Config for rate-limiting using simplified (gloo-specific)
                             API
+                          properties:
+                            anonymousLimits:
+                              description: limits for unauthorized users
+                              type: boolean
+                            authorizedLimits:
+                              description: limits for authorized users
+                              type: boolean
                           type: object
                         configRefs:
                           description: |-
@@ -3761,6 +3768,13 @@ spec:
                           basic:
                             description: Config for rate-limiting using simplified
                               (gloo-specific) API
+                            properties:
+                              anonymousLimits:
+                                description: limits for unauthorized users
+                                type: boolean
+                              authorizedLimits:
+                                description: limits for authorized users
+                                type: boolean
                             type: object
                           configRefs:
                             description: |-
@@ -5330,6 +5344,13 @@ spec:
                           basic:
                             description: Config for rate-limiting using simplified
                               (gloo-specific) API
+                            properties:
+                              anonymousLimits:
+                                description: limits for unauthorized users
+                                type: boolean
+                              authorizedLimits:
+                                description: limits for authorized users
+                                type: boolean
                             type: object
                           configRefs:
                             description: |-

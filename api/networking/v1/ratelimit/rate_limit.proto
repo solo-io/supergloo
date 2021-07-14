@@ -56,6 +56,11 @@ message RouteRateLimit {
 
     // Basic rate-limiting API
     message BasicRateLimit {
+        // limits for authorized users
+        bool authorized_limits = 1;
+        // limits for unauthorized users
+        bool anonymous_limits = 2;
+
 //        // limits for authorized users
 //        RateLimitRatio authorized_limits = 1;
 //        // limits for unauthorized users

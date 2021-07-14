@@ -100,8 +100,14 @@ Each action and setAction in the lists maps part of the request (or its context)
 <a name="ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit"></a>
 
 ### RouteRateLimit.BasicRateLimit
-Basic rate-limiting API<br>// limits for authorized users        RateLimitRatio authorized_limits = 1;        // limits for unauthorized users        RateLimitRatio anonymous_limits = 2;<br>        // A `RateLimitRatio` specifies the actual ratio of requests that will be permitted when there is a match.        message RateLimitRatio {<br>           enum Unit {                UNKNOWN = 0;                SECOND = 1;                MINUTE = 2;                HOUR = 3;                DAY = 4;            }<br>           Unit unit = 1;<br>           uint32 requests_per_unit = 2;        }
+Basic rate-limiting API
 
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| authorizedLimits | bool |  | limits for authorized users |
+  | anonymousLimits | bool |  | limits for unauthorized users |
+  
 
 
 
