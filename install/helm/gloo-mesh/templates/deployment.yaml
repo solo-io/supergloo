@@ -7,10 +7,6 @@
 
 {{- define "discovery.deploymentSpec"}}
 
-{{/* Define variables in function scope */}}
-{{- $discovery := $.Values.discovery}}
-{{- $discoveryImage := $discovery.image }}
-
 # Deployment manifest for discovery
 
 apiVersion: apps/v1
@@ -39,7 +35,11 @@ spec:
     spec:
       serviceAccountName: discovery
       containers:
-      - image: {{ $discoveryImage.registry }}/{{ $discoveryImage.repository }}:{{ $discoveryImage.tag }}
+{{- $discovery := $.Values.discovery }}
+{{- $discoveryImage := $discovery.image }}
+      - name: discovery
+        image: {{ $discoveryImage.registry }}/{{ $discoveryImage.repository }}:{{ $discoveryImage.tag }}
+        imagePullPolicy: {{ $discoveryImage.pullPolicy }}
         args:
         - discovery
         - --metrics-port={{ $.Values.discovery.ports.metrics | default $.Values.defaultMetricsPort }}
@@ -50,13 +50,10 @@ spec:
         env:
 {{ toYaml $discovery.env | indent 10 }}
 {{- end }}
-        imagePullPolicy: {{ $discoveryImage.pullPolicy }}
-        name: discovery
-{{- if $discovery.resources }}
         resources:
+{{- if $discovery.resources }}
 {{ toYaml $discovery.resources | indent 10}}
 {{- else}}
-        resources:
           requests:
             cpu: 500m
             memory: 256Mi
@@ -135,10 +132,6 @@ spec:
 
 {{- define "networking.deploymentSpec"}}
 
-{{/* Define variables in function scope */}}
-{{- $networking := $.Values.networking}}
-{{- $networkingImage := $networking.image }}
-
 # Deployment manifest for networking
 
 apiVersion: apps/v1
@@ -167,7 +160,11 @@ spec:
     spec:
       serviceAccountName: networking
       containers:
-      - image: {{ $networkingImage.registry }}/{{ $networkingImage.repository }}:{{ $networkingImage.tag }}
+{{- $networking := $.Values.networking }}
+{{- $networkingImage := $networking.image }}
+      - name: networking
+        image: {{ $networkingImage.registry }}/{{ $networkingImage.repository }}:{{ $networkingImage.tag }}
+        imagePullPolicy: {{ $networkingImage.pullPolicy }}
         args:
         - networking
         - --metrics-port={{ $.Values.defaultMetricsPort }}
@@ -180,13 +177,10 @@ spec:
         env:
 {{ toYaml $networking.env | indent 10 }}
 {{- end }}
-        imagePullPolicy: {{ $networkingImage.pullPolicy }}
-        name: networking
-{{- if $networking.resources }}
         resources:
+{{- if $networking.resources }}
 {{ toYaml $networking.resources | indent 10}}
 {{- else}}
-        resources:
           requests:
             cpu: 500m
             memory: 256Mi

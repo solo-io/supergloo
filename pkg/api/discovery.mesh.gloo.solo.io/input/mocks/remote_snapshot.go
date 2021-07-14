@@ -38,6 +38,20 @@ func (m *MockDiscoveryInputSnapshot) EXPECT() *MockDiscoveryInputSnapshotMockRec
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockDiscoveryInputSnapshot) Clone() input.DiscoveryInputSnapshot {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(input.DiscoveryInputSnapshot)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Clone))
+}
+
 // ConfigMaps mocks base method.
 func (m *MockDiscoveryInputSnapshot) ConfigMaps() v1sets0.ConfigMapSet {
 	m.ctrl.T.Helper()

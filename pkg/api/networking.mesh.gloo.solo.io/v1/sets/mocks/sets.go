@@ -38,6 +38,20 @@ func (m *MockTrafficPolicySet) EXPECT() *MockTrafficPolicySetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockTrafficPolicySet) Clone() v1sets.TrafficPolicySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.TrafficPolicySet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockTrafficPolicySetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockTrafficPolicySet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockTrafficPolicySet) Delete(trafficPolicy ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -280,6 +294,20 @@ func (m *MockAccessPolicySet) EXPECT() *MockAccessPolicySetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockAccessPolicySet) Clone() v1sets.AccessPolicySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.AccessPolicySet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockAccessPolicySetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockAccessPolicySet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockAccessPolicySet) Delete(accessPolicy ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -520,6 +548,20 @@ func NewMockVirtualMeshSet(ctrl *gomock.Controller) *MockVirtualMeshSet {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockVirtualMeshSet) EXPECT() *MockVirtualMeshSetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockVirtualMeshSet) Clone() v1sets.VirtualMeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.VirtualMeshSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockVirtualMeshSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockVirtualMeshSet)(nil).Clone))
 }
 
 // Delete mocks base method.

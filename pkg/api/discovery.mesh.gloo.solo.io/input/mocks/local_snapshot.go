@@ -38,6 +38,20 @@ func (m *MockSettingsSnapshot) EXPECT() *MockSettingsSnapshotMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockSettingsSnapshot) Clone() input.SettingsSnapshot {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(input.SettingsSnapshot)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockSettingsSnapshotMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockSettingsSnapshot)(nil).Clone))
+}
+
 // MarshalJSON mocks base method.
 func (m *MockSettingsSnapshot) MarshalJSON() ([]byte, error) {
 	m.ctrl.T.Helper()

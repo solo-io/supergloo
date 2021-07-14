@@ -55,6 +55,20 @@ func (mr *MockRemoteSnapshotMockRecorder) AuthorizationPolicies() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizationPolicies", reflect.TypeOf((*MockRemoteSnapshot)(nil).AuthorizationPolicies))
 }
 
+// Clone mocks base method.
+func (m *MockRemoteSnapshot) Clone() input.RemoteSnapshot {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(input.RemoteSnapshot)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockRemoteSnapshotMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRemoteSnapshot)(nil).Clone))
+}
+
 // DestinationRules mocks base method.
 func (m *MockRemoteSnapshot) DestinationRules() v1alpha3sets.DestinationRuleSet {
 	m.ctrl.T.Helper()
