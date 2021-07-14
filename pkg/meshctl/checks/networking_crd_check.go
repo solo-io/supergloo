@@ -9,7 +9,6 @@ import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type networkingCrdCheck struct{}
@@ -22,38 +21,36 @@ func (c *networkingCrdCheck) GetDescription() string {
 	return "Gloo Mesh networking configuration resources are in a valid state"
 }
 
-func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ string) *Failure {
-	var allErrors []error
+func (c *networkingCrdCheck) Run(ctx context.Context, checkCtx CheckContext) *Failure {
+	client := checkCtx.Client()
+	failure := new(Failure)
 	tpList, err := networkingv1.NewTrafficPolicyClient(client).ListTrafficPolicy(ctx)
 	if err != nil {
-		allErrors = append(allErrors, err)
+		failure.AddError(err)
 	}
 	apList, err := networkingv1.NewAccessPolicyClient(client).ListAccessPolicy(ctx)
 	if err != nil {
-		allErrors = append(allErrors, err)
+		failure.AddError(err)
 	}
 	vmList, err := networkingv1.NewVirtualMeshClient(client).ListVirtualMesh(ctx)
 	if err != nil {
-		allErrors = append(allErrors, err)
+		failure.AddError(err)
 	}
 
 	if errs := c.checkTrafficPolicies(tpList); errs != nil {
-		allErrors = append(allErrors, errs...)
+		failure.AddError(errs...)
 	}
 	if errs := c.checkAccessPolicies(apList); errs != nil {
-		allErrors = append(allErrors, errs...)
+		failure.AddError(errs...)
 	}
 	if errs := c.checkVirtualMeshes(vmList); errs != nil {
-		allErrors = append(allErrors, errs...)
+		failure.AddError(errs...)
 	}
 
-	if len(allErrors) > 0 {
-		return &Failure{
-			Errors: allErrors,
-			Hint:   c.buildHint(),
-		}
+	if len(failure.Errors) > 0 {
+		failure.AddHint(c.buildHint(), "")
 	}
-	return nil
+	return failure
 }
 
 func (c *networkingCrdCheck) checkTrafficPolicies(tpList *networkingv1.TrafficPolicyList) []error {
