@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/timeout"
@@ -29,7 +28,7 @@ var _ = Describe("TimeoutDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					RequestTimeout: &duration.Duration{Seconds: 5},
@@ -47,7 +46,7 @@ var _ = Describe("TimeoutDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					RequestTimeout: &duration.Duration{Seconds: 5},

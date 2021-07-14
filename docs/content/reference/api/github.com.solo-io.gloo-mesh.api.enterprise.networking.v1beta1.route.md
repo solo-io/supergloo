@@ -22,6 +22,7 @@ title: "route.proto"
   - [DirectResponseAction](#networking.enterprise.mesh.gloo.solo.io.DirectResponseAction)
   - [RedirectAction](#networking.enterprise.mesh.gloo.solo.io.RedirectAction)
   - [Route](#networking.enterprise.mesh.gloo.solo.io.Route)
+  - [Route.LabelsEntry](#networking.enterprise.mesh.gloo.solo.io.Route.LabelsEntry)
   - [Route.RouteAction](#networking.enterprise.mesh.gloo.solo.io.Route.RouteAction)
 
   - [RedirectAction.RedirectResponseCode](#networking.enterprise.mesh.gloo.solo.io.RedirectAction.RedirectResponseCode)
@@ -98,6 +99,23 @@ A route specifies how to match a request and what action to take when the reques
   | directResponseAction | [networking.enterprise.mesh.gloo.solo.io.DirectResponseAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DirectResponseAction" >}}) |  | Return an arbitrary HTTP response directly, without proxying. |
   | delegateAction | [networking.enterprise.mesh.gloo.solo.io.DelegateAction]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.DelegateAction" >}}) |  | Delegate routing actions for the given matcher to one or more RouteTables. |
   | options | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Route Options extend the behavior of routes. Route options include configuration such as retries, rate limiting, and request/response transformation. RouteOption behavior will be inherited by delegated routes which do not specify their own `options` |
+  | labels | [][networking.enterprise.mesh.gloo.solo.io.Route.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route#networking.enterprise.mesh.gloo.solo.io.Route.LabelsEntry" >}}) | repeated | Specify labels for this route, which are used by other resources (e.g. TrafficPolicy) to select specific routes within a given gateway object. |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.Route.LabelsEntry"></a>
+
+### Route.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
   
 
 

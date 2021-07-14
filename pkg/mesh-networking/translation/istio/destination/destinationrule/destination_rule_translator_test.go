@@ -100,7 +100,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			},
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*v1.AppliedTrafficPolicy{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
@@ -147,7 +147,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			},
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*v1.AppliedTrafficPolicy{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "another-tp",
@@ -264,7 +264,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			},
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*v1.AppliedTrafficPolicy{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
@@ -367,7 +367,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				gomock.Any(),
 			).
 			DoAndReturn(func(
-				_ *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				_ *v1.AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
 				destinationRuleSpec *networkingv1alpha3spec.DestinationRule,
 				_ decorators.RegisterField,
@@ -442,7 +442,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						},
 					},
 				},
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*v1.AppliedTrafficPolicy{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
@@ -561,7 +561,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				gomock.Any(),
 			).
 			DoAndReturn(func(
-				_ *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				_ *v1.AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
 				destinationRuleSpec *networkingv1alpha3spec.DestinationRule,
 				_ decorators.RegisterField,
@@ -612,7 +612,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			},
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*v1.AppliedTrafficPolicy{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "tp-1",
@@ -659,7 +659,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				gomock.Any(),
 			).
 			DoAndReturn(func(
-				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				appliedPolicy *v1.AppliedTrafficPolicy,
 				service *discoveryv1.Destination,
 				output *networkingv1alpha3spec.DestinationRule,
 				registerField decorators.RegisterField,

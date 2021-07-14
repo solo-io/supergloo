@@ -55,6 +55,10 @@ message Route {
     // RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
     .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy options = 7;
 
+    // Specify labels for this route, which are used by other resources (e.g. TrafficPolicy) to
+    // select specific routes within a given gateway object.
+    map<string, string> labels = 10;
+
     // RouteActions are used to route matched requests to upstreams.
     message RouteAction {
         // Defines the destination upstream for routing

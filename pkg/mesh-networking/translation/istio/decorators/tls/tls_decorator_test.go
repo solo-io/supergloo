@@ -4,7 +4,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
@@ -34,7 +33,7 @@ var _ = Describe("TlsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					Mtls: &v1.TrafficPolicySpec_Policy_MTLS{
@@ -62,7 +61,7 @@ var _ = Describe("TlsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{},
 		}
 		err := tlsDecorator.ApplyTrafficPolicyToDestinationRule(

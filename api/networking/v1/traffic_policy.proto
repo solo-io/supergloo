@@ -22,13 +22,24 @@ option (extproto.equal_all) = true;
 // Applies L7 routing and post-routing configuration on selected network edges.
 message TrafficPolicySpec {
 
-    // Specify the Workloads (traffic sources) this TrafficPolicy applies to.
+    // Specify the Workloads (sources for east-west traffic) this TrafficPolicy applies to.
     // Omit to apply to all Workloads.
     repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selector = 1;
 
     // Specify the Destinations (destinations) this TrafficPolicy applies to.
     // Omit to apply to all Destinations.
     repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selector = 2;
+
+    // Specify which ingress gateway traffic this trafficPolicy should
+    // apply to. Multiple policies from different sources defining
+    // different policies (eg retries, timeouts) will be merged.
+    // If a conflicting policy value is defined in both a TrafficPolicy
+    // resource (or multiple TrafficPolicy resources) and in-line on a VirtualHost,
+    // or Route - then the in-line values will take precedence. If multiple
+    // TrafficPolicies select the same VirtualHost, RouteTable, or Route, then the older
+    // TrafficPolicy (by CreationTime) takes precedence over any newer Traffic policy.
+    // Omit to apply to all VirtualHosts and all of their routes.
+    repeated RouteSelector route_selector = 5;
 
     // Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
@@ -238,6 +249,32 @@ message TrafficPolicySpec {
         }
 
     }
+
+    // Specify selected gateway traffic by specifying which gateway
+    // resources (virtualHosts or routeTables) to select. You can optionally further
+    // filter by using route labels to only select a subset of routes within those resources.
+    // If no virtualHost or routeTable selectors (or references) are explicitly
+    // set, all virtualHosts and routeTables will be selected by default.
+    // If no route label matcher is specified, all routes on the
+    // selected resources are matched.
+    message RouteSelector {
+        // Select VirtualHosts by reference.
+        repeated .core.skv2.solo.io.ObjectRef virtual_host_refs = 1;
+
+        // Select VirtualHosts by label and/or namespace.
+        .core.skv2.solo.io.ObjectSelector virtual_host_selector = 2;
+
+        // Select RouteTables by reference.
+        repeated .core.skv2.solo.io.ObjectRef route_table_refs = 3;
+
+        // Select RouteTables by label and/or namespace.
+        .core.skv2.solo.io.ObjectSelector route_table_selector = 4;
+
+        // Specify a set of labels for selecting Routes. All labels listed here must be
+        // present on a route for that route to be considered matched.
+        // If omitted, all routes on the selected VirtualHosts are selected.
+        map<string, string> route_label_matcher = 5;
+    }
 }
 
 message TrafficPolicyStatus {
@@ -260,5 +297,16 @@ message TrafficPolicyStatus {
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
+
+    // The Gateway resoures to which this traffic policy has been applied.
+    // The resource names are in the format `name.namespace (resourceType)`
+    map<string, GatewayRoutes> gateway_routes = 6;
+}
+
+// Represents a specific gateway resource and which routes on that resource have been selected
+message GatewayRoutes {
+    // The list of routes selected. If no routeLabelMatcher was provided,
+    // the value "*" will be used to indicate all routes were selected.
+    repeated string routes = 4;
 }
 

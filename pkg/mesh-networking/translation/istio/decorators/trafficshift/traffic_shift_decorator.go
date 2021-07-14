@@ -59,7 +59,7 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 }
 
 func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	appliedPolicy *networkingv1.AppliedTrafficPolicy,
 	destination *discoveryv1.Destination,
 	sourceMeshInstallation *discoveryv1.MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,

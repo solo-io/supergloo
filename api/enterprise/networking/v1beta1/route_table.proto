@@ -5,6 +5,9 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/route.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/applied_policies.proto";
+
+import "encoding/protobuf/cue/cue.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -40,6 +43,10 @@ message RouteTableStatus {
 
     // List of child RouteTables that this RouteTable delegates to
     repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 5;
+
+    // The set of TrafficPolicies that have been applied to this Destination.
+    // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+    repeated .networking.mesh.gloo.solo.io.AppliedTrafficPolicy applied_traffic_policies = 6 [(cue.opt).disable_openapi_validation = true];
 }
 
 message SelectedBy {
@@ -52,6 +59,6 @@ message SelectedBy {
     // Type of resource selecting this RouteTable. Can be
     // VirtualGateway, VirtualHost, or RouteTable.
     string type = 3;
-    
+
     // TODO: Path selected upon?
 }

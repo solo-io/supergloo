@@ -73,6 +73,7 @@ A `VirtualHost` is used to configure routes. It is selected by a `VirtualGateway
   | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
   | attachedVirtualGateways | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of each VirtualGateway which has selected this VirtualHost |
   | selectedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of RouteTables that this Route table delegates to |
+  | appliedTrafficPolicies | [][networking.mesh.gloo.solo.io.AppliedTrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.applied_policies#networking.mesh.gloo.solo.io.AppliedTrafficPolicy" >}}) | repeated | The set of TrafficPolicies that have been applied to this Destination. {{/* Note: validation of this field disabled because it slows down cue tremendously*/}} |
   
 
 

@@ -53,7 +53,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 				},
 			},
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*v1.AppliedTrafficPolicy{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "tt",

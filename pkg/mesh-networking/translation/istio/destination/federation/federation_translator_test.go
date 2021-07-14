@@ -124,8 +124,8 @@ var _ = Describe("FederationTranslator", func() {
 		remoteMeshRef2 := ezkube.MakeObjectRef(remoteMesh2)
 		destinationVirtualMeshRef := ezkube.MakeObjectRef(destinationVirtualMesh)
 
-		makeTrafficSplit := func(backingService *skv2corev1.ClusterObjectRef, subset map[string]string) *discoveryv1.DestinationStatus_AppliedTrafficPolicy {
-			return &discoveryv1.DestinationStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
+		makeTrafficSplit := func(backingService *skv2corev1.ClusterObjectRef, subset map[string]string) *networkingv1.AppliedTrafficPolicy {
+			return &networkingv1.AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
 				"",
 				"",
 				backingService,
@@ -184,7 +184,7 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			// include some applied subsets
 			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedTrafficPolicies: []*networkingv1.AppliedTrafficPolicy{
 					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
 				},
 				AppliedFederation: &discoveryv1.DestinationStatus_AppliedFederation{

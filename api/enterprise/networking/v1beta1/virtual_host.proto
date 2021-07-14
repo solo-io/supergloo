@@ -6,9 +6,12 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/route.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/applied_policies.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
+
+import "encoding/protobuf/cue/cue.proto";
 
 /*
     A `VirtualHost` is used to configure routes. It is selected by a `VirtualGateway`, and may be attached
@@ -61,4 +64,9 @@ message VirtualHostStatus {
 
     // List of RouteTables that this Route table delegates to
     repeated .core.skv2.solo.io.ObjectRef selected_route_tables = 5;
+
+    // The set of TrafficPolicies that have been applied to this Destination.
+    // {{/* Note: validation of this field disabled because it slows down cue tremendously*/}}
+    repeated .networking.mesh.gloo.solo.io.AppliedTrafficPolicy applied_traffic_policies = 6 [(cue.opt).disable_openapi_validation = true];
+
 }

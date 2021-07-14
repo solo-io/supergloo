@@ -147,6 +147,23 @@ func (m *RouteTableStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetAppliedTrafficPolicies()) != len(target.GetAppliedTrafficPolicies()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedTrafficPolicies() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedTrafficPolicies()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedTrafficPolicies()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 

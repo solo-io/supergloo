@@ -1,0 +1,27 @@
+syntax = "proto3";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy" >}}) that applies to the resource.
+// If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
+message AppliedTrafficPolicy {
+
+	// Reference to the TrafficPolicy object.
+	.core.skv2.solo.io.ObjectRef ref = 1;
+
+	// The observed generation of the accepted TrafficPolicy.
+	int64 observedGeneration = 2;
+
+	// The spec of the last known valid TrafficPolicy.
+	TrafficPolicySpec spec = 3;
+
+	// The list of routes to which the TrafficPolicy applies, as selected by their labels.
+	// Value is "*" if the TrafficPolicy applies to all routes.
+	repeated string routes = 4;
+}

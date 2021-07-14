@@ -77,7 +77,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	var appliedTrafficPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy
+	var appliedTrafficPolicy *v1.AppliedTrafficPolicy
 
 	for _, tp := range destination.Status.GetAppliedTrafficPolicies() {
 		validate(tp, destination, reporter)
@@ -131,7 +131,7 @@ func (t *translator) Translate(
 }
 
 func validate(
-	tp *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	tp *v1.AppliedTrafficPolicy,
 	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
 ) {

@@ -233,8 +233,8 @@ func setWorkloadsForAccessPolicies(
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
 // as well as returns a list of accepted traffic policies for the Destination status
-func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.LocalSnapshot, reporter *applyReporter, destination *discoveryv1.Destination) []*discoveryv1.DestinationStatus_AppliedTrafficPolicy {
-	var validatedTrafficPolicies []*discoveryv1.DestinationStatus_AppliedTrafficPolicy
+func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.LocalSnapshot, reporter *applyReporter, destination *discoveryv1.Destination) []*networkingv1.AppliedTrafficPolicy {
+	var validatedTrafficPolicies []*networkingv1.AppliedTrafficPolicy
 
 	// track accepted index
 	var acceptedIndex uint32
@@ -548,7 +548,7 @@ func (v *applyReporter) getVirtualMeshErrors(mesh *discoveryv1.Mesh, virtualMesh
 func getAppliedTrafficPolicies(
 	trafficPolicies networkingv1.TrafficPolicySlice,
 	destination *discoveryv1.Destination,
-) []*discoveryv1.DestinationStatus_AppliedTrafficPolicy {
+) []*networkingv1.AppliedTrafficPolicy {
 	var matchingTrafficPolicies networkingv1.TrafficPolicySlice
 	for _, policy := range trafficPolicies {
 		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
@@ -561,10 +561,10 @@ func getAppliedTrafficPolicies(
 
 	sortTrafficPoliciesByAcceptedDate(destination, matchingTrafficPolicies)
 
-	var appliedPolicies []*discoveryv1.DestinationStatus_AppliedTrafficPolicy
+	var appliedPolicies []*networkingv1.AppliedTrafficPolicy
 	for _, policy := range matchingTrafficPolicies {
 		policy := policy // pike
-		appliedPolicies = append(appliedPolicies, &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicies = append(appliedPolicies, &networkingv1.AppliedTrafficPolicy{
 			Ref:                ezkube.MakeObjectRef(policy),
 			Spec:               &policy.Spec,
 			ObservedGeneration: policy.Generation,

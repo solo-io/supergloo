@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
-	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/cors"
@@ -31,7 +30,7 @@ var _ = Describe("CorsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					CorsPolicy: &v1.TrafficPolicySpec_Policy_CorsPolicy{
@@ -71,7 +70,7 @@ var _ = Describe("CorsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &v1.AppliedTrafficPolicy{
 			Spec: &v1.TrafficPolicySpec{
 				Policy: &v1.TrafficPolicySpec_Policy{
 					CorsPolicy: &v1.TrafficPolicySpec_Policy_CorsPolicy{},

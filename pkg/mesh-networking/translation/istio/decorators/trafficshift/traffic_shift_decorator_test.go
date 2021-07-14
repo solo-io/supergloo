@@ -76,7 +76,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
@@ -160,7 +160,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
@@ -237,7 +237,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
@@ -339,7 +339,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicyMissingPort := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicyMissingPort := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
@@ -359,7 +359,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				},
 			},
 		}
-		appliedPolicyNonexistentPort := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicyNonexistentPort := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
@@ -443,7 +443,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+		appliedPolicy := &networkingv1.AppliedTrafficPolicy{
 			Spec: &networkingv1.TrafficPolicySpec{
 				Policy: &networkingv1.TrafficPolicySpec_Policy{
 					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{

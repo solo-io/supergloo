@@ -34,7 +34,7 @@ func (d *tlsDecorator) DecoratorName() string {
 }
 
 func (d *tlsDecorator) ApplyTrafficPolicyToDestinationRule(
-	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	appliedPolicy *v1.AppliedTrafficPolicy,
 	_ *discoveryv1.Destination,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,

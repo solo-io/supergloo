@@ -867,54 +867,6 @@ func (m *DestinationSpec_ExternalService_ServicePort) Equal(that interface{}) bo
 }
 
 // Equal function
-func (m *DestinationStatus_AppliedTrafficPolicy) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*DestinationStatus_AppliedTrafficPolicy)
-	if !ok {
-		that2, ok := that.(DestinationStatus_AppliedTrafficPolicy)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRef()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetRef(), target.GetRef()) {
-			return false
-		}
-	}
-
-	if m.GetObservedGeneration() != target.GetObservedGeneration() {
-		return false
-	}
-
-	if h, ok := interface{}(m.GetSpec()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetSpec()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetSpec(), target.GetSpec()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *DestinationStatus_AppliedAccessPolicy) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
