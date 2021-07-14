@@ -38,6 +38,20 @@ func (m *MockSettingsSet) EXPECT() *MockSettingsSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockSettingsSet) Clone() v1sets.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.SettingsSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockSettingsSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockSettingsSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockSettingsSet) Delete(settings ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -278,6 +292,20 @@ func NewMockDashboardSet(ctrl *gomock.Controller) *MockDashboardSet {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDashboardSet) EXPECT() *MockDashboardSetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockDashboardSet) Clone() v1sets.DashboardSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.DashboardSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockDashboardSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockDashboardSet)(nil).Clone))
 }
 
 // Delete mocks base method.

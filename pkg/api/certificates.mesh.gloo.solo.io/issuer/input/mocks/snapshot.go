@@ -52,6 +52,20 @@ func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificateRequests))
 }
 
+// Clone mocks base method.
+func (m *MockSnapshot) Clone() input.Snapshot {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(input.Snapshot)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockSnapshotMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockSnapshot)(nil).Clone))
+}
+
 // IssuedCertificates mocks base method.
 func (m *MockSnapshot) IssuedCertificates() v1sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()

@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Add Clone() function to skv2 sets.
