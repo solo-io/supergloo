@@ -57,3 +57,8 @@ If you have questions, please join the [#Gloo-Mesh channel](https://solo-io.slac
 - Learn more about [Open Source at Solo.io](https://www.solo.io/open-source/)
 - Follow us on Twitter [@soloio_inc](https://twitter.com/soloio_inc)
 - Watch the [deep dive videos](https://www.youtube.com/playlist?list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+
+
+# Security
+
+*Reporting security issues:* We take Gloo Mesh's security very seriously. If you've found a security issue or a potential security issue in Gloo Mesh, please DO NOT file a public Github issue, instead send your report privately to [security@solo.io](mailto:security@solo.io).
