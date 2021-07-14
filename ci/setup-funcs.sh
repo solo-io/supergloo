@@ -316,7 +316,6 @@ EOF
 function install_istio_1_7() {
   cluster=$1
   eastWestIngressPort=$2
-  northSouthIngressPort=$3
 
   K="kubectl --context=kind-${cluster}"
 
@@ -326,7 +325,7 @@ function install_istio_1_7() {
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: example-istiooperator
+  name: ingress-gateway
   namespace: istio-system
 spec:
   hub: gcr.io/istio-release
@@ -337,7 +336,7 @@ spec:
   components:
     # Istio Gateway feature
     ingressGateways:
-    - name: istio-ingressgateway
+    - name: istio-ingressgateway-ew
       enabled: true
       label:
         traffic: east-west
@@ -353,10 +352,7 @@ spec:
             istio: ingressgateway
             traffic: east-west
           ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-              nodePort: ${northSouthIngressPort}
+            # in the future we may want to use this port for east west traffic in limited trust
             - port: 443
               targetPort: 8443
               name: https
@@ -388,11 +384,10 @@ spec:
 EOF
 }
 
-# Operator spec for istio 1.8.x
+# Operator spec for istio 1.8.x, 1.9.x, and 1.10x
 function install_istio_1_8() {
   cluster=$1
   eastWestIngressPort=$2
-  northSouthIngressPort=$3
 
   K="kubectl --context=kind-${cluster}"
 
@@ -402,7 +397,7 @@ function install_istio_1_8() {
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: example-istiooperator
+  name: ingress-gateway
   namespace: istio-system
 spec:
   hub: gcr.io/istio-release
@@ -426,7 +421,7 @@ spec:
   components:
     # Istio Gateway feature
     ingressGateways:
-    - name: istio-ingressgateway
+    - name: istio-ingressgateway-ew
       enabled: true
       label:
         traffic: east-west
@@ -442,84 +437,7 @@ spec:
             istio: ingressgateway
             traffic: east-west
           ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-              nodePort: ${northSouthIngressPort}
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${eastWestIngressPort}
-  values:
-    global:
-      pilotCertProvider: istiod
-      # needed for annotating istio metrics with cluster
-      multiCluster:
-        clusterName: ${cluster}
-EOF
-}
-
-# Operator spec for istio 1.9.x
-function install_istio_1_9() {
-  cluster=$1
-  eastWestIngressPort=$2
-  northSouthIngressPort=$3
-
-  K="kubectl --context=kind-${cluster}"
-
-  echo "installing istio to ${cluster}..."
-
-  cat << EOF | istioctl manifest install -y --context "kind-${cluster}" -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: example-istiooperator
-  namespace: istio-system
-spec:
-  hub: gcr.io/istio-release
-  profile: preview
-  meshConfig:
-    enableAutoMtls: true
-    defaultConfig:
-      envoyAccessLogService:
-        address: enterprise-agent.gloo-mesh:9977
-      envoyMetricsService:
-        address: enterprise-agent.gloo-mesh:9977
-      proxyMetadata:
-        # Enable Istio agent to handle DNS requests for known hosts
-        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
-        ISTIO_META_DNS_CAPTURE: "true"
-        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
-        GLOO_MESH_CLUSTER_NAME: ${cluster}
-      proxyStatsMatcher:
-        inclusionPrefixes:
-        - "http"
-  components:
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      label:
-        traffic: east-west
-      k8s:
-        env:
-          # needed for Gateway TLS AUTO_PASSTHROUGH mode, reference: https://istio.io/latest/docs/reference/config/networking/gateway/#ServerTLSSettings-TLSmode
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-        service:
-          type: NodePort
-          selector:
-            app: istio-ingressgateway
-            istio: ingressgateway
-            traffic: east-west
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-              nodePort: ${northSouthIngressPort}
+            # in the future we may want to use this port for east west traffic in limited trust
             - port: 443
               targetPort: 8443
               name: https
@@ -579,22 +497,21 @@ EOF
 function install_istio() {
   cluster=$1
   eastWestIngressPort=$2
-  northSouthIngressPort=$3
   K="kubectl --context=kind-${cluster}"
 
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $eastWestIngressPort $northSouthIngressPort
-    install_istio_coredns $cluster $eastWestIngressPort $northSouthIngressPort
+    install_istio_1_7 $cluster $eastWestIngressPort
+    install_istio_coredns $cluster $eastWestIngressPort
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $eastWestIngressPort $northSouthIngressPort
+    install_istio_1_8 $cluster $eastWestIngressPort
   elif istioctl version | grep -E -- '1.9'
   then
-    install_istio_1_9 $cluster $eastWestIngressPort $northSouthIngressPort
+    install_istio_1_8 $cluster $eastWestIngressPort
   elif istioctl version | grep -E -- '1.10'
   then
-    install_istio_1_9 $cluster $eastWestIngressPort $northSouthIngressPort
+    install_istio_1_8 $cluster $eastWestIngressPort
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1
