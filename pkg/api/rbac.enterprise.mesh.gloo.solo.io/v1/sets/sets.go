@@ -44,6 +44,8 @@ type RoleSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RoleSet
 	Delta(newSet RoleSet) sksets.ResourceDelta
+	// Create a deep copy of the current RoleSet
+	Clone() RoleSet
 }
 
 func makeGenericRoleSet(roleList []*rbac_enterprise_mesh_gloo_solo_io_v1.Role) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *roleSet) Delta(newSet RoleSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *roleSet) Clone() RoleSet {
+	if s == nil {
+		return nil
+	}
+	return &roleSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type RoleBindingSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type RoleBindingSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RoleBindingSet
 	Delta(newSet RoleBindingSet) sksets.ResourceDelta
+	// Create a deep copy of the current RoleBindingSet
+	Clone() RoleBindingSet
 }
 
 func makeGenericRoleBindingSet(roleBindingList []*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding) sksets.ResourceSet {
@@ -431,4 +442,11 @@ func (s *roleBindingSet) Delta(newSet RoleBindingSet) sksets.ResourceDelta {
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *roleBindingSet) Clone() RoleBindingSet {
+	if s == nil {
+		return nil
+	}
+	return &roleBindingSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

@@ -67,6 +67,9 @@ type Snapshot interface {
 	SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+
+	// Clone the snapshot
+	Clone() Snapshot
 }
 
 // options for syncing input object statuses
@@ -201,6 +204,15 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["certificateRequests"] = s.certificateRequests.List()
 	return json.Marshal(snapshotMap)
+}
+
+func (s snapshot) Clone() Snapshot {
+	return &snapshot{
+		name: s.name,
+
+		issuedCertificates:  s.issuedCertificates.Clone(),
+		certificateRequests: s.certificateRequests.Clone(),
+	}
 }
 
 // builds the input snapshot from API Clients.

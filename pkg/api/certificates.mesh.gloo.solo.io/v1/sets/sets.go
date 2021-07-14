@@ -44,6 +44,8 @@ type IssuedCertificateSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another IssuedCertificateSet
 	Delta(newSet IssuedCertificateSet) sksets.ResourceDelta
+	// Create a deep copy of the current IssuedCertificateSet
+	Clone() IssuedCertificateSet
 }
 
 func makeGenericIssuedCertificateSet(issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *issuedCertificateSet) Delta(newSet IssuedCertificateSet) sksets.Resourc
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *issuedCertificateSet) Clone() IssuedCertificateSet {
+	if s == nil {
+		return nil
+	}
+	return &issuedCertificateSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type CertificateRequestSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type CertificateRequestSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another CertificateRequestSet
 	Delta(newSet CertificateRequestSet) sksets.ResourceDelta
+	// Create a deep copy of the current CertificateRequestSet
+	Clone() CertificateRequestSet
 }
 
 func makeGenericCertificateRequestSet(certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest) sksets.ResourceSet {
@@ -433,6 +444,13 @@ func (s *certificateRequestSet) Delta(newSet CertificateRequestSet) sksets.Resou
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *certificateRequestSet) Clone() CertificateRequestSet {
+	if s == nil {
+		return nil
+	}
+	return &certificateRequestSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type PodBounceDirectiveSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -464,6 +482,8 @@ type PodBounceDirectiveSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another PodBounceDirectiveSet
 	Delta(newSet PodBounceDirectiveSet) sksets.ResourceDelta
+	// Create a deep copy of the current PodBounceDirectiveSet
+	Clone() PodBounceDirectiveSet
 }
 
 func makeGenericPodBounceDirectiveSet(podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) sksets.ResourceSet {
@@ -641,4 +661,11 @@ func (s *podBounceDirectiveSet) Delta(newSet PodBounceDirectiveSet) sksets.Resou
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *podBounceDirectiveSet) Clone() PodBounceDirectiveSet {
+	if s == nil {
+		return nil
+	}
+	return &podBounceDirectiveSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

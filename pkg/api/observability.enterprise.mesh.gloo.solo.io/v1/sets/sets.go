@@ -44,6 +44,8 @@ type AccessLogRecordSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another AccessLogRecordSet
 	Delta(newSet AccessLogRecordSet) sksets.ResourceDelta
+	// Create a deep copy of the current AccessLogRecordSet
+	Clone() AccessLogRecordSet
 }
 
 func makeGenericAccessLogRecordSet(accessLogRecordList []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) sksets.ResourceSet {
@@ -221,4 +223,11 @@ func (s *accessLogRecordSet) Delta(newSet AccessLogRecordSet) sksets.ResourceDel
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *accessLogRecordSet) Clone() AccessLogRecordSet {
+	if s == nil {
+		return nil
+	}
+	return &accessLogRecordSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
