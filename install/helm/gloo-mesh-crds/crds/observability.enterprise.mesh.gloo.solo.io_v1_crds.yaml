@@ -13,6 +13,9 @@ spec:
     kind: AccessLogRecord
     listKind: AccessLogRecordList
     plural: accesslogrecords
+    shortNames:
+    - alr
+    - alrs
     singular: accesslogrecord
   preserveUnknownFields: false
   scope: Namespaced

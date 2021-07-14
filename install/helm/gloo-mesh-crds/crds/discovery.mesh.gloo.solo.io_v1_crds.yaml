@@ -13,6 +13,9 @@ spec:
     kind: Destination
     listKind: DestinationList
     plural: destinations
+    shortNames:
+    - dest
+    - dests
     singular: destination
   preserveUnknownFields: false
   scope: Namespaced
@@ -723,6 +726,9 @@ spec:
     kind: Workload
     listKind: WorkloadList
     plural: workloads
+    shortNames:
+    - wkld
+    - wklds
     singular: workload
   preserveUnknownFields: false
   scope: Namespaced

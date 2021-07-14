@@ -13,6 +13,9 @@ spec:
     kind: WasmDeployment
     listKind: WasmDeploymentList
     plural: wasmdeployments
+    shortNames:
+    - wd
+    - wds
     singular: wasmdeployment
   preserveUnknownFields: false
   scope: Namespaced
@@ -239,6 +242,9 @@ spec:
     kind: RateLimiterServerConfig
     listKind: RateLimiterServerConfigList
     plural: ratelimiterserverconfigs
+    shortNames:
+    - rlsc
+    - rlscs
     singular: ratelimiterserverconfig
   preserveUnknownFields: false
   scope: Namespaced
@@ -334,6 +340,9 @@ spec:
     kind: VirtualDestination
     listKind: VirtualDestinationList
     plural: virtualdestinations
+    shortNames:
+    - vd
+    - vds
     singular: virtualdestination
   preserveUnknownFields: false
   scope: Namespaced
@@ -902,6 +911,9 @@ spec:
     kind: VirtualGateway
     listKind: VirtualGatewayList
     plural: virtualgateways
+    shortNames:
+    - vg
+    - vgs
     singular: virtualgateway
   preserveUnknownFields: false
   scope: Namespaced
@@ -1660,6 +1672,9 @@ spec:
     kind: VirtualHost
     listKind: VirtualHostList
     plural: virtualhosts
+    shortNames:
+    - vh
+    - vhs
     singular: virtualhost
   preserveUnknownFields: false
   scope: Namespaced
@@ -4085,6 +4100,9 @@ spec:
     kind: RouteTable
     listKind: RouteTableList
     plural: routetables
+    shortNames:
+    - rt
+    - rts
     singular: routetable
   preserveUnknownFields: false
   scope: Namespaced
@@ -5558,6 +5576,9 @@ spec:
     kind: ServiceDependency
     listKind: ServiceDependencyList
     plural: servicedependencies
+    shortNames:
+    - sd
+    - sds
     singular: servicedependency
   preserveUnknownFields: false
   scope: Namespaced

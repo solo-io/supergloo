@@ -19,34 +19,34 @@ var (
 )
 
 var GlooMeshSettingsGroup = makeGroup("settings", "v1", []ResourceToGenerate{
-	{Kind: "Settings"},
-	{Kind: "Dashboard"},
+	{Kind: "Settings", ShortNames: []string{"s"}},
+	{Kind: "Dashboard", ShortNames: []string{"dash", "dashes"}},
 })
 
 var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1", []ResourceToGenerate{
-	{Kind: "Destination"},
-	{Kind: "Workload"},
+	{Kind: "Destination", ShortNames: []string{"dest", "dests"}},
+	{Kind: "Workload", ShortNames: []string{"wkld", "wklds"}},
 	{Kind: "Mesh"},
 })
 
 var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate{
-	{Kind: "TrafficPolicy"},
-	{Kind: "AccessPolicy"},
-	{Kind: "VirtualMesh"},
+	{Kind: "TrafficPolicy", ShortNames: []string{"tp", "tps"}},
+	{Kind: "AccessPolicy", ShortNames: []string{"ap", "aps"}},
+	{Kind: "VirtualMesh", ShortNames: []string{"vm", "vms"}},
 })
 
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
-	{Kind: "WasmDeployment"},
-	{Kind: "RateLimiterServerConfig"},
-	{Kind: "VirtualDestination"},
-	{Kind: "VirtualGateway"},
-	{Kind: "VirtualHost"},
-	{Kind: "RouteTable"},
-	{Kind: "ServiceDependency"},
+	{Kind: "WasmDeployment", ShortNames: []string{"wd", "wds"}},
+	{Kind: "RateLimiterServerConfig", ShortNames: []string{"rlsc", "rlscs"}},
+	{Kind: "VirtualDestination", ShortNames: []string{"vd", "vds"}},
+	{Kind: "VirtualGateway", ShortNames: []string{"vg", "vgs"}},
+	{Kind: "VirtualHost", ShortNames: []string{"vh", "vhs"}},
+	{Kind: "RouteTable", ShortNames: []string{"rt", "rts"}},
+	{Kind: "ServiceDependency", ShortNames: []string{"sd", "sds"}},
 })
 
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1", []ResourceToGenerate{
-	{Kind: "AccessLogRecord"},
+	{Kind: "AccessLogRecord", ShortNames: []string{"alr", "alrs"}},
 })
 
 var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceToGenerate{
