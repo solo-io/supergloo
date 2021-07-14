@@ -70,6 +70,10 @@ message IssuedCertificateSpec {
         IntermediateCertificateAuthority agent_ca = 8;
     }
 
+    // The current state of rotation, this value signals to the cert issuer how to 
+    // construct the intermediary certs which the data-plane clusters receive
+    CertificateRotationState rotation_state = 9;
+
 }
 
 // Set of options which represent the certificate authorities the management cluster can use
@@ -118,4 +122,18 @@ message IssuedCertificateStatus {
         // Processing the certificate workflow failed.
         FAILED = 4;
     }
+
+    // The location of the certificate authority to sign this certificate
+    oneof applied_certificate_authority {
+        // Gloo Mesh CA options
+        RootCertificateAuthority applied_gloo_mesh_ca = 4;        
+        // Agent CA options
+        IntermediateCertificateAuthority applied_agent_ca = 5;
+    }
+
+
+    // The rotation state as recorded by the issued cert agent. This is read by the networking
+    // reconciler to ensure it is looking at the correct iteration of the object.
+    CertificateRotationState observed_rotation_state = 9;
+
 }

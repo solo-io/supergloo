@@ -120,6 +120,14 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_PENDING
+		// Also need to reset PBD status
+		if issuedCertificate.Spec.PodBounceDirective != nil {
+			podBounceDirective, err := inputSnap.PodBounceDirectives().Find(issuedCertificate.Spec.PodBounceDirective)
+			if err != nil {
+				return eris.Wrap(err, "failed to find specified pod bounce directive")
+			}
+			podBounceDirective.Status = certificatesv1.PodBounceDirectiveStatus{}
+		}
 	}
 
 	// reset & update status
@@ -146,7 +154,6 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		}
 
-		// TODO: Figure out if we want to reuse the certificate request object
 		certificateRequest := &certificatesv1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
@@ -169,14 +176,18 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		}
 
-		if err := r.translator.IssuedCertificateRequested(
+		wait, err := r.translator.IssuedCertificateRequested(
 			r.ctx,
 			issuedCertificate,
 			certificateRequest,
 			inputSnap,
 			outputs,
-		); err != nil {
+		)
+		if err != nil {
 			return err
+		} else if wait {
+			// If the requested translator signals us to wait, we need to hang on
+			return nil
 		}
 
 		issuedCertificate.Status.State = certificatesv1.IssuedCertificateStatus_ISSUED

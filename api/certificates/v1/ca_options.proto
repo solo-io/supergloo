@@ -3,6 +3,7 @@ package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1";
 
 import "extproto/ext.proto";
+import "google/protobuf/empty.proto";
 import "github.com/solo-io/gloo-mesh/api/certificates/v1/vault_ca.proto";
 option (extproto.equal_all) = true;
 
@@ -34,3 +35,94 @@ message IntermediateCertificateAuthority  {
   }
   
 }
+
+// State of Certificate Rotation
+// Possible states in which a CertificateRotation can exist.
+enum CertificateRotationState {
+  // No Certificate rotation is currently happening
+  NOT_APPLICABLE = 0;
+
+  // The CertificateRotation is underway, both roots are set, and the new root is being propagated
+  ADDING_NEW_ROOT = 1;
+
+  // The CertificateRotation is underway again.
+  // The initial verification is over, the traffic continues to work with both roots present.
+  // Now the old root is being removed, and the new root is being propagated alone to the data-plane clusters
+  PROPAGATING_NEW_INTERMEDIATE = 2;
+
+  // The CertificateRotation is underway again.
+  // Removing the old-root from all data-plane clusters
+  DELETING_OLD_ROOT = 3;
+
+  // Verifying connectivity between workloads, the workflow will not progress until connectivity has been verified.
+  // This can either be manual or in the future automated
+  VERIFYING = 4;
+
+  // The connectivity has been verified. 
+  VERIFIED = 5;
+
+  // The connectivity has been deemed to not be functioning properly, rolling back to the last
+  // known good state.
+  ROLLING_BACK = 6;
+
+  // The rotation has finished, the new root has been propagated to all data-plane clusters, and traffic has
+  // been verified successfully.
+  FINISHED = 7;
+
+  // Processing the certificate rotation workflow failed.
+  FAILED = 8;
+}
+
+message CertificateRotationVerificationMethod {
+  oneof method {
+    // Verification not enabled. NOTE: This setting is only recommended for testing.
+    // When enabled rotation will continue from step to step without any kind of verification.
+    google.protobuf.Empty none = 1;
+
+    // Verification must be completed manually. This involves using our certificate verification 
+    // endpoint when the certificates are in a VERIFYING state
+    google.protobuf.Empty manual = 2;
+  }
+}
+
+enum CertificateRotationStrategy {
+  // The default certificate rotation strategy. This strategy involves three steps which
+  // ensure that traffic in the mesh will experience no downtime.
+  // For an in depth explination of how this strategy works in Istio see the [following blog](https://blog.christianposta.com/diving-into-istio-1-6-certificate-rotation/)
+  // The steps are as follows:
+  // 1. ADDING_NEW_ROOT
+  //    During this step the new root-cert will be appended to the old root-cert, and then distributed.
+  //    The intermediate will continue to be signed by the original root.
+  // 2. PROPAGATING_NEW_INTERMEDIATE
+  //    During this step both root-certs will still be distributed. In addition the intermediate will now
+  //    be signed by the new root key.
+  // 3. DELETING_OLD_ROOT
+  //    During this step the old root is no longer included, and the intermediate will continue to be signed
+  //    by the new root key.
+  MULTI_ROOT = 0;
+
+  // Do not use any rotation strategy.
+  // NOTE: This can lead to downtime while workloads transition
+  // from one root of trust to another
+  NONE = 1;
+}
+
+// CertificateRotationCondition represents a timesptamped snapshot of the certificate
+// rotation workflow. This is used to keep track of the steps which have been completed
+// thus far.
+message CertificateRotationCondition {
+    
+  // The time at which this condition was recorded
+  string timestamp = 1;
+
+  // The current state of the cert rotation
+  CertificateRotationState state = 2;
+
+  // A human readable message related to the current condition
+  string message = 3;
+
+  // Any errors which occurred during the current rotation stage
+  repeated string errors = 4;
+
+}
+

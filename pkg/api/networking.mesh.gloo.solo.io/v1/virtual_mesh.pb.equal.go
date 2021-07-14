@@ -300,6 +300,23 @@ func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetConditions()) != len(target.GetConditions()) {
+		return false
+	}
+	for idx, v := range m.GetConditions() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetConditions()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetConditions()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -325,6 +342,20 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 	}
 
 	if m.GetAutoRestartPods() != target.GetAutoRestartPods() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetRotationVerificationMethod()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRotationVerificationMethod()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRotationVerificationMethod(), target.GetRotationVerificationMethod()) {
+			return false
+		}
+	}
+
+	if m.GetRotationStrategy() != target.GetRotationStrategy() {
 		return false
 	}
 

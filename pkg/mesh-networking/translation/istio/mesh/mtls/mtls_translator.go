@@ -308,15 +308,7 @@ func (t *translator) constructIssuedCertificate(
 		istioNamespace = defaultIstioNamespace
 	}
 
-	clusterName := istioMesh.GetInstallation().GetCluster()
-	issuedCertificateMeta := metav1.ObjectMeta{
-		Name: mesh.Name,
-		// write to the agent namespace
-		Namespace: agentNamespace,
-		// write to the mesh cluster
-		ClusterName: clusterName,
-		Labels:      metautils.TranslatedObjectLabels(),
-	}
+	issuedCertificateMeta := BuildMeshResourceObjectMeta(mesh)
 
 	// get the pods that need to be bounced for this mesh
 	podsToBounce := getPodsToBounce(mesh, sharedTrust, t.workloads, autoRestartPods)
@@ -487,4 +479,22 @@ func getPodsToBounce(
 	})
 
 	return podsToBounce
+}
+
+// Build the common ObjectMeta used for child certificate resources of this mesh
+// Exposed for use in enterprise
+func BuildMeshResourceObjectMeta(
+	mesh *discoveryv1.Mesh,
+) metav1.ObjectMeta {
+	istioMesh := mesh.Spec.GetIstio()
+	clusterName := istioMesh.GetInstallation().GetCluster()
+	return metav1.ObjectMeta{
+		Name: mesh.Name,
+		// write to the agent namespace
+		Namespace: mesh.Spec.GetAgentInfo().GetAgentNamespace(),
+		// write to the mesh cluster
+		ClusterName: clusterName,
+		Labels:      metautils.TranslatedObjectLabels(),
+	}
+
 }

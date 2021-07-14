@@ -50,7 +50,11 @@ message VirtualMeshSpec {
         // `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info.
         bool auto_restart_pods = 3;
 
+        // Type of rotation verification to use when rotating root certificates.
+        .certificates.mesh.gloo.solo.io.CertificateRotationVerificationMethod rotation_verification_method = 4;
 
+        // Type of rotation to use.
+        .certificates.mesh.gloo.solo.io.CertificateRotationStrategy rotation_strategy= 5;
 
         // Limited trust is a trust model which does not require trusting Meshes to share the same root certificate
         // or identity. Instead, trust is established between different Meshes
@@ -188,4 +192,7 @@ message VirtualMeshStatus {
     // The status of the VirtualMesh for each Destination to which it has been applied.
     // A VirtualMesh may be Accepted for some Destinations and rejected for others.
     map<string, ApprovalStatus> destinations = 5;
+
+    // List of rotation conditions which have been completed/carried out for this Virtual Mesh
+    repeated .certificates.mesh.gloo.solo.io.CertificateRotationCondition conditions = 6;
 }

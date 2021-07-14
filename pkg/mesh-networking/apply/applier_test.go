@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -16,12 +17,14 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/test/matchers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 )
 
 var _ = Describe("Applier", func() {
+
 	Context("applied traffic policies", func() {
 		var (
 			destination = &discoveryv1.Destination{
@@ -101,7 +104,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), snap, nil, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.Destinations).To(HaveKey(sets.Key(destination)))
@@ -129,6 +132,43 @@ var _ = Describe("Applier", func() {
 			Expect(destination.Status.LocalFqdn).To(Equal("svc-name.svc-namespace.svc.cluster.local"))
 		})
 	})
+
+	Context("VirtualMesh status", func() {
+
+		It("retains the conditions on a Virtual Mesh", func() {
+
+			virtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm",
+					Namespace: "test",
+				},
+				Status: networkingv1.VirtualMeshStatus{
+					Conditions: []*certificatesv1.CertificateRotationCondition{
+						{
+							State: certificatesv1.CertificateRotationState_FAILED,
+						},
+						{
+							State: certificatesv1.CertificateRotationState_ADDING_NEW_ROOT,
+						},
+					},
+				},
+			}
+
+			snap := input.NewInputLocalSnapshotManualBuilder("").
+				AddVirtualMeshes([]*networkingv1.VirtualMesh{virtualMesh}).
+				Build()
+
+			vmExpectCopy := virtualMesh.DeepCopy()
+			vmExpectCopy.Status.State = commonv1.ApprovalState_ACCEPTED
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
+				// no report = accept
+			}}
+			applier := NewApplier(translator)
+			applier.Apply(context.TODO(), snap, nil, nil)
+			Expect(&vmExpectCopy.Status).To(matchers.MatchProto(&virtualMesh.Status))
+		})
+	})
+
 	Context("invalid traffic policies", func() {
 		var (
 			destination = &discoveryv1.Destination{
@@ -156,7 +196,7 @@ var _ = Describe("Applier", func() {
 				reporter.ReportTrafficPolicyToDestination(destination, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), snap, nil, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.Destinations).To(HaveKey(sets.Key(destination)))
@@ -293,7 +333,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), snap, nil, nil)
 
 			// destination1 and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
@@ -314,7 +354,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), snap, nil, nil)
 
 			// destination1 is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
 			// since mesh1 and mesh2 are in the same VirtualMesh, both workloads are returned
@@ -338,7 +378,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), snap, nil, nil)
 
 			// destination1 is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
@@ -427,7 +467,7 @@ var _ = Describe("Applier", func() {
 
 			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{permissiveVirtualMesh})
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(destination.Status.AppliedFederation).To(BeNil())
 		})
@@ -463,7 +503,7 @@ var _ = Describe("Applier", func() {
 				VirtualMeshRef: ezkube.MakeObjectRef(permissiveVirtualMesh),
 			}
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation))
 		})
@@ -501,7 +541,7 @@ var _ = Describe("Applier", func() {
 				VirtualMeshRef: ezkube.MakeObjectRef(restrictiveVirtualMesh),
 			}
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation))
 		})
@@ -604,7 +644,7 @@ var _ = Describe("Applier", func() {
 				VirtualMeshRef: ezkube.MakeObjectRef(restrictiveVirtualMesh),
 			}
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation1))
 			Expect(destination3.Status.AppliedFederation).To(Equal(expectedAppliedFederation2))
@@ -777,7 +817,7 @@ var _ = Describe("Applier", func() {
 
 			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{defaultVirtualMesh})
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(len(mesh.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 
@@ -818,7 +858,7 @@ var _ = Describe("Applier", func() {
 
 			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{defaultVirtualMesh})
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(len(mesh1.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 			Expect(len(mesh2.Status.AppliedEastWestIngressGateways)).To(Equal(1))
@@ -980,7 +1020,7 @@ var _ = Describe("Applier", func() {
 				virtualMeshWithSelector3,
 			})
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(len(mesh1.Status.AppliedEastWestIngressGateways)).To(Equal(1))
 			Expect(len(mesh2.Status.AppliedEastWestIngressGateways)).To(Equal(1))
@@ -1194,7 +1234,7 @@ var _ = Describe("Applier", func() {
 			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{virtualMeshWithBadSelector1, virtualMeshWithBadSelector2,
 				virtualMeshWithBadSelector3})
 
-			applier.Apply(context.TODO(), snap.Build(), nil)
+			applier.Apply(context.TODO(), snap.Build(), nil, nil)
 
 			Expect(virtualMeshWithBadSelector1.Status.GetState()).To(Equal(commonv1.ApprovalState_INVALID))
 			Expect(len(virtualMeshWithBadSelector1.Status.Errors)).To(Equal(1))
@@ -1390,7 +1430,7 @@ var _ = Describe("Applier", func() {
 				AddMeshes(discoveryv1.MeshSlice{mesh}).
 				Build()
 
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), snap, nil, nil)
 
 			expectedRequiredSubsets := []*discoveryv1.RequiredSubsets{
 				{
@@ -1420,7 +1460,8 @@ type testIstioTranslator struct {
 func (t testIstioTranslator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
-	existingIstioResources input.RemoteSnapshot,
+	_ input.RemoteSnapshot,
+	_ input.RemoteSnapshot,
 	reporter reporting.Reporter,
 ) (*translation.Outputs, error) {
 	t.callReporter(reporter)

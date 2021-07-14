@@ -101,6 +101,10 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if m.GetRotationState() != target.GetRotationState() {
+		return false
+	}
+
 	switch m.CertificateAuthority.(type) {
 
 	case *IssuedCertificateSpec_GlooMeshCa:
@@ -222,6 +226,49 @@ func (m *IssuedCertificateStatus) Equal(that interface{}) bool {
 
 	if m.GetState() != target.GetState() {
 		return false
+	}
+
+	if m.GetObservedRotationState() != target.GetObservedRotationState() {
+		return false
+	}
+
+	switch m.AppliedCertificateAuthority.(type) {
+
+	case *IssuedCertificateStatus_AppliedGlooMeshCa:
+		if _, ok := target.AppliedCertificateAuthority.(*IssuedCertificateStatus_AppliedGlooMeshCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetAppliedGlooMeshCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedGlooMeshCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetAppliedGlooMeshCa(), target.GetAppliedGlooMeshCa()) {
+				return false
+			}
+		}
+
+	case *IssuedCertificateStatus_AppliedAgentCa:
+		if _, ok := target.AppliedCertificateAuthority.(*IssuedCertificateStatus_AppliedAgentCa); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetAppliedAgentCa()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedAgentCa()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetAppliedAgentCa(), target.GetAppliedAgentCa()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.AppliedCertificateAuthority != target.AppliedCertificateAuthority {
+			return false
+		}
 	}
 
 	return true

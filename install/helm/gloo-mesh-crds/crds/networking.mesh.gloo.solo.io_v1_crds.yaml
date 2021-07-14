@@ -2192,6 +2192,40 @@ spec:
                     Workloads and Destinations in the grouped Meshes). *Currently
                     not available.*
                   type: object
+                rotationStrategy:
+                  description: Type of rotation to use.
+                  enum:
+                  - MULTI_ROOT
+                  - NONE
+                  type: string
+                rotationVerificationMethod:
+                  description: Type of rotation verification to use when rotating
+                    root certificates.
+                  oneOf:
+                  - not:
+                      anyOf:
+                      - required:
+                        - none
+                      - required:
+                        - manual
+                  - required:
+                    - none
+                  - required:
+                    - manual
+                  properties:
+                    manual:
+                      description: |-
+                        Verification must be completed manually. This involves using our certificate verification
+                        endpoint when the certificates are in a VERIFYING state
+                      maxProperties: 0
+                      type: object
+                    none:
+                      description: |-
+                        Verification not enabled. NOTE: This setting is only recommended for testing.
+                        When enabled rotation will continue from step to step without any kind of verification.
+                      maxProperties: 0
+                      type: object
+                  type: object
                 shared:
                   description: Shared trust (allow communication between any pair
                     of Workloads and Destinations in the grouped Meshes).
@@ -2363,6 +2397,38 @@ spec:
           type: object
         status:
           properties:
+            conditions:
+              description: List of rotation conditions which have been completed/carried
+                out for this Virtual Mesh
+              items:
+                properties:
+                  errors:
+                    description: Any errors which occurred during the current rotation
+                      stage
+                    items:
+                      type: string
+                    type: array
+                  message:
+                    description: A human readable message related to the current condition
+                    type: string
+                  state:
+                    description: The current state of the cert rotation
+                    enum:
+                    - NOT_APPLICABLE
+                    - ADDING_NEW_ROOT
+                    - PROPAGATING_NEW_INTERMEDIATE
+                    - DELETING_OLD_ROOT
+                    - VERIFYING
+                    - VERIFIED
+                    - ROLLING_BACK
+                    - FINISHED
+                    - FAILED
+                    type: string
+                  timestamp:
+                    description: The time at which this condition was recorded
+                    type: string
+                type: object
+              type: array
             destinations:
               additionalProperties:
                 properties:

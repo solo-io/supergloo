@@ -212,48 +212,27 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	// nil istioInputSnap signals to downstream translators that intersecting config should not be detected
 	var userSupplied input.RemoteSnapshot
 	if r.disallowIntersectingConfig {
-		selector := labels.NewSelector()
-		for k := range metautils.TranslatedObjectLabels() {
-			// select objects without the translated object label key
-			requirement, err := labels.NewRequirement(k, selection.DoesNotExist, nil)
-			if err != nil {
-				// shouldn't happen
-				return false, err
-			}
-			selector = selector.Add([]labels.Requirement{*requirement}...)
-		}
-		resourceBuildOptions := input.ResourceRemoteBuildOptions{
-			ListOptions: []client.ListOption{
-				&client.ListOptions{LabelSelector: selector},
-			},
-			Verifier: r.remoteResourceVerifier,
-		}
-		userSupplied, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
-			IssuedCertificates:    resourceBuildOptions,
-			PodBounceDirectives:   resourceBuildOptions,
-			XdsConfigs:            resourceBuildOptions,
-			DestinationRules:      resourceBuildOptions,
-			EnvoyFilters:          resourceBuildOptions,
-			Gateways:              resourceBuildOptions,
-			ServiceEntries:        resourceBuildOptions,
-			VirtualServices:       resourceBuildOptions,
-			AuthorizationPolicies: resourceBuildOptions,
-			Sidecars:              resourceBuildOptions,
-		})
+		userSupplied, err = r.buildRemoteSnapshot(ctx, "mesh-networking-istio-inputs", true)
 		if err != nil {
 			// failed to read from cache; should never happen
 			return false, err
 		}
 	}
 
+	remoteConfig, err := r.buildRemoteSnapshot(ctx, "mesh-networking-generated-outputs", false)
+	if err != nil {
+		// failed to read from cache; should never happen
+		return false, err
+	}
+
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap, userSupplied)
+	r.applier.Apply(ctx, inputSnap, userSupplied, remoteConfig)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap, userSupplied); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap, userSupplied, remoteConfig); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -281,9 +260,56 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.LocalSnapshot, userSupplied input.RemoteSnapshot) error {
+func (r *networkingReconciler) buildRemoteSnapshot(
+	ctx context.Context,
+	name string,
+	userSupplied bool,
+) (input.RemoteSnapshot, error) {
+	var operator selection.Operator
+	if userSupplied {
+		// select objects without the translated object label key
+		operator = selection.DoesNotExist
+	} else {
+		// select objects with the translated object label key
+		operator = selection.Exists
+	}
+	selector := labels.NewSelector()
+	for k := range metautils.TranslatedObjectLabels() {
+		requirement, err := labels.NewRequirement(k, operator, nil)
+		if err != nil {
+			// shouldn't happen
+			return nil, err
+		}
+		selector = selector.Add([]labels.Requirement{*requirement}...)
+	}
+	resourceBuildOptions := input.ResourceRemoteBuildOptions{
+		ListOptions: []client.ListOption{
+			&client.ListOptions{LabelSelector: selector},
+		},
+		Verifier: r.remoteResourceVerifier,
+	}
+	return r.remoteBuilder.BuildSnapshot(ctx, name, input.RemoteBuildOptions{
+		IssuedCertificates:    resourceBuildOptions,
+		PodBounceDirectives:   resourceBuildOptions,
+		XdsConfigs:            resourceBuildOptions,
+		DestinationRules:      resourceBuildOptions,
+		EnvoyFilters:          resourceBuildOptions,
+		Gateways:              resourceBuildOptions,
+		ServiceEntries:        resourceBuildOptions,
+		VirtualServices:       resourceBuildOptions,
+		AuthorizationPolicies: resourceBuildOptions,
+		Sidecars:              resourceBuildOptions,
+	})
+}
 
-	outputSnap, err := r.translator.Translate(ctx, in, userSupplied, r.reporter)
+func (r *networkingReconciler) applyTranslation(
+	ctx context.Context,
+	in input.LocalSnapshot,
+	userSupplied input.RemoteSnapshot,
+	generated input.RemoteSnapshot,
+) error {
+
+	outputSnap, err := r.translator.Translate(ctx, in, userSupplied, generated, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
