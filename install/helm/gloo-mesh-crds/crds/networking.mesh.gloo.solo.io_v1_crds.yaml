@@ -2192,12 +2192,11 @@ spec:
                     Workloads and Destinations in the grouped Meshes). *Currently
                     not available.*
                   type: object
-                rotationMethod:
+                rotationStrategy:
                   description: Type of rotation to use.
                   enum:
                   - MULTI_ROOT
                   - NONE
-                  - CROSS_SIGNED
                   type: string
                 rotationVerificationMethod:
                   description: Type of rotation verification to use when rotating
@@ -2404,7 +2403,7 @@ spec:
               items:
                 properties:
                   errors:
-                    description: Any errors which occured during the current rotation
+                    description: Any errors which occurred during the current rotation
                       stage
                     items:
                       type: string
@@ -2417,7 +2416,7 @@ spec:
                     enum:
                     - NOT_APPLICABLE
                     - ADDING_NEW_ROOT
-                    - PROPOGATING_NEW_INTERMEDIATE
+                    - PROPAGATING_NEW_INTERMEDIATE
                     - DELETING_OLD_ROOT
                     - VERIFYING
                     - VERIFIED

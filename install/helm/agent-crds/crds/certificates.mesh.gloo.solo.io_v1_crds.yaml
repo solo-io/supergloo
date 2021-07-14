@@ -419,7 +419,7 @@ spec:
               enum:
               - NOT_APPLICABLE
               - ADDING_NEW_ROOT
-              - PROPOGATING_NEW_INTERMEDIATE
+              - PROPAGATING_NEW_INTERMEDIATE
               - DELETING_OLD_ROOT
               - VERIFYING
               - VERIFIED
@@ -766,7 +766,7 @@ spec:
               enum:
               - NOT_APPLICABLE
               - ADDING_NEW_ROOT
-              - PROPOGATING_NEW_INTERMEDIATE
+              - PROPAGATING_NEW_INTERMEDIATE
               - DELETING_OLD_ROOT
               - VERIFYING
               - VERIFIED

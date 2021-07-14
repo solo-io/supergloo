@@ -355,7 +355,7 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 		}
 	}
 
-	if m.GetRotationMethod() != target.GetRotationMethod() {
+	if m.GetRotationStrategy() != target.GetRotationStrategy() {
 		return false
 	}
 

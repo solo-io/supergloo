@@ -35,12 +35,12 @@ type CertificateRotationState int32
 const (
 	// No Certificate rotation is currently happening
 	CertificateRotationState_NOT_APPLICABLE CertificateRotationState = 0
-	// The CertificateRotation is underway, both roots are set, and the new root is being propogated
+	// The CertificateRotation is underway, both roots are set, and the new root is being propagated
 	CertificateRotationState_ADDING_NEW_ROOT CertificateRotationState = 1
 	// The CertificateRotation is underway again.
 	// The initial verification is over, the traffic continues to work with both roots present.
-	// Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters
-	CertificateRotationState_PROPOGATING_NEW_INTERMEDIATE CertificateRotationState = 2
+	// Now the old root is being removed, and the new root is being propagated alone to the data-plane clusters
+	CertificateRotationState_PROPAGATING_NEW_INTERMEDIATE CertificateRotationState = 2
 	// The CertificateRotation is underway again.
 	// Removing the old-root from all data-plane clusters
 	CertificateRotationState_DELETING_OLD_ROOT CertificateRotationState = 3
@@ -52,7 +52,7 @@ const (
 	// The connectivity has been deemed to not be functioning properly, rolling back to the last
 	// known good state.
 	CertificateRotationState_ROLLING_BACK CertificateRotationState = 6
-	// The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
+	// The rotation has finished, the new root has been propagated to all data-plane clusters, and traffic has
 	// been verified successfully.
 	CertificateRotationState_FINISHED CertificateRotationState = 7
 	// Processing the certificate rotation workflow failed.
@@ -64,7 +64,7 @@ var (
 	CertificateRotationState_name = map[int32]string{
 		0: "NOT_APPLICABLE",
 		1: "ADDING_NEW_ROOT",
-		2: "PROPOGATING_NEW_INTERMEDIATE",
+		2: "PROPAGATING_NEW_INTERMEDIATE",
 		3: "DELETING_OLD_ROOT",
 		4: "VERIFYING",
 		5: "VERIFIED",
@@ -75,7 +75,7 @@ var (
 	CertificateRotationState_value = map[string]int32{
 		"NOT_APPLICABLE":               0,
 		"ADDING_NEW_ROOT":              1,
-		"PROPOGATING_NEW_INTERMEDIATE": 2,
+		"PROPAGATING_NEW_INTERMEDIATE": 2,
 		"DELETING_OLD_ROOT":            3,
 		"VERIFYING":                    4,
 		"VERIFIED":                     5,
@@ -112,53 +112,65 @@ func (CertificateRotationState) EnumDescriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDescGZIP(), []int{0}
 }
 
-type CertificateRotationMethod int32
+type CertificateRotationStrategy int32
 
 const (
-	CertificateRotationMethod_MULTI_ROOT CertificateRotationMethod = 0
-	CertificateRotationMethod_NONE       CertificateRotationMethod = 1
-	// TODO: Implement
-	CertificateRotationMethod_CROSS_SIGNED CertificateRotationMethod = 2
+	// The default certificate rotation strategy. This strategy involves three steps which
+	// ensure that traffic in the mesh will experience no downtime.
+	// For an in depth explination of how this strategy works in Istio see the [following blog](https://blog.christianposta.com/diving-into-istio-1-6-certificate-rotation/)
+	// The steps are as follows:
+	// 1. ADDING_NEW_ROOT
+	//    During this step the new root-cert will be appended to the old root-cert, and then distributed.
+	//    The intermediate will continue to be signed by the original root.
+	// 2. PROPAGATING_NEW_INTERMEDIATE
+	//    During this step both root-certs will still be distributed. In addition the intermediate will now
+	//    be signed by the new root key.
+	// 3. DELETING_OLD_ROOT
+	//    During this step the old root is no longer included, and the intermediate will continue to be signed
+	//    by the new root key.
+	CertificateRotationStrategy_MULTI_ROOT CertificateRotationStrategy = 0
+	// Do not use any rotation strategy.
+	// NOTE: This can lead to downtime while workloads transition
+	// from one root of trust to another
+	CertificateRotationStrategy_NONE CertificateRotationStrategy = 1
 )
 
-// Enum value maps for CertificateRotationMethod.
+// Enum value maps for CertificateRotationStrategy.
 var (
-	CertificateRotationMethod_name = map[int32]string{
+	CertificateRotationStrategy_name = map[int32]string{
 		0: "MULTI_ROOT",
 		1: "NONE",
-		2: "CROSS_SIGNED",
 	}
-	CertificateRotationMethod_value = map[string]int32{
-		"MULTI_ROOT":   0,
-		"NONE":         1,
-		"CROSS_SIGNED": 2,
+	CertificateRotationStrategy_value = map[string]int32{
+		"MULTI_ROOT": 0,
+		"NONE":       1,
 	}
 )
 
-func (x CertificateRotationMethod) Enum() *CertificateRotationMethod {
-	p := new(CertificateRotationMethod)
+func (x CertificateRotationStrategy) Enum() *CertificateRotationStrategy {
+	p := new(CertificateRotationStrategy)
 	*p = x
 	return p
 }
 
-func (x CertificateRotationMethod) String() string {
+func (x CertificateRotationStrategy) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (CertificateRotationMethod) Descriptor() protoreflect.EnumDescriptor {
+func (CertificateRotationStrategy) Descriptor() protoreflect.EnumDescriptor {
 	return file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumTypes[1].Descriptor()
 }
 
-func (CertificateRotationMethod) Type() protoreflect.EnumType {
+func (CertificateRotationStrategy) Type() protoreflect.EnumType {
 	return &file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumTypes[1]
 }
 
-func (x CertificateRotationMethod) Number() protoreflect.EnumNumber {
+func (x CertificateRotationStrategy) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use CertificateRotationMethod.Descriptor instead.
-func (CertificateRotationMethod) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use CertificateRotationStrategy.Descriptor instead.
+func (CertificateRotationStrategy) EnumDescriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDescGZIP(), []int{1}
 }
 
@@ -409,7 +421,7 @@ type CertificateRotationCondition struct {
 	State CertificateRotationState `protobuf:"varint,2,opt,name=state,proto3,enum=certificates.mesh.gloo.solo.io.CertificateRotationState" json:"state,omitempty"`
 	// A human readable message related to the current condition
 	Message string `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	// Any errors which occured during the current rotation stage
+	// Any errors which occurred during the current rotation stage
 	Errors []string `protobuf:"bytes,4,rep,name=errors,proto3" json:"errors,omitempty"`
 }
 
@@ -534,7 +546,7 @@ var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDe
 	0x65, 0x52, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x12,
 	0x0a, 0x0e, 0x4e, 0x4f, 0x54, 0x5f, 0x41, 0x50, 0x50, 0x4c, 0x49, 0x43, 0x41, 0x42, 0x4c, 0x45,
 	0x10, 0x00, 0x12, 0x13, 0x0a, 0x0f, 0x41, 0x44, 0x44, 0x49, 0x4e, 0x47, 0x5f, 0x4e, 0x45, 0x57,
-	0x5f, 0x52, 0x4f, 0x4f, 0x54, 0x10, 0x01, 0x12, 0x20, 0x0a, 0x1c, 0x50, 0x52, 0x4f, 0x50, 0x4f,
+	0x5f, 0x52, 0x4f, 0x4f, 0x54, 0x10, 0x01, 0x12, 0x20, 0x0a, 0x1c, 0x50, 0x52, 0x4f, 0x50, 0x41,
 	0x47, 0x41, 0x54, 0x49, 0x4e, 0x47, 0x5f, 0x4e, 0x45, 0x57, 0x5f, 0x49, 0x4e, 0x54, 0x45, 0x52,
 	0x4d, 0x45, 0x44, 0x49, 0x41, 0x54, 0x45, 0x10, 0x02, 0x12, 0x15, 0x0a, 0x11, 0x44, 0x45, 0x4c,
 	0x45, 0x54, 0x49, 0x4e, 0x47, 0x5f, 0x4f, 0x4c, 0x44, 0x5f, 0x52, 0x4f, 0x4f, 0x54, 0x10, 0x03,
@@ -542,12 +554,11 @@ var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_rawDe
 	0x0c, 0x0a, 0x08, 0x56, 0x45, 0x52, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x05, 0x12, 0x10, 0x0a,
 	0x0c, 0x52, 0x4f, 0x4c, 0x4c, 0x49, 0x4e, 0x47, 0x5f, 0x42, 0x41, 0x43, 0x4b, 0x10, 0x06, 0x12,
 	0x0c, 0x0a, 0x08, 0x46, 0x49, 0x4e, 0x49, 0x53, 0x48, 0x45, 0x44, 0x10, 0x07, 0x12, 0x0a, 0x0a,
-	0x06, 0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x08, 0x2a, 0x47, 0x0a, 0x19, 0x43, 0x65, 0x72,
+	0x06, 0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x08, 0x2a, 0x37, 0x0a, 0x1b, 0x43, 0x65, 0x72,
 	0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x0e, 0x0a, 0x0a, 0x4d, 0x55, 0x4c, 0x54, 0x49, 0x5f,
-	0x52, 0x4f, 0x4f, 0x54, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x01,
-	0x12, 0x10, 0x0a, 0x0c, 0x43, 0x52, 0x4f, 0x53, 0x53, 0x5f, 0x53, 0x49, 0x47, 0x4e, 0x45, 0x44,
-	0x10, 0x02, 0x42, 0x4c, 0x5a, 0x46, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x12, 0x0e, 0x0a, 0x0a, 0x4d, 0x55, 0x4c, 0x54,
+	0x49, 0x5f, 0x52, 0x4f, 0x4f, 0x54, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45,
+	0x10, 0x01, 0x42, 0x4c, 0x5a, 0x46, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
 	0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65,
 	0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x65, 0x72, 0x74, 0x69,
 	0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f,
@@ -571,7 +582,7 @@ var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_enumT
 var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_github_com_solo_io_gloo_mesh_api_certificates_v1_ca_options_proto_goTypes = []interface{}{
 	(CertificateRotationState)(0),                 // 0: certificates.mesh.gloo.solo.io.CertificateRotationState
-	(CertificateRotationMethod)(0),                // 1: certificates.mesh.gloo.solo.io.CertificateRotationMethod
+	(CertificateRotationStrategy)(0),              // 1: certificates.mesh.gloo.solo.io.CertificateRotationStrategy
 	(*CommonCertOptions)(nil),                     // 2: certificates.mesh.gloo.solo.io.CommonCertOptions
 	(*IntermediateCertificateAuthority)(nil),      // 3: certificates.mesh.gloo.solo.io.IntermediateCertificateAuthority
 	(*CertificateRotationVerificationMethod)(nil), // 4: certificates.mesh.gloo.solo.io.CertificateRotationVerificationMethod

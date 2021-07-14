@@ -42,13 +42,13 @@ enum CertificateRotationState {
   // No Certificate rotation is currently happening
   NOT_APPLICABLE = 0;
 
-  // The CertificateRotation is underway, both roots are set, and the new root is being propogated 
+  // The CertificateRotation is underway, both roots are set, and the new root is being propagated
   ADDING_NEW_ROOT = 1;
 
   // The CertificateRotation is underway again.
   // The initial verification is over, the traffic continues to work with both roots present.
-  // Now the old root is being removed, and the new root is being propgated alone to the data-plane clusters
-  PROPOGATING_NEW_INTERMEDIATE = 2;
+  // Now the old root is being removed, and the new root is being propagated alone to the data-plane clusters
+  PROPAGATING_NEW_INTERMEDIATE = 2;
 
   // The CertificateRotation is underway again.
   // Removing the old-root from all data-plane clusters
@@ -65,7 +65,7 @@ enum CertificateRotationState {
   // known good state.
   ROLLING_BACK = 6;
 
-  // The rotation has finished, the new root has been propgated to all data-plane clusters, and traffic has
+  // The rotation has finished, the new root has been propagated to all data-plane clusters, and traffic has
   // been verified successfully.
   FINISHED = 7;
 
@@ -85,14 +85,26 @@ message CertificateRotationVerificationMethod {
   }
 }
 
-enum CertificateRotationMethod {
+enum CertificateRotationStrategy {
+  // The default certificate rotation strategy. This strategy involves three steps which
+  // ensure that traffic in the mesh will experience no downtime.
+  // For an in depth explination of how this strategy works in Istio see the [following blog](https://blog.christianposta.com/diving-into-istio-1-6-certificate-rotation/)
+  // The steps are as follows:
+  // 1. ADDING_NEW_ROOT
+  //    During this step the new root-cert will be appended to the old root-cert, and then distributed.
+  //    The intermediate will continue to be signed by the original root.
+  // 2. PROPAGATING_NEW_INTERMEDIATE
+  //    During this step both root-certs will still be distributed. In addition the intermediate will now
+  //    be signed by the new root key.
+  // 3. DELETING_OLD_ROOT
+  //    During this step the old root is no longer included, and the intermediate will continue to be signed
+  //    by the new root key.
   MULTI_ROOT = 0;
 
+  // Do not use any rotation strategy.
+  // NOTE: This can lead to downtime while workloads transition
+  // from one root of trust to another
   NONE = 1;
-
-  // TODO: Implement
-  CROSS_SIGNED = 2;
-
 }
 
 // CertificateRotationCondition represents a timesptamped snapshot of the certificate
@@ -109,7 +121,7 @@ message CertificateRotationCondition {
   // A human readable message related to the current condition
   string message = 3;
 
-  // Any errors which occured during the current rotation stage
+  // Any errors which occurred during the current rotation stage
   repeated string errors = 4;
 
 }
