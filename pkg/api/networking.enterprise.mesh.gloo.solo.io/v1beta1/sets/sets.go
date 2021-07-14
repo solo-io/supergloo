@@ -223,6 +223,216 @@ func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
 	return s.Generic().Delta(newSet.Generic())
 }
 
+type RateLimitClientConfigSet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
+	// Return the Set as a map of key to resource.
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
+	// Insert a resource into the set.
+	Insert(rateLimitClientConfig ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(rateLimitClientConfigSet RateLimitClientConfigSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(rateLimitClientConfig ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(rateLimitClientConfig ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set RateLimitClientConfigSet) RateLimitClientConfigSet
+	// Return the difference with the provided set
+	Difference(set RateLimitClientConfigSet) RateLimitClientConfigSet
+	// Return the intersection with the provided set
+	Intersection(set RateLimitClientConfigSet) RateLimitClientConfigSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another RateLimitClientConfigSet
+	Delta(newSet RateLimitClientConfigSet) sksets.ResourceDelta
+}
+
+func makeGenericRateLimitClientConfigSet(rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range rateLimitClientConfigList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type rateLimitClientConfigSet struct {
+	set sksets.ResourceSet
+}
+
+func NewRateLimitClientConfigSet(rateLimitClientConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) RateLimitClientConfigSet {
+	return &rateLimitClientConfigSet{set: makeGenericRateLimitClientConfigSet(rateLimitClientConfigList)}
+}
+
+func NewRateLimitClientConfigSetFromList(rateLimitClientConfigList *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigList) RateLimitClientConfigSet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, 0, len(rateLimitClientConfigList.Items))
+	for idx := range rateLimitClientConfigList.Items {
+		list = append(list, &rateLimitClientConfigList.Items[idx])
+	}
+	return &rateLimitClientConfigSet{set: makeGenericRateLimitClientConfigSet(list)}
+}
+
+func (s *rateLimitClientConfigSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	return s.Generic().Keys()
+}
+
+func (s *rateLimitClientConfigSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
+		})
+	}
+
+	objs := s.Generic().List(genericFilters...)
+	rateLimitClientConfigList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, 0, len(objs))
+	for _, obj := range objs {
+		rateLimitClientConfigList = append(rateLimitClientConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
+	}
+	return rateLimitClientConfigList
+}
+
+func (s *rateLimitClientConfigSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
+		})
+	}
+
+	var rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
+		rateLimitClientConfigList = append(rateLimitClientConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
+	}
+	return rateLimitClientConfigList
+}
+
+func (s *rateLimitClientConfigSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
+	}
+	return newMap
+}
+
+func (s *rateLimitClientConfigSet) Insert(
+	rateLimitClientConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig,
+) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
+	for _, obj := range rateLimitClientConfigList {
+		s.Generic().Insert(obj)
+	}
+}
+
+func (s *rateLimitClientConfigSet) Has(rateLimitClientConfig ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(rateLimitClientConfig)
+}
+
+func (s *rateLimitClientConfigSet) Equal(
+	rateLimitClientConfigSet RateLimitClientConfigSet,
+) bool {
+	if s == nil {
+		return rateLimitClientConfigSet == nil
+	}
+	return s.Generic().Equal(rateLimitClientConfigSet.Generic())
+}
+
+func (s *rateLimitClientConfigSet) Delete(RateLimitClientConfig ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(RateLimitClientConfig)
+}
+
+func (s *rateLimitClientConfigSet) Union(set RateLimitClientConfigSet) RateLimitClientConfigSet {
+	if s == nil {
+		return set
+	}
+	return NewRateLimitClientConfigSet(append(s.List(), set.List()...)...)
+}
+
+func (s *rateLimitClientConfigSet) Difference(set RateLimitClientConfigSet) RateLimitClientConfigSet {
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &rateLimitClientConfigSet{set: newSet}
+}
+
+func (s *rateLimitClientConfigSet) Intersection(set RateLimitClientConfigSet) RateLimitClientConfigSet {
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
+	for _, obj := range newSet.List() {
+		rateLimitClientConfigList = append(rateLimitClientConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
+	}
+	return NewRateLimitClientConfigSet(rateLimitClientConfigList...)
+}
+
+func (s *rateLimitClientConfigSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find RateLimitClientConfig %v", sksets.Key(id))
+	}
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig), nil
+}
+
+func (s *rateLimitClientConfigSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
+}
+
+func (s *rateLimitClientConfigSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *rateLimitClientConfigSet) Delta(newSet RateLimitClientConfigSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
+}
+
 type VirtualDestinationSet interface {
 	// Get the set stored keys
 	Keys() sets.String

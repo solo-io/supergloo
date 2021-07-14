@@ -1,0 +1,34 @@
+syntax = "proto3";
+package networking.enterprise.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/gloo-mesh/api/networking/v1/ratelimit/rate_limit.proto";
+import "google/protobuf/wrappers.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+
+message RateLimitClientConfigSpec {
+
+  // Actions specify how the client (Envoy) will compose the descriptors that
+  // will be sent to the server to make a rate limiting decision.
+  repeated .ratelimit.networking.mesh.gloo.solo.io.RateLimitClient rate_limits = 1;
+
+}
+
+// The current status of the `RateLimitClientConfig`.
+message RateLimitClientConfigStatus {
+
+  // The most recent generation observed in the the RateLimiterClientConfig metadata.
+  // If the `observedGeneration` does not match `metadata.generation`,
+  // Gloo Mesh has not processed the most recent version of this resource.
+  int64 observed_generation = 1;
+
+  // Any errors found while processing this generation of the resource.
+  repeated string errors = 2;
+
+  // Any warnings found while processing this generation of the resource.
+  repeated string warnings = 3;
+
+}

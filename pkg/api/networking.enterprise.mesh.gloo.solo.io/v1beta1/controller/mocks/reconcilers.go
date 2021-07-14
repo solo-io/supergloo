@@ -198,6 +198,189 @@ func (mr *MockWasmDeploymentReconcileLoopMockRecorder) RunWasmDeploymentReconcil
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWasmDeploymentReconciler", reflect.TypeOf((*MockWasmDeploymentReconcileLoop)(nil).RunWasmDeploymentReconciler), varargs...)
 }
 
+// MockRateLimitClientConfigReconciler is a mock of RateLimitClientConfigReconciler interface.
+type MockRateLimitClientConfigReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockRateLimitClientConfigReconcilerMockRecorder
+}
+
+// MockRateLimitClientConfigReconcilerMockRecorder is the mock recorder for MockRateLimitClientConfigReconciler.
+type MockRateLimitClientConfigReconcilerMockRecorder struct {
+	mock *MockRateLimitClientConfigReconciler
+}
+
+// NewMockRateLimitClientConfigReconciler creates a new mock instance.
+func NewMockRateLimitClientConfigReconciler(ctrl *gomock.Controller) *MockRateLimitClientConfigReconciler {
+	mock := &MockRateLimitClientConfigReconciler{ctrl: ctrl}
+	mock.recorder = &MockRateLimitClientConfigReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRateLimitClientConfigReconciler) EXPECT() *MockRateLimitClientConfigReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileRateLimitClientConfig mocks base method.
+func (m *MockRateLimitClientConfigReconciler) ReconcileRateLimitClientConfig(obj *v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileRateLimitClientConfig", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileRateLimitClientConfig indicates an expected call of ReconcileRateLimitClientConfig.
+func (mr *MockRateLimitClientConfigReconcilerMockRecorder) ReconcileRateLimitClientConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimitClientConfig", reflect.TypeOf((*MockRateLimitClientConfigReconciler)(nil).ReconcileRateLimitClientConfig), obj)
+}
+
+// MockRateLimitClientConfigDeletionReconciler is a mock of RateLimitClientConfigDeletionReconciler interface.
+type MockRateLimitClientConfigDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockRateLimitClientConfigDeletionReconcilerMockRecorder
+}
+
+// MockRateLimitClientConfigDeletionReconcilerMockRecorder is the mock recorder for MockRateLimitClientConfigDeletionReconciler.
+type MockRateLimitClientConfigDeletionReconcilerMockRecorder struct {
+	mock *MockRateLimitClientConfigDeletionReconciler
+}
+
+// NewMockRateLimitClientConfigDeletionReconciler creates a new mock instance.
+func NewMockRateLimitClientConfigDeletionReconciler(ctrl *gomock.Controller) *MockRateLimitClientConfigDeletionReconciler {
+	mock := &MockRateLimitClientConfigDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockRateLimitClientConfigDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRateLimitClientConfigDeletionReconciler) EXPECT() *MockRateLimitClientConfigDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileRateLimitClientConfigDeletion mocks base method.
+func (m *MockRateLimitClientConfigDeletionReconciler) ReconcileRateLimitClientConfigDeletion(req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileRateLimitClientConfigDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileRateLimitClientConfigDeletion indicates an expected call of ReconcileRateLimitClientConfigDeletion.
+func (mr *MockRateLimitClientConfigDeletionReconcilerMockRecorder) ReconcileRateLimitClientConfigDeletion(req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimitClientConfigDeletion", reflect.TypeOf((*MockRateLimitClientConfigDeletionReconciler)(nil).ReconcileRateLimitClientConfigDeletion), req)
+}
+
+// MockRateLimitClientConfigFinalizer is a mock of RateLimitClientConfigFinalizer interface.
+type MockRateLimitClientConfigFinalizer struct {
+	ctrl     *gomock.Controller
+	recorder *MockRateLimitClientConfigFinalizerMockRecorder
+}
+
+// MockRateLimitClientConfigFinalizerMockRecorder is the mock recorder for MockRateLimitClientConfigFinalizer.
+type MockRateLimitClientConfigFinalizerMockRecorder struct {
+	mock *MockRateLimitClientConfigFinalizer
+}
+
+// NewMockRateLimitClientConfigFinalizer creates a new mock instance.
+func NewMockRateLimitClientConfigFinalizer(ctrl *gomock.Controller) *MockRateLimitClientConfigFinalizer {
+	mock := &MockRateLimitClientConfigFinalizer{ctrl: ctrl}
+	mock.recorder = &MockRateLimitClientConfigFinalizerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRateLimitClientConfigFinalizer) EXPECT() *MockRateLimitClientConfigFinalizerMockRecorder {
+	return m.recorder
+}
+
+// FinalizeRateLimitClientConfig mocks base method.
+func (m *MockRateLimitClientConfigFinalizer) FinalizeRateLimitClientConfig(obj *v1beta1.RateLimitClientConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizeRateLimitClientConfig", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizeRateLimitClientConfig indicates an expected call of FinalizeRateLimitClientConfig.
+func (mr *MockRateLimitClientConfigFinalizerMockRecorder) FinalizeRateLimitClientConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeRateLimitClientConfig", reflect.TypeOf((*MockRateLimitClientConfigFinalizer)(nil).FinalizeRateLimitClientConfig), obj)
+}
+
+// RateLimitClientConfigFinalizerName mocks base method.
+func (m *MockRateLimitClientConfigFinalizer) RateLimitClientConfigFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RateLimitClientConfigFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// RateLimitClientConfigFinalizerName indicates an expected call of RateLimitClientConfigFinalizerName.
+func (mr *MockRateLimitClientConfigFinalizerMockRecorder) RateLimitClientConfigFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RateLimitClientConfigFinalizerName", reflect.TypeOf((*MockRateLimitClientConfigFinalizer)(nil).RateLimitClientConfigFinalizerName))
+}
+
+// ReconcileRateLimitClientConfig mocks base method.
+func (m *MockRateLimitClientConfigFinalizer) ReconcileRateLimitClientConfig(obj *v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileRateLimitClientConfig", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileRateLimitClientConfig indicates an expected call of ReconcileRateLimitClientConfig.
+func (mr *MockRateLimitClientConfigFinalizerMockRecorder) ReconcileRateLimitClientConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimitClientConfig", reflect.TypeOf((*MockRateLimitClientConfigFinalizer)(nil).ReconcileRateLimitClientConfig), obj)
+}
+
+// MockRateLimitClientConfigReconcileLoop is a mock of RateLimitClientConfigReconcileLoop interface.
+type MockRateLimitClientConfigReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockRateLimitClientConfigReconcileLoopMockRecorder
+}
+
+// MockRateLimitClientConfigReconcileLoopMockRecorder is the mock recorder for MockRateLimitClientConfigReconcileLoop.
+type MockRateLimitClientConfigReconcileLoopMockRecorder struct {
+	mock *MockRateLimitClientConfigReconcileLoop
+}
+
+// NewMockRateLimitClientConfigReconcileLoop creates a new mock instance.
+func NewMockRateLimitClientConfigReconcileLoop(ctrl *gomock.Controller) *MockRateLimitClientConfigReconcileLoop {
+	mock := &MockRateLimitClientConfigReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockRateLimitClientConfigReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRateLimitClientConfigReconcileLoop) EXPECT() *MockRateLimitClientConfigReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// RunRateLimitClientConfigReconciler mocks base method.
+func (m *MockRateLimitClientConfigReconcileLoop) RunRateLimitClientConfigReconciler(ctx context.Context, rec controller.RateLimitClientConfigReconciler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RunRateLimitClientConfigReconciler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunRateLimitClientConfigReconciler indicates an expected call of RunRateLimitClientConfigReconciler.
+func (mr *MockRateLimitClientConfigReconcileLoopMockRecorder) RunRateLimitClientConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunRateLimitClientConfigReconciler", reflect.TypeOf((*MockRateLimitClientConfigReconcileLoop)(nil).RunRateLimitClientConfigReconciler), varargs...)
+}
+
 // MockVirtualDestinationReconciler is a mock of VirtualDestinationReconciler interface.
 type MockVirtualDestinationReconciler struct {
 	ctrl     *gomock.Controller

@@ -48,6 +48,41 @@ type WasmDeploymentList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for RateLimitClientConfig
+var RateLimitClientConfigGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "RateLimitClientConfig",
+}
+
+// RateLimitClientConfig is the Schema for the rateLimitClientConfig API
+type RateLimitClientConfig struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   RateLimitClientConfigSpec   `json:"spec,omitempty"`
+	Status RateLimitClientConfigStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (RateLimitClientConfig) GVK() schema.GroupVersionKind {
+	return RateLimitClientConfigGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// RateLimitClientConfigList contains a list of RateLimitClientConfig
+type RateLimitClientConfigList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []RateLimitClientConfig `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
 // GroupVersionKind for VirtualDestination
 var VirtualDestinationGVK = schema.GroupVersionKind{
 	Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -220,6 +255,7 @@ type ServiceDependencyList struct {
 
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
+	SchemeBuilder.Register(&RateLimitClientConfig{}, &RateLimitClientConfigList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
 	SchemeBuilder.Register(&VirtualGateway{}, &VirtualGatewayList{})
 	SchemeBuilder.Register(&VirtualHost{}, &VirtualHostList{})

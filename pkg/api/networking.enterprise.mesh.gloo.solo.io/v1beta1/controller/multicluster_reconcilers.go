@@ -89,6 +89,77 @@ func (g genericWasmDeploymentMulticlusterReconciler) Reconcile(cluster string, o
 	return g.reconciler.ReconcileWasmDeployment(cluster, obj)
 }
 
+// Reconcile Upsert events for the RateLimitClientConfig Resource across clusters.
+// implemented by the user
+type MulticlusterRateLimitClientConfigReconciler interface {
+	ReconcileRateLimitClientConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the RateLimitClientConfig Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterRateLimitClientConfigDeletionReconciler interface {
+	ReconcileRateLimitClientConfigDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterRateLimitClientConfigReconcilerFuncs struct {
+	OnReconcileRateLimitClientConfig         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
+	OnReconcileRateLimitClientConfigDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterRateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	if f.OnReconcileRateLimitClientConfig == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileRateLimitClientConfig(clusterName, obj)
+}
+
+func (f *MulticlusterRateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfigDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileRateLimitClientConfigDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileRateLimitClientConfigDeletion(clusterName, req)
+}
+
+type MulticlusterRateLimitClientConfigReconcileLoop interface {
+	// AddMulticlusterRateLimitClientConfigReconciler adds a MulticlusterRateLimitClientConfigReconciler to the MulticlusterRateLimitClientConfigReconcileLoop.
+	AddMulticlusterRateLimitClientConfigReconciler(ctx context.Context, rec MulticlusterRateLimitClientConfigReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterRateLimitClientConfigReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterRateLimitClientConfigReconcileLoop) AddMulticlusterRateLimitClientConfigReconciler(ctx context.Context, rec MulticlusterRateLimitClientConfigReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericRateLimitClientConfigMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterRateLimitClientConfigReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterRateLimitClientConfigReconcileLoop {
+	return &multiclusterRateLimitClientConfigReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}, options)}
+}
+
+type genericRateLimitClientConfigMulticlusterReconciler struct {
+	reconciler MulticlusterRateLimitClientConfigReconciler
+}
+
+func (g genericRateLimitClientConfigMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterRateLimitClientConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRateLimitClientConfigDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericRateLimitClientConfigMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileRateLimitClientConfig(cluster, obj)
+}
+
 // Reconcile Upsert events for the VirtualDestination Resource across clusters.
 // implemented by the user
 type MulticlusterVirtualDestinationReconciler interface {

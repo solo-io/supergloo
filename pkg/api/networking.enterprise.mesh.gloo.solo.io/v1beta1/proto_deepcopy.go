@@ -20,6 +20,18 @@ func (in *WasmDeploymentStatus) DeepCopyInto(out *WasmDeploymentStatus) {
 	*out = *p
 }
 
+// DeepCopyInto for the RateLimitClientConfig.Spec
+func (in *RateLimitClientConfigSpec) DeepCopyInto(out *RateLimitClientConfigSpec) {
+	p := proto.Clone(in).(*RateLimitClientConfigSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the RateLimitClientConfig.Status
+func (in *RateLimitClientConfigStatus) DeepCopyInto(out *RateLimitClientConfigStatus) {
+	p := proto.Clone(in).(*RateLimitClientConfigStatus)
+	*out = *p
+}
+
 // DeepCopyInto for the VirtualDestination.Spec
 func (in *VirtualDestinationSpec) DeepCopyInto(out *VirtualDestinationSpec) {
 	p := proto.Clone(in).(*VirtualDestinationSpec)

@@ -257,6 +257,248 @@ func (mr *MockWasmDeploymentSetMockRecorder) UnsortedList(filterResource ...inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockWasmDeploymentSet)(nil).UnsortedList), filterResource...)
 }
 
+// MockRateLimitClientConfigSet is a mock of RateLimitClientConfigSet interface.
+type MockRateLimitClientConfigSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockRateLimitClientConfigSetMockRecorder
+}
+
+// MockRateLimitClientConfigSetMockRecorder is the mock recorder for MockRateLimitClientConfigSet.
+type MockRateLimitClientConfigSetMockRecorder struct {
+	mock *MockRateLimitClientConfigSet
+}
+
+// NewMockRateLimitClientConfigSet creates a new mock instance.
+func NewMockRateLimitClientConfigSet(ctrl *gomock.Controller) *MockRateLimitClientConfigSet {
+	mock := &MockRateLimitClientConfigSet{ctrl: ctrl}
+	mock.recorder = &MockRateLimitClientConfigSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRateLimitClientConfigSet) EXPECT() *MockRateLimitClientConfigSetMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockRateLimitClientConfigSet) Delete(rateLimitClientConfig ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", rateLimitClientConfig)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Delete(rateLimitClientConfig interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Delete), rateLimitClientConfig)
+}
+
+// Delta mocks base method.
+func (m *MockRateLimitClientConfigSet) Delta(newSet v1beta1sets.RateLimitClientConfigSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Delta), newSet)
+}
+
+// Difference mocks base method.
+func (m *MockRateLimitClientConfigSet) Difference(set v1beta1sets.RateLimitClientConfigSet) v1beta1sets.RateLimitClientConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1beta1sets.RateLimitClientConfigSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Difference), set)
+}
+
+// Equal mocks base method.
+func (m *MockRateLimitClientConfigSet) Equal(rateLimitClientConfigSet v1beta1sets.RateLimitClientConfigSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", rateLimitClientConfigSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Equal(rateLimitClientConfigSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Equal), rateLimitClientConfigSet)
+}
+
+// Find mocks base method.
+func (m *MockRateLimitClientConfigSet) Find(id ezkube.ResourceId) (*v1beta1.RateLimitClientConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1beta1.RateLimitClientConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Find), id)
+}
+
+// Generic mocks base method.
+func (m *MockRateLimitClientConfigSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Generic))
+}
+
+// Has mocks base method.
+func (m *MockRateLimitClientConfigSet) Has(rateLimitClientConfig ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", rateLimitClientConfig)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Has(rateLimitClientConfig interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Has), rateLimitClientConfig)
+}
+
+// Insert mocks base method.
+func (m *MockRateLimitClientConfigSet) Insert(rateLimitClientConfig ...*v1beta1.RateLimitClientConfig) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range rateLimitClientConfig {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Insert(rateLimitClientConfig ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Insert), rateLimitClientConfig...)
+}
+
+// Intersection mocks base method.
+func (m *MockRateLimitClientConfigSet) Intersection(set v1beta1sets.RateLimitClientConfigSet) v1beta1sets.RateLimitClientConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1beta1sets.RateLimitClientConfigSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Intersection), set)
+}
+
+// Keys mocks base method.
+func (m *MockRateLimitClientConfigSet) Keys() sets0.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets0.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Keys))
+}
+
+// Length mocks base method.
+func (m *MockRateLimitClientConfigSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Length))
+}
+
+// List mocks base method.
+func (m *MockRateLimitClientConfigSet) List(filterResource ...func(*v1beta1.RateLimitClientConfig) bool) []*v1beta1.RateLimitClientConfig {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.RateLimitClientConfig)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *MockRateLimitClientConfigSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).List), filterResource...)
+}
+
+// Map mocks base method.
+func (m *MockRateLimitClientConfigSet) Map() map[string]*v1beta1.RateLimitClientConfig {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1beta1.RateLimitClientConfig)
+	return ret0
+}
+
+// Map indicates an expected call of Map.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Map))
+}
+
+// Union mocks base method.
+func (m *MockRateLimitClientConfigSet) Union(set v1beta1sets.RateLimitClientConfigSet) v1beta1sets.RateLimitClientConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1beta1sets.RateLimitClientConfigSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union.
+func (mr *MockRateLimitClientConfigSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Union), set)
+}
+
+// UnsortedList mocks base method.
+func (m *MockRateLimitClientConfigSet) UnsortedList(filterResource ...func(*v1beta1.RateLimitClientConfig) bool) []*v1beta1.RateLimitClientConfig {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.RateLimitClientConfig)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList.
+func (mr *MockRateLimitClientConfigSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).UnsortedList), filterResource...)
+}
+
 // MockVirtualDestinationSet is a mock of VirtualDestinationSet interface.
 type MockVirtualDestinationSet struct {
 	ctrl     *gomock.Controller

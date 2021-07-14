@@ -18,6 +18,7 @@ import (
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
+	//soloapi_codegen "github.com/solo-io/solo-apis/codegen"
 )
 
 func main() {

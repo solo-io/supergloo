@@ -42,6 +42,7 @@ var (
 			Version: "v1beta1",
 		}: {
 			"WasmDeployment",
+			"RateLimitClientConfig",
 			"VirtualDestination",
 			"VirtualGateway",
 			"VirtualHost",

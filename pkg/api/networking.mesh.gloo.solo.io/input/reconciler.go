@@ -51,6 +51,7 @@ import (
 // * AuthorizationPolicies
 // from a remote cluster.
 // * WasmDeployments
+// * RateLimitClientConfigs
 // * VirtualDestinations
 // * VirtualGateways
 // * VirtualHosts
@@ -125,6 +126,10 @@ func RegisterInputReconciler(
 
 	// initialize WasmDeployments reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize RateLimitClientConfigs reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewRateLimitClientConfigReconcileLoop("RateLimitClientConfig", mgr, options.Local.RateLimitClientConfigs).RunRateLimitClientConfigReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize VirtualDestinations reconcile loop for local cluster
@@ -387,6 +392,8 @@ type LocalReconcileOptions struct {
 
 	// Options for reconciling WasmDeployments
 	WasmDeployments reconcile.Options
+	// Options for reconciling RateLimitClientConfigs
+	RateLimitClientConfigs reconcile.Options
 	// Options for reconciling VirtualDestinations
 	VirtualDestinations reconcile.Options
 	// Options for reconciling VirtualGateways
@@ -437,6 +444,19 @@ func (r *localInputReconciler) ReconcileWasmDeployment(obj *networking_enterpris
 }
 
 func (r *localInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileRateLimitClientConfigDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

@@ -45,6 +45,34 @@ func WasmDeploymentClientFromConfigFactoryProvider() WasmDeploymentClientFromCon
 	}
 }
 
+// Provider for RateLimitClientConfigClient from Clientset
+func RateLimitClientConfigClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigClient {
+	return clients.RateLimitClientConfigs()
+}
+
+// Provider for RateLimitClientConfig Client from Client
+func RateLimitClientConfigClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRateLimitClientConfigClient(client)
+}
+
+type RateLimitClientConfigClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigClient
+
+func RateLimitClientConfigClientFactoryProvider() RateLimitClientConfigClientFactory {
+	return RateLimitClientConfigClientProvider
+}
+
+type RateLimitClientConfigClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigClient, error)
+
+func RateLimitClientConfigClientFromConfigFactoryProvider() RateLimitClientConfigClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.RateLimitClientConfigs(), nil
+	}
+}
+
 // Provider for VirtualDestinationClient from Clientset
 func VirtualDestinationClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestinationClient {
 	return clients.VirtualDestinations()

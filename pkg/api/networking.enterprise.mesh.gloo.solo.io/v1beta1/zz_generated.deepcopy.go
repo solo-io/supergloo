@@ -68,6 +68,66 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 	return nil
 }
 
+// Generated Deepcopy methods for RateLimitClientConfig
+
+func (in *RateLimitClientConfig) DeepCopyInto(out *RateLimitClientConfig) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
+
+	return
+}
+
+func (in *RateLimitClientConfig) DeepCopy() *RateLimitClientConfig {
+	if in == nil {
+		return nil
+	}
+	out := new(RateLimitClientConfig)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *RateLimitClientConfig) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *RateLimitClientConfigList) DeepCopyInto(out *RateLimitClientConfigList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]RateLimitClientConfig, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *RateLimitClientConfigList) DeepCopy() *RateLimitClientConfigList {
+	if in == nil {
+		return nil
+	}
+	out := new(RateLimitClientConfigList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *RateLimitClientConfigList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
 // Generated Deepcopy methods for VirtualDestination
 
 func (in *VirtualDestination) DeepCopyInto(out *VirtualDestination) {

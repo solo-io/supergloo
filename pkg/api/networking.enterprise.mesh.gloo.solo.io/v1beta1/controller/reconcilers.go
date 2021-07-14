@@ -134,6 +134,123 @@ func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
 	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }
 
+// Reconcile Upsert events for the RateLimitClientConfig Resource.
+// implemented by the user
+type RateLimitClientConfigReconciler interface {
+	ReconcileRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the RateLimitClientConfig Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type RateLimitClientConfigDeletionReconciler interface {
+	ReconcileRateLimitClientConfigDeletion(req reconcile.Request) error
+}
+
+type RateLimitClientConfigReconcilerFuncs struct {
+	OnReconcileRateLimitClientConfig         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
+	OnReconcileRateLimitClientConfigDeletion func(req reconcile.Request) error
+}
+
+func (f *RateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	if f.OnReconcileRateLimitClientConfig == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileRateLimitClientConfig(obj)
+}
+
+func (f *RateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfigDeletion(req reconcile.Request) error {
+	if f.OnReconcileRateLimitClientConfigDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileRateLimitClientConfigDeletion(req)
+}
+
+// Reconcile and finalize the RateLimitClientConfig Resource
+// implemented by the user
+type RateLimitClientConfigFinalizer interface {
+	RateLimitClientConfigReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	RateLimitClientConfigFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+}
+
+type RateLimitClientConfigReconcileLoop interface {
+	RunRateLimitClientConfigReconciler(ctx context.Context, rec RateLimitClientConfigReconciler, predicates ...predicate.Predicate) error
+}
+
+type rateLimitClientConfigReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewRateLimitClientConfigReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RateLimitClientConfigReconcileLoop {
+	return &rateLimitClientConfigReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}, options),
+	}
+}
+
+func (c *rateLimitClientConfigReconcileLoop) RunRateLimitClientConfigReconciler(ctx context.Context, reconciler RateLimitClientConfigReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericRateLimitClientConfigReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(RateLimitClientConfigFinalizer); ok {
+		reconcilerWrapper = genericRateLimitClientConfigFinalizer{
+			genericRateLimitClientConfigReconciler: genericReconciler,
+			finalizingReconciler:                   finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericRateLimitClientConfigHandler implements a generic reconcile.Reconciler
+type genericRateLimitClientConfigReconciler struct {
+	reconciler RateLimitClientConfigReconciler
+}
+
+func (r genericRateLimitClientConfigReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileRateLimitClientConfig(obj)
+}
+
+func (r genericRateLimitClientConfigReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(RateLimitClientConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRateLimitClientConfigDeletion(request)
+	}
+	return nil
+}
+
+// genericRateLimitClientConfigFinalizer implements a generic reconcile.FinalizingReconciler
+type genericRateLimitClientConfigFinalizer struct {
+	genericRateLimitClientConfigReconciler
+	finalizingReconciler RateLimitClientConfigFinalizer
+}
+
+func (r genericRateLimitClientConfigFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.RateLimitClientConfigFinalizerName()
+}
+
+func (r genericRateLimitClientConfigFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
+	if !ok {
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeRateLimitClientConfig(obj)
+}
+
 // Reconcile Upsert events for the VirtualDestination Resource.
 // implemented by the user
 type VirtualDestinationReconciler interface {

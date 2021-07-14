@@ -42,6 +42,8 @@ type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	WasmDeployments() WasmDeploymentClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	RateLimitClientConfigs() RateLimitClientConfigClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualDestinations() VirtualDestinationClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualGateways() VirtualGatewayClient
@@ -78,6 +80,11 @@ func NewClientset(client client.Client) Clientset {
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 	return NewWasmDeploymentClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) RateLimitClientConfigs() RateLimitClientConfigClient {
+	return NewRateLimitClientConfigClient(c.client)
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
@@ -245,6 +252,148 @@ func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeployme
 		return nil, err
 	}
 	return NewWasmDeploymentClient(client), nil
+}
+
+// Reader knows how to read and list RateLimitClientConfigs.
+type RateLimitClientConfigReader interface {
+	// Get retrieves a RateLimitClientConfig for the given object key
+	GetRateLimitClientConfig(ctx context.Context, key client.ObjectKey) (*RateLimitClientConfig, error)
+
+	// List retrieves list of RateLimitClientConfigs for a given namespace and list options.
+	ListRateLimitClientConfig(ctx context.Context, opts ...client.ListOption) (*RateLimitClientConfigList, error)
+}
+
+// RateLimitClientConfigTransitionFunction instructs the RateLimitClientConfigWriter how to transition between an existing
+// RateLimitClientConfig object and a desired on an Upsert
+type RateLimitClientConfigTransitionFunction func(existing, desired *RateLimitClientConfig) error
+
+// Writer knows how to create, delete, and update RateLimitClientConfigs.
+type RateLimitClientConfigWriter interface {
+	// Create saves the RateLimitClientConfig object.
+	CreateRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, opts ...client.CreateOption) error
+
+	// Delete deletes the RateLimitClientConfig object.
+	DeleteRateLimitClientConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given RateLimitClientConfig object.
+	UpdateRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, opts ...client.UpdateOption) error
+
+	// Patch patches the given RateLimitClientConfig object.
+	PatchRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all RateLimitClientConfig objects matching the given options.
+	DeleteAllOfRateLimitClientConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the RateLimitClientConfig object.
+	UpsertRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, transitionFuncs ...RateLimitClientConfigTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a RateLimitClientConfig object.
+type RateLimitClientConfigStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given RateLimitClientConfig object.
+	UpdateRateLimitClientConfigStatus(ctx context.Context, obj *RateLimitClientConfig, opts ...client.UpdateOption) error
+
+	// Patch patches the given RateLimitClientConfig object's subresource.
+	PatchRateLimitClientConfigStatus(ctx context.Context, obj *RateLimitClientConfig, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on RateLimitClientConfigs.
+type RateLimitClientConfigClient interface {
+	RateLimitClientConfigReader
+	RateLimitClientConfigWriter
+	RateLimitClientConfigStatusWriter
+}
+
+type rateLimitClientConfigClient struct {
+	client client.Client
+}
+
+func NewRateLimitClientConfigClient(client client.Client) *rateLimitClientConfigClient {
+	return &rateLimitClientConfigClient{client: client}
+}
+
+func (c *rateLimitClientConfigClient) GetRateLimitClientConfig(ctx context.Context, key client.ObjectKey) (*RateLimitClientConfig, error) {
+	obj := &RateLimitClientConfig{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *rateLimitClientConfigClient) ListRateLimitClientConfig(ctx context.Context, opts ...client.ListOption) (*RateLimitClientConfigList, error) {
+	list := &RateLimitClientConfigList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *rateLimitClientConfigClient) CreateRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *rateLimitClientConfigClient) DeleteRateLimitClientConfig(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &RateLimitClientConfig{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *rateLimitClientConfigClient) UpdateRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *rateLimitClientConfigClient) PatchRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *rateLimitClientConfigClient) DeleteAllOfRateLimitClientConfig(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &RateLimitClientConfig{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *rateLimitClientConfigClient) UpsertRateLimitClientConfig(ctx context.Context, obj *RateLimitClientConfig, transitionFuncs ...RateLimitClientConfigTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*RateLimitClientConfig), desired.(*RateLimitClientConfig)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *rateLimitClientConfigClient) UpdateRateLimitClientConfigStatus(ctx context.Context, obj *RateLimitClientConfig, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *rateLimitClientConfigClient) PatchRateLimitClientConfigStatus(ctx context.Context, obj *RateLimitClientConfig, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides RateLimitClientConfigClients for multiple clusters.
+type MulticlusterRateLimitClientConfigClient interface {
+	// Cluster returns a RateLimitClientConfigClient for the given cluster
+	Cluster(cluster string) (RateLimitClientConfigClient, error)
+}
+
+type multiclusterRateLimitClientConfigClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterRateLimitClientConfigClient(client multicluster.Client) MulticlusterRateLimitClientConfigClient {
+	return &multiclusterRateLimitClientConfigClient{client: client}
+}
+
+func (m *multiclusterRateLimitClientConfigClient) Cluster(cluster string) (RateLimitClientConfigClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewRateLimitClientConfigClient(client), nil
 }
 
 // Reader knows how to read and list VirtualDestinations.
