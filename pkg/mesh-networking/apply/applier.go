@@ -443,25 +443,25 @@ func validateAndReturnVirtualMesh(
 type applyReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
-	unappliedTrafficPolicies map[*discoveryv1.Destination]map[string][]error
-	unappliedAccessPolicies  map[*discoveryv1.Destination]map[string][]error
-	unappliedFederations     map[*discoveryv1.Destination]map[string][]error
-	unappliedVirtualMeshes   map[*discoveryv1.Mesh]map[string][]error
+	unappliedTrafficPolicies map[string]map[string][]error // sets.Key(*discoveryv1.Destination)
+	unappliedAccessPolicies  map[string]map[string][]error // sets.Key(*discoveryv1.Destination)
+	unappliedFederations     map[string]map[string][]error // sets.Key(*discoveryv1.Destination)
+	unappliedVirtualMeshes   map[string]map[string][]error // sets.Key(*discoveryv1.Mesh)
 }
 
 func newApplyReporter() *applyReporter {
 	return &applyReporter{
-		unappliedTrafficPolicies: map[*discoveryv1.Destination]map[string][]error{},
-		unappliedAccessPolicies:  map[*discoveryv1.Destination]map[string][]error{},
-		unappliedFederations:     map[*discoveryv1.Destination]map[string][]error{},
-		unappliedVirtualMeshes:   map[*discoveryv1.Mesh]map[string][]error{},
+		unappliedTrafficPolicies: map[string]map[string][]error{},
+		unappliedAccessPolicies:  map[string]map[string][]error{},
+		unappliedFederations:     map[string]map[string][]error{},
+		unappliedVirtualMeshes:   map[string]map[string][]error{},
 	}
 }
 
 // mark the policy with an error; will be used to filter the policy out of
 // the accepted status later
 func (v *applyReporter) ReportTrafficPolicyToDestination(destination *discoveryv1.Destination, trafficPolicy ezkube.ResourceId, err error) {
-	invalidTrafficPoliciesForDestination := v.unappliedTrafficPolicies[destination]
+	invalidTrafficPoliciesForDestination := v.unappliedTrafficPolicies[sets.Key(destination)]
 	if invalidTrafficPoliciesForDestination == nil {
 		invalidTrafficPoliciesForDestination = map[string][]error{}
 	}
@@ -469,11 +469,11 @@ func (v *applyReporter) ReportTrafficPolicyToDestination(destination *discoveryv
 	errs := invalidTrafficPoliciesForDestination[key]
 	errs = append(errs, err)
 	invalidTrafficPoliciesForDestination[key] = errs
-	v.unappliedTrafficPolicies[destination] = invalidTrafficPoliciesForDestination
+	v.unappliedTrafficPolicies[sets.Key(destination)] = invalidTrafficPoliciesForDestination
 }
 
 func (v *applyReporter) ReportAccessPolicyToDestination(destination *discoveryv1.Destination, accessPolicy ezkube.ResourceId, err error) {
-	invalidAccessPoliciesForDestination := v.unappliedAccessPolicies[destination]
+	invalidAccessPoliciesForDestination := v.unappliedAccessPolicies[sets.Key(destination)]
 	if invalidAccessPoliciesForDestination == nil {
 		invalidAccessPoliciesForDestination = map[string][]error{}
 	}
@@ -481,11 +481,11 @@ func (v *applyReporter) ReportAccessPolicyToDestination(destination *discoveryv1
 	errs := invalidAccessPoliciesForDestination[key]
 	errs = append(errs, err)
 	invalidAccessPoliciesForDestination[key] = errs
-	v.unappliedAccessPolicies[destination] = invalidAccessPoliciesForDestination
+	v.unappliedAccessPolicies[sets.Key(destination)] = invalidAccessPoliciesForDestination
 }
 
 func (v *applyReporter) ReportVirtualMeshToMesh(mesh *discoveryv1.Mesh, virtualMesh ezkube.ResourceId, err error) {
-	invalidVirtualMeshesForMesh := v.unappliedVirtualMeshes[mesh]
+	invalidVirtualMeshesForMesh := v.unappliedVirtualMeshes[sets.Key(mesh)]
 	if invalidVirtualMeshesForMesh == nil {
 		invalidVirtualMeshesForMesh = map[string][]error{}
 	}
@@ -493,11 +493,11 @@ func (v *applyReporter) ReportVirtualMeshToMesh(mesh *discoveryv1.Mesh, virtualM
 	errs := invalidVirtualMeshesForMesh[key]
 	errs = append(errs, err)
 	invalidVirtualMeshesForMesh[key] = errs
-	v.unappliedVirtualMeshes[mesh] = invalidVirtualMeshesForMesh
+	v.unappliedVirtualMeshes[sets.Key(mesh)] = invalidVirtualMeshesForMesh
 }
 
 func (v *applyReporter) ReportVirtualMeshToDestination(destination *discoveryv1.Destination, virtualMesh ezkube.ResourceId, err error) {
-	invalidFederationsForDestination := v.unappliedFederations[destination]
+	invalidFederationsForDestination := v.unappliedFederations[sets.Key(destination)]
 	if invalidFederationsForDestination == nil {
 		invalidFederationsForDestination = map[string][]error{}
 	}
@@ -505,11 +505,11 @@ func (v *applyReporter) ReportVirtualMeshToDestination(destination *discoveryv1.
 	errs := invalidFederationsForDestination[key]
 	errs = append(errs, err)
 	invalidFederationsForDestination[key] = errs
-	v.unappliedFederations[destination] = invalidFederationsForDestination
+	v.unappliedFederations[sets.Key(destination)] = invalidFederationsForDestination
 }
 
 func (v *applyReporter) getTrafficPolicyErrors(destination *discoveryv1.Destination, trafficPolicy ezkube.ResourceId) []error {
-	invalidTrafficPoliciesForDestination, ok := v.unappliedTrafficPolicies[destination]
+	invalidTrafficPoliciesForDestination, ok := v.unappliedTrafficPolicies[sets.Key(destination)]
 	if !ok {
 		return nil
 	}
@@ -521,7 +521,7 @@ func (v *applyReporter) getTrafficPolicyErrors(destination *discoveryv1.Destinat
 }
 
 func (v *applyReporter) getAccessPolicyErrors(destination *discoveryv1.Destination, accessPolicy ezkube.ResourceId) []error {
-	invalidAccessPoliciesForDestination, ok := v.unappliedAccessPolicies[destination]
+	invalidAccessPoliciesForDestination, ok := v.unappliedAccessPolicies[sets.Key(destination)]
 	if !ok {
 		return nil
 	}
@@ -533,7 +533,7 @@ func (v *applyReporter) getAccessPolicyErrors(destination *discoveryv1.Destinati
 }
 
 func (v *applyReporter) getFederationsErrors(destination *discoveryv1.Destination, virtualMesh ezkube.ResourceId) []error {
-	invalidFederationsForDestination, ok := v.unappliedFederations[destination]
+	invalidFederationsForDestination, ok := v.unappliedFederations[sets.Key(destination)]
 	if !ok {
 		return nil
 	}
@@ -547,7 +547,7 @@ func (v *applyReporter) getFederationsErrors(destination *discoveryv1.Destinatio
 func (v *applyReporter) getVirtualMeshErrors(mesh *discoveryv1.Mesh, virtualMesh ezkube.ResourceId) []error {
 	var errs []error
 	// Mesh-dependent errors
-	invalidAccessPoliciesForDestination, ok := v.unappliedVirtualMeshes[mesh]
+	invalidAccessPoliciesForDestination, ok := v.unappliedVirtualMeshes[sets.Key(mesh)]
 	if ok {
 		fsErrors, ok := invalidAccessPoliciesForDestination[sets.Key(virtualMesh)]
 		if ok {
