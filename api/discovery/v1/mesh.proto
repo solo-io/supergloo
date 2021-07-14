@@ -65,7 +65,7 @@ message MeshSpec {
             // The namespace in which the ingress gateway is running.
             string namespace = 7;
 
-            // Labels matching the workload backing the gateway.
+            // The ingress service selector labels for the gateway.
             // [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
             map<string, string> workload_labels = 1;
 
