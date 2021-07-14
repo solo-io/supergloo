@@ -23,7 +23,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 Sometimes within a mesh, an application needs the ability to communicate with services which are "external" to that mesh. For instance a public API, or other external API providers. Istio exposes this functionality via their [`ServiceEntry`](https://istio.io/latest/docs/reference/config/networking/service-entry/) API. Gloo Mesh exposes the same functionality, in a way that feels natural within the rest of the Gloo Mesh API ecosystem.
 
-#### Destintaion CRD
+#### Destination CRD
 
 The [Destination CRD]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.destination/" %}}) can be thought of as a host. In other words an addressable host which may be backed by 0-n endpoints. Typically these `Destinations` are Discovered by Gloo Mesh, and are backed by kubernetes workloads. However, that is only 1 use case. An external service at it's core is just a hostname backed my 0-n endpoints as well, so in comes the `External Destination`.
 
