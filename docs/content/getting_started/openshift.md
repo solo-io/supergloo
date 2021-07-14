@@ -185,10 +185,27 @@ Keep in mind that if you expand your system to encompass new namespaces, you'll 
 
 ## Installing the Gloo Mesh management components
 
+Run the following commands to pull Gloo Mesh Enterprise, create a namespace, and install in that namespace. In the installation
+command, the last set value is a necessary Openshift addon.
 
-The OpenShift-specific changes for installing Gloo Mesh Enterprise are related to metrics. For that reason, the instructions for installing
- Gloo Mesh Enterprise in Openshift are grouped with other metrics topics [here]({{% versioned_link_path fromRoot="/guides/observability/metrics/#openshift-integration" %}}). Follow those steps to 
-install Gloo Mesh Enterprise in OpenShift.
+```shell
+oc config use-context $MGMT_CONTEXT
+helm repo add gloo-mesh-enterprise https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise
+helm repo update
+
+# Change this if you wish to install Gloo Mesh Enterprise elsewhere 
+INSTALL_NAMESPACE='gloo-mesh'
+
+oc create namespace $INSTALL_NAMESPACE
+ 
+# Helm Install Gloo Mesh Enterprise
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --kube-context $MGMT_CONTEXT -n $INSTALL_NAMESPACE \
+--set licenseKey=${GLOO_MESH_LICENSE_KEY} \
+--set metricsBackend.prometheus.enabled=false \
+--set gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true 
+````
+
+Note: In the example command above, Prometheus is disabled because it requires extra configuration. If you wish to install Gloo Mesh Enterprise with Prometheus enabled, consult the installation instructions [here]({{% versioned_link_path fromRoot="/guides/observability/metrics/#openshift-integration" %}}). 
 
 
 ### Verify install
