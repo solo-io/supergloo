@@ -63,6 +63,7 @@ func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1.VirtualMe
 	}
 
 	validateOneVirtualMeshPerMesh(virtualMeshes)
+	c.validateVirtualMeshIngressGatewaySelectors(virtualMeshes)
 }
 
 func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1.TrafficPolicySlice) {
@@ -186,6 +187,28 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh) {
 				)
 			}
 			invalidVirtualMeshes.Insert(vMesh)
+		}
+	}
+}
+
+// For each VirtualMesh, if it has ingress gateway selectors, validate those selectors.
+func (c *configTargetValidator) validateVirtualMeshIngressGatewaySelectors(virtualMeshes v1.VirtualMeshSlice) {
+	for _, vMesh := range virtualMeshes {
+		if vMesh.Status.State != commonv1.ApprovalState_ACCEPTED {
+			continue
+		}
+		for _, ingressGatewayServiceSelector := range vMesh.Spec.GetFederation().GetEastWestIngressGatewaySelectors() {
+			errs := c.validateDestinationReferences(ingressGatewayServiceSelector.GetDestinationSelectors())
+			if len(errs) != 0 {
+				vMesh.Status.State = commonv1.ApprovalState_INVALID
+				for _, err := range errs {
+					vMesh.Status.Errors = append(
+						vMesh.Status.Errors,
+						fmt.Sprintf("Invalid Destination selector: %v", err),
+					)
+				}
+				continue
+			}
 		}
 	}
 }

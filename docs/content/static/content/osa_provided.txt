@@ -16,7 +16,7 @@ Name|Version|License
 [gogo/protobuf](https://github.com/gogo/protobuf)|v1.3.2|BSD 3-clause "New" or "Revised" License
 [golang/protobuf](https://github.com/golang/protobuf)|v1.5.2|BSD 3-clause "New" or "Revised" License
 [google/go-cmp](https://github.com/google/go-cmp)|v0.5.5|BSD 3-clause "New" or "Revised" License
-[google/go-github](https://github.com/google/go-github)|v17.0.0+incompatible|BSD 3-clause "New" or "Revised" License
+[go-github/v32](https://github.com/google/go-github)|v32.0.0|BSD 3-clause "New" or "Revised" License
 [iancoleman/strcase](https://github.com/iancoleman/strcase)|v0.1.3|MIT License
 [kr/pretty](https://github.com/kr/pretty)|v0.2.1|MIT License
 [linkerd/linkerd2](https://github.com/linkerd/linkerd2)|v0.5.1-0.20200402173539-fee70c064bc0|Apache License 2.0
@@ -42,7 +42,6 @@ Name|Version|License
 [stoewer/go-strcase](https://github.com/stoewer/go-strcase)|v1.2.0|MIT License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.16.0|MIT License
-[x/oauth2](https://golang.org/x/oauth2)|v0.0.0-20210413134643-5e61552d6c78|BSD 3-clause "New" or "Revised" License
 [x/time](https://golang.org/x/time)|v0.0.0-20201208040808-7e3f01d25324|BSD 3-clause "New" or "Revised" License
 [google.golang.org/grpc](https://google.golang.org/grpc)|v1.37.0|Apache License 2.0
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.26.0|BSD 3-clause "New" or "Revised" License

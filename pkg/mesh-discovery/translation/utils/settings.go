@@ -34,7 +34,7 @@ func GetIngressGatewayDetector(settings *settingsv1.DiscoverySettings, clusterNa
 		labels = defaults.DefaultGatewayWorkloadLabels
 	}
 	if portName == "" {
-		portName = defaults.DefaultGatewayPortName
+		portName = defaults.IstioGatewayTlsPortName
 	}
 
 	return &settingsv1.DiscoverySettings_Istio_IngressGatewayDetector{

@@ -118,3 +118,15 @@ message IdentitySelector {
         repeated .core.skv2.solo.io.ClusterObjectRef service_accounts = 1;
     }
 }
+
+// Select a set of Destinations with tls ports to use as ingress gateway services for the referenced Meshes.
+message IngressGatewaySelector {
+
+    // The set of Destinations that will be used as ingress gateways for external traffic entering the Mesh.
+    // If omitted, a mesh-specific default ingress gateway destination will be used.
+    // For Istio, any Kubernetes Service(s) with the label pair `{"istio": "ingressgateway"}` will be selected.
+    repeated DestinationSelector destination_selectors = 1;
+
+    // Specify by name the TLS port on the ingress gateway destination. If not specified, will default to "tls".
+    string port_name = 2;
+}

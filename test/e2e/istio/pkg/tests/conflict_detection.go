@@ -152,13 +152,17 @@ func ConflictDetectionTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// should preserve conflicting user VirtualService on remote cluster
-			Eventually(func() bool {
+			Eventually(func() error {
 				remoteUserVirtualService, err := getVirtualService(remoteClient, ezkube.MakeObjectRef(userVirtualService))
 				if err != nil {
-					return false
+					return err
 				}
-				return proto.Equal(&remoteUserVirtualService.Spec, &userVirtualService.Spec)
-			}, "10s", "1s").Should(BeTrue())
+				Expect(proto.Equal(&remoteUserVirtualService.Spec, &userVirtualService.Spec),
+					"Expected remote vs spec %v to equal user vs spec %v",
+					remoteUserVirtualService.Spec,
+					userVirtualService.Spec)
+				return nil
+			}, "10s", "1s").ShouldNot(HaveOccurred())
 
 			// output VS should not exist on remote cluster
 			Eventually(func() bool {
@@ -166,28 +170,31 @@ func ConflictDetectionTest() {
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return err != nil
-			}, "5s", "1s").Should(BeTrue())
+				return errors.IsNotFound(err)
+			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 			// output VS should not exist on remote cluster
 			Consistently(func() bool {
 				_, err = getVirtualService(remoteClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
-				return err != nil
-			}, "5s", "1s").Should(BeTrue())
+				return errors.IsNotFound(err)
+			}, "5s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 
 			// output VS should exist on mgmt cluster
-			Eventually(func() bool {
+			Eventually(func() error {
 				mgmtOutputVirtualService, err := getVirtualService(mgmtClient, &skv2corev1.ObjectRef{
 					Name:      "reviews",
 					Namespace: BookinfoNamespace,
 				})
 				if err != nil {
-					return false
+					return err
 				}
-				return proto.Equal(&mgmtOutputVirtualService.Spec, &expectedOutputVirtualService.Spec)
-			}, "10s", "1s").Should(BeTrue())
+				Expect(proto.Equal(&mgmtOutputVirtualService.Spec, &expectedOutputVirtualService.Spec),
+					"Expected mgmt output vs spec %v to equal %v",
+					mgmtOutputVirtualService.Spec, expectedOutputVirtualService.Spec)
+				return nil
+			}, "10s", "1s").ShouldNot(HaveOccurred())
 		})
 
 		By("cleaning up the user VirtualService", func() {
@@ -227,7 +234,7 @@ func ConflictDetectionTest() {
 					Namespace: BookinfoNamespace,
 				})
 				return errors.IsNotFound(err)
-			}, "10s", "1s").Should(BeTrue())
+			}, "10s", "1s").Should(BeTrue(), "expected err %v to be IsNotFound", err)
 		})
 
 		By("cleaning up the user DestinationRule", func() {

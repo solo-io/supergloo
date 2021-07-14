@@ -8,4 +8,6 @@ RUN apk upgrade --update-cache \
 
 COPY cert-agent-linux-amd64 /usr/local/bin/cert-agent
 
+USER 10101
+
 ENTRYPOINT ["/usr/local/bin/cert-agent"]

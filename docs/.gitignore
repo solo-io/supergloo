@@ -4,5 +4,4 @@ site-versioned/*
 themes/
 ci
 gloo-mesh-temp
-content/reference/changelog
-
+content/static/content/*.json
