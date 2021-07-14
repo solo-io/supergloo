@@ -44,6 +44,8 @@ type SettingsSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another SettingsSet
 	Delta(newSet SettingsSet) sksets.ResourceDelta
+	// Create a deep copy of the current SettingsSet
+	Clone() SettingsSet
 }
 
 func makeGenericSettingsSet(settingsList []*settings_mesh_gloo_solo_io_v1.Settings) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *settingsSet) Delta(newSet SettingsSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *settingsSet) Clone() SettingsSet {
+	if s == nil {
+		return nil
+	}
+	return &settingsSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type DashboardSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type DashboardSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another DashboardSet
 	Delta(newSet DashboardSet) sksets.ResourceDelta
+	// Create a deep copy of the current DashboardSet
+	Clone() DashboardSet
 }
 
 func makeGenericDashboardSet(dashboardList []*settings_mesh_gloo_solo_io_v1.Dashboard) sksets.ResourceSet {
@@ -431,4 +442,11 @@ func (s *dashboardSet) Delta(newSet DashboardSet) sksets.ResourceDelta {
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *dashboardSet) Clone() DashboardSet {
+	if s == nil {
+		return nil
+	}
+	return &dashboardSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

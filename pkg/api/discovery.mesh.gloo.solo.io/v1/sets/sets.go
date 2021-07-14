@@ -44,6 +44,8 @@ type DestinationSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another DestinationSet
 	Delta(newSet DestinationSet) sksets.ResourceDelta
+	// Create a deep copy of the current DestinationSet
+	Clone() DestinationSet
 }
 
 func makeGenericDestinationSet(destinationList []*discovery_mesh_gloo_solo_io_v1.Destination) sksets.ResourceSet {
@@ -223,6 +225,13 @@ func (s *destinationSet) Delta(newSet DestinationSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *destinationSet) Clone() DestinationSet {
+	if s == nil {
+		return nil
+	}
+	return &destinationSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type WorkloadSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -254,6 +263,8 @@ type WorkloadSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another WorkloadSet
 	Delta(newSet WorkloadSet) sksets.ResourceDelta
+	// Create a deep copy of the current WorkloadSet
+	Clone() WorkloadSet
 }
 
 func makeGenericWorkloadSet(workloadList []*discovery_mesh_gloo_solo_io_v1.Workload) sksets.ResourceSet {
@@ -433,6 +444,13 @@ func (s *workloadSet) Delta(newSet WorkloadSet) sksets.ResourceDelta {
 	return s.Generic().Delta(newSet.Generic())
 }
 
+func (s *workloadSet) Clone() WorkloadSet {
+	if s == nil {
+		return nil
+	}
+	return &workloadSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+}
+
 type MeshSet interface {
 	// Get the set stored keys
 	Keys() sets.String
@@ -464,6 +482,8 @@ type MeshSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another MeshSet
 	Delta(newSet MeshSet) sksets.ResourceDelta
+	// Create a deep copy of the current MeshSet
+	Clone() MeshSet
 }
 
 func makeGenericMeshSet(meshList []*discovery_mesh_gloo_solo_io_v1.Mesh) sksets.ResourceSet {
@@ -641,4 +661,11 @@ func (s *meshSet) Delta(newSet MeshSet) sksets.ResourceDelta {
 		}
 	}
 	return s.Generic().Delta(newSet.Generic())
+}
+
+func (s *meshSet) Clone() MeshSet {
+	if s == nil {
+		return nil
+	}
+	return &meshSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }

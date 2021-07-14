@@ -38,6 +38,20 @@ func (m *MockWasmDeploymentSet) EXPECT() *MockWasmDeploymentSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockWasmDeploymentSet) Clone() v1beta1sets.WasmDeploymentSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.WasmDeploymentSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockWasmDeploymentSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockWasmDeploymentSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockWasmDeploymentSet) Delete(wasmDeployment ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -278,6 +292,20 @@ func NewMockRateLimiterServerConfigSet(ctrl *gomock.Controller) *MockRateLimiter
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRateLimiterServerConfigSet) EXPECT() *MockRateLimiterServerConfigSetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockRateLimiterServerConfigSet) Clone() v1beta1sets.RateLimiterServerConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.RateLimiterServerConfigSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockRateLimiterServerConfigSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRateLimiterServerConfigSet)(nil).Clone))
 }
 
 // Delete mocks base method.
@@ -522,6 +550,20 @@ func (m *MockVirtualDestinationSet) EXPECT() *MockVirtualDestinationSetMockRecor
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockVirtualDestinationSet) Clone() v1beta1sets.VirtualDestinationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.VirtualDestinationSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockVirtualDestinationSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockVirtualDestinationSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockVirtualDestinationSet) Delete(virtualDestination ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -762,6 +804,20 @@ func NewMockVirtualGatewaySet(ctrl *gomock.Controller) *MockVirtualGatewaySet {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockVirtualGatewaySet) EXPECT() *MockVirtualGatewaySetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockVirtualGatewaySet) Clone() v1beta1sets.VirtualGatewaySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.VirtualGatewaySet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockVirtualGatewaySetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockVirtualGatewaySet)(nil).Clone))
 }
 
 // Delete mocks base method.
@@ -1006,6 +1062,20 @@ func (m *MockVirtualHostSet) EXPECT() *MockVirtualHostSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockVirtualHostSet) Clone() v1beta1sets.VirtualHostSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.VirtualHostSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockVirtualHostSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockVirtualHostSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockVirtualHostSet) Delete(virtualHost ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -1248,6 +1318,20 @@ func (m *MockRouteTableSet) EXPECT() *MockRouteTableSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockRouteTableSet) Clone() v1beta1sets.RouteTableSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.RouteTableSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockRouteTableSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRouteTableSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockRouteTableSet) Delete(routeTable ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -1488,6 +1572,20 @@ func NewMockServiceDependencySet(ctrl *gomock.Controller) *MockServiceDependency
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceDependencySet) EXPECT() *MockServiceDependencySetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockServiceDependencySet) Clone() v1beta1sets.ServiceDependencySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1beta1sets.ServiceDependencySet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockServiceDependencySetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockServiceDependencySet)(nil).Clone))
 }
 
 // Delete mocks base method.

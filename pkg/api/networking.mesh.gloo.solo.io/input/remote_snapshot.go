@@ -149,6 +149,9 @@ type RemoteSnapshot interface {
 	SyncStatuses(ctx context.Context, c client.Client, opts RemoteSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+
+	// Clone the snapshot
+	Clone() RemoteSnapshot
 }
 
 // options for syncing input object statuses
@@ -489,6 +492,23 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap["sidecars"] = s.sidecars.List()
 	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
 	return json.Marshal(snapshotMap)
+}
+
+func (s snapshotRemote) Clone() RemoteSnapshot {
+	return &snapshotRemote{
+		name: s.name,
+
+		issuedCertificates:    s.issuedCertificates.Clone(),
+		podBounceDirectives:   s.podBounceDirectives.Clone(),
+		xdsConfigs:            s.xdsConfigs.Clone(),
+		destinationRules:      s.destinationRules.Clone(),
+		envoyFilters:          s.envoyFilters.Clone(),
+		gateways:              s.gateways.Clone(),
+		serviceEntries:        s.serviceEntries.Clone(),
+		virtualServices:       s.virtualServices.Clone(),
+		sidecars:              s.sidecars.Clone(),
+		authorizationPolicies: s.authorizationPolicies.Clone(),
+	}
 }
 
 // builds the input snapshot from API Clients.
