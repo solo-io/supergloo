@@ -79,19 +79,24 @@ If you are installing Gloo Mesh Enterprise on an [OpenShift](https://www.openshi
  - `enterprise-networking.prometheus.server.securityContext.runAsGroup=$OPENSHIFT_ID`
  - `enterprise-networking.prometheus.server.securityContext.fsGroup=$OPENSHIFT_ID`
  
- Where `$OPENSHIFT_ID` is a single valid ID from the range that OpenShift has assigned to your intended Gloo Mesh Enterprise namespace. The valid ID range can be found by examining your namespace's metadata:
- 
- ```shell 
+ Where `$OPENSHIFT_ID` is a single valid ID from the range that OpenShift has assigned to your intended Gloo Mesh Enterprise namespace. The valid ID range can be found by examining your namespace's metadata. Note that this
+ requires that your intended installation namespace already exists. If it does not, you must create it first:
+ ```shell script
 % MESH_NAMESPACE='gloo-mesh' # Replace with your namespace if are installing Gloo Mesh Enterprise elsewhere.
-% kubectl get ns $MESH_NAMESPACE -ojsonpath='{.metadata.annotations}' 
+% oc create ns $MESH_NAMESPACE 
+```
+ Once your namespace is established, check its metadata:
+ ```shell 
+% oc get ns $MESH_NAMESPACE -ojsonpath='{.metadata.annotations}' 
 map[openshift.io/sa.scc.mcs: s0:c27,c9 openshift.io/sa.scc.supplemental-groups: 1000720000/10000 openshift.io/sa.scc.uid-range: 1000720000/10000]
 ```
 
-The range syntax is N through N + M - 1 inclusive, given the format N/M. So in this case, the valid ID range would be 1000720000 through 1000729999. Select a number from this range to be your ID. Assuming the number`1000720000` is a valid option, an example installation command would look like this: 
+OpenShift's range syntax is N through N + M - 1 inclusive, given the format N/M. So in this case, the valid ID range would be 1000720000 through 1000729999. Select a number from this range to be your ID. Assuming the number`1000720000` is a valid option, an example installation command would look like this: 
 
 ```shell 
 % OPENSHIFT_ID=1000720000
-% helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh   --set licenseKey=${GLOO_MESH_LICENSE_KEY}  \
+% helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
+--set licenseKey=${GLOO_MESH_LICENSE_KEY} \
 --set enterprise-networking.metricsBackend.prometheus.enabled=true \
 --set gloo-mesh-ui.GlooMeshDashboard.apiserver.floatingUserId=true \
 --set enterprise-networking.prometheus.server.securityContext.runAsUser=$OPENSHIFT_ID \
