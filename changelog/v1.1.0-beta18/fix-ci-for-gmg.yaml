@@ -1,0 +1,12 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Update ci with north-south ingress nodeport that needs to be exposed for Gloo Mesh Gateway regression testing
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/858
+    resolvesIssue: false
+  - type: FIX
+    description: >-
+      Fix the discovered workload labels in discovered istio meshes to use the complete list of labels from the
+      service selector spec rather than just using the workload selector
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/858
+    resolvesIssue: false
