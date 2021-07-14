@@ -36,29 +36,29 @@ if [ "$1" == "cleanup" ]; then
 fi
 
 # default mgmt/remote cluster ingress ports
-mgmtIngressPort1=32001
-((mgmtIngressPort2=mgmtIngressPort1+10)) # 32011
-remoteIngressPort1=32000
-((remoteIngressPort2=remoteIngressPort1+10)) # 32010
+mgmtEastWestIngressPort=32001
+((mgmtNorthSouthIngressPort=mgmtEastWestIngressPort+10)) # 32011
+remoteEastWestIngressPort=32000
+((remoteNorthSouthIngressPort=remoteEastWestIngressPort+10)) # 32010
 
 # set mgmt/remote cluster ingress ports from environment variables if they exist
 if [ ! -z ${MGMT_INGRESS_PORT_1} ]; then
-    mgmtIngressPort1="${MGMT_INGRESS_PORT_1}"
+    mgmtEastWestIngressPort="${MGMT_INGRESS_PORT_1}"
 fi
 if [ ! -z ${MGMT_INGRESS_PORT_2} ]; then
-    mgmtIngressPort2="${MGMT_INGRESS_PORT_2}"
+    mgmtNorthSouthIngressPort="${MGMT_INGRESS_PORT_2}"
 fi
 if [ ! -z ${REMOTE_INGRESS_PORT_1} ]; then
-    remoteIngressPort1="${REMOTE_INGRESS_PORT_1}"
+    remoteEastWestIngressPort="${REMOTE_INGRESS_PORT_1}"
 fi
 if [ ! -z ${REMOTE_INGRESS_PORT_2} ]; then
-    remoteIngressPort2="${REMOTE_INGRESS_PORT_2}"
+    remoteNorthSouthIngressPort="${REMOTE_INGRESS_PORT_2}"
 fi
 
 if [ "$1" == "osm" ]; then
   # optionally install open service mesh
-  create_kind_cluster ${mgmtCluster} ${mgmtIngressPort1} ${mgmtIngressPort2}
-  install_osm ${mgmtCluster} ${mgmtIngressPort1}
+  create_kind_cluster ${mgmtCluster} ${mgmtEastWestIngressPort} ${mgmtNorthSouthIngressPort}
+  install_osm ${mgmtCluster} ${mgmtEastWestIngressPort}
 
   echo successfully set up clusters.
 
@@ -75,14 +75,14 @@ else
 
   # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
   # related: https://github.com/kubernetes-sigs/kind/issues/1596
-  create_kind_cluster ${mgmtCluster} ${mgmtIngressPort1} ${mgmtIngressPort2}
-  install_istio ${mgmtCluster} ${mgmtIngressPort1}
+  create_kind_cluster ${mgmtCluster} ${mgmtEastWestIngressPort} ${mgmtNorthSouthIngressPort}
+  install_istio ${mgmtCluster} ${mgmtEastWestIngressPort} ${mgmtNorthSouthIngressPort}
 
-  create_kind_cluster ${remoteCluster} ${remoteIngressPort1} ${remoteIngressPort2}
-  install_istio ${remoteCluster} ${remoteIngressPort1}
+  create_kind_cluster ${remoteCluster} ${remoteEastWestIngressPort} ${remoteNorthSouthIngressPort}
+  install_istio ${remoteCluster} ${remoteEastWestIngressPort} ${remoteNorthSouthIngressPort}
 
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
-    setup_flat_networking ${mgmtCluster} ${mgmtIngressPort1} ${remoteCluster} ${remoteIngressPort1}
+    setup_flat_networking ${mgmtCluster} ${mgmtEastWestIngressPort} ${remoteCluster} ${remoteEastWestIngressPort}
   fi
 
   # create istio-injectable namespace
