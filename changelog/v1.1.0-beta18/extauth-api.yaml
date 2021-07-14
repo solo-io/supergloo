@@ -1,7 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: >-
-      Add the initial route and http filter API for extauth in Gloo Mesh, which will be implemented as an
-      enterprise feature.
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/527
-    resolvesIssue: false
