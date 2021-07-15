@@ -14,7 +14,7 @@ message RateLimitClientConfigSpec {
 
   // The RateLimitClient specifies the ratelimit Actions which the client (Envoy) will use to
   // compose the descriptors that will be sent to the server to make a rate limiting decision.
-  repeated .ratelimit.networking.mesh.gloo.solo.io.RateLimitClient rate_limits = 1;
+  .ratelimit.networking.mesh.gloo.solo.io.RateLimitClient rate_limits = 1;
 
 }
 

@@ -35,7 +35,7 @@ RateLimitClientConfig contains the client configuration for the Gloo Rate Limite
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| rateLimits | [][ratelimit.networking.mesh.gloo.solo.io.RateLimitClient]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient" >}}) | repeated | The RateLimitClient specifies the ratelimit Actions which the client (Envoy) will use to compose the descriptors that will be sent to the server to make a rate limiting decision. |
+| rateLimits | [ratelimit.networking.mesh.gloo.solo.io.RateLimitClient]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.ratelimit.rate_limit#ratelimit.networking.mesh.gloo.solo.io.RateLimitClient" >}}) |  | The RateLimitClient specifies the ratelimit Actions which the client (Envoy) will use to compose the descriptors that will be sent to the server to make a rate limiting decision. |
   
 
 
