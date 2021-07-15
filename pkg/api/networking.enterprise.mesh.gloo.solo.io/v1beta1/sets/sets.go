@@ -225,7 +225,6 @@ func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
 	return s.Generic().Delta(newSet.Generic())
 }
 
-
 func (s *wasmDeploymentSet) Clone() WasmDeploymentSet {
 	if s == nil {
 		return nil
@@ -264,6 +263,8 @@ type RateLimitClientConfigSet interface {
 	Generic() sksets.ResourceSet
 	// returns the delta between this and and another RateLimitClientConfigSet
 	Delta(newSet RateLimitClientConfigSet) sksets.ResourceDelta
+	// Create a deep copy of the current RateLimitClientConfigSet
+	Clone() RateLimitClientConfigSet
 }
 
 func makeGenericRateLimitClientConfigSet(rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) sksets.ResourceSet {
@@ -443,11 +444,11 @@ func (s *rateLimitClientConfigSet) Delta(newSet RateLimitClientConfigSet) sksets
 	return s.Generic().Delta(newSet.Generic())
 }
 
-func (s *rateLimiterServerConfigSet) Clone() RateLimiterServerConfigSet {
+func (s *rateLimitClientConfigSet) Clone() RateLimitClientConfigSet {
 	if s == nil {
 		return nil
 	}
-	return &rateLimiterServerConfigSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &rateLimitClientConfigSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
 
 type VirtualDestinationSet interface {

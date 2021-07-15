@@ -295,17 +295,17 @@ func (m *MockRateLimitClientConfigSet) EXPECT() *MockRateLimitClientConfigSetMoc
 }
 
 // Clone mocks base method.
-func (m *MockRateLimiterServerConfigSet) Clone() v1beta1sets.RateLimiterServerConfigSet {
+func (m *MockRateLimitClientConfigSet) Clone() v1beta1sets.RateLimitClientConfigSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Clone")
-	ret0, _ := ret[0].(v1beta1sets.RateLimiterServerConfigSet)
+	ret0, _ := ret[0].(v1beta1sets.RateLimitClientConfigSet)
 	return ret0
 }
 
 // Clone indicates an expected call of Clone.
-func (mr *MockRateLimiterServerConfigSetMockRecorder) Clone() *gomock.Call {
+func (mr *MockRateLimitClientConfigSetMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRateLimiterServerConfigSet)(nil).Clone))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRateLimitClientConfigSet)(nil).Clone))
 }
 
 // Delete mocks base method.
