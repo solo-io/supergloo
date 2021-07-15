@@ -232,210 +232,210 @@ func (s *wasmDeploymentSet) Clone() WasmDeploymentSet {
 	return &wasmDeploymentSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
 
-type RateLimiterServerConfigSet interface {
+type RateLimitClientConfigSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
 	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
-	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
 	// Return the Set as a map of key to resource.
-	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
 	// Insert a resource into the set.
-	Insert(rateLimiterServerConfig ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	Insert(rateLimitClientConfig ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(rateLimiterServerConfigSet RateLimiterServerConfigSet) bool
+	Equal(rateLimitClientConfigSet RateLimitClientConfigSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(rateLimiterServerConfig ezkube.ResourceId) bool
+	Has(rateLimitClientConfig ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(rateLimiterServerConfig ezkube.ResourceId)
+	Delete(rateLimitClientConfig ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set RateLimiterServerConfigSet) RateLimiterServerConfigSet
+	Union(set RateLimitClientConfigSet) RateLimitClientConfigSet
 	// Return the difference with the provided set
-	Difference(set RateLimiterServerConfigSet) RateLimiterServerConfigSet
+	Difference(set RateLimitClientConfigSet) RateLimitClientConfigSet
 	// Return the intersection with the provided set
-	Intersection(set RateLimiterServerConfigSet) RateLimiterServerConfigSet
+	Intersection(set RateLimitClientConfigSet) RateLimitClientConfigSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig, error)
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
 	Generic() sksets.ResourceSet
-	// returns the delta between this and and another RateLimiterServerConfigSet
-	Delta(newSet RateLimiterServerConfigSet) sksets.ResourceDelta
-	// Create a deep copy of the current RateLimiterServerConfigSet
-	Clone() RateLimiterServerConfigSet
+	// returns the delta between this and and another RateLimitClientConfigSet
+	Delta(newSet RateLimitClientConfigSet) sksets.ResourceDelta
+	// Create a deep copy of the current RateLimitClientConfigSet
+	Clone() RateLimitClientConfigSet
 }
 
-func makeGenericRateLimiterServerConfigSet(rateLimiterServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) sksets.ResourceSet {
+func makeGenericRateLimitClientConfigSet(rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range rateLimiterServerConfigList {
+	for _, obj := range rateLimitClientConfigList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type rateLimiterServerConfigSet struct {
+type rateLimitClientConfigSet struct {
 	set sksets.ResourceSet
 }
 
-func NewRateLimiterServerConfigSet(rateLimiterServerConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) RateLimiterServerConfigSet {
-	return &rateLimiterServerConfigSet{set: makeGenericRateLimiterServerConfigSet(rateLimiterServerConfigList)}
+func NewRateLimitClientConfigSet(rateLimitClientConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) RateLimitClientConfigSet {
+	return &rateLimitClientConfigSet{set: makeGenericRateLimitClientConfigSet(rateLimitClientConfigList)}
 }
 
-func NewRateLimiterServerConfigSetFromList(rateLimiterServerConfigList *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfigList) RateLimiterServerConfigSet {
-	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig, 0, len(rateLimiterServerConfigList.Items))
-	for idx := range rateLimiterServerConfigList.Items {
-		list = append(list, &rateLimiterServerConfigList.Items[idx])
+func NewRateLimitClientConfigSetFromList(rateLimitClientConfigList *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfigList) RateLimitClientConfigSet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, 0, len(rateLimitClientConfigList.Items))
+	for idx := range rateLimitClientConfigList.Items {
+		list = append(list, &rateLimitClientConfigList.Items[idx])
 	}
-	return &rateLimiterServerConfigSet{set: makeGenericRateLimiterServerConfigSet(list)}
+	return &rateLimitClientConfigSet{set: makeGenericRateLimitClientConfigSet(list)}
 }
 
-func (s *rateLimiterServerConfigSet) Keys() sets.String {
+func (s *rateLimitClientConfigSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.Generic().Keys()
 }
 
-func (s *rateLimiterServerConfigSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig {
+func (s *rateLimitClientConfigSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig))
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
 		})
 	}
 
 	objs := s.Generic().List(genericFilters...)
-	rateLimiterServerConfigList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig, 0, len(objs))
+	rateLimitClientConfigList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, 0, len(objs))
 	for _, obj := range objs {
-		rateLimiterServerConfigList = append(rateLimiterServerConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig))
+		rateLimitClientConfigList = append(rateLimitClientConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
 	}
-	return rateLimiterServerConfigList
+	return rateLimitClientConfigList
 }
 
-func (s *rateLimiterServerConfigSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig {
+func (s *rateLimitClientConfigSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig))
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
 		})
 	}
 
-	var rateLimiterServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig
+	var rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
 	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
-		rateLimiterServerConfigList = append(rateLimiterServerConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig))
+		rateLimitClientConfigList = append(rateLimitClientConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
 	}
-	return rateLimiterServerConfigList
+	return rateLimitClientConfigList
 }
 
-func (s *rateLimiterServerConfigSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig {
+func (s *rateLimitClientConfigSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}
 	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	}
 	return newMap
 }
 
-func (s *rateLimiterServerConfigSet) Insert(
-	rateLimiterServerConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig,
+func (s *rateLimitClientConfigSet) Insert(
+	rateLimitClientConfigList ...*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range rateLimiterServerConfigList {
+	for _, obj := range rateLimitClientConfigList {
 		s.Generic().Insert(obj)
 	}
 }
 
-func (s *rateLimiterServerConfigSet) Has(rateLimiterServerConfig ezkube.ResourceId) bool {
+func (s *rateLimitClientConfigSet) Has(rateLimitClientConfig ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.Generic().Has(rateLimiterServerConfig)
+	return s.Generic().Has(rateLimitClientConfig)
 }
 
-func (s *rateLimiterServerConfigSet) Equal(
-	rateLimiterServerConfigSet RateLimiterServerConfigSet,
+func (s *rateLimitClientConfigSet) Equal(
+	rateLimitClientConfigSet RateLimitClientConfigSet,
 ) bool {
 	if s == nil {
-		return rateLimiterServerConfigSet == nil
+		return rateLimitClientConfigSet == nil
 	}
-	return s.Generic().Equal(rateLimiterServerConfigSet.Generic())
+	return s.Generic().Equal(rateLimitClientConfigSet.Generic())
 }
 
-func (s *rateLimiterServerConfigSet) Delete(RateLimiterServerConfig ezkube.ResourceId) {
+func (s *rateLimitClientConfigSet) Delete(RateLimitClientConfig ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.Generic().Delete(RateLimiterServerConfig)
+	s.Generic().Delete(RateLimitClientConfig)
 }
 
-func (s *rateLimiterServerConfigSet) Union(set RateLimiterServerConfigSet) RateLimiterServerConfigSet {
+func (s *rateLimitClientConfigSet) Union(set RateLimitClientConfigSet) RateLimitClientConfigSet {
 	if s == nil {
 		return set
 	}
-	return NewRateLimiterServerConfigSet(append(s.List(), set.List()...)...)
+	return NewRateLimitClientConfigSet(append(s.List(), set.List()...)...)
 }
 
-func (s *rateLimiterServerConfigSet) Difference(set RateLimiterServerConfigSet) RateLimiterServerConfigSet {
+func (s *rateLimitClientConfigSet) Difference(set RateLimitClientConfigSet) RateLimitClientConfigSet {
 	if s == nil {
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &rateLimiterServerConfigSet{set: newSet}
+	return &rateLimitClientConfigSet{set: newSet}
 }
 
-func (s *rateLimiterServerConfigSet) Intersection(set RateLimiterServerConfigSet) RateLimiterServerConfigSet {
+func (s *rateLimitClientConfigSet) Intersection(set RateLimitClientConfigSet) RateLimitClientConfigSet {
 	if s == nil {
 		return nil
 	}
 	newSet := s.Generic().Intersection(set.Generic())
-	var rateLimiterServerConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig
+	var rateLimitClientConfigList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig
 	for _, obj := range newSet.List() {
-		rateLimiterServerConfigList = append(rateLimiterServerConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig))
+		rateLimitClientConfigList = append(rateLimitClientConfigList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig))
 	}
-	return NewRateLimiterServerConfigSet(rateLimiterServerConfigList...)
+	return NewRateLimitClientConfigSet(rateLimitClientConfigList...)
 }
 
-func (s *rateLimiterServerConfigSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig, error) {
+func (s *rateLimitClientConfigSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find RateLimiterServerConfig %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find RateLimitClientConfig %v", sksets.Key(id))
 	}
-	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}, id)
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig), nil
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig), nil
 }
 
-func (s *rateLimiterServerConfigSet) Length() int {
+func (s *rateLimitClientConfigSet) Length() int {
 	if s == nil {
 		return 0
 	}
 	return s.Generic().Length()
 }
 
-func (s *rateLimiterServerConfigSet) Generic() sksets.ResourceSet {
+func (s *rateLimitClientConfigSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
 	return s.set
 }
 
-func (s *rateLimiterServerConfigSet) Delta(newSet RateLimiterServerConfigSet) sksets.ResourceDelta {
+func (s *rateLimitClientConfigSet) Delta(newSet RateLimitClientConfigSet) sksets.ResourceDelta {
 	if s == nil {
 		return sksets.ResourceDelta{
 			Inserted: newSet.Generic(),
@@ -444,11 +444,11 @@ func (s *rateLimiterServerConfigSet) Delta(newSet RateLimiterServerConfigSet) sk
 	return s.Generic().Delta(newSet.Generic())
 }
 
-func (s *rateLimiterServerConfigSet) Clone() RateLimiterServerConfigSet {
+func (s *rateLimitClientConfigSet) Clone() RateLimitClientConfigSet {
 	if s == nil {
 		return nil
 	}
-	return &rateLimiterServerConfigSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
+	return &rateLimitClientConfigSet{set: sksets.NewResourceSet(s.Generic().Clone().List()...)}
 }
 
 type VirtualDestinationSet interface {

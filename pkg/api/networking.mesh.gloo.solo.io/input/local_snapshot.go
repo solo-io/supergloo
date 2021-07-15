@@ -4,7 +4,7 @@
 
 // The Input LocalSnapshot contains the set of all:
 // * WasmDeployments
-// * RateLimiterServerConfigs
+// * RateLimitClientConfigs
 // * VirtualDestinations
 // * VirtualGateways
 // * VirtualHosts
@@ -87,7 +87,7 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	schema.GroupVersionKind{
 		Group:   "networking.enterprise.mesh.gloo.solo.io",
 		Version: "v1beta1",
-		Kind:    "RateLimiterServerConfig",
+		Kind:    "RateLimitClientConfig",
 	},
 	schema.GroupVersionKind{
 		Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -177,8 +177,8 @@ type LocalSnapshot interface {
 
 	// return the set of input WasmDeployments
 	WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
-	// return the set of input RateLimiterServerConfigs
-	RateLimiterServerConfigs() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet
+	// return the set of input RateLimitClientConfigs
+	RateLimitClientConfigs() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet
 	// return the set of input VirtualDestinations
 	VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
 	// return the set of input VirtualGateways
@@ -233,8 +233,8 @@ type LocalSyncStatusOptions struct {
 
 	// sync status of WasmDeployment objects
 	WasmDeployment bool
-	// sync status of RateLimiterServerConfig objects
-	RateLimiterServerConfig bool
+	// sync status of RateLimitClientConfig objects
+	RateLimitClientConfig bool
 	// sync status of VirtualDestination objects
 	VirtualDestination bool
 	// sync status of VirtualGateway objects
@@ -276,13 +276,13 @@ type LocalSyncStatusOptions struct {
 type snapshotLocal struct {
 	name string
 
-	wasmDeployments          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
-	rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet
-	virtualDestinations      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
-	virtualGateways          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
-	virtualHosts             networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
-	routeTables              networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
-	serviceDependencies      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
+	wasmDeployments        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
+	rateLimitClientConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet
+	virtualDestinations    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	virtualGateways        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
+	virtualHosts           networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
+	routeTables            networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	serviceDependencies    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
 	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
@@ -305,7 +305,7 @@ func NewLocalSnapshot(
 	name string,
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet,
-	rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet,
+	rateLimitClientConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet,
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet,
 	virtualGateways networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet,
 	virtualHosts networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet,
@@ -332,23 +332,23 @@ func NewLocalSnapshot(
 	return &snapshotLocal{
 		name: name,
 
-		wasmDeployments:          wasmDeployments,
-		rateLimiterServerConfigs: rateLimiterServerConfigs,
-		virtualDestinations:      virtualDestinations,
-		virtualGateways:          virtualGateways,
-		virtualHosts:             virtualHosts,
-		routeTables:              routeTables,
-		serviceDependencies:      serviceDependencies,
-		trafficPolicies:          trafficPolicies,
-		accessPolicies:           accessPolicies,
-		virtualMeshes:            virtualMeshes,
-		settings:                 settings,
-		destinations:             destinations,
-		workloads:                workloads,
-		meshes:                   meshes,
-		accessLogRecords:         accessLogRecords,
-		secrets:                  secrets,
-		kubernetesClusters:       kubernetesClusters,
+		wasmDeployments:        wasmDeployments,
+		rateLimitClientConfigs: rateLimitClientConfigs,
+		virtualDestinations:    virtualDestinations,
+		virtualGateways:        virtualGateways,
+		virtualHosts:           virtualHosts,
+		routeTables:            routeTables,
+		serviceDependencies:    serviceDependencies,
+		trafficPolicies:        trafficPolicies,
+		accessPolicies:         accessPolicies,
+		virtualMeshes:          virtualMeshes,
+		settings:               settings,
+		destinations:           destinations,
+		workloads:              workloads,
+		meshes:                 meshes,
+		accessLogRecords:       accessLogRecords,
+		secrets:                secrets,
+		kubernetesClusters:     kubernetesClusters,
 	}
 }
 
@@ -358,7 +358,7 @@ func NewLocalSnapshotFromGeneric(
 ) LocalSnapshot {
 
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
-	rateLimiterServerConfigSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
+	rateLimitClientConfigSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimitClientConfigSet()
 	virtualDestinationSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGatewaySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHostSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
@@ -392,14 +392,14 @@ func NewLocalSnapshotFromGeneric(
 		for _, wasmDeployment := range wasmDeployments {
 			wasmDeploymentSet.Insert(wasmDeployment.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.WasmDeployment))
 		}
-		rateLimiterServerConfigs := snapshot[schema.GroupVersionKind{
+		rateLimitClientConfigs := snapshot[schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
 			Version: "v1beta1",
-			Kind:    "RateLimiterServerConfig",
+			Kind:    "RateLimitClientConfig",
 		}]
 
-		for _, rateLimiterServerConfig := range rateLimiterServerConfigs {
-			rateLimiterServerConfigSet.Insert(rateLimiterServerConfig.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimiterServerConfig))
+		for _, rateLimitClientConfig := range rateLimitClientConfigs {
+			rateLimitClientConfigSet.Insert(rateLimitClientConfig.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimitClientConfig))
 		}
 		virtualDestinations := snapshot[schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -547,7 +547,7 @@ func NewLocalSnapshotFromGeneric(
 	return NewLocalSnapshot(
 		name,
 		wasmDeploymentSet,
-		rateLimiterServerConfigSet,
+		rateLimitClientConfigSet,
 		virtualDestinationSet,
 		virtualGatewaySet,
 		virtualHostSet,
@@ -570,8 +570,8 @@ func (s snapshotLocal) WasmDeployments() networking_enterprise_mesh_gloo_solo_io
 	return s.wasmDeployments
 }
 
-func (s snapshotLocal) RateLimiterServerConfigs() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet {
-	return s.rateLimiterServerConfigs
+func (s snapshotLocal) RateLimitClientConfigs() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet {
+	return s.rateLimitClientConfigs
 }
 
 func (s snapshotLocal) VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet {
@@ -649,8 +649,8 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 			}
 		}
 	}
-	if opts.RateLimiterServerConfig {
-		for _, obj := range s.RateLimiterServerConfigs().List() {
+	if opts.RateLimitClientConfig {
+		for _, obj := range s.RateLimitClientConfigs().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -847,8 +847,8 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
-	if opts.RateLimiterServerConfig {
-		for _, obj := range s.RateLimiterServerConfigs().List() {
+	if opts.RateLimitClientConfig {
+		for _, obj := range s.RateLimitClientConfigs().List() {
 			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -964,7 +964,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["wasmDeployments"] = s.wasmDeployments.List()
-	snapshotMap["rateLimiterServerConfigs"] = s.rateLimiterServerConfigs.List()
+	snapshotMap["rateLimitClientConfigs"] = s.rateLimitClientConfigs.List()
 	snapshotMap["virtualDestinations"] = s.virtualDestinations.List()
 	snapshotMap["virtualGateways"] = s.virtualGateways.List()
 	snapshotMap["virtualHosts"] = s.virtualHosts.List()
@@ -987,23 +987,23 @@ func (s snapshotLocal) Clone() LocalSnapshot {
 	return &snapshotLocal{
 		name: s.name,
 
-		wasmDeployments:          s.wasmDeployments.Clone(),
-		rateLimiterServerConfigs: s.rateLimiterServerConfigs.Clone(),
-		virtualDestinations:      s.virtualDestinations.Clone(),
-		virtualGateways:          s.virtualGateways.Clone(),
-		virtualHosts:             s.virtualHosts.Clone(),
-		routeTables:              s.routeTables.Clone(),
-		serviceDependencies:      s.serviceDependencies.Clone(),
-		trafficPolicies:          s.trafficPolicies.Clone(),
-		accessPolicies:           s.accessPolicies.Clone(),
-		virtualMeshes:            s.virtualMeshes.Clone(),
-		settings:                 s.settings.Clone(),
-		destinations:             s.destinations.Clone(),
-		workloads:                s.workloads.Clone(),
-		meshes:                   s.meshes.Clone(),
-		accessLogRecords:         s.accessLogRecords.Clone(),
-		secrets:                  s.secrets.Clone(),
-		kubernetesClusters:       s.kubernetesClusters.Clone(),
+		wasmDeployments:        s.wasmDeployments.Clone(),
+		rateLimitClientConfigs: s.rateLimitClientConfigs.Clone(),
+		virtualDestinations:    s.virtualDestinations.Clone(),
+		virtualGateways:        s.virtualGateways.Clone(),
+		virtualHosts:           s.virtualHosts.Clone(),
+		routeTables:            s.routeTables.Clone(),
+		serviceDependencies:    s.serviceDependencies.Clone(),
+		trafficPolicies:        s.trafficPolicies.Clone(),
+		accessPolicies:         s.accessPolicies.Clone(),
+		virtualMeshes:          s.virtualMeshes.Clone(),
+		settings:               s.settings.Clone(),
+		destinations:           s.destinations.Clone(),
+		workloads:              s.workloads.Clone(),
+		meshes:                 s.meshes.Clone(),
+		accessLogRecords:       s.accessLogRecords.Clone(),
+		secrets:                s.secrets.Clone(),
+		kubernetesClusters:     s.kubernetesClusters.Clone(),
 	}
 }
 
@@ -1017,8 +1017,8 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from WasmDeployments
 	WasmDeployments ResourceLocalBuildOptions
-	// List options for composing a snapshot from RateLimiterServerConfigs
-	RateLimiterServerConfigs ResourceLocalBuildOptions
+	// List options for composing a snapshot from RateLimitClientConfigs
+	RateLimitClientConfigs ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualDestinations
 	VirtualDestinations ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualGateways
@@ -1087,7 +1087,7 @@ func NewMultiClusterLocalBuilder(
 func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
-	rateLimiterServerConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
+	rateLimitClientConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimitClientConfigSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
@@ -1117,7 +1117,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertWasmDeploymentsFromCluster(ctx, cluster, wasmDeployments, opts.WasmDeployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertRateLimiterServerConfigsFromCluster(ctx, cluster, rateLimiterServerConfigs, opts.RateLimiterServerConfigs); err != nil {
+		if err := b.insertRateLimitClientConfigsFromCluster(ctx, cluster, rateLimitClientConfigs, opts.RateLimitClientConfigs); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertVirtualDestinationsFromCluster(ctx, cluster, virtualDestinations, opts.VirtualDestinations); err != nil {
@@ -1172,7 +1172,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		name,
 
 		wasmDeployments,
-		rateLimiterServerConfigs,
+		rateLimitClientConfigs,
 		virtualDestinations,
 		virtualGateways,
 		virtualHosts,
@@ -1235,8 +1235,8 @@ func (b *multiClusterLocalBuilder) insertWasmDeploymentsFromCluster(ctx context.
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertRateLimiterServerConfigsFromCluster(ctx context.Context, cluster string, rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet, opts ResourceLocalBuildOptions) error {
-	rateLimiterServerConfigClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterRateLimiterServerConfigClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertRateLimitClientConfigsFromCluster(ctx context.Context, cluster string, rateLimitClientConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet, opts ResourceLocalBuildOptions) error {
+	rateLimitClientConfigClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterRateLimitClientConfigClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -1250,7 +1250,7 @@ func (b *multiClusterLocalBuilder) insertRateLimiterServerConfigsFromCluster(ctx
 		gvk := schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
 			Version: "v1beta1",
-			Kind:    "RateLimiterServerConfig",
+			Kind:    "RateLimitClientConfig",
 		}
 
 		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
@@ -1264,15 +1264,15 @@ func (b *multiClusterLocalBuilder) insertRateLimiterServerConfigsFromCluster(ctx
 		}
 	}
 
-	rateLimiterServerConfigList, err := rateLimiterServerConfigClient.ListRateLimiterServerConfig(ctx, opts.ListOptions...)
+	rateLimitClientConfigList, err := rateLimitClientConfigClient.ListRateLimitClientConfig(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range rateLimiterServerConfigList.Items {
+	for _, item := range rateLimitClientConfigList.Items {
 		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		rateLimiterServerConfigs.Insert(item)
+		rateLimitClientConfigs.Insert(item)
 	}
 
 	return nil
@@ -1942,7 +1942,7 @@ func NewSingleClusterLocalBuilderWithClusterName(
 func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
-	rateLimiterServerConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
+	rateLimitClientConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimitClientConfigSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
@@ -1970,7 +1970,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertWasmDeployments(ctx, wasmDeployments, opts.WasmDeployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertRateLimiterServerConfigs(ctx, rateLimiterServerConfigs, opts.RateLimiterServerConfigs); err != nil {
+	if err := b.insertRateLimitClientConfigs(ctx, rateLimitClientConfigs, opts.RateLimitClientConfigs); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertVirtualDestinations(ctx, virtualDestinations, opts.VirtualDestinations); err != nil {
@@ -2023,7 +2023,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		name,
 
 		wasmDeployments,
-		rateLimiterServerConfigs,
+		rateLimitClientConfigs,
 		virtualDestinations,
 		virtualGateways,
 		virtualHosts,
@@ -2077,13 +2077,13 @@ func (b *singleClusterLocalBuilder) insertWasmDeployments(ctx context.Context, w
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertRateLimiterServerConfigs(ctx context.Context, rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertRateLimitClientConfigs(ctx context.Context, rateLimitClientConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
 			Version: "v1beta1",
-			Kind:    "RateLimiterServerConfig",
+			Kind:    "RateLimitClientConfig",
 		}
 
 		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
@@ -2097,15 +2097,15 @@ func (b *singleClusterLocalBuilder) insertRateLimiterServerConfigs(ctx context.C
 		}
 	}
 
-	rateLimiterServerConfigList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRateLimiterServerConfigClient(b.mgr.GetClient()).ListRateLimiterServerConfig(ctx, opts.ListOptions...)
+	rateLimitClientConfigList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRateLimitClientConfigClient(b.mgr.GetClient()).ListRateLimitClientConfig(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range rateLimiterServerConfigList.Items {
+	for _, item := range rateLimitClientConfigList.Items {
 		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		rateLimiterServerConfigs.Insert(item)
+		rateLimitClientConfigs.Insert(item)
 	}
 
 	return nil
@@ -2633,7 +2633,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	}
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
-	rateLimiterServerConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet()
+	rateLimitClientConfigs := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimitClientConfigSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
 	virtualGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet()
 	virtualHosts := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet()
@@ -2661,9 +2661,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert WasmDeployments
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.WasmDeployment:
 			i.insertWasmDeployment(ctx, obj, wasmDeployments, opts)
-		// insert RateLimiterServerConfigs
-		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimiterServerConfig:
-			i.insertRateLimiterServerConfig(ctx, obj, rateLimiterServerConfigs, opts)
+		// insert RateLimitClientConfigs
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimitClientConfig:
+			i.insertRateLimitClientConfig(ctx, obj, rateLimitClientConfigs, opts)
 		// insert VirtualDestinations
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination:
 			i.insertVirtualDestination(ctx, obj, virtualDestinations, opts)
@@ -2716,7 +2716,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		name,
 
 		wasmDeployments,
-		rateLimiterServerConfigs,
+		rateLimitClientConfigs,
 		virtualDestinations,
 		virtualGateways,
 		virtualHosts,
@@ -2764,14 +2764,14 @@ func (i *inMemoryLocalBuilder) insertWasmDeployment(
 		wasmDeploymentSet.Insert(wasmDeployment)
 	}
 }
-func (i *inMemoryLocalBuilder) insertRateLimiterServerConfig(
+func (i *inMemoryLocalBuilder) insertRateLimitClientConfig(
 	ctx context.Context,
-	rateLimiterServerConfig *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimiterServerConfig,
-	rateLimiterServerConfigSet networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet,
+	rateLimitClientConfig *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RateLimitClientConfig,
+	rateLimitClientConfigSet networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet,
 	buildOpts LocalBuildOptions,
 ) {
 
-	opts := buildOpts.RateLimiterServerConfigs.ListOptions
+	opts := buildOpts.RateLimitClientConfigs.ListOptions
 
 	listOpts := &client.ListOptions{}
 	for _, opt := range opts {
@@ -2780,17 +2780,17 @@ func (i *inMemoryLocalBuilder) insertRateLimiterServerConfig(
 
 	filteredOut := false
 	if listOpts.Namespace != "" {
-		filteredOut = rateLimiterServerConfig.Namespace != listOpts.Namespace
+		filteredOut = rateLimitClientConfig.Namespace != listOpts.Namespace
 	}
 	if listOpts.LabelSelector != nil {
-		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(rateLimiterServerConfig.Labels))
+		filteredOut = !listOpts.LabelSelector.Matches(labels.Set(rateLimitClientConfig.Labels))
 	}
 	if listOpts.FieldSelector != nil {
 		contextutils.LoggerFrom(ctx).DPanicf("field selector is not implemented for in-memory remote snapshot")
 	}
 
 	if !filteredOut {
-		rateLimiterServerConfigSet.Insert(rateLimiterServerConfig)
+		rateLimitClientConfigSet.Insert(rateLimitClientConfig)
 	}
 }
 func (i *inMemoryLocalBuilder) insertVirtualDestination(

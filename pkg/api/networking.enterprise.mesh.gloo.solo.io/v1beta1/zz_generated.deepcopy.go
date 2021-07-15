@@ -68,9 +68,9 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-// Generated Deepcopy methods for RateLimiterServerConfig
+// Generated Deepcopy methods for RateLimitClientConfig
 
-func (in *RateLimiterServerConfig) DeepCopyInto(out *RateLimiterServerConfig) {
+func (in *RateLimitClientConfig) DeepCopyInto(out *RateLimitClientConfig) {
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -82,29 +82,29 @@ func (in *RateLimiterServerConfig) DeepCopyInto(out *RateLimiterServerConfig) {
 	return
 }
 
-func (in *RateLimiterServerConfig) DeepCopy() *RateLimiterServerConfig {
+func (in *RateLimitClientConfig) DeepCopy() *RateLimitClientConfig {
 	if in == nil {
 		return nil
 	}
-	out := new(RateLimiterServerConfig)
+	out := new(RateLimitClientConfig)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *RateLimiterServerConfig) DeepCopyObject() runtime.Object {
+func (in *RateLimitClientConfig) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *RateLimiterServerConfigList) DeepCopyInto(out *RateLimiterServerConfigList) {
+func (in *RateLimitClientConfigList) DeepCopyInto(out *RateLimitClientConfigList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]RateLimiterServerConfig, len(*in))
+		*out = make([]RateLimitClientConfig, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -112,16 +112,16 @@ func (in *RateLimiterServerConfigList) DeepCopyInto(out *RateLimiterServerConfig
 	return
 }
 
-func (in *RateLimiterServerConfigList) DeepCopy() *RateLimiterServerConfigList {
+func (in *RateLimitClientConfigList) DeepCopy() *RateLimitClientConfigList {
 	if in == nil {
 		return nil
 	}
-	out := new(RateLimiterServerConfigList)
+	out := new(RateLimitClientConfigList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *RateLimiterServerConfigList) DeepCopyObject() runtime.Object {
+func (in *RateLimitClientConfigList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}

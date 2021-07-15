@@ -37,7 +37,7 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate
 
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
-	{Kind: "RateLimiterServerConfig"},
+	{Kind: "RateLimitClientConfig"},
 	{Kind: "VirtualDestination"},
 	{Kind: "VirtualGateway"},
 	{Kind: "VirtualHost"},
@@ -90,11 +90,11 @@ type ResourceToGenerate struct {
 }
 
 func makeGroup(groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
-	return MakeGroup(glooMeshModule, glooMeshApiRoot, groupPrefix, version, resourcesToGenerate)
+	return MakeGroup(glooMeshModule, glooMeshApiRoot, groupPrefix, constants.GlooMeshApiGroupSuffix, version, resourcesToGenerate)
 }
 
 // exported for use in enterprise repo
-func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
+func MakeGroup(module, apiRoot, groupPrefix, groupSuffix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
 	var resources []model.Resource
 	for _, resource := range resourcesToGenerate {
 		res := model.Resource{
@@ -116,7 +116,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 
 	return model.Group{
 		GroupVersion: schema.GroupVersion{
-			Group:   groupPrefix + "." + constants.GlooMeshApiGroupSuffix,
+			Group:   groupPrefix + "." + groupSuffix,
 			Version: version,
 		},
 		Module:                  module,

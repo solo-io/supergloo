@@ -48,34 +48,34 @@ type WasmDeploymentList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// GroupVersionKind for RateLimiterServerConfig
-var RateLimiterServerConfigGVK = schema.GroupVersionKind{
+// GroupVersionKind for RateLimitClientConfig
+var RateLimitClientConfigGVK = schema.GroupVersionKind{
 	Group:   "networking.enterprise.mesh.gloo.solo.io",
 	Version: "v1beta1",
-	Kind:    "RateLimiterServerConfig",
+	Kind:    "RateLimitClientConfig",
 }
 
-// RateLimiterServerConfig is the Schema for the rateLimiterServerConfig API
-type RateLimiterServerConfig struct {
+// RateLimitClientConfig is the Schema for the rateLimitClientConfig API
+type RateLimitClientConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RateLimiterServerConfigSpec   `json:"spec,omitempty"`
-	Status RateLimiterServerConfigStatus `json:"status,omitempty"`
+	Spec   RateLimitClientConfigSpec   `json:"spec,omitempty"`
+	Status RateLimitClientConfigStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (RateLimiterServerConfig) GVK() schema.GroupVersionKind {
-	return RateLimiterServerConfigGVK
+func (RateLimitClientConfig) GVK() schema.GroupVersionKind {
+	return RateLimitClientConfigGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// RateLimiterServerConfigList contains a list of RateLimiterServerConfig
-type RateLimiterServerConfigList struct {
+// RateLimitClientConfigList contains a list of RateLimitClientConfig
+type RateLimitClientConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []RateLimiterServerConfig `json:"items"`
+	Items           []RateLimitClientConfig `json:"items"`
 }
 
 // +genclient
@@ -255,7 +255,7 @@ type ServiceDependencyList struct {
 
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
-	SchemeBuilder.Register(&RateLimiterServerConfig{}, &RateLimiterServerConfigList{})
+	SchemeBuilder.Register(&RateLimitClientConfig{}, &RateLimitClientConfigList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
 	SchemeBuilder.Register(&VirtualGateway{}, &VirtualGatewayList{})
 	SchemeBuilder.Register(&VirtualHost{}, &VirtualHostList{})

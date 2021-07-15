@@ -130,119 +130,119 @@ func (mr *MockMulticlusterWasmDeploymentReconcileLoopMockRecorder) AddMulticlust
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterWasmDeploymentReconciler", reflect.TypeOf((*MockMulticlusterWasmDeploymentReconcileLoop)(nil).AddMulticlusterWasmDeploymentReconciler), varargs...)
 }
 
-// MockMulticlusterRateLimiterServerConfigReconciler is a mock of MulticlusterRateLimiterServerConfigReconciler interface.
-type MockMulticlusterRateLimiterServerConfigReconciler struct {
+// MockMulticlusterRateLimitClientConfigReconciler is a mock of MulticlusterRateLimitClientConfigReconciler interface.
+type MockMulticlusterRateLimitClientConfigReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterRateLimiterServerConfigReconcilerMockRecorder
+	recorder *MockMulticlusterRateLimitClientConfigReconcilerMockRecorder
 }
 
-// MockMulticlusterRateLimiterServerConfigReconcilerMockRecorder is the mock recorder for MockMulticlusterRateLimiterServerConfigReconciler.
-type MockMulticlusterRateLimiterServerConfigReconcilerMockRecorder struct {
-	mock *MockMulticlusterRateLimiterServerConfigReconciler
+// MockMulticlusterRateLimitClientConfigReconcilerMockRecorder is the mock recorder for MockMulticlusterRateLimitClientConfigReconciler.
+type MockMulticlusterRateLimitClientConfigReconcilerMockRecorder struct {
+	mock *MockMulticlusterRateLimitClientConfigReconciler
 }
 
-// NewMockMulticlusterRateLimiterServerConfigReconciler creates a new mock instance.
-func NewMockMulticlusterRateLimiterServerConfigReconciler(ctrl *gomock.Controller) *MockMulticlusterRateLimiterServerConfigReconciler {
-	mock := &MockMulticlusterRateLimiterServerConfigReconciler{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterRateLimiterServerConfigReconcilerMockRecorder{mock}
+// NewMockMulticlusterRateLimitClientConfigReconciler creates a new mock instance.
+func NewMockMulticlusterRateLimitClientConfigReconciler(ctrl *gomock.Controller) *MockMulticlusterRateLimitClientConfigReconciler {
+	mock := &MockMulticlusterRateLimitClientConfigReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterRateLimitClientConfigReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMulticlusterRateLimiterServerConfigReconciler) EXPECT() *MockMulticlusterRateLimiterServerConfigReconcilerMockRecorder {
+func (m *MockMulticlusterRateLimitClientConfigReconciler) EXPECT() *MockMulticlusterRateLimitClientConfigReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRateLimiterServerConfig mocks base method.
-func (m *MockMulticlusterRateLimiterServerConfigReconciler) ReconcileRateLimiterServerConfig(clusterName string, obj *v1beta1.RateLimiterServerConfig) (reconcile.Result, error) {
+// ReconcileRateLimitClientConfig mocks base method.
+func (m *MockMulticlusterRateLimitClientConfigReconciler) ReconcileRateLimitClientConfig(clusterName string, obj *v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileRateLimiterServerConfig", clusterName, obj)
+	ret := m.ctrl.Call(m, "ReconcileRateLimitClientConfig", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileRateLimiterServerConfig indicates an expected call of ReconcileRateLimiterServerConfig.
-func (mr *MockMulticlusterRateLimiterServerConfigReconcilerMockRecorder) ReconcileRateLimiterServerConfig(clusterName, obj interface{}) *gomock.Call {
+// ReconcileRateLimitClientConfig indicates an expected call of ReconcileRateLimitClientConfig.
+func (mr *MockMulticlusterRateLimitClientConfigReconcilerMockRecorder) ReconcileRateLimitClientConfig(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimiterServerConfig", reflect.TypeOf((*MockMulticlusterRateLimiterServerConfigReconciler)(nil).ReconcileRateLimiterServerConfig), clusterName, obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimitClientConfig", reflect.TypeOf((*MockMulticlusterRateLimitClientConfigReconciler)(nil).ReconcileRateLimitClientConfig), clusterName, obj)
 }
 
-// MockMulticlusterRateLimiterServerConfigDeletionReconciler is a mock of MulticlusterRateLimiterServerConfigDeletionReconciler interface.
-type MockMulticlusterRateLimiterServerConfigDeletionReconciler struct {
+// MockMulticlusterRateLimitClientConfigDeletionReconciler is a mock of MulticlusterRateLimitClientConfigDeletionReconciler interface.
+type MockMulticlusterRateLimitClientConfigDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterRateLimiterServerConfigDeletionReconcilerMockRecorder
+	recorder *MockMulticlusterRateLimitClientConfigDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterRateLimiterServerConfigDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterRateLimiterServerConfigDeletionReconciler.
-type MockMulticlusterRateLimiterServerConfigDeletionReconcilerMockRecorder struct {
-	mock *MockMulticlusterRateLimiterServerConfigDeletionReconciler
+// MockMulticlusterRateLimitClientConfigDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterRateLimitClientConfigDeletionReconciler.
+type MockMulticlusterRateLimitClientConfigDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterRateLimitClientConfigDeletionReconciler
 }
 
-// NewMockMulticlusterRateLimiterServerConfigDeletionReconciler creates a new mock instance.
-func NewMockMulticlusterRateLimiterServerConfigDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterRateLimiterServerConfigDeletionReconciler {
-	mock := &MockMulticlusterRateLimiterServerConfigDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterRateLimiterServerConfigDeletionReconcilerMockRecorder{mock}
+// NewMockMulticlusterRateLimitClientConfigDeletionReconciler creates a new mock instance.
+func NewMockMulticlusterRateLimitClientConfigDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterRateLimitClientConfigDeletionReconciler {
+	mock := &MockMulticlusterRateLimitClientConfigDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterRateLimitClientConfigDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMulticlusterRateLimiterServerConfigDeletionReconciler) EXPECT() *MockMulticlusterRateLimiterServerConfigDeletionReconcilerMockRecorder {
+func (m *MockMulticlusterRateLimitClientConfigDeletionReconciler) EXPECT() *MockMulticlusterRateLimitClientConfigDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileRateLimiterServerConfigDeletion mocks base method.
-func (m *MockMulticlusterRateLimiterServerConfigDeletionReconciler) ReconcileRateLimiterServerConfigDeletion(clusterName string, req reconcile.Request) error {
+// ReconcileRateLimitClientConfigDeletion mocks base method.
+func (m *MockMulticlusterRateLimitClientConfigDeletionReconciler) ReconcileRateLimitClientConfigDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileRateLimiterServerConfigDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileRateLimitClientConfigDeletion", clusterName, req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileRateLimiterServerConfigDeletion indicates an expected call of ReconcileRateLimiterServerConfigDeletion.
-func (mr *MockMulticlusterRateLimiterServerConfigDeletionReconcilerMockRecorder) ReconcileRateLimiterServerConfigDeletion(clusterName, req interface{}) *gomock.Call {
+// ReconcileRateLimitClientConfigDeletion indicates an expected call of ReconcileRateLimitClientConfigDeletion.
+func (mr *MockMulticlusterRateLimitClientConfigDeletionReconcilerMockRecorder) ReconcileRateLimitClientConfigDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimiterServerConfigDeletion", reflect.TypeOf((*MockMulticlusterRateLimiterServerConfigDeletionReconciler)(nil).ReconcileRateLimiterServerConfigDeletion), clusterName, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileRateLimitClientConfigDeletion", reflect.TypeOf((*MockMulticlusterRateLimitClientConfigDeletionReconciler)(nil).ReconcileRateLimitClientConfigDeletion), clusterName, req)
 }
 
-// MockMulticlusterRateLimiterServerConfigReconcileLoop is a mock of MulticlusterRateLimiterServerConfigReconcileLoop interface.
-type MockMulticlusterRateLimiterServerConfigReconcileLoop struct {
+// MockMulticlusterRateLimitClientConfigReconcileLoop is a mock of MulticlusterRateLimitClientConfigReconcileLoop interface.
+type MockMulticlusterRateLimitClientConfigReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder
+	recorder *MockMulticlusterRateLimitClientConfigReconcileLoopMockRecorder
 }
 
-// MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder is the mock recorder for MockMulticlusterRateLimiterServerConfigReconcileLoop.
-type MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder struct {
-	mock *MockMulticlusterRateLimiterServerConfigReconcileLoop
+// MockMulticlusterRateLimitClientConfigReconcileLoopMockRecorder is the mock recorder for MockMulticlusterRateLimitClientConfigReconcileLoop.
+type MockMulticlusterRateLimitClientConfigReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterRateLimitClientConfigReconcileLoop
 }
 
-// NewMockMulticlusterRateLimiterServerConfigReconcileLoop creates a new mock instance.
-func NewMockMulticlusterRateLimiterServerConfigReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterRateLimiterServerConfigReconcileLoop {
-	mock := &MockMulticlusterRateLimiterServerConfigReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder{mock}
+// NewMockMulticlusterRateLimitClientConfigReconcileLoop creates a new mock instance.
+func NewMockMulticlusterRateLimitClientConfigReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterRateLimitClientConfigReconcileLoop {
+	mock := &MockMulticlusterRateLimitClientConfigReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterRateLimitClientConfigReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMulticlusterRateLimiterServerConfigReconcileLoop) EXPECT() *MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder {
+func (m *MockMulticlusterRateLimitClientConfigReconcileLoop) EXPECT() *MockMulticlusterRateLimitClientConfigReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterRateLimiterServerConfigReconciler mocks base method.
-func (m *MockMulticlusterRateLimiterServerConfigReconcileLoop) AddMulticlusterRateLimiterServerConfigReconciler(ctx context.Context, rec controller.MulticlusterRateLimiterServerConfigReconciler, predicates ...predicate.Predicate) {
+// AddMulticlusterRateLimitClientConfigReconciler mocks base method.
+func (m *MockMulticlusterRateLimitClientConfigReconcileLoop) AddMulticlusterRateLimitClientConfigReconciler(ctx context.Context, rec controller.MulticlusterRateLimitClientConfigReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddMulticlusterRateLimiterServerConfigReconciler", varargs...)
+	m.ctrl.Call(m, "AddMulticlusterRateLimitClientConfigReconciler", varargs...)
 }
 
-// AddMulticlusterRateLimiterServerConfigReconciler indicates an expected call of AddMulticlusterRateLimiterServerConfigReconciler.
-func (mr *MockMulticlusterRateLimiterServerConfigReconcileLoopMockRecorder) AddMulticlusterRateLimiterServerConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// AddMulticlusterRateLimitClientConfigReconciler indicates an expected call of AddMulticlusterRateLimitClientConfigReconciler.
+func (mr *MockMulticlusterRateLimitClientConfigReconcileLoopMockRecorder) AddMulticlusterRateLimitClientConfigReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterRateLimiterServerConfigReconciler", reflect.TypeOf((*MockMulticlusterRateLimiterServerConfigReconcileLoop)(nil).AddMulticlusterRateLimiterServerConfigReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterRateLimitClientConfigReconciler", reflect.TypeOf((*MockMulticlusterRateLimitClientConfigReconcileLoop)(nil).AddMulticlusterRateLimitClientConfigReconciler), varargs...)
 }
 
 // MockMulticlusterVirtualDestinationReconciler is a mock of MulticlusterVirtualDestinationReconciler interface.

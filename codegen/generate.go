@@ -18,6 +18,7 @@ import (
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/util"
+	//soloapi_codegen "github.com/solo-io/solo-apis/codegen"
 )
 
 func main() {
@@ -72,11 +73,14 @@ var (
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = glooMeshCrdsManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	vendoredRatelimitCRDs    = "vendor_any/github.com/solo-io/solo-apis/crds/ratelimit.solo.io_v1alpha1_crds.yaml"
+	importedRatelimitCRDs    = glooMeshCrdsManifestRoot + "/crds/ratelimit.solo.io_v1alpha1_crds.yaml"
 
 	snapshotApiGroups = map[string][]model.Group{
 		"":                                 groups.AllGeneratedGroups,
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
+		//"github.com/solo-io/solo-apis":     soloapi_codegen.RateLimiterGroups(),
 	}
 
 	project = gloomeshmodel.Project{
@@ -123,6 +127,11 @@ func run() error {
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
 	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
+		return err
+	}
+
+	// copy solo-apis ratelimit crds into helm chart
+	if err := os.Rename(vendoredRatelimitCRDs, importedRatelimitCRDs); err != nil {
 		return err
 	}
 

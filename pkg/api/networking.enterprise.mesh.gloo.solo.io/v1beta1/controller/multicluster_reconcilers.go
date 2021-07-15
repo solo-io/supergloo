@@ -89,75 +89,75 @@ func (g genericWasmDeploymentMulticlusterReconciler) Reconcile(cluster string, o
 	return g.reconciler.ReconcileWasmDeployment(cluster, obj)
 }
 
-// Reconcile Upsert events for the RateLimiterServerConfig Resource across clusters.
+// Reconcile Upsert events for the RateLimitClientConfig Resource across clusters.
 // implemented by the user
-type MulticlusterRateLimiterServerConfigReconciler interface {
-	ReconcileRateLimiterServerConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error)
+type MulticlusterRateLimitClientConfigReconciler interface {
+	ReconcileRateLimitClientConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the RateLimiterServerConfig Resource across clusters.
+// Reconcile deletion events for the RateLimitClientConfig Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterRateLimiterServerConfigDeletionReconciler interface {
-	ReconcileRateLimiterServerConfigDeletion(clusterName string, req reconcile.Request) error
+type MulticlusterRateLimitClientConfigDeletionReconciler interface {
+	ReconcileRateLimitClientConfigDeletion(clusterName string, req reconcile.Request) error
 }
 
-type MulticlusterRateLimiterServerConfigReconcilerFuncs struct {
-	OnReconcileRateLimiterServerConfig         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error)
-	OnReconcileRateLimiterServerConfigDeletion func(clusterName string, req reconcile.Request) error
+type MulticlusterRateLimitClientConfigReconcilerFuncs struct {
+	OnReconcileRateLimitClientConfig         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
+	OnReconcileRateLimitClientConfigDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterRateLimiterServerConfigReconcilerFuncs) ReconcileRateLimiterServerConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error) {
-	if f.OnReconcileRateLimiterServerConfig == nil {
+func (f *MulticlusterRateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfig(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	if f.OnReconcileRateLimitClientConfig == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileRateLimiterServerConfig(clusterName, obj)
+	return f.OnReconcileRateLimitClientConfig(clusterName, obj)
 }
 
-func (f *MulticlusterRateLimiterServerConfigReconcilerFuncs) ReconcileRateLimiterServerConfigDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcileRateLimiterServerConfigDeletion == nil {
+func (f *MulticlusterRateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfigDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileRateLimitClientConfigDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileRateLimiterServerConfigDeletion(clusterName, req)
+	return f.OnReconcileRateLimitClientConfigDeletion(clusterName, req)
 }
 
-type MulticlusterRateLimiterServerConfigReconcileLoop interface {
-	// AddMulticlusterRateLimiterServerConfigReconciler adds a MulticlusterRateLimiterServerConfigReconciler to the MulticlusterRateLimiterServerConfigReconcileLoop.
-	AddMulticlusterRateLimiterServerConfigReconciler(ctx context.Context, rec MulticlusterRateLimiterServerConfigReconciler, predicates ...predicate.Predicate)
+type MulticlusterRateLimitClientConfigReconcileLoop interface {
+	// AddMulticlusterRateLimitClientConfigReconciler adds a MulticlusterRateLimitClientConfigReconciler to the MulticlusterRateLimitClientConfigReconcileLoop.
+	AddMulticlusterRateLimitClientConfigReconciler(ctx context.Context, rec MulticlusterRateLimitClientConfigReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterRateLimiterServerConfigReconcileLoop struct {
+type multiclusterRateLimitClientConfigReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterRateLimiterServerConfigReconcileLoop) AddMulticlusterRateLimiterServerConfigReconciler(ctx context.Context, rec MulticlusterRateLimiterServerConfigReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericRateLimiterServerConfigMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterRateLimitClientConfigReconcileLoop) AddMulticlusterRateLimitClientConfigReconciler(ctx context.Context, rec MulticlusterRateLimitClientConfigReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericRateLimitClientConfigMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterRateLimiterServerConfigReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterRateLimiterServerConfigReconcileLoop {
-	return &multiclusterRateLimiterServerConfigReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}, options)}
+func NewMulticlusterRateLimitClientConfigReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterRateLimitClientConfigReconcileLoop {
+	return &multiclusterRateLimitClientConfigReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}, options)}
 }
 
-type genericRateLimiterServerConfigMulticlusterReconciler struct {
-	reconciler MulticlusterRateLimiterServerConfigReconciler
+type genericRateLimitClientConfigMulticlusterReconciler struct {
+	reconciler MulticlusterRateLimitClientConfigReconciler
 }
 
-func (g genericRateLimiterServerConfigMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterRateLimiterServerConfigDeletionReconciler); ok {
-		return deletionReconciler.ReconcileRateLimiterServerConfigDeletion(cluster, req)
+func (g genericRateLimitClientConfigMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterRateLimitClientConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRateLimitClientConfigDeletion(cluster, req)
 	}
 	return nil
 }
 
-func (g genericRateLimiterServerConfigMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (g genericRateLimitClientConfigMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
 	}
-	return g.reconciler.ReconcileRateLimiterServerConfig(cluster, obj)
+	return g.reconciler.ReconcileRateLimitClientConfig(cluster, obj)
 }
 
 // Reconcile Upsert events for the VirtualDestination Resource across clusters.

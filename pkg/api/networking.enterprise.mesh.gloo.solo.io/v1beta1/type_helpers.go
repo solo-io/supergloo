@@ -6,8 +6,8 @@ package v1beta1
 // WasmDeploymentSlice represents a slice of *WasmDeployment
 type WasmDeploymentSlice []*WasmDeployment
 
-// RateLimiterServerConfigSlice represents a slice of *RateLimiterServerConfig
-type RateLimiterServerConfigSlice []*RateLimiterServerConfig
+// RateLimitClientConfigSlice represents a slice of *RateLimitClientConfig
+type RateLimitClientConfigSlice []*RateLimitClientConfig
 
 // VirtualDestinationSlice represents a slice of *VirtualDestination
 type VirtualDestinationSlice []*VirtualDestination

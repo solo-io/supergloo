@@ -118,7 +118,7 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments
-  - ratelimiterserverconfigs
+  - ratelimitclientconfigs
   - virtualdestinations
   - virtualgateways
   - virtualhosts
@@ -181,7 +181,7 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments/status
-  - ratelimiterserverconfigs/status
+  - ratelimitclientconfigs/status
   - virtualdestinations/status
   - virtualgateways/status
   - virtualhosts/status

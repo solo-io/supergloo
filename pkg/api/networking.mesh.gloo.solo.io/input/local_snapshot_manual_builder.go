@@ -31,13 +31,13 @@ import (
 type InputLocalSnapshotManualBuilder struct {
 	name string
 
-	wasmDeployments          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
-	rateLimiterServerConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimiterServerConfigSet
-	virtualDestinations      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
-	virtualGateways          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
-	virtualHosts             networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
-	routeTables              networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
-	serviceDependencies      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
+	wasmDeployments        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
+	rateLimitClientConfigs networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RateLimitClientConfigSet
+	virtualDestinations    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	virtualGateways        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualGatewaySet
+	virtualHosts           networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualHostSet
+	routeTables            networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	serviceDependencies    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.ServiceDependencySet
 
 	trafficPolicies networking_mesh_gloo_solo_io_v1_sets.TrafficPolicySet
 	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
@@ -60,13 +60,13 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 	return &InputLocalSnapshotManualBuilder{
 		name: name,
 
-		wasmDeployments:          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet(),
-		rateLimiterServerConfigs: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimiterServerConfigSet(),
-		virtualDestinations:      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet(),
-		virtualGateways:          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet(),
-		virtualHosts:             networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet(),
-		routeTables:              networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet(),
-		serviceDependencies:      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet(),
+		wasmDeployments:        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet(),
+		rateLimitClientConfigs: networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRateLimitClientConfigSet(),
+		virtualDestinations:    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet(),
+		virtualGateways:        networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualGatewaySet(),
+		virtualHosts:           networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualHostSet(),
+		routeTables:            networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet(),
+		serviceDependencies:    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewServiceDependencySet(),
 
 		trafficPolicies: networking_mesh_gloo_solo_io_v1_sets.NewTrafficPolicySet(),
 		accessPolicies:  networking_mesh_gloo_solo_io_v1_sets.NewAccessPolicySet(),
@@ -91,7 +91,7 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.name,
 
 		i.wasmDeployments,
-		i.rateLimiterServerConfigs,
+		i.rateLimitClientConfigs,
 		i.virtualDestinations,
 		i.virtualGateways,
 		i.virtualHosts,
@@ -119,8 +119,8 @@ func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*
 	i.wasmDeployments.Insert(wasmDeployments...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddRateLimiterServerConfigs(rateLimiterServerConfigs []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) *InputLocalSnapshotManualBuilder {
-	i.rateLimiterServerConfigs.Insert(rateLimiterServerConfigs...)
+func (i *InputLocalSnapshotManualBuilder) AddRateLimitClientConfigs(rateLimitClientConfigs []*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) *InputLocalSnapshotManualBuilder {
+	i.rateLimitClientConfigs.Insert(rateLimitClientConfigs...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddVirtualDestinations(virtualDestinations []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) *InputLocalSnapshotManualBuilder {

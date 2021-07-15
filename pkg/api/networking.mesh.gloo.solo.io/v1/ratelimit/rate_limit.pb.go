@@ -33,61 +33,6 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit int32
-
-const (
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_UNKNOWN RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit = 0
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_SECOND  RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit = 1
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_MINUTE  RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit = 2
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_HOUR    RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit = 3
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_DAY     RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit = 4
-)
-
-// Enum value maps for RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit.
-var (
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit_name = map[int32]string{
-		0: "UNKNOWN",
-		1: "SECOND",
-		2: "MINUTE",
-		3: "HOUR",
-		4: "DAY",
-	}
-	RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit_value = map[string]int32{
-		"UNKNOWN": 0,
-		"SECOND":  1,
-		"MINUTE":  2,
-		"HOUR":    3,
-		"DAY":     4,
-	}
-)
-
-func (x RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit) Enum() *RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit {
-	p := new(RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit)
-	*p = x
-	return p
-}
-
-func (x RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit) Descriptor() protoreflect.EnumDescriptor {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_enumTypes[0].Descriptor()
-}
-
-func (RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit) Type() protoreflect.EnumType {
-	return &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_enumTypes[0]
-}
-
-func (x RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit.Descriptor instead.
-func (RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit) EnumDescriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 0, 0, 0}
-}
-
 // Configure the Rate-Limit Filter on a Gateway
 type GatewayRateLimit struct {
 	state         protoimpl.MessageState
@@ -162,23 +107,107 @@ func (x *GatewayRateLimit) GetRateLimitBeforeAuth() bool {
 	return false
 }
 
+// The RateLimitClient specifies either a simplified, abstracted rate limiting model that allows different limits for
+// both authorized and anonymous users (Basic) and the ratelimit Actions directly (Advanced).
+// The corresponding server config should be set in the RateLimitConfig.
+type RateLimitClient struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to ConfigType:
+	//	*RateLimitClient_Advanced
+	//	*RateLimitClient_Basic
+	ConfigType isRateLimitClient_ConfigType `protobuf_oneof:"config_type"`
+}
+
+func (x *RateLimitClient) Reset() {
+	*x = RateLimitClient{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RateLimitClient) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RateLimitClient) ProtoMessage() {}
+
+func (x *RateLimitClient) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RateLimitClient.ProtoReflect.Descriptor instead.
+func (*RateLimitClient) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1}
+}
+
+func (m *RateLimitClient) GetConfigType() isRateLimitClient_ConfigType {
+	if m != nil {
+		return m.ConfigType
+	}
+	return nil
+}
+
+func (x *RateLimitClient) GetAdvanced() *RateLimitClient_AdvancedRateLimit {
+	if x, ok := x.GetConfigType().(*RateLimitClient_Advanced); ok {
+		return x.Advanced
+	}
+	return nil
+}
+
+func (x *RateLimitClient) GetBasic() *RateLimitClient_BasicRateLimit {
+	if x, ok := x.GetConfigType().(*RateLimitClient_Basic); ok {
+		return x.Basic
+	}
+	return nil
+}
+
+type isRateLimitClient_ConfigType interface {
+	isRateLimitClient_ConfigType()
+}
+
+type RateLimitClient_Advanced struct {
+	Advanced *RateLimitClient_AdvancedRateLimit `protobuf:"bytes,1,opt,name=advanced,proto3,oneof"`
+}
+
+type RateLimitClient_Basic struct {
+	Basic *RateLimitClient_BasicRateLimit `protobuf:"bytes,2,opt,name=basic,proto3,oneof"`
+}
+
+func (*RateLimitClient_Advanced) isRateLimitClient_ConfigType() {}
+
+func (*RateLimitClient_Basic) isRateLimitClient_ConfigType() {}
+
 // Rate limit configuration for a Route or TrafficPolicy. Configures rate limits for individual HTTP routes
 type RouteRateLimit struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// RateLimitConfig ref
+	RatelimitConfigRef *v1.ObjectRef `protobuf:"bytes,1,opt,name=ratelimit_config_ref,json=ratelimitConfigRef,proto3" json:"ratelimit_config_ref,omitempty"`
 	// Types that are assignable to RateLimitConfigType:
-	//	*RouteRateLimit_Basic
-	//	*RouteRateLimit_Advanced
-	//	*RouteRateLimit_ConfigRefs
+	//	*RouteRateLimit_Client
+	//	*RouteRateLimit_RatelimitClientConfigRef
 	RateLimitConfigType isRouteRateLimit_RateLimitConfigType `protobuf_oneof:"rate_limit_config_type"`
 }
 
 func (x *RouteRateLimit) Reset() {
 	*x = RouteRateLimit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[1]
+		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -191,7 +220,7 @@ func (x *RouteRateLimit) String() string {
 func (*RouteRateLimit) ProtoMessage() {}
 
 func (x *RouteRateLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[1]
+	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -204,7 +233,14 @@ func (x *RouteRateLimit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RouteRateLimit.ProtoReflect.Descriptor instead.
 func (*RouteRateLimit) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1}
+	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RouteRateLimit) GetRatelimitConfigRef() *v1.ObjectRef {
+	if x != nil {
+		return x.RatelimitConfigRef
+	}
+	return nil
 }
 
 func (m *RouteRateLimit) GetRateLimitConfigType() isRouteRateLimit_RateLimitConfigType {
@@ -214,23 +250,16 @@ func (m *RouteRateLimit) GetRateLimitConfigType() isRouteRateLimit_RateLimitConf
 	return nil
 }
 
-func (x *RouteRateLimit) GetBasic() *RouteRateLimit_BasicRateLimit {
-	if x, ok := x.GetRateLimitConfigType().(*RouteRateLimit_Basic); ok {
-		return x.Basic
+func (x *RouteRateLimit) GetClient() *RateLimitClient {
+	if x, ok := x.GetRateLimitConfigType().(*RouteRateLimit_Client); ok {
+		return x.Client
 	}
 	return nil
 }
 
-func (x *RouteRateLimit) GetAdvanced() *RouteRateLimit_AdvancedRateLimit {
-	if x, ok := x.GetRateLimitConfigType().(*RouteRateLimit_Advanced); ok {
-		return x.Advanced
-	}
-	return nil
-}
-
-func (x *RouteRateLimit) GetConfigRefs() *v1.ObjectRefList {
-	if x, ok := x.GetRateLimitConfigType().(*RouteRateLimit_ConfigRefs); ok {
-		return x.ConfigRefs
+func (x *RouteRateLimit) GetRatelimitClientConfigRef() *v1.ObjectRef {
+	if x, ok := x.GetRateLimitConfigType().(*RouteRateLimit_RatelimitClientConfigRef); ok {
+		return x.RatelimitClientConfigRef
 	}
 	return nil
 }
@@ -239,107 +268,27 @@ type isRouteRateLimit_RateLimitConfigType interface {
 	isRouteRateLimit_RateLimitConfigType()
 }
 
-type RouteRateLimit_Basic struct {
-	// Config for rate-limiting using simplified (gloo-specific) API
-	Basic *RouteRateLimit_BasicRateLimit `protobuf:"bytes,1,opt,name=basic,proto3,oneof"`
+type RouteRateLimit_Client struct {
+	Client *RateLimitClient `protobuf:"bytes,2,opt,name=client,proto3,oneof"`
 }
 
-type RouteRateLimit_Advanced struct {
-	// Partial config for GlooE rate-limiting based on Envoy's rate-limit service;
-	// supports Envoy's rate-limit service API. (reference here: https://github.com/lyft/ratelimit#configuration)
-	// Configure rate-limit *actions* here, which define how request characteristics get translated into
-	// descriptors used by the rate-limit service for rate-limiting. Configure rate-limit *descriptors* and
-	// their associated limits on the Gloo settings.
-	// Only one of `ratelimit` or `rate_limit_configs` can be set.
-	Advanced *RouteRateLimit_AdvancedRateLimit `protobuf:"bytes,2,opt,name=advanced,proto3,oneof"`
+type RouteRateLimit_RatelimitClientConfigRef struct {
+	RatelimitClientConfigRef *v1.ObjectRef `protobuf:"bytes,3,opt,name=ratelimit_client_config_ref,json=ratelimitClientConfigRef,proto3,oneof"`
 }
 
-type RouteRateLimit_ConfigRefs struct {
-	// References to RateLimitConfig resources. This is used to configure the GlooE rate limit server.
-	// Only one of `ratelimit` or `rate_limit_configs` can be set.
-	ConfigRefs *v1.ObjectRefList `protobuf:"bytes,3,opt,name=config_refs,json=configRefs,proto3,oneof"`
-}
+func (*RouteRateLimit_Client) isRouteRateLimit_RateLimitConfigType() {}
 
-func (*RouteRateLimit_Basic) isRouteRateLimit_RateLimitConfigType() {}
-
-func (*RouteRateLimit_Advanced) isRouteRateLimit_RateLimitConfigType() {}
-
-func (*RouteRateLimit_ConfigRefs) isRouteRateLimit_RateLimitConfigType() {}
+func (*RouteRateLimit_RatelimitClientConfigRef) isRouteRateLimit_RateLimitConfigType() {}
 
 // Basic rate-limiting API
-type RouteRateLimit_BasicRateLimit struct {
+type RateLimitClient_BasicRateLimit struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	// limits for authorized users
-	AuthorizedLimits *RouteRateLimit_BasicRateLimit_RateLimitRatio `protobuf:"bytes,1,opt,name=authorized_limits,json=authorizedLimits,proto3" json:"authorized_limits,omitempty"`
-	// limits for unauthorized users
-	AnonymousLimits *RouteRateLimit_BasicRateLimit_RateLimitRatio `protobuf:"bytes,2,opt,name=anonymous_limits,json=anonymousLimits,proto3" json:"anonymous_limits,omitempty"`
 }
 
-func (x *RouteRateLimit_BasicRateLimit) Reset() {
-	*x = RouteRateLimit_BasicRateLimit{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RouteRateLimit_BasicRateLimit) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RouteRateLimit_BasicRateLimit) ProtoMessage() {}
-
-func (x *RouteRateLimit_BasicRateLimit) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RouteRateLimit_BasicRateLimit.ProtoReflect.Descriptor instead.
-func (*RouteRateLimit_BasicRateLimit) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 0}
-}
-
-func (x *RouteRateLimit_BasicRateLimit) GetAuthorizedLimits() *RouteRateLimit_BasicRateLimit_RateLimitRatio {
-	if x != nil {
-		return x.AuthorizedLimits
-	}
-	return nil
-}
-
-func (x *RouteRateLimit_BasicRateLimit) GetAnonymousLimits() *RouteRateLimit_BasicRateLimit_RateLimitRatio {
-	if x != nil {
-		return x.AnonymousLimits
-	}
-	return nil
-}
-
-// Use this field if you want to inline the Envoy rate limits for this VirtualHost.
-// Note that this does not configure the rate limit server. If you are running Gloo Enterprise, you need to
-// specify the server configuration via the appropriate field in the Gloo `Settings` resource. If you are
-// running a custom rate limit server you need to configure it yourself.
-type RouteRateLimit_AdvancedRateLimit struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Define individual rate limits here. Each rate limit will be evaluated, if any rate limit
-	// would be throttled, the entire request returns a 429 (gets throttled)
-	Actions []*RouteRateLimit_AdvancedRateLimit_RateLimitActions `protobuf:"bytes,1,rep,name=actions,proto3" json:"actions,omitempty"`
-}
-
-func (x *RouteRateLimit_AdvancedRateLimit) Reset() {
-	*x = RouteRateLimit_AdvancedRateLimit{}
+func (x *RateLimitClient_BasicRateLimit) Reset() {
+	*x = RateLimitClient_BasicRateLimit{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -347,13 +296,13 @@ func (x *RouteRateLimit_AdvancedRateLimit) Reset() {
 	}
 }
 
-func (x *RouteRateLimit_AdvancedRateLimit) String() string {
+func (x *RateLimitClient_BasicRateLimit) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RouteRateLimit_AdvancedRateLimit) ProtoMessage() {}
+func (*RateLimitClient_BasicRateLimit) ProtoMessage() {}
 
-func (x *RouteRateLimit_AdvancedRateLimit) ProtoReflect() protoreflect.Message {
+func (x *RateLimitClient_BasicRateLimit) ProtoReflect() protoreflect.Message {
 	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -365,30 +314,27 @@ func (x *RouteRateLimit_AdvancedRateLimit) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RouteRateLimit_AdvancedRateLimit.ProtoReflect.Descriptor instead.
-func (*RouteRateLimit_AdvancedRateLimit) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 1}
+// Deprecated: Use RateLimitClient_BasicRateLimit.ProtoReflect.Descriptor instead.
+func (*RateLimitClient_BasicRateLimit) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 0}
 }
 
-func (x *RouteRateLimit_AdvancedRateLimit) GetActions() []*RouteRateLimit_AdvancedRateLimit_RateLimitActions {
-	if x != nil {
-		return x.Actions
-	}
-	return nil
-}
-
-// A `RateLimitRatio` specifies the actual ratio of requests that will be permitted when there is a match.
-type RouteRateLimit_BasicRateLimit_RateLimitRatio struct {
+// Use this field if you want to inline the Envoy rate limits.
+// Note that this does not configure the rate limit server. If you are running Gloo Mesh, you need to
+// specify the server configuration via the appropriate field in the Gloo Mesh `RateLimitConfig` resource.
+// If you are running a custom rate limit server you need to configure it yourself.
+type RateLimitClient_AdvancedRateLimit struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Unit            RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit `protobuf:"varint,1,opt,name=unit,proto3,enum=ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit" json:"unit,omitempty"`
-	RequestsPerUnit uint32                                            `protobuf:"varint,2,opt,name=requests_per_unit,json=requestsPerUnit,proto3" json:"requests_per_unit,omitempty"`
+	// Actions specify how the client (Envoy) will compose the descriptors that
+	// will be sent to the server to make a rate limiting decision.
+	Actions []*v1alpha1.RateLimitActions `protobuf:"bytes,1,rep,name=actions,proto3" json:"actions,omitempty"`
 }
 
-func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) Reset() {
-	*x = RouteRateLimit_BasicRateLimit_RateLimitRatio{}
+func (x *RateLimitClient_AdvancedRateLimit) Reset() {
+	*x = RateLimitClient_AdvancedRateLimit{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -396,13 +342,13 @@ func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) Reset() {
 	}
 }
 
-func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) String() string {
+func (x *RateLimitClient_AdvancedRateLimit) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RouteRateLimit_BasicRateLimit_RateLimitRatio) ProtoMessage() {}
+func (*RateLimitClient_AdvancedRateLimit) ProtoMessage() {}
 
-func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) ProtoReflect() protoreflect.Message {
+func (x *RateLimitClient_AdvancedRateLimit) ProtoReflect() protoreflect.Message {
 	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -414,142 +360,14 @@ func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) ProtoReflect() protorefle
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RouteRateLimit_BasicRateLimit_RateLimitRatio.ProtoReflect.Descriptor instead.
-func (*RouteRateLimit_BasicRateLimit_RateLimitRatio) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 0, 0}
+// Deprecated: Use RateLimitClient_AdvancedRateLimit.ProtoReflect.Descriptor instead.
+func (*RateLimitClient_AdvancedRateLimit) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 1}
 }
 
-func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) GetUnit() RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit {
-	if x != nil {
-		return x.Unit
-	}
-	return RouteRateLimit_BasicRateLimit_RateLimitRatio_UNKNOWN
-}
-
-func (x *RouteRateLimit_BasicRateLimit_RateLimitRatio) GetRequestsPerUnit() uint32 {
-	if x != nil {
-		return x.RequestsPerUnit
-	}
-	return 0
-}
-
-// Each action and setAction in the lists maps part of the request (or its context) to a descriptor. The tuple or set of descriptors
-// generated by the provided actions is sent to the rate limit server and matched against rate limit rules.
-// Order matters on provided actions but not on setActions, e.g. the following actions:
-// - actions:
-//   - requestHeaders:
-//      descriptorKey: account_id
-//      headerName: x-account-id
-//   - requestHeaders:
-//      descriptorKey: plan
-//      headerName: x-plan
-// define an ordered descriptor tuple like so: ('account_id', '<x-account-id value>'), ('plan', '<x-plan value>')
-//
-// While the current form matches, the same tuple in reverse order would not match the following descriptor:
-//
-// descriptors:
-// - key: account_id
-//   descriptors:
-//   - key: plan
-//     value: BASIC
-//     rateLimit:
-//       requestsPerUnit: 1
-//       unit: MINUTE
-//  - key: plan
-//    value: PLUS
-//    rateLimit:
-//      requestsPerUnit: 20
-//      unit: MINUTE
-//
-// Similarly, the following setActions:
-// - setActions:
-//   - requestHeaders:
-//      descriptorKey: account_id
-//      headerName: x-account-id
-//   - requestHeaders:
-//      descriptorKey: plan
-//      headerName: x-plan
-// define an unordered descriptor set like so: {('account_id', '<x-account-id value>'), ('plan', '<x-plan value>')}
-//
-// This set would match the following setDescriptor:
-//
-// setDescriptors:
-// - simpleDescriptors:
-//   - key: plan
-//     value: BASIC
-//   - key: account_id
-//  rateLimit:
-//    requestsPerUnit: 20
-//    unit: MINUTE
-//
-// It would also match the following setDescriptor which includes only a subset of the setActions enumerated:
-//
-// setDescriptors:
-// - simpleDescriptors:
-//   - key: account_id
-//  rateLimit:
-//    requestsPerUnit: 20
-//    unit: MINUTE
-//
-// It would even match the following setDescriptor.
-// Any setActions list would match this setDescriptor which has simpleDescriptors omitted entirely:
-//
-// setDescriptors:
-// - rateLimit:
-//    requestsPerUnit: 20
-//    unit: MINUTE
-type RouteRateLimit_AdvancedRateLimit_RateLimitActions struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// TODO: come up with descriptive names and comments for these fields
-	Actions    []*v1alpha1.Action `protobuf:"bytes,1,rep,name=actions,proto3" json:"actions,omitempty"`
-	SetActions []*v1alpha1.Action `protobuf:"bytes,2,rep,name=set_actions,json=setActions,proto3" json:"set_actions,omitempty"`
-}
-
-func (x *RouteRateLimit_AdvancedRateLimit_RateLimitActions) Reset() {
-	*x = RouteRateLimit_AdvancedRateLimit_RateLimitActions{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RouteRateLimit_AdvancedRateLimit_RateLimitActions) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RouteRateLimit_AdvancedRateLimit_RateLimitActions) ProtoMessage() {}
-
-func (x *RouteRateLimit_AdvancedRateLimit_RateLimitActions) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RouteRateLimit_AdvancedRateLimit_RateLimitActions.ProtoReflect.Descriptor instead.
-func (*RouteRateLimit_AdvancedRateLimit_RateLimitActions) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescGZIP(), []int{1, 1, 0}
-}
-
-func (x *RouteRateLimit_AdvancedRateLimit_RateLimitActions) GetActions() []*v1alpha1.Action {
+func (x *RateLimitClient_AdvancedRateLimit) GetActions() []*v1alpha1.RateLimitActions {
 	if x != nil {
 		return x.Actions
-	}
-	return nil
-}
-
-func (x *RouteRateLimit_AdvancedRateLimit_RateLimitActions) GetSetActions() []*v1alpha1.Action {
-	if x != nil {
-		return x.SetActions
 	}
 	return nil
 }
@@ -596,83 +414,54 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pro
 	0x65, 0x6e, 0x79, 0x4f, 0x6e, 0x46, 0x61, 0x69, 0x6c, 0x12, 0x33, 0x0a, 0x16, 0x72, 0x61, 0x74,
 	0x65, 0x5f, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x5f, 0x62, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x5f, 0x61,
 	0x75, 0x74, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x08, 0x52, 0x13, 0x72, 0x61, 0x74, 0x65, 0x4c,
-	0x69, 0x6d, 0x69, 0x74, 0x42, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x41, 0x75, 0x74, 0x68, 0x22, 0xd5,
-	0x08, 0x0a, 0x0e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69,
-	0x74, 0x12, 0x5d, 0x0a, 0x05, 0x62, 0x61, 0x73, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x45, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x6e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f,
-	0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x52,
-	0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x42, 0x61, 0x73, 0x69, 0x63, 0x52, 0x61,
-	0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x48, 0x00, 0x52, 0x05, 0x62, 0x61, 0x73, 0x69, 0x63,
-	0x12, 0x66, 0x0a, 0x08, 0x61, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x48, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
-	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x6f, 0x75, 0x74,
-	0x65, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x41, 0x64, 0x76, 0x61, 0x6e,
-	0x63, 0x65, 0x64, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x48, 0x00, 0x52, 0x08,
-	0x61, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x12, 0x43, 0x0a, 0x0b, 0x63, 0x6f, 0x6e, 0x66,
-	0x69, 0x67, 0x5f, 0x72, 0x65, 0x66, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e,
-	0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69,
-	0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x4c, 0x69, 0x73, 0x74, 0x48,
-	0x00, 0x52, 0x0a, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x66, 0x73, 0x1a, 0x83, 0x04,
-	0x0a, 0x0e, 0x42, 0x61, 0x73, 0x69, 0x63, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74,
-	0x12, 0x81, 0x01, 0x0a, 0x11, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x65, 0x64, 0x5f,
-	0x6c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x54, 0x2e, 0x72,
-	0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f,
-	0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x52, 0x61, 0x74, 0x65, 0x4c,
-	0x69, 0x6d, 0x69, 0x74, 0x2e, 0x42, 0x61, 0x73, 0x69, 0x63, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69,
-	0x6d, 0x69, 0x74, 0x2e, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x52, 0x61, 0x74,
-	0x69, 0x6f, 0x52, 0x10, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x65, 0x64, 0x4c, 0x69,
-	0x6d, 0x69, 0x74, 0x73, 0x12, 0x7f, 0x0a, 0x10, 0x61, 0x6e, 0x6f, 0x6e, 0x79, 0x6d, 0x6f, 0x75,
-	0x73, 0x5f, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x54,
-	0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e,
-	0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x52, 0x61, 0x74,
-	0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x42, 0x61, 0x73, 0x69, 0x63, 0x52, 0x61, 0x74, 0x65,
-	0x4c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x52,
-	0x61, 0x74, 0x69, 0x6f, 0x52, 0x0f, 0x61, 0x6e, 0x6f, 0x6e, 0x79, 0x6d, 0x6f, 0x75, 0x73, 0x4c,
-	0x69, 0x6d, 0x69, 0x74, 0x73, 0x1a, 0xeb, 0x01, 0x0a, 0x0e, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69,
-	0x6d, 0x69, 0x74, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x12, 0x6d, 0x0a, 0x04, 0x75, 0x6e, 0x69, 0x74,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x59, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d,
-	0x69, 0x74, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65,
-	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e,
-	0x52, 0x6f, 0x75, 0x74, 0x65, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x42,
-	0x61, 0x73, 0x69, 0x63, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x52, 0x61,
-	0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x2e, 0x55, 0x6e, 0x69,
-	0x74, 0x52, 0x04, 0x75, 0x6e, 0x69, 0x74, 0x12, 0x2a, 0x0a, 0x11, 0x72, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0d, 0x52, 0x0f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x73, 0x50, 0x65, 0x72, 0x55,
-	0x6e, 0x69, 0x74, 0x22, 0x3e, 0x0a, 0x04, 0x55, 0x6e, 0x69, 0x74, 0x12, 0x0b, 0x0a, 0x07, 0x55,
-	0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x53, 0x45, 0x43, 0x4f,
-	0x4e, 0x44, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x4d, 0x49, 0x4e, 0x55, 0x54, 0x45, 0x10, 0x02,
-	0x12, 0x08, 0x0a, 0x04, 0x48, 0x4f, 0x55, 0x52, 0x10, 0x03, 0x12, 0x07, 0x0a, 0x03, 0x44, 0x41,
-	0x59, 0x10, 0x04, 0x1a, 0x96, 0x02, 0x0a, 0x11, 0x41, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64,
-	0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x73, 0x0a, 0x07, 0x61, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x59, 0x2e, 0x72, 0x61, 0x74,
+	0x69, 0x6d, 0x69, 0x74, 0x42, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x41, 0x75, 0x74, 0x68, 0x22, 0xd3,
+	0x02, 0x0a, 0x0f, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6c, 0x69, 0x65,
+	0x6e, 0x74, 0x12, 0x67, 0x0a, 0x08, 0x61, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x49, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74,
+	0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68,
+	0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x61,
+	0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2e, 0x41, 0x64,
+	0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x48,
+	0x00, 0x52, 0x08, 0x61, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x12, 0x5e, 0x0a, 0x05, 0x62,
+	0x61, 0x73, 0x69, 0x63, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x46, 0x2e, 0x72, 0x61, 0x74,
 	0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
 	0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f,
-	0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d,
-	0x69, 0x74, 0x2e, 0x41, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x52, 0x61, 0x74, 0x65, 0x4c,
-	0x69, 0x6d, 0x69, 0x74, 0x2e, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x41, 0x63,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x1a, 0x8b,
-	0x01, 0x0a, 0x10, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x41, 0x63, 0x74, 0x69,
-	0x6f, 0x6e, 0x73, 0x12, 0x37, 0x0a, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74,
-	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x41, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x3e, 0x0a, 0x0b,
-	0x73, 0x65, 0x74, 0x5f, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x1d, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x61, 0x70,
-	0x69, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x52, 0x0a, 0x73, 0x65, 0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x18, 0x0a, 0x16,
-	0x72, 0x61, 0x74, 0x65, 0x5f, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x42, 0x54, 0x5a, 0x4e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f,
-	0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
-	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x2f, 0x72,
-	0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6c, 0x69,
+	0x65, 0x6e, 0x74, 0x2e, 0x42, 0x61, 0x73, 0x69, 0x63, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d,
+	0x69, 0x74, 0x48, 0x00, 0x52, 0x05, 0x62, 0x61, 0x73, 0x69, 0x63, 0x1a, 0x10, 0x0a, 0x0e, 0x42,
+	0x61, 0x73, 0x69, 0x63, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x1a, 0x56, 0x0a,
+	0x11, 0x41, 0x64, 0x76, 0x61, 0x6e, 0x63, 0x65, 0x64, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d,
+	0x69, 0x74, 0x12, 0x41, 0x0a, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e,
+	0x61, 0x70, 0x69, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x52, 0x61, 0x74, 0x65,
+	0x4c, 0x69, 0x6d, 0x69, 0x74, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x07, 0x61, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x0d, 0x0a, 0x0b, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f,
+	0x74, 0x79, 0x70, 0x65, 0x22, 0xac, 0x02, 0x0a, 0x0e, 0x52, 0x6f, 0x75, 0x74, 0x65, 0x52, 0x61,
+	0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x4e, 0x0a, 0x14, 0x72, 0x61, 0x74, 0x65, 0x6c,
+	0x69, 0x6d, 0x69, 0x74, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f, 0x72, 0x65, 0x66, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76,
+	0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x52, 0x65, 0x66, 0x52, 0x12, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x66, 0x12, 0x51, 0x0a, 0x06, 0x63, 0x6c, 0x69, 0x65, 0x6e,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x37, 0x2e, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69,
+	0x6d, 0x69, 0x74, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d,
+	0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
+	0x2e, 0x52, 0x61, 0x74, 0x65, 0x4c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74,
+	0x48, 0x00, 0x52, 0x06, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x12, 0x5d, 0x0a, 0x1b, 0x72, 0x61,
+	0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x5f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x5f, 0x63,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f, 0x72, 0x65, 0x66, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x1c, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f,
+	0x2e, 0x69, 0x6f, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x48, 0x00, 0x52,
+	0x18, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74,
+	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x66, 0x42, 0x18, 0x0a, 0x16, 0x72, 0x61, 0x74,
+	0x65, 0x5f, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x5f, 0x74,
+	0x79, 0x70, 0x65, 0x42, 0x54, 0x5a, 0x4e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d,
+	0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f,
+	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x61, 0x74, 0x65,
+	0x6c, 0x69, 0x6d, 0x69, 0x74, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -687,38 +476,31 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pr
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_goTypes = []interface{}{
-	(RouteRateLimit_BasicRateLimit_RateLimitRatio_Unit)(0),    // 0: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit
-	(*GatewayRateLimit)(nil),                                  // 1: ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit
-	(*RouteRateLimit)(nil),                                    // 2: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit
-	(*RouteRateLimit_BasicRateLimit)(nil),                     // 3: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit
-	(*RouteRateLimit_AdvancedRateLimit)(nil),                  // 4: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit
-	(*RouteRateLimit_BasicRateLimit_RateLimitRatio)(nil),      // 5: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio
-	(*RouteRateLimit_AdvancedRateLimit_RateLimitActions)(nil), // 6: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions
-	(*v1.ObjectRef)(nil),                                      // 7: core.skv2.solo.io.ObjectRef
-	(*duration.Duration)(nil),                                 // 8: google.protobuf.Duration
-	(*v1.ObjectRefList)(nil),                                  // 9: core.skv2.solo.io.ObjectRefList
-	(*v1alpha1.Action)(nil),                                   // 10: ratelimit.api.solo.io.Action
+	(*GatewayRateLimit)(nil),                  // 0: ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit
+	(*RateLimitClient)(nil),                   // 1: ratelimit.networking.mesh.gloo.solo.io.RateLimitClient
+	(*RouteRateLimit)(nil),                    // 2: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit
+	(*RateLimitClient_BasicRateLimit)(nil),    // 3: ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.BasicRateLimit
+	(*RateLimitClient_AdvancedRateLimit)(nil), // 4: ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit
+	(*v1.ObjectRef)(nil),                      // 5: core.skv2.solo.io.ObjectRef
+	(*duration.Duration)(nil),                 // 6: google.protobuf.Duration
+	(*v1alpha1.RateLimitActions)(nil),         // 7: ratelimit.api.solo.io.RateLimitActions
 }
 var file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_depIdxs = []int32{
-	7,  // 0: ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit.ratelimit_server_ref:type_name -> core.skv2.solo.io.ObjectRef
-	8,  // 1: ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit.request_timeout:type_name -> google.protobuf.Duration
-	3,  // 2: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.basic:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit
-	4,  // 3: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.advanced:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit
-	9,  // 4: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.config_refs:type_name -> core.skv2.solo.io.ObjectRefList
-	5,  // 5: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.authorized_limits:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio
-	5,  // 6: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.anonymous_limits:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio
-	6,  // 7: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.actions:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions
-	0,  // 8: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.unit:type_name -> ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.BasicRateLimit.RateLimitRatio.Unit
-	10, // 9: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions.actions:type_name -> ratelimit.api.solo.io.Action
-	10, // 10: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.AdvancedRateLimit.RateLimitActions.set_actions:type_name -> ratelimit.api.solo.io.Action
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	5, // 0: ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit.ratelimit_server_ref:type_name -> core.skv2.solo.io.ObjectRef
+	6, // 1: ratelimit.networking.mesh.gloo.solo.io.GatewayRateLimit.request_timeout:type_name -> google.protobuf.Duration
+	4, // 2: ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.advanced:type_name -> ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit
+	3, // 3: ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.basic:type_name -> ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.BasicRateLimit
+	5, // 4: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.ratelimit_config_ref:type_name -> core.skv2.solo.io.ObjectRef
+	1, // 5: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.client:type_name -> ratelimit.networking.mesh.gloo.solo.io.RateLimitClient
+	5, // 6: ratelimit.networking.mesh.gloo.solo.io.RouteRateLimit.ratelimit_client_config_ref:type_name -> core.skv2.solo.io.ObjectRef
+	7, // 7: ratelimit.networking.mesh.gloo.solo.io.RateLimitClient.AdvancedRateLimit.actions:type_name -> ratelimit.api.solo.io.RateLimitActions
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_init() }
@@ -740,7 +522,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pr
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RouteRateLimit); i {
+			switch v := v.(*RateLimitClient); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -752,7 +534,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pr
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RouteRateLimit_BasicRateLimit); i {
+			switch v := v.(*RouteRateLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -764,7 +546,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pr
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RouteRateLimit_AdvancedRateLimit); i {
+			switch v := v.(*RateLimitClient_BasicRateLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -776,19 +558,7 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pr
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RouteRateLimit_BasicRateLimit_RateLimitRatio); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RouteRateLimit_AdvancedRateLimit_RateLimitActions); i {
+			switch v := v.(*RateLimitClient_AdvancedRateLimit); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -801,23 +571,25 @@ func file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_pr
 		}
 	}
 	file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[1].OneofWrappers = []interface{}{
-		(*RouteRateLimit_Basic)(nil),
-		(*RouteRateLimit_Advanced)(nil),
-		(*RouteRateLimit_ConfigRefs)(nil),
+		(*RateLimitClient_Advanced)(nil),
+		(*RateLimitClient_Basic)(nil),
+	}
+	file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes[2].OneofWrappers = []interface{}{
+		(*RouteRateLimit_Client)(nil),
+		(*RouteRateLimit_RatelimitClientConfigRef)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      0,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_goTypes,
 		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_depIdxs,
-		EnumInfos:         file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_enumTypes,
 		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto_msgTypes,
 	}.Build()
 	File_github_com_solo_io_gloo_mesh_api_networking_v1_ratelimit_rate_limit_proto = out.File

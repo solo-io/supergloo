@@ -134,78 +134,78 @@ func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
 	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }
 
-// Reconcile Upsert events for the RateLimiterServerConfig Resource.
+// Reconcile Upsert events for the RateLimitClientConfig Resource.
 // implemented by the user
-type RateLimiterServerConfigReconciler interface {
-	ReconcileRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error)
+type RateLimitClientConfigReconciler interface {
+	ReconcileRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the RateLimiterServerConfig Resource.
+// Reconcile deletion events for the RateLimitClientConfig Resource.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type RateLimiterServerConfigDeletionReconciler interface {
-	ReconcileRateLimiterServerConfigDeletion(req reconcile.Request) error
+type RateLimitClientConfigDeletionReconciler interface {
+	ReconcileRateLimitClientConfigDeletion(req reconcile.Request) error
 }
 
-type RateLimiterServerConfigReconcilerFuncs struct {
-	OnReconcileRateLimiterServerConfig         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error)
-	OnReconcileRateLimiterServerConfigDeletion func(req reconcile.Request) error
+type RateLimitClientConfigReconcilerFuncs struct {
+	OnReconcileRateLimitClientConfig         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error)
+	OnReconcileRateLimitClientConfigDeletion func(req reconcile.Request) error
 }
 
-func (f *RateLimiterServerConfigReconcilerFuncs) ReconcileRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) (reconcile.Result, error) {
-	if f.OnReconcileRateLimiterServerConfig == nil {
+func (f *RateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) (reconcile.Result, error) {
+	if f.OnReconcileRateLimitClientConfig == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileRateLimiterServerConfig(obj)
+	return f.OnReconcileRateLimitClientConfig(obj)
 }
 
-func (f *RateLimiterServerConfigReconcilerFuncs) ReconcileRateLimiterServerConfigDeletion(req reconcile.Request) error {
-	if f.OnReconcileRateLimiterServerConfigDeletion == nil {
+func (f *RateLimitClientConfigReconcilerFuncs) ReconcileRateLimitClientConfigDeletion(req reconcile.Request) error {
+	if f.OnReconcileRateLimitClientConfigDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileRateLimiterServerConfigDeletion(req)
+	return f.OnReconcileRateLimitClientConfigDeletion(req)
 }
 
-// Reconcile and finalize the RateLimiterServerConfig Resource
+// Reconcile and finalize the RateLimitClientConfig Resource
 // implemented by the user
-type RateLimiterServerConfigFinalizer interface {
-	RateLimiterServerConfigReconciler
+type RateLimitClientConfigFinalizer interface {
+	RateLimitClientConfigReconciler
 
 	// name of the finalizer used by this handler.
 	// finalizer names should be unique for a single task
-	RateLimiterServerConfigFinalizerName() string
+	RateLimitClientConfigFinalizerName() string
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+	FinalizeRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
 }
 
-type RateLimiterServerConfigReconcileLoop interface {
-	RunRateLimiterServerConfigReconciler(ctx context.Context, rec RateLimiterServerConfigReconciler, predicates ...predicate.Predicate) error
+type RateLimitClientConfigReconcileLoop interface {
+	RunRateLimitClientConfigReconciler(ctx context.Context, rec RateLimitClientConfigReconciler, predicates ...predicate.Predicate) error
 }
 
-type rateLimiterServerConfigReconcileLoop struct {
+type rateLimitClientConfigReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewRateLimiterServerConfigReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RateLimiterServerConfigReconcileLoop {
-	return &rateLimiterServerConfigReconcileLoop{
+func NewRateLimitClientConfigReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RateLimitClientConfigReconcileLoop {
+	return &rateLimitClientConfigReconcileLoop{
 		// empty cluster indicates this reconciler is built for the local cluster
-		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}, options),
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}, options),
 	}
 }
 
-func (c *rateLimiterServerConfigReconcileLoop) RunRateLimiterServerConfigReconciler(ctx context.Context, reconciler RateLimiterServerConfigReconciler, predicates ...predicate.Predicate) error {
-	genericReconciler := genericRateLimiterServerConfigReconciler{
+func (c *rateLimitClientConfigReconcileLoop) RunRateLimitClientConfigReconciler(ctx context.Context, reconciler RateLimitClientConfigReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericRateLimitClientConfigReconciler{
 		reconciler: reconciler,
 	}
 
 	var reconcilerWrapper reconcile.Reconciler
-	if finalizingReconciler, ok := reconciler.(RateLimiterServerConfigFinalizer); ok {
-		reconcilerWrapper = genericRateLimiterServerConfigFinalizer{
-			genericRateLimiterServerConfigReconciler: genericReconciler,
-			finalizingReconciler:                     finalizingReconciler,
+	if finalizingReconciler, ok := reconciler.(RateLimitClientConfigFinalizer); ok {
+		reconcilerWrapper = genericRateLimitClientConfigFinalizer{
+			genericRateLimitClientConfigReconciler: genericReconciler,
+			finalizingReconciler:                   finalizingReconciler,
 		}
 	} else {
 		reconcilerWrapper = genericReconciler
@@ -213,42 +213,42 @@ func (c *rateLimiterServerConfigReconcileLoop) RunRateLimiterServerConfigReconci
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
-// genericRateLimiterServerConfigHandler implements a generic reconcile.Reconciler
-type genericRateLimiterServerConfigReconciler struct {
-	reconciler RateLimiterServerConfigReconciler
+// genericRateLimitClientConfigHandler implements a generic reconcile.Reconciler
+type genericRateLimitClientConfigReconciler struct {
+	reconciler RateLimitClientConfigReconciler
 }
 
-func (r genericRateLimiterServerConfigReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (r genericRateLimitClientConfigReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
 	}
-	return r.reconciler.ReconcileRateLimiterServerConfig(obj)
+	return r.reconciler.ReconcileRateLimitClientConfig(obj)
 }
 
-func (r genericRateLimiterServerConfigReconciler) ReconcileDeletion(request reconcile.Request) error {
-	if deletionReconciler, ok := r.reconciler.(RateLimiterServerConfigDeletionReconciler); ok {
-		return deletionReconciler.ReconcileRateLimiterServerConfigDeletion(request)
+func (r genericRateLimitClientConfigReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(RateLimitClientConfigDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRateLimitClientConfigDeletion(request)
 	}
 	return nil
 }
 
-// genericRateLimiterServerConfigFinalizer implements a generic reconcile.FinalizingReconciler
-type genericRateLimiterServerConfigFinalizer struct {
-	genericRateLimiterServerConfigReconciler
-	finalizingReconciler RateLimiterServerConfigFinalizer
+// genericRateLimitClientConfigFinalizer implements a generic reconcile.FinalizingReconciler
+type genericRateLimitClientConfigFinalizer struct {
+	genericRateLimitClientConfigReconciler
+	finalizingReconciler RateLimitClientConfigFinalizer
 }
 
-func (r genericRateLimiterServerConfigFinalizer) FinalizerName() string {
-	return r.finalizingReconciler.RateLimiterServerConfigFinalizerName()
+func (r genericRateLimitClientConfigFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.RateLimitClientConfigFinalizerName()
 }
 
-func (r genericRateLimiterServerConfigFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (r genericRateLimitClientConfigFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
 	}
-	return r.finalizingReconciler.FinalizeRateLimiterServerConfig(obj)
+	return r.finalizingReconciler.FinalizeRateLimitClientConfig(obj)
 }
 
 // Reconcile Upsert events for the VirtualDestination Resource.

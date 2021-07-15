@@ -38,7 +38,7 @@ require (
 	github.com/cncf/udpa/go v0.0.0-20210322005330-6414d713912e // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v1.13.1 // indirect
-	github.com/envoyproxy/go-control-plane v0.9.9-0.20210217033140-668b12f5399d
+	github.com/envoyproxy/go-control-plane v0.9.9-0.20210511190911-87d352569d55
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/evanphx/json-patch/v5 v5.2.0 // indirect
 	github.com/fatih/color v1.10.0
@@ -82,10 +82,10 @@ require (
 	github.com/solo-io/external-apis v0.1.6
 	github.com/solo-io/go-list-licenses v0.1.3
 	github.com/solo-io/go-utils v0.21.9
-	github.com/solo-io/k8s-utils v0.0.3
+	github.com/solo-io/k8s-utils v0.0.8
 	github.com/solo-io/protoc-gen-ext v0.0.15
 	github.com/solo-io/skv2 v0.18.3
-	github.com/solo-io/solo-apis v1.6.30
+	github.com/solo-io/solo-apis v0.0.0-20210402154348-601c3d9fab71
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.3

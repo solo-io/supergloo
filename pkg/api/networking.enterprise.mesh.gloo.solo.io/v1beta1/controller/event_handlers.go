@@ -124,111 +124,111 @@ func (h genericWasmDeploymentHandler) Generic(object client.Object) error {
 	return h.handler.GenericWasmDeployment(obj)
 }
 
-// Handle events for the RateLimiterServerConfig Resource
+// Handle events for the RateLimitClientConfig Resource
 // DEPRECATED: Prefer reconciler pattern.
-type RateLimiterServerConfigEventHandler interface {
-	CreateRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
-	UpdateRateLimiterServerConfig(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
-	DeleteRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
-	GenericRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+type RateLimitClientConfigEventHandler interface {
+	CreateRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+	UpdateRateLimitClientConfig(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+	DeleteRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+	GenericRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
 }
 
-type RateLimiterServerConfigEventHandlerFuncs struct {
-	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
-	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
-	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
-	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error
+type RateLimitClientConfigEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error
 }
 
-func (f *RateLimiterServerConfigEventHandlerFuncs) CreateRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+func (f *RateLimitClientConfigEventHandlerFuncs) CreateRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *RateLimiterServerConfigEventHandlerFuncs) DeleteRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+func (f *RateLimitClientConfigEventHandlerFuncs) DeleteRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *RateLimiterServerConfigEventHandlerFuncs) UpdateRateLimiterServerConfig(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+func (f *RateLimitClientConfigEventHandlerFuncs) UpdateRateLimitClientConfig(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *RateLimiterServerConfigEventHandlerFuncs) GenericRateLimiterServerConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig) error {
+func (f *RateLimitClientConfigEventHandlerFuncs) GenericRateLimitClientConfig(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type RateLimiterServerConfigEventWatcher interface {
-	AddEventHandler(ctx context.Context, h RateLimiterServerConfigEventHandler, predicates ...predicate.Predicate) error
+type RateLimitClientConfigEventWatcher interface {
+	AddEventHandler(ctx context.Context, h RateLimitClientConfigEventHandler, predicates ...predicate.Predicate) error
 }
 
-type rateLimiterServerConfigEventWatcher struct {
+type rateLimitClientConfigEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewRateLimiterServerConfigEventWatcher(name string, mgr manager.Manager) RateLimiterServerConfigEventWatcher {
-	return &rateLimiterServerConfigEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig{}),
+func NewRateLimitClientConfigEventWatcher(name string, mgr manager.Manager) RateLimitClientConfigEventWatcher {
+	return &rateLimitClientConfigEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig{}),
 	}
 }
 
-func (c *rateLimiterServerConfigEventWatcher) AddEventHandler(ctx context.Context, h RateLimiterServerConfigEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericRateLimiterServerConfigHandler{handler: h}
+func (c *rateLimitClientConfigEventWatcher) AddEventHandler(ctx context.Context, h RateLimitClientConfigEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericRateLimitClientConfigHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericRateLimiterServerConfigHandler implements a generic events.EventHandler
-type genericRateLimiterServerConfigHandler struct {
-	handler RateLimiterServerConfigEventHandler
+// genericRateLimitClientConfigHandler implements a generic events.EventHandler
+type genericRateLimitClientConfigHandler struct {
+	handler RateLimitClientConfigEventHandler
 }
 
-func (h genericRateLimiterServerConfigHandler) Create(object client.Object) error {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (h genericRateLimitClientConfigHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
 	}
-	return h.handler.CreateRateLimiterServerConfig(obj)
+	return h.handler.CreateRateLimitClientConfig(obj)
 }
 
-func (h genericRateLimiterServerConfigHandler) Delete(object client.Object) error {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (h genericRateLimitClientConfigHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
 	}
-	return h.handler.DeleteRateLimiterServerConfig(obj)
+	return h.handler.DeleteRateLimitClientConfig(obj)
 }
 
-func (h genericRateLimiterServerConfigHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (h genericRateLimitClientConfigHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", old)
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", old)
 	}
-	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", new)
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", new)
 	}
-	return h.handler.UpdateRateLimiterServerConfig(objOld, objNew)
+	return h.handler.UpdateRateLimitClientConfig(objOld, objNew)
 }
 
-func (h genericRateLimiterServerConfigHandler) Generic(object client.Object) error {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimiterServerConfig)
+func (h genericRateLimitClientConfigHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RateLimitClientConfig)
 	if !ok {
-		return errors.Errorf("internal error: RateLimiterServerConfig handler received event for %T", object)
+		return errors.Errorf("internal error: RateLimitClientConfig handler received event for %T", object)
 	}
-	return h.handler.GenericRateLimiterServerConfig(obj)
+	return h.handler.GenericRateLimitClientConfig(obj)
 }
 
 // Handle events for the VirtualDestination Resource

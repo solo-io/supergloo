@@ -22,6 +22,9 @@
   - [Action.HeaderValueMatch](#ratelimit.api.solo.io.Action.HeaderValueMatch)
   - [Action.HeaderValueMatch.HeaderMatcher](#ratelimit.api.solo.io.Action.HeaderValueMatch.HeaderMatcher)
   - [Action.HeaderValueMatch.HeaderMatcher.Int64Range](#ratelimit.api.solo.io.Action.HeaderValueMatch.HeaderMatcher.Int64Range)
+  - [Action.MetaData](#ratelimit.api.solo.io.Action.MetaData)
+  - [Action.MetaData.MetadataKey](#ratelimit.api.solo.io.Action.MetaData.MetadataKey)
+  - [Action.MetaData.MetadataKey.PathSegment](#ratelimit.api.solo.io.Action.MetaData.MetadataKey.PathSegment)
   - [Action.RemoteAddress](#ratelimit.api.solo.io.Action.RemoteAddress)
   - [Action.RequestHeaders](#ratelimit.api.solo.io.Action.RequestHeaders)
   - [Action.SourceCluster](#ratelimit.api.solo.io.Action.SourceCluster)
@@ -34,6 +37,7 @@
   - [SetDescriptor](#ratelimit.api.solo.io.SetDescriptor)
   - [SimpleDescriptor](#ratelimit.api.solo.io.SimpleDescriptor)
 
+  - [Action.MetaData.Source](#ratelimit.api.solo.io.Action.MetaData.Source)
   - [RateLimit.Unit](#ratelimit.api.solo.io.RateLimit.Unit)
   - [RateLimitConfigStatus.State](#ratelimit.api.solo.io.RateLimitConfigStatus.State)
 
@@ -56,6 +60,7 @@
   | remoteAddress | [ratelimit.api.solo.io.Action.RemoteAddress]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.RemoteAddress" >}}) |  | Rate limit on remote address. |
   | genericKey | [ratelimit.api.solo.io.Action.GenericKey]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.GenericKey" >}}) |  | Rate limit on a generic key. |
   | headerValueMatch | [ratelimit.api.solo.io.Action.HeaderValueMatch]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.HeaderValueMatch" >}}) |  | Rate limit on the existence of request headers. |
+  | metadata | [ratelimit.api.solo.io.Action.MetaData]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.MetaData" >}}) |  | Rate limit on metadata. |
   
 
 
@@ -136,6 +141,55 @@
 | ----- | ---- | ----- | ----------- |
 | start | int64 |  | start of the range (inclusive) |
   | end | int64 |  | end of the range (exclusive) |
+  
+
+
+
+
+
+<a name="ratelimit.api.solo.io.Action.MetaData"></a>
+
+### Action.MetaData
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| descriptorKey | string |  | Required. The key to use in the descriptor entry.<br>[(validate.rules).string = {min_len: 1}]; |
+  | metadataKey | [ratelimit.api.solo.io.Action.MetaData.MetadataKey]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.MetaData.MetadataKey" >}}) |  | Required. Metadata struct that defines the key and path to retrieve the string value. A match will only happen if the value in the metadata is of type string.<br>[(validate.rules).message = {required: true}]; |
+  | defaultValue | string |  | An optional value to use if *metadata_key* is empty. If not set and no value is present under the metadata_key then no descriptor is generated. |
+  | source | [ratelimit.api.solo.io.Action.MetaData.Source]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.MetaData.Source" >}}) |  | Source of metadata<br>[(validate.rules).enum = {defined_only: true}]; |
+  
+
+
+
+
+
+<a name="ratelimit.api.solo.io.Action.MetaData.MetadataKey"></a>
+
+### Action.MetaData.MetadataKey
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  | Required. The key name of Metadata to retrieve the Struct from the metadata. Typically, it represents a builtin subsystem or custom extension.<br>[(validate.rules).string = {min_len: 1}]; |
+  | path | [][ratelimit.api.solo.io.Action.MetaData.MetadataKey.PathSegment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.solo-apis.api.rate-limiter.v1alpha1.ratelimit#ratelimit.api.solo.io.Action.MetaData.MetadataKey.PathSegment" >}}) | repeated | Must have at least one element. The path to retrieve the Value from the Struct. It can be a prefix or a full path, e.g. ``[prop, xyz]`` for a struct or ``[prop, foo]`` for a string in the example, which depends on the particular scenario.<br>Note: Due to that only the key type segment is supported, the path can not specify a list unless the list is the last segment.<br>[(validate.rules).repeated = {min_items: 1}]; |
+  
+
+
+
+
+
+<a name="ratelimit.api.solo.io.Action.MetaData.MetadataKey.PathSegment"></a>
+
+### Action.MetaData.MetadataKey.PathSegment
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  | Required. If specified, use the key to retrieve the value in a Struct.<br>[(validate.rules).string = {min_len: 1}]; |
   
 
 
@@ -312,6 +366,18 @@
 
 
  <!-- end messages -->
+
+
+<a name="ratelimit.api.solo.io.Action.MetaData.Source"></a>
+
+### Action.MetaData.Source
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| DYNAMIC | 0 | Query [dynamic metadata](https://www.envoyproxy.io/docs/envoy/latest/configuration/advanced/well_known_dynamic_metadata#well-known-dynamic-metadata). |
+| ROUTE_ENTRY | 1 | Query [route entry metadata](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#envoy-v3-api-field-config-route-v3-route-metadata). |
+
 
 
 <a name="ratelimit.api.solo.io.RateLimit.Unit"></a>
