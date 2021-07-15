@@ -30,6 +30,7 @@ title: "mesh.proto"
   - [MeshSpec.LinkerdMesh](#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh)
   - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
+  - [MeshStatus.AppliedIngressGateway](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway)
   - [MeshStatus.AppliedVirtualDestination](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
 
@@ -242,6 +243,25 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this Mesh. |
   | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this Mesh. |
+  | appliedEastWestIngressGateways | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway" >}}) | repeated | The Destination(s) acting as ingress gateways for east west traffic. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedIngressGateway"></a>
+
+### MeshStatus.AppliedIngressGateway
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| destinationRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The Destination on the mesh that acts as an ingress gateway for the mesh. |
+  | externalAddresses | []string | repeated | The externally accessible address(es) for this ingress gateway Destination. |
+  | destinationPort | uint32 |  | The port on the ingress gateway Destination designated for receiving cross cluster traffic. |
+  | containerPort | uint32 |  | The port on the ingress gateway's backing Workload(s) designated for receiving cross cluster traffic. |
   
 
 

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix a bug where the VirtualService translator overwrites the RouteDestination's port declared on the TrafficPolicy's traffic shift.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1706

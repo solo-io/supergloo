@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: >
+      Allow meshctl checks run from inside a kubernetes cluster.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/839
