@@ -131,12 +131,8 @@ echo '''
    "KeyAlgorithm":"RSA_2048",
    "SigningAlgorithm":"SHA256WITHRSA",
    "Subject":{
-      "Country":"US",
-      "Organization":"Solo.io",
       "OrganizationalUnit":"Demo",
-      "State":"MA",
-      "Locality":"Boson",
-      "CommonName":"*.gloo-mesh"
+      "CommonName":"Gloo Mesh Root CA"
    }
 }
 ''' > ca_config.json
@@ -182,6 +178,7 @@ aws acm-pca import-certificate-authority-certificate \
 
 ###########################################################
 # Gloo Mesh Intermediate CA for Istio
+# Generated locally but signed by Gloo Mesh Root CA
 ###########################################################
 
 # Generate Intermediate CA Certificate Request
@@ -221,7 +218,8 @@ aws acm-pca get-certificate \
     --output text > gloo-mesh-intermediate.pem
 
 ###########################################################
-# Relay Intermediate Certificate (Stored in ACM)
+# Relay Intermediate Certificate
+# Generated and Managed By ACM, signed by Gloo Mesh Root CA
 ###########################################################
 echo '''
 {
