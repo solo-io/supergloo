@@ -38,6 +38,20 @@ func (m *MockRoleSet) EXPECT() *MockRoleSetMockRecorder {
 	return m.recorder
 }
 
+// Clone mocks base method.
+func (m *MockRoleSet) Clone() v1sets.RoleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.RoleSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockRoleSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleSet)(nil).Clone))
+}
+
 // Delete mocks base method.
 func (m *MockRoleSet) Delete(role ezkube.ResourceId) {
 	m.ctrl.T.Helper()
@@ -278,6 +292,20 @@ func NewMockRoleBindingSet(ctrl *gomock.Controller) *MockRoleBindingSet {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRoleBindingSet) EXPECT() *MockRoleBindingSetMockRecorder {
 	return m.recorder
+}
+
+// Clone mocks base method.
+func (m *MockRoleBindingSet) Clone() v1sets.RoleBindingSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clone")
+	ret0, _ := ret[0].(v1sets.RoleBindingSet)
+	return ret0
+}
+
+// Clone indicates an expected call of Clone.
+func (mr *MockRoleBindingSetMockRecorder) Clone() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockRoleBindingSet)(nil).Clone))
 }
 
 // Delete mocks base method.

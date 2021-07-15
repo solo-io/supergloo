@@ -223,6 +223,9 @@ type LocalSnapshot interface {
 	SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+
+	// Clone the snapshot
+	Clone() LocalSnapshot
 }
 
 // options for syncing input object statuses
@@ -978,6 +981,30 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
+}
+
+func (s snapshotLocal) Clone() LocalSnapshot {
+	return &snapshotLocal{
+		name: s.name,
+
+		wasmDeployments:          s.wasmDeployments.Clone(),
+		rateLimiterServerConfigs: s.rateLimiterServerConfigs.Clone(),
+		virtualDestinations:      s.virtualDestinations.Clone(),
+		virtualGateways:          s.virtualGateways.Clone(),
+		virtualHosts:             s.virtualHosts.Clone(),
+		routeTables:              s.routeTables.Clone(),
+		serviceDependencies:      s.serviceDependencies.Clone(),
+		trafficPolicies:          s.trafficPolicies.Clone(),
+		accessPolicies:           s.accessPolicies.Clone(),
+		virtualMeshes:            s.virtualMeshes.Clone(),
+		settings:                 s.settings.Clone(),
+		destinations:             s.destinations.Clone(),
+		workloads:                s.workloads.Clone(),
+		meshes:                   s.meshes.Clone(),
+		accessLogRecords:         s.accessLogRecords.Clone(),
+		secrets:                  s.secrets.Clone(),
+		kubernetesClusters:       s.kubernetesClusters.Clone(),
+	}
 }
 
 // builds the input snapshot from API Clients.
