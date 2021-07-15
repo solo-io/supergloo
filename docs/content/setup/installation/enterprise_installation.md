@@ -159,8 +159,8 @@ echo "creating root cert ..."
 
 openssl req -new -newkey rsa:4096 -x509 -sha256 \
         -days 3650 -nodes -out ${RELAY_ROOT_CERT_NAME}.crt -keyout ${RELAY_ROOT_CERT_NAME}.key \
-        -subj "/CN=*.gloo-mesh/O=${RELAY_ROOT_CERT_NAME}" \
-        -addext "subjectAltName = DNS:*.gloo-mesh"
+        -subj "/CN=enterprise-networking-ca" \
+        -addext "extendedKeyUsage = clientAuth, serverAuth"
 
 
 echo "creating grpc server tls cert ..."
@@ -173,7 +173,7 @@ distinguished_name = req_distinguished_name
 [req_distinguished_name]
 [ v3_req ]
 basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, serverAuth
 subjectAltName = @alt_names
 [alt_names]
@@ -181,7 +181,7 @@ DNS = *.gloo-mesh
 EOF
 
 openssl genrsa -out "${RELAY_SERVER_CERT_NAME}.key" 2048
-openssl req -new -key "${RELAY_SERVER_CERT_NAME}.key" -out ${RELAY_SERVER_CERT_NAME}.csr -subj "/CN=*.gloo-mesh/O=${RELAY_SERVER_CERT_NAME}" -config "${RELAY_SERVER_CERT_NAME}.conf"
+openssl req -new -key "${RELAY_SERVER_CERT_NAME}.key" -out ${RELAY_SERVER_CERT_NAME}.csr -subj "/CN=enterprise-networking-ca" -config "${RELAY_SERVER_CERT_NAME}.conf"
 openssl x509 -req \
   -days 3650 \
   -CA ${RELAY_ROOT_CERT_NAME}.crt -CAkey ${RELAY_ROOT_CERT_NAME}.key \
@@ -199,7 +199,7 @@ distinguished_name = req_distinguished_name
 [req_distinguished_name]
 [ v3_req ]
 basicConstraints = critical,CA:TRUE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment, keyCertSign
+keyUsage = digitalSignature, keyEncipherment, keyCertSign
 extendedKeyUsage = clientAuth, serverAuth
 subjectAltName = @alt_names
 [alt_names]
@@ -207,7 +207,7 @@ DNS = *.gloo-mesh
 EOF
 
 openssl genrsa -out "${RELAY_SIGNING_CERT_NAME}.key" 2048
-openssl req -new -key "${RELAY_SIGNING_CERT_NAME}.key" -out ${RELAY_SIGNING_CERT_NAME}.csr -subj "/CN=*.gloo-mesh/O=${RELAY_SIGNING_CERT_NAME}" -config "${RELAY_SIGNING_CERT_NAME}.conf"
+openssl req -new -key "${RELAY_SIGNING_CERT_NAME}.key" -out ${RELAY_SIGNING_CERT_NAME}.csr -subj "/CN=enterprise-networking-ca" -config "${RELAY_SIGNING_CERT_NAME}.conf"
 openssl x509 -req \
   -days 3650 \
   -CA ${RELAY_ROOT_CERT_NAME}.crt -CAkey ${RELAY_ROOT_CERT_NAME}.key \
